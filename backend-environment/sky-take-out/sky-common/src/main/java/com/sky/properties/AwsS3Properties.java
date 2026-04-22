@@ -5,13 +5,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConfigurationProperties(prefix = "sky.alioss")
+@ConfigurationProperties(prefix = "sky.aws.s3") // 這裡對應你在 application.yml 寫的層級
 @Data
-public class AliOssProperties {
+public class AwsS3Properties {
 
-    private String endpoint;
+    private String region;
     private String accessKeyId;
-    private String accessKeySecret;
+    private String secretAccessKey;
     private String bucketName;
 
 }
