@@ -44,9 +44,17 @@ sky:
     # 设置前端传递过来的令牌名称
     admin-token-name: token
 
+    user-secret-key: itheima
+    user-ttl: 7200000
+    user-token-name: authentication
+
   aws:
     s3:
       region: ${sky.aws.s3.region}
       access-key-id: ${sky.aws.s3.access-key-id}
       secret-access-key: ${sky.aws.s3.secret-access-key}
       bucket-name: ${sky.aws.s3.bucket-name}
+
+  wechat:
+    appid: ${sky.wechat.appid}
+    secret: ${sky.wechat.secret}
