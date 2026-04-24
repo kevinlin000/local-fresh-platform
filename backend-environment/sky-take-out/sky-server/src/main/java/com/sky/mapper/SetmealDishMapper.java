@@ -15,7 +15,7 @@ public interface SetmealDishMapper {
      * @return
      */
     //select setmeal id from setmeal dish where dish id in (1,2,3,4)
-    List<Long> getSetmealIdsByDishId(List<Long> dishIds);
+    List<Long> getSetmealIdsByDishIds(List<Long> dishIds);
 
     /**
      * 批量保存套餐和菜品的关联关系
@@ -37,6 +37,7 @@ public interface SetmealDishMapper {
      */
     @Select("select * from setmeal_dish where setmeal_id = #{setmealId}")
     List<SetmealDish> getBySetmealId(Long setmealId);
+
 
 
 }
