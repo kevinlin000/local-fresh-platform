@@ -75,7 +75,7 @@ public class OrderServiceImpl implements OrderService {
 
         // 檢查使用者的收貨地址是否超出配送範圍
         checkOutOfRange(addressBook.getCityName() + addressBook.getDistrictName() + addressBook.getDetail());
-        
+
         //查詢當前的購物車異常
         Long userId = BaseContext.getCurrentId();
 
