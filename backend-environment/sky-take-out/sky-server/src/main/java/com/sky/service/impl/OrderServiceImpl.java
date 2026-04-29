@@ -538,6 +538,28 @@ public class OrderServiceImpl implements OrderService {
         orderMapper.update(orders);
     }
 
+    /**
+     * 客戶催單
+     * @param id
+     */
+    public void reminder(Long id) {
+        // 根据id查询订单
+        Orders ordersDB = orderMapper.getById(id);
+
+        // 校验订单是否存在
+        if (ordersDB == null ) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+        // 通過websocket向客戶端推送催單訊息
+        Map map = new HashMap();
+        map.put("type",2);  // 1表示來單提醒，2表示客戶催單
+        map.put("orderId", id);
+        map.put("content","訂單號：" + ordersDB.getNumber());
+
+        webSocketServer.sendToAllClient(JSON.toJSONString(map));
+    }
+
     @Value("${sky.shop.address}")
     private String shopAddress;
 
@@ -620,5 +642,7 @@ public class OrderServiceImpl implements OrderService {
         }
         return null;
     }
+
+
 
 }
