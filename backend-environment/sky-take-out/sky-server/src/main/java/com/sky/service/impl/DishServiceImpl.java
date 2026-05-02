@@ -20,11 +20,13 @@ import com.sky.vo.DishVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -38,6 +40,8 @@ public class DishServiceImpl implements DishService {
     private DishFlavorMapper dishFlavorMapper;
     @Autowired
     private SetmealDishMapper setmealDishMapper;
+    @Autowired
+    private RedisTemplate redisTemplate;
     /**
      * 新增菜品
      * @param dishDTO
@@ -65,7 +69,7 @@ public class DishServiceImpl implements DishService {
             dishFlavorMapper.insertBatch(flavors);
         }
 
-
+        cleanCache("dish_" + dishDTO.getCategoryId());
     }
 
     /**
@@ -118,7 +122,7 @@ public class DishServiceImpl implements DishService {
         //sql: delete from dish_flavor where id in (?,?,?)
         dishFlavorMapper.deleteByDishIds(ids);
 
-
+        cleanCache("dish_*");
     }
 
     /**
@@ -165,7 +169,7 @@ public class DishServiceImpl implements DishService {
             dishFlavorMapper.insertBatch(flavors);
         }
 
-
+        cleanCache("dish_*");
     }
 
 
@@ -236,6 +240,13 @@ public class DishServiceImpl implements DishService {
                 }
             }
         }
+
+        cleanCache("dish_*");
+    }
+
+    private void cleanCache(String pattern) {
+        Set keys = redisTemplate.keys(pattern);
+        redisTemplate.delete(keys);
     }
 
 }
