@@ -39,11 +39,18 @@ public interface OrderService {
     PageResult pageQuery4User(int page, int pageSize, Integer status);
 
     /**
-     * 查询订单详情
+     * 查询订单详情（管理端，不做所有權驗證）
      * @param id
      * @return
      */
     OrderVO details(Long id);
+
+    /**
+     * 查詢訂單詳情（用戶端，驗證訂單所有權）
+     * @param id
+     * @return
+     */
+    OrderVO userDetails(Long id);
 
     /**
      * 用户取消订单

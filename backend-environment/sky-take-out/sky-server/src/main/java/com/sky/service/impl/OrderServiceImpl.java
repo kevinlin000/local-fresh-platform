@@ -246,19 +246,38 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 查询订单详情
+     * 查询订单详情（管理端，不驗證所有權）
      *
      * @param id
      * @return
      */
     public OrderVO details(Long id) {
-        // 根据id查询订单
         Orders orders = orderMapper.getById(id);
 
-        // 查询该订单对应的菜品/套餐明细
         List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orders.getId());
 
-        // 将该订单及其详情封装到OrderVO并返回
+        OrderVO orderVO = new OrderVO();
+        BeanUtils.copyProperties(orders, orderVO);
+        orderVO.setOrderDetailList(orderDetailList);
+
+        return orderVO;
+    }
+
+    /**
+     * 查詢訂單詳情（用戶端，驗證訂單所有權）
+     *
+     * @param id
+     * @return
+     */
+    public OrderVO userDetails(Long id) {
+        Orders orders = orderMapper.getById(id);
+
+        if (orders == null || !orders.getUserId().equals(BaseContext.getCurrentId())) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
+        List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orders.getId());
+
         OrderVO orderVO = new OrderVO();
         BeanUtils.copyProperties(orders, orderVO);
         orderVO.setOrderDetailList(orderDetailList);
@@ -314,8 +333,13 @@ public class OrderServiceImpl implements OrderService {
      * @param id
      */
     public void repetition(Long id) {
-        // 查询当前用户id
         Long userId = BaseContext.getCurrentId();
+
+        // 驗證訂單所有權
+        Orders ordersDB = orderMapper.getById(id);
+        if (ordersDB == null || !ordersDB.getUserId().equals(userId)) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
 
         // 根据订单id查询当前订单详情
         List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(id);
@@ -469,10 +493,12 @@ public class OrderServiceImpl implements OrderService {
      * @param ordersCancelDTO
      */
     public void cancel(OrdersCancelDTO ordersCancelDTO) throws Exception {
-        // 根据id查询订单
         Orders ordersDB = orderMapper.getById(ordersCancelDTO.getId());
 
-        //支付状态
+        if (ordersDB == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
         Integer payStatus = ordersDB.getPayStatus();
         if (payStatus == 1) {
             //用户已支付，需要退款
@@ -543,12 +569,11 @@ public class OrderServiceImpl implements OrderService {
      * @param id
      */
     public void reminder(Long id) {
-        // 根据id查询订单
         Orders ordersDB = orderMapper.getById(id);
 
-        // 校验订单是否存在
-        if (ordersDB == null ) {
-            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        // 驗證訂單存在且屬於當前用戶
+        if (ordersDB == null || !ordersDB.getUserId().equals(BaseContext.getCurrentId())) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
         }
 
         // 通過websocket向客戶端推送催單訊息
