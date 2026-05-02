@@ -295,7 +295,7 @@ public class ReportServiceImpl implements ReportService {
             excel.close();
 
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("匯出營運報表失敗", e);
         }
 
 

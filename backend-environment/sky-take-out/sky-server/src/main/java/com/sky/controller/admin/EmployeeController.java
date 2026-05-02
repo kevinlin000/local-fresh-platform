@@ -14,7 +14,6 @@ import com.sky.vo.EmployeeLoginVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.xmlbeans.impl.xb.xsdschema.Public;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -86,7 +85,6 @@ public class EmployeeController {
     @ApiOperation("新增員工")
     public Result save(@RequestBody EmployeeDTO employeeDTO) {
         log.info("新增員工：{}", employeeDTO);
-        System.out.println("當前線程id: " + Thread.currentThread().getId());
         employeeService.save(employeeDTO);
         return Result.success();
     }

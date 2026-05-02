@@ -73,7 +73,7 @@ public class AutoFillAspect {
                  setUpdateUser.invoke(entity, currentId);
 
              } catch (Exception e) {
-                 e.printStackTrace();
+                 log.error("公共字段自動填充失敗", e);
              }
 
 
@@ -88,7 +88,7 @@ public class AutoFillAspect {
                  setUpdateUser.invoke(entity, currentId);
 
              } catch (Exception e) {
-                 e.printStackTrace();
+                 log.error("公共字段自動填充失敗", e);
              }
 
          }

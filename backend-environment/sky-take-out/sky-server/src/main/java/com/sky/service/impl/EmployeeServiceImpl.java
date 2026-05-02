@@ -5,7 +5,6 @@ import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.PasswordConstant;
 import com.sky.constant.StatusConstant;
-import com.sky.context.BaseContext;
 import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
 import com.sky.dto.EmployeePageQueryDTO;
@@ -21,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -71,26 +69,12 @@ public class EmployeeServiceImpl implements EmployeeService {
      * @param employeeDTO
      */
     public void save(EmployeeDTO employeeDTO) {
-        System.out.println("當前線程id: " + Thread.currentThread().getId());
         Employee employee = new Employee();
 
-        //把DTO對象中的屬性複製到實體類當中
         BeanUtils.copyProperties(employeeDTO, employee);
 
-        //設置帳號的狀態，默認正常狀態是1，鎖定狀態是0
         employee.setStatus(StatusConstant.ENABLE);
-
-        //設置密碼，默認密碼是123456，並且進行MD5加密
         employee.setPassword(DigestUtils.md5DigestAsHex(PasswordConstant.DEFAULT_PASSWORD.getBytes()));
-
-        //設置當前紀錄的創建時間和修改時間
-        //employee.setCreateTime(LocalDateTime.now());
-        //employee.setUpdateTime(LocalDateTime.now());
-
-        //設置當前紀錄創建人id和修改人id
-        //employee.setCreateUser(BaseContext.getCurrentId());
-        //employee.setUpdateUser(BaseContext.getCurrentId());
-
 
         employeeMapper.insert(employee);
 
@@ -121,13 +105,7 @@ public class EmployeeServiceImpl implements EmployeeService {
      */
     @Override
     public void startOrStop(Integer status, Long id) {
-        // update employee set status = ? where id = /
-
-//        Employee employee = new Employee();
-//        employee.setStatus(status);
-//        employee.setId(id);
-
-        Employee employee =Employee.builder()
+        Employee employee = Employee.builder()
                 .id(id)
                 .status(status)
                 .build();
@@ -152,10 +130,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     public void update(EmployeeDTO employeeDTO) {
         Employee employee = new Employee();
         BeanUtils.copyProperties(employeeDTO, employee);
-
-        //設置修改時間和修改人id
-        //employee.setUpdateTime(LocalDateTime.now());
-        //employee.setUpdateUser(BaseContext.getCurrentId());
 
         employeeMapper.update(employee);
     }

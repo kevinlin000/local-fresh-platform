@@ -1,30 +1,20 @@
 package com.sky.service.impl;
 
-import com.alibaba.fastjson.JSONObject;
 import com.sky.constant.MessageConstant;
 import com.sky.dto.UserLoginDTO;
 import com.sky.entity.User;
 import com.sky.exception.LoginFailedException;
 import com.sky.mapper.UserMapper;
-import com.sky.properties.WeChatProperties;
 import com.sky.service.UserService;
-import com.sky.utils.HttpClientUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 
 @Service
 @Slf4j
 public class UserServiceImpl implements UserService {
-
-    // 微信服務接口地址（mock 環境下不會實際呼叫，保留作為未來魔改參考）
-    public static final String WX_LOGIN_URL = "https://api.weixin.qq.com/sns/jscode2session?";
-
-    @Autowired
-    private WeChatProperties weChatProperties;
 
     @Autowired
     private UserMapper userMapper;
@@ -65,19 +55,7 @@ public class UserServiceImpl implements UserService {
      * @return
      */
     private String getOpenid(String code) {
-        // ========== 原本的邏輯（保留對照用）==========
-        // HashMap<String, String> map = new HashMap<>();
-        // map.put("appid", weChatProperties.getAppid());
-        // map.put("secret", weChatProperties.getSecret());
-        // map.put("js_code", code);
-        // map.put("grant_type", "authorization_code");
-        // String json = HttpClientUtil.doGet(WX_LOGIN_URL, map);
-        // JSONObject jsonObject = JSONObject.parseObject(json);
-        // String openid = jsonObject.getString("openid");
-        // return openid;
-
-        // ========== Mock 實作 ==========
-        log.info("【Mock 微信登錄】收到 code: {}", code);
+        log.info("【Mock 登錄】收到 code: {}", code);
         String mockOpenid = "mock_openid_" + code;
         log.info("【Mock 微信登錄】產生假 openid: {}", mockOpenid);
         return mockOpenid;
