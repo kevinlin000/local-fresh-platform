@@ -60,6 +60,6 @@ sky:
     secret: ${sky.wechat.secret}
 
   shop:
-    address: "台北市大安區羅斯福路四段1號" # 換成想要的台灣店家地址
+    address: ${sky.shop.address} # 換成想要的台灣店家地址
   google:
-    api-key: "${sky.google.api-key}" # 貼上你的 Google API Key
+    api-key:  ${sky.google.api-key} # 貼上你的 Google API Key
