@@ -64,7 +64,7 @@ public class WebSocketServer {
                 //服务器向客户端发送消息
                 session.getBasicRemote().sendText(message);
             } catch (Exception e) {
-                log.error("WebSocket 發送訊息失敗，sid={}", sid, e);
+                log.error("WebSocket 發送訊息失敗", e);
             }
         }
     }
