@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Select;
 import java.util.List;
 
 @Mapper
-public interface SetmealDishMapper {
+public interface GiftBoxProductMapper {
     /**
      * 根據菜品id查詢對應的套餐id
      * @param dishIds

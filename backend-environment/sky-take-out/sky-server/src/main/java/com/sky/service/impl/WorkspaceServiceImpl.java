@@ -2,10 +2,10 @@ package com.sky.service.impl;
 
 import com.sky.constant.StatusConstant;
 import com.sky.entity.Orders;
-import com.sky.mapper.DishMapper;
+import com.sky.mapper.ProductMapper;
 import com.sky.mapper.OrderMapper;
-import com.sky.mapper.SetmealMapper;
-import com.sky.mapper.UserMapper;
+import com.sky.mapper.GiftBoxMapper;
+import com.sky.mapper.MemberMapper;
 import com.sky.service.WorkspaceService;
 import com.sky.vo.BusinessDataVO;
 import com.sky.vo.ProductOverViewVO;
@@ -26,11 +26,11 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     @Autowired
     private OrderMapper orderMapper;
     @Autowired
-    private UserMapper userMapper;
+    private MemberMapper memberMapper;
     @Autowired
-    private DishMapper dishMapper;
+    private ProductMapper productMapper;
     @Autowired
-    private SetmealMapper setmealMapper;
+    private GiftBoxMapper giftBoxMapper;
 
     /**
      * 根据时间段统计营业数据
@@ -73,7 +73,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         }
 
         //新增用户数
-        Integer newUsers = userMapper.countByMap(map);
+        Integer newUsers = memberMapper.countByMap(map);
 
         return BusinessDataVO.builder()
                 .turnover(turnover)
@@ -131,10 +131,10 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     public ProductOverViewVO getDishOverView() {
         Map map = new HashMap();
         map.put("status", StatusConstant.ENABLE);
-        Integer sold = dishMapper.countByMap(map);
+        Integer sold = productMapper.countByMap(map);
 
         map.put("status", StatusConstant.DISABLE);
-        Integer discontinued = dishMapper.countByMap(map);
+        Integer discontinued = productMapper.countByMap(map);
 
         return ProductOverViewVO.builder()
                 .sold(sold)
@@ -150,10 +150,10 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     public GiftBoxOverViewVO getSetmealOverView() {
         Map map = new HashMap();
         map.put("status", StatusConstant.ENABLE);
-        Integer sold = setmealMapper.countByMap(map);
+        Integer sold = giftBoxMapper.countByMap(map);
 
         map.put("status", StatusConstant.DISABLE);
-        Integer discontinued = setmealMapper.countByMap(map);
+        Integer discontinued = giftBoxMapper.countByMap(map);
 
         return GiftBoxOverViewVO.builder()
                 .sold(sold)

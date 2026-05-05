@@ -4,7 +4,7 @@ import com.sky.constant.MessageConstant;
 import com.sky.dto.MemberLoginDTO;
 import com.sky.entity.Member;
 import com.sky.exception.LoginFailedException;
-import com.sky.mapper.UserMapper;
+import com.sky.mapper.MemberMapper;
 import com.sky.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 public class UserServiceImpl implements UserService {
 
     @Autowired
-    private UserMapper userMapper;
+    private MemberMapper memberMapper;
 
     /**
      * 微信登錄
@@ -32,7 +32,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // 判斷當前用戶是否為新用戶
-        Member user = userMapper.selectByOpenid(openid);
+        Member user = memberMapper.selectByOpenid(openid);
 
         // 如果是新用戶，自動完成註冊
         if(user == null){
@@ -40,7 +40,7 @@ public class UserServiceImpl implements UserService {
                     .openid(openid)
                     .createTime(LocalDateTime.now())
                     .build();
-            userMapper.insert(user);
+            memberMapper.insert(user);
         }
 
         return user;

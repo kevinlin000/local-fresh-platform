@@ -5,9 +5,9 @@ import com.sky.dto.CartDTO;
 import com.sky.entity.Product;
 import com.sky.entity.GiftBox;
 import com.sky.entity.Cart;
-import com.sky.mapper.DishMapper;
-import com.sky.mapper.SetmealMapper;
-import com.sky.mapper.ShoppingCartMapper;
+import com.sky.mapper.ProductMapper;
+import com.sky.mapper.GiftBoxMapper;
+import com.sky.mapper.CartMapper;
 import com.sky.service.ShoppingCartService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -22,13 +22,13 @@ import java.util.List;
 public class ShoppingCartImpl implements ShoppingCartService {
 
     @Autowired
-    private ShoppingCartMapper shoppingCartMapper;
+    private CartMapper cartMapper;
 
     @Autowired
-    private DishMapper dishMapper;
+    private ProductMapper productMapper;
 
     @Autowired
-    private SetmealMapper setmealMapper;
+    private GiftBoxMapper giftBoxMapper;
 
     /**
      * 添加購物車
@@ -42,13 +42,13 @@ public class ShoppingCartImpl implements ShoppingCartService {
         Long userId = BaseContext.getCurrentId();
         shoppingCart.setUserId(userId);
 
-        List<Cart> list = shoppingCartMapper.list(shoppingCart);
+        List<Cart> list = cartMapper.list(shoppingCart);
 
         //如果已經存在了，只需要將數量加一
         if (list != null && list.size() > 0) {
             Cart cart = list.get(0);
             cart.setNumber(cart.getNumber() + 1);//update shopping_cart set number = ? where id = ?
-            shoppingCartMapper.updateNumberById(cart);
+            cartMapper.updateNumberById(cart);
         }else{
             //如果不存在，需要插入一條購物車數據
 
@@ -56,7 +56,7 @@ public class ShoppingCartImpl implements ShoppingCartService {
             Long productId = shoppingCartDTO.getProductId();
             if (productId != null) {
                 //本次添加到購物車的是菜品
-                Product dish = dishMapper.getById(productId);
+                Product dish = productMapper.getById(productId);
                 shoppingCart.setName(dish.getProductName());
                 shoppingCart.setImage(dish.getImage());
                 shoppingCart.setAmount(dish.getPrice());
@@ -65,7 +65,7 @@ public class ShoppingCartImpl implements ShoppingCartService {
                 //本次添加到購物車的是套餐
                 Long giftBoxId = shoppingCart.getGiftBoxId();
 
-                GiftBox setmeal = setmealMapper.getById(giftBoxId);
+                GiftBox setmeal = giftBoxMapper.getById(giftBoxId);
                 shoppingCart.setName(setmeal.getBoxName());
                 shoppingCart.setImage(setmeal.getImage());
                 shoppingCart.setAmount(setmeal.getPrice());
@@ -74,7 +74,7 @@ public class ShoppingCartImpl implements ShoppingCartService {
             shoppingCart.setNumber(1);
             shoppingCart.setCreateTime(LocalDateTime.now());
 
-            shoppingCartMapper.insert(shoppingCart);
+            cartMapper.insert(shoppingCart);
         }
 
     }
@@ -90,7 +90,7 @@ public class ShoppingCartImpl implements ShoppingCartService {
         Cart shoppingCart = Cart.builder()
                 .userId(userId)
                 .build();
-        List<Cart> list = shoppingCartMapper.list(shoppingCart);
+        List<Cart> list = cartMapper.list(shoppingCart);
         return list;
     }
 
@@ -100,7 +100,7 @@ public class ShoppingCartImpl implements ShoppingCartService {
     public void cleanShoppingCart() {
         //獲取當前用戶的id
         Long userId = BaseContext.getCurrentId();
-        shoppingCartMapper.deleteByUserId(userId);
+        cartMapper.deleteByUserId(userId);
 
     }
 }

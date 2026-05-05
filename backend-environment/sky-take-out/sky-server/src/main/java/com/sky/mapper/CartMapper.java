@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Update;
 import java.util.List;
 
 @Mapper
-public interface ShoppingCartMapper {
+public interface CartMapper {
 
     /**
      * 動態條件查詢

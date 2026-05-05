@@ -2,7 +2,7 @@ package com.sky.service.impl;
 
 import com.sky.context.BaseContext;
 import com.sky.entity.ShippingAddress;
-import com.sky.mapper.AddressBookMapper;
+import com.sky.mapper.ShippingAddressMapper;
 import com.sky.service.AddressBookService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +14,7 @@ import java.util.List;
 @Slf4j
 public class AddressBookServiceImpl implements AddressBookService {
     @Autowired
-    private AddressBookMapper addressBookMapper;
+    private ShippingAddressMapper shippingAddressMapper;
 
     /**
      * 条件查询
@@ -23,7 +23,7 @@ public class AddressBookServiceImpl implements AddressBookService {
      * @return
      */
     public List<ShippingAddress> list(ShippingAddress addressBook) {
-        return addressBookMapper.list(addressBook);
+        return shippingAddressMapper.list(addressBook);
     }
 
     /**
@@ -34,7 +34,7 @@ public class AddressBookServiceImpl implements AddressBookService {
     public void save(ShippingAddress addressBook) {
         addressBook.setMemberId(BaseContext.getCurrentId());
         addressBook.setIsDefault(0);
-        addressBookMapper.insert(addressBook);
+        shippingAddressMapper.insert(addressBook);
     }
 
     /**
@@ -44,7 +44,7 @@ public class AddressBookServiceImpl implements AddressBookService {
      * @return
      */
     public ShippingAddress getById(Long id) {
-        ShippingAddress addressBook = addressBookMapper.getById(id);
+        ShippingAddress addressBook = shippingAddressMapper.getById(id);
         return addressBook;
     }
 
@@ -54,7 +54,7 @@ public class AddressBookServiceImpl implements AddressBookService {
      * @param addressBook
      */
     public void update(ShippingAddress addressBook) {
-        addressBookMapper.update(addressBook);
+        shippingAddressMapper.update(addressBook);
     }
 
     /**
@@ -67,11 +67,11 @@ public class AddressBookServiceImpl implements AddressBookService {
         //1、将当前会员的所有地址修改为非默认地址
         addressBook.setIsDefault(0);
         addressBook.setMemberId(BaseContext.getCurrentId());
-        addressBookMapper.updateIsDefaultByUserId(addressBook);
+        shippingAddressMapper.updateIsDefaultByUserId(addressBook);
 
         //2、将当前地址改为默认地址 update address_book set is_default = ? where id = ?
         addressBook.setIsDefault(1);
-        addressBookMapper.update(addressBook);
+        shippingAddressMapper.update(addressBook);
     }
 
     /**
@@ -80,7 +80,7 @@ public class AddressBookServiceImpl implements AddressBookService {
      * @param id
      */
     public void deleteById(Long id) {
-        addressBookMapper.deleteById(id);
+        shippingAddressMapper.deleteById(id);
     }
 
 }

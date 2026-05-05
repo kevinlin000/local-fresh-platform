@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 @Mapper
-public interface DishMapper {
+public interface ProductMapper {
 
     /**
      * 根据分类id查询菜品数量

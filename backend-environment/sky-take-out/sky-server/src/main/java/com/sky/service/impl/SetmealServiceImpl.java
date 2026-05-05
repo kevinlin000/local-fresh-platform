@@ -11,9 +11,9 @@ import com.sky.entity.GiftBox;
 import com.sky.entity.GiftBoxProduct;
 import com.sky.exception.DeletionNotAllowedException;
 import com.sky.exception.SetmealEnableFailedException;
-import com.sky.mapper.DishMapper;
-import com.sky.mapper.SetmealDishMapper;
-import com.sky.mapper.SetmealMapper;
+import com.sky.mapper.ProductMapper;
+import com.sky.mapper.GiftBoxProductMapper;
+import com.sky.mapper.GiftBoxMapper;
 import com.sky.result.PageResult;
 import com.sky.service.SetmealService;
 import com.sky.vo.ProductItemVO;
@@ -34,11 +34,11 @@ import java.util.List;
 public class SetmealServiceImpl implements SetmealService {
 
     @Autowired
-    private SetmealMapper setmealMapper;
+    private GiftBoxMapper giftBoxMapper;
     @Autowired
-    private SetmealDishMapper setmealDishMapper;
+    private GiftBoxProductMapper giftBoxProductMapper;
     @Autowired
-    private DishMapper dishMapper;
+    private ProductMapper productMapper;
 
     /**
      * 新增套餐，同时需要保存套餐和菜品的关联关系
@@ -50,7 +50,7 @@ public class SetmealServiceImpl implements SetmealService {
         BeanUtils.copyProperties(setmealDTO, setmeal);
 
         //向套餐表插入数据
-        setmealMapper.insert(setmeal);
+        giftBoxMapper.insert(setmeal);
 
         //获取生成的套餐id
         Long giftBoxId = setmeal.getId();
@@ -61,7 +61,7 @@ public class SetmealServiceImpl implements SetmealService {
         });
 
         //保存套餐和菜品的关联关系
-        setmealDishMapper.insertBatch(giftBoxProducts);
+        giftBoxProductMapper.insertBatch(giftBoxProducts);
     }
 
     /**
@@ -74,7 +74,7 @@ public class SetmealServiceImpl implements SetmealService {
         int pageSize = setmealPageQueryDTO.getPageSize();
 
         PageHelper.startPage(pageNum, pageSize);
-        Page<GiftBoxVO> page = setmealMapper.pageQuery(setmealPageQueryDTO);
+        Page<GiftBoxVO> page = giftBoxMapper.pageQuery(setmealPageQueryDTO);
         return new PageResult(page.getTotal(), page.getResult());
     }
 
@@ -85,7 +85,7 @@ public class SetmealServiceImpl implements SetmealService {
     @Transactional
     public void deleteBatch(List<Long> ids) {
         ids.forEach(id -> {
-            GiftBox setmeal = setmealMapper.getById(id);
+            GiftBox setmeal = giftBoxMapper.getById(id);
             if(StatusConstant.ENABLE == setmeal.getStatus()){
                 //起售中的套餐不能删除
                 throw new DeletionNotAllowedException(MessageConstant.SETMEAL_ON_SALE);
@@ -94,9 +94,9 @@ public class SetmealServiceImpl implements SetmealService {
 
         ids.forEach(giftBoxId -> {
             //删除套餐表中的数据
-            setmealMapper.deleteById(giftBoxId);
+            giftBoxMapper.deleteById(giftBoxId);
             //删除套餐菜品关系表中的数据
-            setmealDishMapper.deleteBySetmealId(giftBoxId);
+            giftBoxProductMapper.deleteBySetmealId(giftBoxId);
         });
     }
 
@@ -107,8 +107,8 @@ public class SetmealServiceImpl implements SetmealService {
      * @return
      */
     public GiftBoxVO getByIdWithDish(Long id) {
-        GiftBox setmeal = setmealMapper.getById(id);
-        List<GiftBoxProduct> giftBoxProducts = setmealDishMapper.getBySetmealId(id);
+        GiftBox setmeal = giftBoxMapper.getById(id);
+        List<GiftBoxProduct> giftBoxProducts = giftBoxProductMapper.getBySetmealId(id);
 
         GiftBoxVO setmealVO = new GiftBoxVO();
         BeanUtils.copyProperties(setmeal, setmealVO);
@@ -128,20 +128,20 @@ public class SetmealServiceImpl implements SetmealService {
         BeanUtils.copyProperties(setmealDTO, setmeal);
 
         //1、修改套餐表，执行update
-        setmealMapper.update(setmeal);
+        giftBoxMapper.update(setmeal);
 
         //套餐id
         Long giftBoxId = setmealDTO.getId();
 
         //2、删除套餐和菜品的关联关系，操作setmeal_dish表，执行delete
-        setmealDishMapper.deleteBySetmealId(giftBoxId);
+        giftBoxProductMapper.deleteBySetmealId(giftBoxId);
 
         List<GiftBoxProduct> giftBoxProducts = setmealDTO.getGiftBoxProducts();
         giftBoxProducts.forEach(setmealDish -> {
             setmealDish.setGiftBoxId(giftBoxId);
         });
         //3、重新插入套餐和菜品的关联关系，操作setmeal_dish表，执行insert
-        setmealDishMapper.insertBatch(giftBoxProducts);
+        giftBoxProductMapper.insertBatch(giftBoxProducts);
     }
 
     /**
@@ -153,7 +153,7 @@ public class SetmealServiceImpl implements SetmealService {
         //起售套餐时，判断套餐内是否有停售菜品，有停售菜品提示"套餐内包含未启售菜品，无法启售"
         if(status == StatusConstant.ENABLE){
             //select a.* from dish a left join setmeal_dish b on a.id = b.dish_id where b.setmeal_id = ?
-            List<Product> dishList = dishMapper.getBySetmealId(id);
+            List<Product> dishList = productMapper.getBySetmealId(id);
             if(dishList != null && dishList.size() > 0){
                 dishList.forEach(dish -> {
                     if(StatusConstant.DISABLE == dish.getStatus()){
@@ -167,7 +167,7 @@ public class SetmealServiceImpl implements SetmealService {
                 .id(id)
                 .status(status)
                 .build();
-        setmealMapper.update(setmeal);
+        giftBoxMapper.update(setmeal);
     }
 
     /**
@@ -176,7 +176,7 @@ public class SetmealServiceImpl implements SetmealService {
      * @return
      */
     public List<GiftBox> list(GiftBox setmeal) {
-        List<GiftBox> list = setmealMapper.list(setmeal);
+        List<GiftBox> list = giftBoxMapper.list(setmeal);
         return list;
     }
 
@@ -186,7 +186,7 @@ public class SetmealServiceImpl implements SetmealService {
      * @return
      */
     public List<ProductItemVO> getDishItemById(Long id) {
-        return setmealMapper.getDishItemBySetmealId(id);
+        return giftBoxMapper.getDishItemBySetmealId(id);
     }
 
 }

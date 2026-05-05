@@ -3,7 +3,7 @@ package com.sky.service.impl;
 import com.sky.dto.GoodsSalesDTO;
 import com.sky.entity.Orders;
 import com.sky.mapper.OrderMapper;
-import com.sky.mapper.UserMapper;
+import com.sky.mapper.MemberMapper;
 import com.sky.service.ReportService;
 import com.sky.service.WorkspaceService;
 import com.sky.vo.*;
@@ -37,7 +37,7 @@ public class ReportServiceImpl implements ReportService {
     private OrderMapper orderMapper;
 
     @Autowired
-    private UserMapper userMapper;
+    private MemberMapper memberMapper;
 
     @Autowired
     private WorkspaceService workspaceService;
@@ -111,11 +111,11 @@ public class ReportServiceImpl implements ReportService {
             map.put("end", endTime);
 
             // 總用戶數量
-            Integer totalUser = userMapper.countByMap(map);
+            Integer totalUser = memberMapper.countByMap(map);
 
             map.put("begin", beginTime);
             // 新增用戶數量
-            Integer newUser = userMapper.countByMap(map);
+            Integer newUser = memberMapper.countByMap(map);
 
             totalUserList.add(totalUser);
             newUserList.add(newUser);

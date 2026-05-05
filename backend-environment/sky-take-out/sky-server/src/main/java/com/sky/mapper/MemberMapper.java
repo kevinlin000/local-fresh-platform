@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Select;
 import java.util.Map;
 
 @Mapper
-public interface UserMapper {
+public interface MemberMapper {
     /**
      * 根據openid查詢用戶
      * @param openid

@@ -49,13 +49,13 @@ public class OrderServiceImpl implements OrderService {
     private OrderDetailMapper orderDetailMapper;
 
     @Autowired
-    private UserMapper userMapper;
+    private MemberMapper memberMapper;
 
     @Autowired
-    private AddressBookMapper  addressBookMapper;
+    private ShippingAddressMapper  shippingAddressMapper;
 
     @Autowired
-    private ShoppingCartMapper shoppingCartMapper;
+    private CartMapper cartMapper;
 
     @Autowired
     private WeChatPayUtil weChatPayUtil;
@@ -72,7 +72,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderSubmitVO submitOrder(OrdersSubmitDTO ordersSubmitDTO) {
 
         //1. 處理各種業務異常（地址簿為空，購物車數據為空）
-        ShippingAddress addressBook = addressBookMapper.getById(ordersSubmitDTO.getAddressBookId());
+        ShippingAddress addressBook = shippingAddressMapper.getById(ordersSubmitDTO.getAddressBookId());
         if (addressBook == null) {
             //拋出業務異常
             throw new AddressBookBusinessException(MessageConstant.ADDRESS_BOOK_IS_NULL);
@@ -86,7 +86,7 @@ public class OrderServiceImpl implements OrderService {
 
         Cart shoppingCart = new Cart();
         shoppingCart.setUserId(userId);
-        List<Cart> shoppingCartlist = shoppingCartMapper.list(shoppingCart);
+        List<Cart> shoppingCartlist = cartMapper.list(shoppingCart);
         if (shoppingCartlist == null || shoppingCartlist.size() == 0) {
             //拋出業務異常
             throw new AddressBookBusinessException(MessageConstant.SHOPPING_CART_IS_NULL);
@@ -118,7 +118,7 @@ public class OrderServiceImpl implements OrderService {
         orderDetailMapper.insertBatch(orderDetailList);
         
         //4. 清空當前用戶的購物車數據
-        shoppingCartMapper.deleteByUserId(userId);
+        cartMapper.deleteByUserId(userId);
 
         //5. 封裝VO並且返回結果
 
@@ -141,7 +141,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderPaymentVO payment(OrdersPaymentDTO ordersPaymentDTO) throws Exception {
         // 当前登录用户id
         Long userId = BaseContext.getCurrentId();
-        Member user = userMapper.getById(userId);
+        Member user = memberMapper.getById(userId);
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("code", "ORDERPAID");
@@ -343,7 +343,7 @@ public class OrderServiceImpl implements OrderService {
         }).collect(Collectors.toList());
 
         // 将购物车对象批量添加到数据库
-        shoppingCartMapper.insertBatch(shoppingCartList);
+        cartMapper.insertBatch(shoppingCartList);
     }
 
     /**
