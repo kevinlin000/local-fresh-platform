@@ -26,8 +26,6 @@ import com.sky.vo.GroupBuyVO;
 import com.sky.websocket.WebSocketServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.slf4j.LoggerFactory;
@@ -51,7 +49,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@ExtendWith(MockitoExtension.class)
 class GroupBuyExpirationServiceTest extends RedisContainerTestBase {
 
     @Autowired
@@ -132,6 +129,10 @@ class GroupBuyExpirationServiceTest extends RedisContainerTestBase {
     void handleExpiredGroupBuys_skipsWhenLockHeld() throws Exception {
         Fixture fixture = createExpiredGroupBuyFixture();
         RLock lock = redissonClient.getLock("lock:groupbuy:" + fixture.groupNo);
+        Logger logger = (Logger) LoggerFactory.getLogger(GroupBuyServiceImpl.class);
+        ListAppender<ILoggingEvent> appender = new ListAppender<>();
+        appender.start();
+        logger.addAppender(appender);
         CountDownLatch locked = new CountDownLatch(1);
         CountDownLatch release = new CountDownLatch(1);
         ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -155,6 +156,7 @@ class GroupBuyExpirationServiceTest extends RedisContainerTestBase {
             release.countDown();
             executorService.shutdown();
             executorService.awaitTermination(5, TimeUnit.SECONDS);
+            logger.detachAppender(appender);
         }
 
         GroupBuy expiredGroupBuy = groupBuyMapper.getByGroupNo(fixture.groupNo);
@@ -165,6 +167,10 @@ class GroupBuyExpirationServiceTest extends RedisContainerTestBase {
             Orders order = orderMapper.getById(participant.getPreOrderId());
             assertEquals(Orders.PENDING_GROUP, order.getStatus());
         }
+        List<String> logMessages = appender.list.stream()
+                .map(ILoggingEvent::getFormattedMessage)
+                .collect(Collectors.toList());
+        assertTrue(logMessages.stream().anyMatch(message -> message.contains("略過過期揪團")));
     }
 
     private Fixture createExpiredGroupBuyFixture() {
