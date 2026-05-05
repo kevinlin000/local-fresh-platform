@@ -1,0 +1,49 @@
+spring:
+  autoconfigure:
+    exclude:
+      - com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure
+      - org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;NON_KEYWORDS=USER,VALUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  sql:
+    init:
+      schema-locations: classpath:schema-test.sql
+      mode: always
+
+# Provide sky.* so that application.yml ${...} placeholders can resolve
+sky:
+  datasource:
+    driver-class-name: org.h2.Driver
+    host: localhost
+    port: 9999
+    database: testdb
+    username: sa
+    password: ""
+  redis:
+    host: localhost
+    port: 6379
+    database: 0
+  jwt:
+    admin-secret-key: test-admin-secret-key-32chars-pad-
+    admin-ttl: 7200000000
+    admin-token-name: token
+    user-secret-key: test-user-secret-key-32chars-pad--
+    user-ttl: 7200000000
+    user-token-name: authentication
+  wechat:
+    appid: test-appid
+    secret: test-secret
+  shop:
+    address: "台北市信義區市府路1號"
+  google:
+    api-key: test-google-api-key
+  aws:
+    s3:
+      region: us-east-1
+      access-key-id: test-key
+      secret-access-key: test-secret-key
+      bucket-name: test-bucket
