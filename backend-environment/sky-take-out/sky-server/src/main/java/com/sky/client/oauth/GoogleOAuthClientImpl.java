@@ -74,11 +74,6 @@ public class GoogleOAuthClientImpl implements GoogleOAuthClient {
             throw new LoginFailedException(MessageConstant.GOOGLE_OAUTH_TOKEN_INVALID);
         }
 
-        GoogleIdToken.Payload payload = verifiedToken.getPayload();
-        Object issuer = payload.getIssuer();
-        if (!"https://accounts.google.com".equals(issuer)) {
-            throw new LoginFailedException(MessageConstant.GOOGLE_OAUTH_TOKEN_INVALID);
-        }
-        return payload;
+        return verifiedToken.getPayload();
     }
 }

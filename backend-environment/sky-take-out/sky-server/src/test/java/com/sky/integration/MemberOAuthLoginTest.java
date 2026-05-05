@@ -3,7 +3,9 @@ package com.sky.integration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sky.client.oauth.GoogleOAuthClient;
 import com.sky.client.oauth.GoogleProfile;
+import com.sky.constant.MessageConstant;
 import com.sky.entity.Member;
+import com.sky.exception.LoginFailedException;
 import com.sky.mapper.MemberMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -21,6 +23,8 @@ import java.time.LocalDateTime;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -97,6 +101,11 @@ class MemberOAuthLoginTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code", is(1)))
                 .andExpect(jsonPath("$.data.openid", is("mock_existing")));
+
+        Member updated = memberMapper.selectByGoogleSub("google-sub-002");
+        assertNotNull(updated);
+        assertEquals("mock_existing", updated.getOpenid());
+        assertEquals("google", updated.getLoginProvider());
     }
 
     @Test
@@ -135,6 +144,19 @@ class MemberOAuthLoginTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code", is(0)))
                 .andExpect(jsonPath("$.msg", is("此登入方式已停用")));
+    }
+
+    @Test
+    void googleOAuthShouldReturnErrorWhenTokenInvalid() throws Exception {
+        when(googleOAuthClient.fetchProfile(anyString(), anyString()))
+                .thenThrow(new LoginFailedException(MessageConstant.GOOGLE_OAUTH_TOKEN_INVALID));
+
+        mockMvc.perform(post("/user/member/oauth/google")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new OAuthLoginRequest("oauth-code", "http://localhost:5173/oauth/callback"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code", is(0)))
+                .andExpect(jsonPath("$.msg", is(MessageConstant.GOOGLE_OAUTH_TOKEN_INVALID)));
     }
 
     private static class OAuthLoginRequest {
