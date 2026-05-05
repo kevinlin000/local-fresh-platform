@@ -24,5 +24,13 @@ public class MessageConstant {
     public static final String DISH_BE_RELATED_BY_SETMEAL = "当前菜品关联了套餐,不能删除";
     public static final String ORDER_STATUS_ERROR = "订单状态错误";
     public static final String ORDER_NOT_FOUND = "订单不存在";
+    public static final String GROUP_BUY_NOT_FOUND = "揪團不存在";
+    public static final String GROUP_BUY_EXPIRED = "揪團已過期";
+    public static final String GROUP_BUY_FULL = "揪團人數已滿";
+    public static final String GROUP_BUY_BUSY = "系統繁忙，請稍後再試";
+    public static final String GROUP_BUY_FAILED = "揪團處理失敗";
+    public static final String GROUP_BUY_ALREADY_JOINED = "您已加入此揪團";
+    public static final String GROUP_BUY_INVALID_STATUS = "揪團狀態錯誤";
+    public static final String GROUP_BUY_ORDER_CREATE_FAILED = "建立揪團預訂單失敗";
 
 }

@@ -55,21 +55,21 @@ public class WorkSpaceController {
     }
 
     /**
-     * 查询菜品总览
+     * 查詢單品總覽
      * @return
      */
     @GetMapping("/overviewDishes")
-    @ApiOperation("查询菜品总览")
+    @ApiOperation("查詢單品總覽")
     public Result<ProductOverViewVO> dishOverView(){
         return Result.success(workspaceService.getDishOverView());
     }
 
     /**
-     * 查询套餐总览
+     * 查詢直送箱總覽
      * @return
      */
     @GetMapping("/overviewSetmeals")
-    @ApiOperation("查询套餐总览")
+    @ApiOperation("查詢直送箱總覽")
     public Result<GiftBoxOverViewVO> setmealOverView(){
         return Result.success(workspaceService.getSetmealOverView());
     }
