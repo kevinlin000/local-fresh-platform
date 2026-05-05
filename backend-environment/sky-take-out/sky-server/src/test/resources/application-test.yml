@@ -47,3 +47,5 @@ sky:
       access-key-id: test-key
       secret-access-key: test-secret-key
       bucket-name: test-bucket
+  group-buy:
+    expire-hours: 24

@@ -18,11 +18,12 @@ public interface ShippingAddressMapper {
      * 新增
      * @param addressBook
      */
-    @Insert("insert into address_book" +
-            "        (user_id, consignee, phone, sex, province_code, province_name, city_code, city_name, district_code," +
+    @Insert("insert into shipping_address" +
+            "        (member_id, consignee, phone, sex, province_code, province_name, city_code, city_name, district_code," +
             "         district_name, detail, label, is_default)" +
-            "        values (#{userId}, #{consignee}, #{phone}, #{sex}, #{provinceCode}, #{provinceName}, #{cityCode}, #{cityName}," +
+            "        values (#{memberId}, #{consignee}, #{phone}, #{sex}, #{provinceCode}, #{provinceName}, #{cityCode}, #{cityName}," +
             "                #{districtCode}, #{districtName}, #{detail}, #{label}, #{isDefault})")
+    @Options(useGeneratedKeys = true, keyProperty = "id")
     void insert(ShippingAddress addressBook);
 
     /**
@@ -30,7 +31,7 @@ public interface ShippingAddressMapper {
      * @param id
      * @return
      */
-    @Select("select * from address_book where id = #{id}")
+    @Select("select * from shipping_address where id = #{id}")
     ShippingAddress getById(Long id);
 
     /**
@@ -43,14 +44,14 @@ public interface ShippingAddressMapper {
      * 根据 用户id修改 是否默认地址
      * @param addressBook
      */
-    @Update("update address_book set is_default = #{isDefault} where user_id = #{userId}")
+    @Update("update shipping_address set is_default = #{isDefault} where member_id = #{memberId}")
     void updateIsDefaultByUserId(ShippingAddress addressBook);
 
     /**
      * 根据id删除地址
      * @param id
      */
-    @Delete("delete from address_book where id = #{id}")
+    @Delete("delete from shipping_address where id = #{id}")
     void deleteById(Long id);
 
 }

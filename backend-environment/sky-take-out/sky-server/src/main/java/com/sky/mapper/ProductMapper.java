@@ -22,7 +22,7 @@ public interface ProductMapper {
      * @param categoryId
      * @return
      */
-    @Select("select count(id) from dish where category_id = #{categoryId}")
+    @Select("select count(id) from product where category_id = #{categoryId}")
     Integer countByCategoryId(Long categoryId);
 
     /**
@@ -44,14 +44,14 @@ public interface ProductMapper {
      * @param id
      * @return
      */
-    @Select("select * from dish where id = #{id}")
+    @Select("select * from product where id = #{id}")
     Product getById(Long id);
 
     /**
      * 根據主鍵刪除菜品資料
      * @param id
      */
-    @Delete("delete from dish where id = #{id}")
+    @Delete("delete from product where id = #{id}")
     void deleteById(Long id);
 
     /**
@@ -80,7 +80,7 @@ public interface ProductMapper {
      * @param giftBoxId
      * @return
      */
-    @Select("select a.* from dish a left join setmeal_dish b on a.id = b.dish_id where b.setmeal_id = #{giftBoxId}")
+    @Select("select a.* from product a left join gift_box_product b on a.id = b.product_id where b.gift_box_id = #{giftBoxId}")
     List<Product> getBySetmealId(Long giftBoxId);
 
     /**
