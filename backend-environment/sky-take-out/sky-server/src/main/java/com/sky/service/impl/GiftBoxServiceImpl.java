@@ -15,7 +15,7 @@ import com.sky.mapper.ProductMapper;
 import com.sky.mapper.GiftBoxProductMapper;
 import com.sky.mapper.GiftBoxMapper;
 import com.sky.result.PageResult;
-import com.sky.service.SetmealService;
+import com.sky.service.GiftBoxService;
 import com.sky.vo.ProductItemVO;
 import com.sky.vo.GiftBoxVO;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +31,7 @@ import java.util.List;
  */
 @Service
 @Slf4j
-public class SetmealServiceImpl implements SetmealService {
+public class GiftBoxServiceImpl implements GiftBoxService {
 
     @Autowired
     private GiftBoxMapper giftBoxMapper;

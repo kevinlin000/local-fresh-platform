@@ -15,7 +15,7 @@ import com.sky.mapper.ProductMapper;
 import com.sky.mapper.GiftBoxProductMapper;
 import com.sky.mapper.GiftBoxMapper;
 import com.sky.result.PageResult;
-import com.sky.service.DishService;
+import com.sky.service.ProductService;
 import com.sky.vo.ProductVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -30,7 +30,7 @@ import java.util.Set;
 
 @Service
 @Slf4j
-public class DishServiceImpl implements DishService {
+public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private ProductMapper productMapper;

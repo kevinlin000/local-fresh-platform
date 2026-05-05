@@ -5,7 +5,7 @@ import com.sky.entity.Cart;
 
 import java.util.List;
 
-public interface ShoppingCartService {
+public interface CartService {
     /**
      * 添加購物車
      * @param shoppingCartDTO

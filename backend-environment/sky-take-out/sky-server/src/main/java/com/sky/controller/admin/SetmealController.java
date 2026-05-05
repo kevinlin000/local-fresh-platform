@@ -4,7 +4,7 @@ import com.sky.dto.GiftBoxDTO;
 import com.sky.dto.GiftBoxPageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
-import com.sky.service.SetmealService;
+import com.sky.service.GiftBoxService;
 import com.sky.vo.GiftBoxVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -25,7 +25,7 @@ import java.util.List;
 public class SetmealController {
 
     @Autowired
-    private SetmealService setmealService;
+    private GiftBoxService giftBoxService;
 
     /**
      * 新增套餐
@@ -36,7 +36,7 @@ public class SetmealController {
     @ApiOperation("新增套餐")
     @CacheEvict(cacheNames = "setmealCache",key = "#setmealDTO.categoryId") //key: setmealCache::100
     public Result save(@RequestBody GiftBoxDTO setmealDTO) {
-        setmealService.saveWithDish(setmealDTO);
+        giftBoxService.saveWithDish(setmealDTO);
         return Result.success();
     }
 
@@ -48,7 +48,7 @@ public class SetmealController {
     @GetMapping("/page")
     @ApiOperation("分页查询")
     public Result<PageResult> page(GiftBoxPageQueryDTO setmealPageQueryDTO) {
-        PageResult pageResult = setmealService.pageQuery(setmealPageQueryDTO);
+        PageResult pageResult = giftBoxService.pageQuery(setmealPageQueryDTO);
         return Result.success(pageResult);
     }
 
@@ -61,7 +61,7 @@ public class SetmealController {
     @ApiOperation("批量删除套餐")
     @CacheEvict(cacheNames = "setmealCache",allEntries = true) //清除setmealCache缓存中所有数据
     public Result delete(@RequestParam List<Long> ids){
-        setmealService.deleteBatch(ids);
+        giftBoxService.deleteBatch(ids);
         return Result.success();
     }
 
@@ -74,7 +74,7 @@ public class SetmealController {
     @GetMapping("/{id}")
     @ApiOperation("根据id查询套餐")
     public Result<GiftBoxVO> getById(@PathVariable Long id) {
-        GiftBoxVO setmealVO = setmealService.getByIdWithDish(id);
+        GiftBoxVO setmealVO = giftBoxService.getByIdWithDish(id);
         return Result.success(setmealVO);
     }
 
@@ -88,7 +88,7 @@ public class SetmealController {
     @ApiOperation("修改套餐")
     @CacheEvict(cacheNames = "setmealCache",allEntries = true)
     public Result update(@RequestBody GiftBoxDTO setmealDTO) {
-        setmealService.update(setmealDTO);
+        giftBoxService.update(setmealDTO);
         return Result.success();
     }
 
@@ -102,7 +102,7 @@ public class SetmealController {
     @ApiOperation("套餐起售停售")
     @CacheEvict(cacheNames = "setmealCache",allEntries = true)
     public Result startOrStop(@PathVariable Integer status, Long id) {
-        setmealService.startOrStop(status, id);
+        giftBoxService.startOrStop(status, id);
         return Result.success();
     }
 

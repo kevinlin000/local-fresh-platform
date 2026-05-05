@@ -9,7 +9,7 @@ import com.sky.vo.GiftBoxVO;
 
 import java.util.List;
 
-public interface SetmealService {
+public interface GiftBoxService {
 
     /**
      * 新增套餐，同时需要保存套餐和菜品的关联关系

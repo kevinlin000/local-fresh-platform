@@ -3,7 +3,7 @@ package com.sky.service;
 import com.sky.entity.ShippingAddress;
 import java.util.List;
 
-public interface AddressBookService {
+public interface ShippingAddressService {
 
     List<ShippingAddress> list(ShippingAddress addressBook);
 

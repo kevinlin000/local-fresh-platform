@@ -5,7 +5,7 @@ import com.sky.dto.MemberLoginDTO;
 import com.sky.entity.Member;
 import com.sky.properties.JwtProperties;
 import com.sky.result.Result;
-import com.sky.service.UserService;
+import com.sky.service.MemberService;
 import com.sky.utils.JwtUtil;
 import com.sky.vo.MemberLoginVO;
 import io.swagger.annotations.Api;
@@ -28,7 +28,7 @@ import java.util.Map;
 public class UserController {
 
     @Autowired
-    private UserService userService;
+    private MemberService memberService;
 
     @Autowired
     private JwtProperties jwtProperties;
@@ -43,7 +43,7 @@ public class UserController {
         log.info("微信用戶登錄：{}", userLoginDTO.getCode());
 
         // 微信登錄
-        Member user = userService.wxLogin(userLoginDTO);
+        Member user = memberService.wxLogin(userLoginDTO);
 
         //為微信用戶生成jwt令牌
         Map<String, Object> claims = new HashMap<>();

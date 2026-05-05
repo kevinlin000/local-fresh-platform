@@ -8,7 +8,7 @@ import com.sky.entity.Cart;
 import com.sky.mapper.ProductMapper;
 import com.sky.mapper.GiftBoxMapper;
 import com.sky.mapper.CartMapper;
-import com.sky.service.ShoppingCartService;
+import com.sky.service.CartService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,7 @@ import java.util.List;
 
 @Service
 @Slf4j
-public class ShoppingCartImpl implements ShoppingCartService {
+public class CartServiceImpl implements CartService {
 
     @Autowired
     private CartMapper cartMapper;

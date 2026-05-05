@@ -3,7 +3,7 @@ package com.sky.service.impl;
 import com.sky.context.BaseContext;
 import com.sky.entity.ShippingAddress;
 import com.sky.mapper.ShippingAddressMapper;
-import com.sky.service.AddressBookService;
+import com.sky.service.ShippingAddressService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,7 +12,7 @@ import java.util.List;
 
 @Service
 @Slf4j
-public class AddressBookServiceImpl implements AddressBookService {
+public class ShippingAddressServiceImpl implements ShippingAddressService {
     @Autowired
     private ShippingAddressMapper shippingAddressMapper;
 

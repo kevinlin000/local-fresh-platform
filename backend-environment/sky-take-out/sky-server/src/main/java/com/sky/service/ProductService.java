@@ -8,7 +8,7 @@ import com.sky.vo.ProductVO;
 
 import java.util.List;
 
-public interface DishService {
+public interface ProductService {
 
     /**
      * 新增菜品和對應的口味

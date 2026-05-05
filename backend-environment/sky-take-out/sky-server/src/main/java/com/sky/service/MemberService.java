@@ -3,7 +3,7 @@ package com.sky.service;
 import com.sky.dto.MemberLoginDTO;
 import com.sky.entity.Member;
 
-public interface UserService {
+public interface MemberService {
 
     /**
      * 微信登錄

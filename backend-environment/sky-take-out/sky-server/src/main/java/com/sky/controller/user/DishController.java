@@ -3,7 +3,7 @@ package com.sky.controller.user;
 import com.sky.constant.StatusConstant;
 import com.sky.entity.Product;
 import com.sky.result.Result;
-import com.sky.service.DishService;
+import com.sky.service.ProductService;
 import com.sky.vo.ProductVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -21,7 +21,7 @@ import java.util.List;
 @Api(tags = "C端-菜品浏览接口")
 public class DishController {
     @Autowired
-    private DishService dishService;
+    private ProductService productService;
 
     @Autowired
     private RedisTemplate redisTemplate;
@@ -51,7 +51,7 @@ public class DishController {
         dish.setStatus(StatusConstant.ENABLE);//查询起售中的菜品
 
         // 如果没有数据，查询数据库，并将数据存入redis
-        list = dishService.listWithFlavor(dish);
+        list = productService.listWithFlavor(dish);
         redisTemplate.opsForValue().set(key, list);
 
         return Result.success(list);

@@ -5,7 +5,7 @@ import com.sky.dto.MemberLoginDTO;
 import com.sky.entity.Member;
 import com.sky.exception.LoginFailedException;
 import com.sky.mapper.MemberMapper;
-import com.sky.service.UserService;
+import com.sky.service.MemberService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 
 @Service
 @Slf4j
-public class UserServiceImpl implements UserService {
+public class MemberServiceImpl implements MemberService {
 
     @Autowired
     private MemberMapper memberMapper;

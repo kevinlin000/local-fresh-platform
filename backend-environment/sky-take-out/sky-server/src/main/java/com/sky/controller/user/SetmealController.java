@@ -3,7 +3,7 @@ package com.sky.controller.user;
 import com.sky.constant.StatusConstant;
 import com.sky.entity.GiftBox;
 import com.sky.result.Result;
-import com.sky.service.SetmealService;
+import com.sky.service.GiftBoxService;
 import com.sky.vo.ProductItemVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -21,7 +21,7 @@ import java.util.List;
 @Api(tags = "C端-套餐浏览接口")
 public class SetmealController {
     @Autowired
-    private SetmealService setmealService;
+    private GiftBoxService giftBoxService;
 
     /**
      * 条件查询
@@ -37,7 +37,7 @@ public class SetmealController {
         setmeal.setCategoryId(categoryId);
         setmeal.setStatus(StatusConstant.ENABLE);
 
-        List<GiftBox> list = setmealService.list(setmeal);
+        List<GiftBox> list = giftBoxService.list(setmeal);
         return Result.success(list);
     }
 
@@ -50,7 +50,7 @@ public class SetmealController {
     @GetMapping("/dish/{id}")
     @ApiOperation("根据套餐id查询包含的菜品列表")
     public Result<List<ProductItemVO>> dishList(@PathVariable("id") Long id) {
-        List<ProductItemVO> list = setmealService.getDishItemById(id);
+        List<ProductItemVO> list = giftBoxService.getDishItemById(id);
         return Result.success(list);
     }
 }
