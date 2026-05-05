@@ -238,6 +238,7 @@ class GroupBuyRedisIntegrationTest extends RedisContainerTestBase {
         assertEquals(3, participants.size());
         assertEquals(2, groupBuy.getStatus());
         assertEquals(2, successCount.get());
+        assertEquals(98, errors.size());
         assertTrue(errors.stream().allMatch(message ->
                 "揪團人數已滿".equals(message)
                         || "揪團狀態錯誤".equals(message)

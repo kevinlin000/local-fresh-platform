@@ -130,11 +130,14 @@ public class GroupBuyServiceImpl implements GroupBuyService {
                 throw new OrderBusinessException(MessageConstant.GROUP_BUY_BUSY);
             }
 
-            GroupBuyVO result = transactionTemplate.execute(status -> doJoinGroupBuy(memberId, joinGroupBuyDTO));
+            JoinGroupBuyResult result = transactionTemplate.execute(status -> doJoinGroupBuy(memberId, joinGroupBuyDTO));
             if (result == null) {
                 throw new OrderBusinessException(MessageConstant.GROUP_BUY_FAILED);
             }
-            return result;
+            if (result.groupBuyCompleted()) {
+                sendGroupBuyCompletedNotification(result.groupNo());
+            }
+            return result.groupBuyVO();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new OrderBusinessException(MessageConstant.GROUP_BUY_FAILED);
@@ -167,7 +170,7 @@ public class GroupBuyServiceImpl implements GroupBuyService {
                 .collect(Collectors.toList());
     }
 
-    private GroupBuyVO doJoinGroupBuy(Long memberId, JoinGroupBuyDTO joinGroupBuyDTO) {
+    private JoinGroupBuyResult doJoinGroupBuy(Long memberId, JoinGroupBuyDTO joinGroupBuyDTO) {
         GroupBuy groupBuy = groupBuyMapper.getByGroupNo(joinGroupBuyDTO.getGroupNo());
         if (groupBuy == null) {
             throw new OrderBusinessException(MessageConstant.GROUP_BUY_NOT_FOUND);
@@ -203,11 +206,14 @@ public class GroupBuyServiceImpl implements GroupBuyService {
         groupBuy.setUpdatedAt(LocalDateTime.now());
         groupBuyMapper.update(groupBuy);
 
+        boolean groupBuyCompleted = false;
         if (groupBuy.getCurrentCount().equals(groupBuy.getRequiredCount())) {
             doCompleteGroupBuy(groupBuy);
+            groupBuyCompleted = true;
         }
 
-        return buildGroupBuyVO(groupBuyMapper.getById(groupBuy.getId()));
+        GroupBuy updatedGroupBuy = groupBuyMapper.getById(groupBuy.getId());
+        return new JoinGroupBuyResult(buildGroupBuyVO(updatedGroupBuy), groupBuyCompleted, updatedGroupBuy.getGroupNo());
     }
 
     private void doCompleteGroupBuy(GroupBuy groupBuy) {
@@ -223,11 +229,13 @@ public class GroupBuyServiceImpl implements GroupBuyService {
         if (!preOrderIds.isEmpty()) {
             orderMapper.updateStatusBatch(preOrderIds, Orders.PENDING_GROUP, Orders.TO_BE_CONFIRMED);
         }
+    }
 
+    private void sendGroupBuyCompletedNotification(String groupNo) {
         Map<String, Object> payload = new HashMap<>();
         payload.put("type", 1);
         payload.put("content", "揪團已成團，請商家接單");
-        payload.put("groupNo", groupBuy.getGroupNo());
+        payload.put("groupNo", groupNo);
         webSocketServer.sendToAllClient(JSON.toJSONString(payload));
     }
 
@@ -298,5 +306,29 @@ public class GroupBuyServiceImpl implements GroupBuyService {
 
     private String nullToEmpty(String value) {
         return value == null ? "" : value;
+    }
+
+    private static final class JoinGroupBuyResult {
+        private final GroupBuyVO groupBuyVO;
+        private final boolean groupBuyCompleted;
+        private final String groupNo;
+
+        private JoinGroupBuyResult(GroupBuyVO groupBuyVO, boolean groupBuyCompleted, String groupNo) {
+            this.groupBuyVO = groupBuyVO;
+            this.groupBuyCompleted = groupBuyCompleted;
+            this.groupNo = groupNo;
+        }
+
+        private GroupBuyVO groupBuyVO() {
+            return groupBuyVO;
+        }
+
+        private boolean groupBuyCompleted() {
+            return groupBuyCompleted;
+        }
+
+        private String groupNo() {
+            return groupNo;
+        }
     }
 }
