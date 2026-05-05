@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sky.mapper.GroupBuyMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into group_buy
+        (group_no, initiator_id, status, required_count, current_count, expire_at, created_at, updated_at)
+        values
+        (#{groupNo}, #{initiatorId}, #{status}, #{requiredCount}, #{currentCount}, #{expireAt}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <select id="getById" resultType="com.sky.entity.GroupBuy">
+        select * from group_buy where id = #{id}
+    </select>
+
+    <select id="getByGroupNo" resultType="com.sky.entity.GroupBuy">
+        select * from group_buy where group_no = #{groupNo}
+    </select>
+
+    <update id="update" parameterType="com.sky.entity.GroupBuy">
+        update group_buy
+        <set>
+            <if test="initiatorId != null">
+                initiator_id = #{initiatorId},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="requiredCount != null">
+                required_count = #{requiredCount},
+            </if>
+            <if test="currentCount != null">
+                current_count = #{currentCount},
+            </if>
+            <if test="expireAt != null">
+                expire_at = #{expireAt},
+            </if>
+            <if test="updatedAt != null">
+                updated_at = #{updatedAt},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <select id="listExpiredActive" resultType="com.sky.entity.GroupBuy">
+        select * from group_buy
+        where status = 1
+          and expire_at &lt; #{now}
+        order by expire_at asc
+    </select>
+
+    <select id="listByMemberId" resultType="com.sky.entity.GroupBuy">
+        select gb.*
+        from group_buy gb
+        inner join group_buy_participant gbp on gb.id = gbp.group_buy_id
+        where gbp.member_id = #{memberId}
+        order by gb.created_at desc
+    </select>
+
+</mapper>
