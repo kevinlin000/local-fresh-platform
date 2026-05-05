@@ -1,10 +1,10 @@
 package com.sky.service;
 
-import com.sky.dto.DishDTO;
-import com.sky.dto.DishPageQueryDTO;
-import com.sky.entity.Dish;
+import com.sky.dto.ProductDTO;
+import com.sky.dto.ProductPageQueryDTO;
+import com.sky.entity.Product;
 import com.sky.result.PageResult;
-import com.sky.vo.DishVO;
+import com.sky.vo.ProductVO;
 
 import java.util.List;
 
@@ -14,14 +14,14 @@ public interface DishService {
      * 新增菜品和對應的口味
      * @param dishDTO
      */
-    public void saveWithFlavor(DishDTO dishDTO);
+    public void saveWithFlavor(ProductDTO dishDTO);
 
     /**
      * 菜品分頁查詢
      * @param dishPageQueryDTO
      * @return
      */
-    PageResult pageQuery(DishPageQueryDTO dishPageQueryDTO);
+    PageResult pageQuery(ProductPageQueryDTO dishPageQueryDTO);
 
     /**
      * 菜品的批量刪除
@@ -34,27 +34,27 @@ public interface DishService {
      * @param id
      * @return
      */
-    DishVO getByIdWithFlavor(Long id);
+    ProductVO getByIdWithFlavor(Long id);
 
     /**
      * 根據id修改菜品基本資訊和對應的口味資訊
      * @param dishDTO
      */
-    void updateWithFlavor(DishDTO dishDTO);
+    void updateWithFlavor(ProductDTO dishDTO);
 
     /**
      * 根据分类id查询菜品
      * @param categoryId
      * @return
      */
-    List<Dish> list(Long categoryId);
+    List<Product> list(Long categoryId);
 
     /**
      * 条件查询菜品和口味
      * @param dish
      * @return
      */
-    List<DishVO> listWithFlavor(Dish dish);
+    List<ProductVO> listWithFlavor(Product dish);
 
     /**
      * 菜品起售停售

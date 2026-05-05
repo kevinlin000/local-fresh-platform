@@ -1,7 +1,7 @@
 package com.sky.service;
 
-import com.sky.dto.UserLoginDTO;
-import com.sky.entity.User;
+import com.sky.dto.MemberLoginDTO;
+import com.sky.entity.Member;
 
 public interface UserService {
 
@@ -10,5 +10,5 @@ public interface UserService {
      * @param userLoginVO
      * @return
      */
-    User wxLogin(UserLoginDTO userLoginVO);
+    Member wxLogin(MemberLoginDTO userLoginVO);
 }

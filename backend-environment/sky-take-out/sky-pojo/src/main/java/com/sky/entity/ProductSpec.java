@@ -6,33 +6,26 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 
 /**
- * 套餐菜品关系
+ * 商品规格
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SetmealDish implements Serializable {
+public class ProductSpec implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private Long id;
+    //商品id
+    private Long productId;
 
-    //套餐id
-    private Long setmealId;
-
-    //菜品id
-    private Long dishId;
-
-    //菜品名称 （冗余字段）
+    //规格名称
     private String name;
 
-    //菜品原价
-    private BigDecimal price;
+    //规格数据list
+    private String value;
 
-    //份数
-    private Integer copies;
 }

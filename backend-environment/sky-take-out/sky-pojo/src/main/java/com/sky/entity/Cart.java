@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ShoppingCart implements Serializable {
+public class Cart implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -25,17 +25,17 @@ public class ShoppingCart implements Serializable {
     //名称
     private String name;
 
-    //用户id
+    //会员id
     private Long userId;
 
-    //菜品id
-    private Long dishId;
+    //商品id
+    private Long productId;
 
-    //套餐id
-    private Long setmealId;
+    //直送箱id
+    private Long giftBoxId;
 
-    //口味
-    private String dishFlavor;
+    //商品规格
+    private String productSpec;
 
     //数量
     private Integer number;

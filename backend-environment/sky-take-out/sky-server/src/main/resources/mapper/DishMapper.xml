@@ -5,21 +5,21 @@
 
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-        insert into dish (name, category_id, price, image, description, create_time, update_time, status)
-        values (#{name}, #{categoryId}, #{price}, #{image}, #{description}, #{createTime}, #{updateTime}, #{status})
+        insert into product (product_name, category_id, price, image, description, create_time, update_time, status)
+        values (#{productName}, #{categoryId}, #{price}, #{image}, #{description}, #{createTime}, #{updateTime}, #{status})
     </insert>
 
     <delete id="deleteByIds">
-        delete from dish where id in
+        delete from product where id in
         <foreach collection="ids" open="(" close=")" separator="," item="id"  >
             #{id}
         </foreach>
     </delete>
-    <select id="pageQuery" resultType="com.sky.vo.DishVO">
-        select d.*, c.name as categoryName from dish d left outer join category c on d.category_id = c.id
+    <select id="pageQuery" resultType="com.sky.vo.ProductVO">
+        select d.*, c.name as categoryName from product d left outer join category c on d.category_id = c.id
         <where>
-            <if test="name != null">
-                and d.name like concat('%', #{name}, '%')
+            <if test="productName != null">
+                and d.product_name like concat('%', #{productName}, '%')
             </if>
             <if test="categoryId != null">
                 and d.category_id = #{categoryId}
@@ -32,9 +32,9 @@
     </select>
 
     <update id="update">
-        update dish
+        update product
        <set>
-            <if test="name != null"> name = #{name},</if>
+            <if test="productName != null">product_name = #{productName},</if>
             <if test="categoryId != null">category_id = #{categoryId},</if>
             <if test="price != null">price = #{price},</if>
             <if test="image != null">image = #{image},</if>
@@ -46,11 +46,11 @@
         where id = #{id}
     </update>
 
-    <select id="list" resultType="Dish" parameterType="Dish">
-        select * from dish
+    <select id="list" resultType="Product" parameterType="Product">
+        select * from product
         <where>
-            <if test="name != null">
-                and name like concat('%',#{name},'%')
+            <if test="productName != null">
+                and product_name like concat('%',#{productName},'%')
             </if>
             <if test="categoryId != null">
                 and category_id = #{categoryId}
@@ -63,7 +63,7 @@
     </select>
 
     <select id="countByMap" resultType="java.lang.Integer">
-        select count(id) from dish
+        select count(id) from product
         <where>
             <if test="status != null">
                 and status = #{status}

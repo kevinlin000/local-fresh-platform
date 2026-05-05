@@ -1,10 +1,10 @@
 package com.sky.controller.user;
 
 import com.sky.constant.StatusConstant;
-import com.sky.entity.Setmeal;
+import com.sky.entity.GiftBox;
 import com.sky.result.Result;
 import com.sky.service.SetmealService;
-import com.sky.vo.DishItemVO;
+import com.sky.vo.ProductItemVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,12 +32,12 @@ public class SetmealController {
     @GetMapping("/list")
     @ApiOperation("根据分类id查询套餐")
     @Cacheable(cacheNames = "setmealCache",key = "#categoryId") //key: setmealCache::100
-    public Result<List<Setmeal>> list(Long categoryId) {
-        Setmeal setmeal = new Setmeal();
+    public Result<List<GiftBox>> list(Long categoryId) {
+        GiftBox setmeal = new GiftBox();
         setmeal.setCategoryId(categoryId);
         setmeal.setStatus(StatusConstant.ENABLE);
 
-        List<Setmeal> list = setmealService.list(setmeal);
+        List<GiftBox> list = setmealService.list(setmeal);
         return Result.success(list);
     }
 
@@ -49,8 +49,8 @@ public class SetmealController {
      */
     @GetMapping("/dish/{id}")
     @ApiOperation("根据套餐id查询包含的菜品列表")
-    public Result<List<DishItemVO>> dishList(@PathVariable("id") Long id) {
-        List<DishItemVO> list = setmealService.getDishItemById(id);
+    public Result<List<ProductItemVO>> dishList(@PathVariable("id") Long id) {
+        List<ProductItemVO> list = setmealService.getDishItemById(id);
         return Result.success(list);
     }
 }

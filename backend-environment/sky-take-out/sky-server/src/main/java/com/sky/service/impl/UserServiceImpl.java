@@ -1,8 +1,8 @@
 package com.sky.service.impl;
 
 import com.sky.constant.MessageConstant;
-import com.sky.dto.UserLoginDTO;
-import com.sky.entity.User;
+import com.sky.dto.MemberLoginDTO;
+import com.sky.entity.Member;
 import com.sky.exception.LoginFailedException;
 import com.sky.mapper.UserMapper;
 import com.sky.service.UserService;
@@ -24,7 +24,7 @@ public class UserServiceImpl implements UserService {
      * @param userLoginDTO
      * @return
      */
-    public User wxLogin(UserLoginDTO userLoginDTO) {
+    public Member wxLogin(MemberLoginDTO userLoginDTO) {
         String openid = getOpenid(userLoginDTO.getCode());
 
         if(openid == null){
@@ -32,11 +32,11 @@ public class UserServiceImpl implements UserService {
         }
 
         // 判斷當前用戶是否為新用戶
-        User user = userMapper.selectByOpenid(openid);
+        Member user = userMapper.selectByOpenid(openid);
 
         // 如果是新用戶，自動完成註冊
         if(user == null){
-            user = User.builder()
+            user = Member.builder()
                     .openid(openid)
                     .createTime(LocalDateTime.now())
                     .build();

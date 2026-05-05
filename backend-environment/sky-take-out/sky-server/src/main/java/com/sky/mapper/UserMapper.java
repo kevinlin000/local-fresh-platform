@@ -1,6 +1,6 @@
 package com.sky.mapper;
 
-import com.sky.entity.User;
+import com.sky.entity.Member;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
@@ -13,17 +13,17 @@ public interface UserMapper {
      * @param openid
      * @return
      */
-    @Select("select * from user where openid = #{openid}")
-    User selectByOpenid(String openid);
+    @Select("select * from member where openid = #{openid}")
+    Member selectByOpenid(String openid);
 
     /**
      * 插入數據
      * @param user
      */
-    void insert(User user);
+    void insert(Member user);
 
-    @Select("select * from user where id = #{userId}")
-    User getById(Long userId);
+    @Select("select * from member where id = #{userId}")
+    Member getById(Long userId);
 
 
     /**

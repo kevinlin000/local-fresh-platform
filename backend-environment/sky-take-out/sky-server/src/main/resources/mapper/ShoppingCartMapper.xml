@@ -4,30 +4,30 @@
 <mapper namespace="com.sky.mapper.ShoppingCartMapper">
 
 
-    <select id="list" resultType="com.sky.entity.ShoppingCart">
-        select * from shopping_cart
+    <select id="list" resultType="com.sky.entity.Cart">
+        select * from cart
         <where>
             <if test="userId != null">
                 and user_id = #{userId}
             </if>
-            <if test="setmealId != null">
-                and setmeal_id = #{setmealId}
+            <if test="giftBoxId != null">
+                and gift_box_id = #{giftBoxId}
             </if>
-                <if test="dishId != null">
-                and dish_id = #{dishId}
+            <if test="productId != null">
+                and product_id = #{productId}
             </if>
-                <if test="dishFlavor != null">
-                and dish_flavor = #{dishFlavor}
+            <if test="productSpec != null">
+                and product_spec = #{productSpec}
             </if>
         </where>
     </select>
 
     <insert id="insertBatch" parameterType="list">
-        insert into shopping_cart
-        (name, image, user_id, dish_id, setmeal_id, dish_flavor, number, amount, create_time)
+        insert into cart
+        (name, image, user_id, product_id, gift_box_id, product_spec, number, amount, create_time)
         values
         <foreach collection="shoppingCartList" item="sc" separator=",">
-            (#{sc.name},#{sc.image},#{sc.userId},#{sc.dishId},#{sc.setmealId},#{sc.dishFlavor},#{sc.number},#{sc.amount},#{sc.createTime})
+            (#{sc.name},#{sc.image},#{sc.userId},#{sc.productId},#{sc.giftBoxId},#{sc.productSpec},#{sc.number},#{sc.amount},#{sc.createTime})
         </foreach>
     </insert>
 

@@ -2,11 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.sky.mapper.AddressBookMapper">
 
-    <select id="list" parameterType="AddressBook" resultType="AddressBook">
-        select * from address_book
+    <select id="list" parameterType="ShippingAddress" resultType="ShippingAddress">
+        select * from shipping_address
         <where>
-            <if test="userId != null">
-                and user_id = #{userId}
+            <if test="memberId != null">
+                and member_id = #{memberId}
             </if>
             <if test="phone != null">
                 and phone = #{phone}
@@ -17,8 +17,8 @@
         </where>
     </select>
 
-    <update id="update" parameterType="addressBook">
-        update address_book
+    <update id="update" parameterType="ShippingAddress">
+        update shipping_address
         <set>
             <if test="consignee != null">
                 consignee = #{consignee},

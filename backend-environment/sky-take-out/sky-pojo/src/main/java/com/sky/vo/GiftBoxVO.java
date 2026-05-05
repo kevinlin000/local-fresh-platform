@@ -1,6 +1,6 @@
 package com.sky.vo;
 
-import com.sky.entity.SetmealDish;
+import com.sky.entity.GiftBoxProduct;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,17 +15,17 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SetmealVO implements Serializable {
+public class GiftBoxVO implements Serializable {
 
     private Long id;
 
     //分类id
     private Long categoryId;
 
-    //套餐名称
-    private String name;
+    //直送箱名称
+    private String boxName;
 
-    //套餐价格
+    //直送箱价格
     private BigDecimal price;
 
     //状态 0:停用 1:启用
@@ -43,6 +43,6 @@ public class SetmealVO implements Serializable {
     //分类名称
     private String categoryName;
 
-    //套餐和菜品的关联关系
-    private List<SetmealDish> setmealDishes = new ArrayList<>();
+    //直送箱和商品的关联关系
+    private List<GiftBoxProduct> giftBoxProducts = new ArrayList<>();
 }

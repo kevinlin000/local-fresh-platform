@@ -1,7 +1,7 @@
 package com.sky.controller.user;
 
 import com.sky.context.BaseContext;
-import com.sky.entity.AddressBook;
+import com.sky.entity.ShippingAddress;
 import com.sky.result.Result;
 import com.sky.service.AddressBookService;
 import io.swagger.annotations.Api;
@@ -25,10 +25,10 @@ public class AddressBookController {
      */
     @GetMapping("/list")
     @ApiOperation("查询当前登录用户的所有地址信息")
-    public Result<List<AddressBook>> list() {
-        AddressBook addressBook = new AddressBook();
-        addressBook.setUserId(BaseContext.getCurrentId());
-        List<AddressBook> list = addressBookService.list(addressBook);
+    public Result<List<ShippingAddress>> list() {
+        ShippingAddress addressBook = new ShippingAddress();
+        addressBook.setMemberId(BaseContext.getCurrentId());
+        List<ShippingAddress> list = addressBookService.list(addressBook);
         return Result.success(list);
     }
 
@@ -40,15 +40,15 @@ public class AddressBookController {
      */
     @PostMapping
     @ApiOperation("新增地址")
-    public Result save(@RequestBody AddressBook addressBook) {
+    public Result save(@RequestBody ShippingAddress addressBook) {
         addressBookService.save(addressBook);
         return Result.success();
     }
 
     @GetMapping("/{id}")
     @ApiOperation("根据id查询地址")
-    public Result<AddressBook> getById(@PathVariable Long id) {
-        AddressBook addressBook = addressBookService.getById(id);
+    public Result<ShippingAddress> getById(@PathVariable Long id) {
+        ShippingAddress addressBook = addressBookService.getById(id);
         return Result.success(addressBook);
     }
 
@@ -60,7 +60,7 @@ public class AddressBookController {
      */
     @PutMapping
     @ApiOperation("根据id修改地址")
-    public Result update(@RequestBody AddressBook addressBook) {
+    public Result update(@RequestBody ShippingAddress addressBook) {
         addressBookService.update(addressBook);
         return Result.success();
     }
@@ -73,7 +73,7 @@ public class AddressBookController {
      */
     @PutMapping("/default")
     @ApiOperation("设置默认地址")
-    public Result setDefault(@RequestBody AddressBook addressBook) {
+    public Result setDefault(@RequestBody ShippingAddress addressBook) {
         addressBookService.setDefault(addressBook);
         return Result.success();
     }
@@ -96,12 +96,12 @@ public class AddressBookController {
      */
     @GetMapping("default")
     @ApiOperation("查询默认地址")
-    public Result<AddressBook> getDefault() {
-        //SQL:select * from address_book where user_id = ? and is_default = 1
-        AddressBook addressBook = new AddressBook();
+    public Result<ShippingAddress> getDefault() {
+        //SQL:select * from shipping_address where member_id = ? and is_default = 1
+        ShippingAddress addressBook = new ShippingAddress();
         addressBook.setIsDefault(1);
-        addressBook.setUserId(BaseContext.getCurrentId());
-        List<AddressBook> list = addressBookService.list(addressBook);
+        addressBook.setMemberId(BaseContext.getCurrentId());
+        List<ShippingAddress> list = addressBookService.list(addressBook);
 
         if (list != null && list.size() == 1) {
             return Result.success(list.get(0));

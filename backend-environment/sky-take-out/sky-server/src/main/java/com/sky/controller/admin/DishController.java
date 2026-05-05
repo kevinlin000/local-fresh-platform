@@ -1,12 +1,12 @@
 package com.sky.controller.admin;
 
-import com.sky.dto.DishDTO;
-import com.sky.dto.DishPageQueryDTO;
-import com.sky.entity.Dish;
+import com.sky.dto.ProductDTO;
+import com.sky.dto.ProductPageQueryDTO;
+import com.sky.entity.Product;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.DishService;
-import com.sky.vo.DishVO;
+import com.sky.vo.ProductVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +34,7 @@ public class DishController {
      */
     @PostMapping
     @ApiOperation("新增菜品")
-    public Result save(@RequestBody DishDTO dishDTO) {
+    public Result save(@RequestBody ProductDTO dishDTO) {
         log.info("新增菜品：{}", dishDTO);
         dishService.saveWithFlavor(dishDTO);
         return Result.success();
@@ -48,7 +48,7 @@ public class DishController {
      */
     @GetMapping("/page")
     @ApiOperation("菜品分頁查詢")
-    public Result<PageResult> page(DishPageQueryDTO  dishPageQueryDTO) {
+    public Result<PageResult> page(ProductPageQueryDTO  dishPageQueryDTO) {
         log.info("菜品分頁查詢：{}", dishPageQueryDTO);
         PageResult pageResult = dishService.pageQuery(dishPageQueryDTO);
         return Result.success(pageResult);
@@ -74,9 +74,9 @@ public class DishController {
      */
     @GetMapping ("/{id}")
     @ApiOperation("根據id查詢菜品")
-    public Result<DishVO> getById(@PathVariable Long id){
+    public Result<ProductVO> getById(@PathVariable Long id){
         log.info("根據id查詢菜品：{}", id);
-        DishVO dishVO = dishService.getByIdWithFlavor(id);
+        ProductVO dishVO = dishService.getByIdWithFlavor(id);
         return Result.success(dishVO);
     }
 
@@ -87,7 +87,7 @@ public class DishController {
      */
     @PutMapping
     @ApiOperation("修改菜品")
-    public Result update(@RequestBody DishDTO dishDTO){
+    public Result update(@RequestBody ProductDTO dishDTO){
         log.info("修改菜品：{}", dishDTO);
         dishService.updateWithFlavor(dishDTO);
         return Result.success();
@@ -114,8 +114,8 @@ public class DishController {
      */
     @GetMapping("/list")
     @ApiOperation("根据分类id查询菜品")
-    public Result<List<Dish>> list(Long categoryId){
-        List<Dish> list = dishService.list(categoryId);
+    public Result<List<Product>> list(Long categoryId){
+        List<Product> list = dishService.list(categoryId);
         return Result.success(list);
     }
 

@@ -8,9 +8,9 @@ import com.sky.mapper.SetmealMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.WorkspaceService;
 import com.sky.vo.BusinessDataVO;
-import com.sky.vo.DishOverViewVO;
+import com.sky.vo.ProductOverViewVO;
 import com.sky.vo.OrderOverViewVO;
-import com.sky.vo.SetmealOverViewVO;
+import com.sky.vo.GiftBoxOverViewVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -128,7 +128,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
      *
      * @return
      */
-    public DishOverViewVO getDishOverView() {
+    public ProductOverViewVO getDishOverView() {
         Map map = new HashMap();
         map.put("status", StatusConstant.ENABLE);
         Integer sold = dishMapper.countByMap(map);
@@ -136,7 +136,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         map.put("status", StatusConstant.DISABLE);
         Integer discontinued = dishMapper.countByMap(map);
 
-        return DishOverViewVO.builder()
+        return ProductOverViewVO.builder()
                 .sold(sold)
                 .discontinued(discontinued)
                 .build();
@@ -147,7 +147,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
      *
      * @return
      */
-    public SetmealOverViewVO getSetmealOverView() {
+    public GiftBoxOverViewVO getSetmealOverView() {
         Map map = new HashMap();
         map.put("status", StatusConstant.ENABLE);
         Integer sold = setmealMapper.countByMap(map);
@@ -155,7 +155,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         map.put("status", StatusConstant.DISABLE);
         Integer discontinued = setmealMapper.countByMap(map);
 
-        return SetmealOverViewVO.builder()
+        return GiftBoxOverViewVO.builder()
                 .sold(sold)
                 .discontinued(discontinued)
                 .build();

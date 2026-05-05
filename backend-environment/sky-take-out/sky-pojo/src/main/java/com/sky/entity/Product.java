@@ -9,35 +9,35 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 套餐
+ * 单品商品
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Setmeal implements Serializable {
+public class Product implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private Long id;
 
-    //分类id
+    //商品名称
+    private String productName;
+
+    //商品分类id
     private Long categoryId;
 
-    //套餐名称
-    private String name;
-
-    //套餐价格
+    //商品价格
     private BigDecimal price;
 
-    //状态 0:停用 1:启用
-    private Integer status;
+    //图片
+    private String image;
 
     //描述信息
     private String description;
 
-    //图片
-    private String image;
+    //0 停售 1 起售
+    private Integer status;
 
     private LocalDateTime createTime;
 
@@ -46,4 +46,5 @@ public class Setmeal implements Serializable {
     private Long createUser;
 
     private Long updateUser;
+
 }

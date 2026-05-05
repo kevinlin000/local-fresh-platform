@@ -9,35 +9,35 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 菜品
+ * 产地直送箱
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Dish implements Serializable {
+public class GiftBox implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private Long id;
 
-    //菜品名称
-    private String name;
-
-    //菜品分类id
+    //分类id
     private Long categoryId;
 
-    //菜品价格
+    //直送箱名称
+    private String boxName;
+
+    //直送箱价格
     private BigDecimal price;
 
-    //图片
-    private String image;
+    //状态 0:停用 1:启用
+    private Integer status;
 
     //描述信息
     private String description;
 
-    //0 停售 1 起售
-    private Integer status;
+    //图片
+    private String image;
 
     private LocalDateTime createTime;
 
@@ -46,5 +46,4 @@ public class Dish implements Serializable {
     private Long createUser;
 
     private Long updateUser;
-
 }

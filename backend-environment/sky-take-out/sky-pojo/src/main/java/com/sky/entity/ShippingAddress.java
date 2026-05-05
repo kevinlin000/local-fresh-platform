@@ -8,20 +8,20 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 
 /**
- * 地址簿
+ * 收货地址
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AddressBook implements Serializable {
+public class ShippingAddress implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private Long id;
 
-    //用户id
-    private Long userId;
+    //会员id
+    private Long memberId;
 
     //收货人
     private String consignee;

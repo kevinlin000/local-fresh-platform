@@ -1,11 +1,11 @@
 package com.sky.controller.admin;
 
-import com.sky.dto.SetmealDTO;
-import com.sky.dto.SetmealPageQueryDTO;
+import com.sky.dto.GiftBoxDTO;
+import com.sky.dto.GiftBoxPageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.SetmealService;
-import com.sky.vo.SetmealVO;
+import com.sky.vo.GiftBoxVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +35,7 @@ public class SetmealController {
     @PostMapping
     @ApiOperation("新增套餐")
     @CacheEvict(cacheNames = "setmealCache",key = "#setmealDTO.categoryId") //key: setmealCache::100
-    public Result save(@RequestBody SetmealDTO setmealDTO) {
+    public Result save(@RequestBody GiftBoxDTO setmealDTO) {
         setmealService.saveWithDish(setmealDTO);
         return Result.success();
     }
@@ -47,7 +47,7 @@ public class SetmealController {
      */
     @GetMapping("/page")
     @ApiOperation("分页查询")
-    public Result<PageResult> page(SetmealPageQueryDTO setmealPageQueryDTO) {
+    public Result<PageResult> page(GiftBoxPageQueryDTO setmealPageQueryDTO) {
         PageResult pageResult = setmealService.pageQuery(setmealPageQueryDTO);
         return Result.success(pageResult);
     }
@@ -73,8 +73,8 @@ public class SetmealController {
      */
     @GetMapping("/{id}")
     @ApiOperation("根据id查询套餐")
-    public Result<SetmealVO> getById(@PathVariable Long id) {
-        SetmealVO setmealVO = setmealService.getByIdWithDish(id);
+    public Result<GiftBoxVO> getById(@PathVariable Long id) {
+        GiftBoxVO setmealVO = setmealService.getByIdWithDish(id);
         return Result.success(setmealVO);
     }
 
@@ -87,7 +87,7 @@ public class SetmealController {
     @PutMapping
     @ApiOperation("修改套餐")
     @CacheEvict(cacheNames = "setmealCache",allEntries = true)
-    public Result update(@RequestBody SetmealDTO setmealDTO) {
+    public Result update(@RequestBody GiftBoxDTO setmealDTO) {
         setmealService.update(setmealDTO);
         return Result.success();
     }

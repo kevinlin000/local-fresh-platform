@@ -5,13 +5,13 @@ import lombok.Data;
 import java.io.Serializable;
 
 @Data
-public class DishPageQueryDTO implements Serializable {
+public class GiftBoxPageQueryDTO implements Serializable {
 
     private int page;
 
     private int pageSize;
 
-    private String name;
+    private String boxName;
 
     //分类id
     private Integer categoryId;

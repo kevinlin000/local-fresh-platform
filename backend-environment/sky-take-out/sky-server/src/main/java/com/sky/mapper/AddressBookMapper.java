@@ -1,6 +1,6 @@
 package com.sky.mapper;
 
-import com.sky.entity.AddressBook;
+import com.sky.entity.ShippingAddress;
 import org.apache.ibatis.annotations.*;
 import java.util.List;
 
@@ -12,7 +12,7 @@ public interface AddressBookMapper {
      * @param addressBook
      * @return
      */
-    List<AddressBook> list(AddressBook addressBook);
+    List<ShippingAddress> list(ShippingAddress addressBook);
 
     /**
      * 新增
@@ -23,7 +23,7 @@ public interface AddressBookMapper {
             "         district_name, detail, label, is_default)" +
             "        values (#{userId}, #{consignee}, #{phone}, #{sex}, #{provinceCode}, #{provinceName}, #{cityCode}, #{cityName}," +
             "                #{districtCode}, #{districtName}, #{detail}, #{label}, #{isDefault})")
-    void insert(AddressBook addressBook);
+    void insert(ShippingAddress addressBook);
 
     /**
      * 根据id查询
@@ -31,20 +31,20 @@ public interface AddressBookMapper {
      * @return
      */
     @Select("select * from address_book where id = #{id}")
-    AddressBook getById(Long id);
+    ShippingAddress getById(Long id);
 
     /**
      * 根据id修改
      * @param addressBook
      */
-    void update(AddressBook addressBook);
+    void update(ShippingAddress addressBook);
 
     /**
      * 根据 用户id修改 是否默认地址
      * @param addressBook
      */
     @Update("update address_book set is_default = #{isDefault} where user_id = #{userId}")
-    void updateIsDefaultByUserId(AddressBook addressBook);
+    void updateIsDefaultByUserId(ShippingAddress addressBook);
 
     /**
      * 根据id删除地址

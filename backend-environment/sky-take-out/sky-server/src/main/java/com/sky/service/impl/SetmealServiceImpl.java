@@ -4,11 +4,11 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.StatusConstant;
-import com.sky.dto.SetmealDTO;
-import com.sky.dto.SetmealPageQueryDTO;
-import com.sky.entity.Dish;
-import com.sky.entity.Setmeal;
-import com.sky.entity.SetmealDish;
+import com.sky.dto.GiftBoxDTO;
+import com.sky.dto.GiftBoxPageQueryDTO;
+import com.sky.entity.Product;
+import com.sky.entity.GiftBox;
+import com.sky.entity.GiftBoxProduct;
 import com.sky.exception.DeletionNotAllowedException;
 import com.sky.exception.SetmealEnableFailedException;
 import com.sky.mapper.DishMapper;
@@ -16,8 +16,8 @@ import com.sky.mapper.SetmealDishMapper;
 import com.sky.mapper.SetmealMapper;
 import com.sky.result.PageResult;
 import com.sky.service.SetmealService;
-import com.sky.vo.DishItemVO;
-import com.sky.vo.SetmealVO;
+import com.sky.vo.ProductItemVO;
+import com.sky.vo.GiftBoxVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,23 +45,23 @@ public class SetmealServiceImpl implements SetmealService {
      * @param setmealDTO
      */
     @Transactional
-    public void saveWithDish(SetmealDTO setmealDTO) {
-        Setmeal setmeal = new Setmeal();
+    public void saveWithDish(GiftBoxDTO setmealDTO) {
+        GiftBox setmeal = new GiftBox();
         BeanUtils.copyProperties(setmealDTO, setmeal);
 
         //向套餐表插入数据
         setmealMapper.insert(setmeal);
 
         //获取生成的套餐id
-        Long setmealId = setmeal.getId();
+        Long giftBoxId = setmeal.getId();
 
-        List<SetmealDish> setmealDishes = setmealDTO.getSetmealDishes();
-        setmealDishes.forEach(setmealDish -> {
-            setmealDish.setSetmealId(setmealId);
+        List<GiftBoxProduct> giftBoxProducts = setmealDTO.getGiftBoxProducts();
+        giftBoxProducts.forEach(setmealDish -> {
+            setmealDish.setGiftBoxId(giftBoxId);
         });
 
         //保存套餐和菜品的关联关系
-        setmealDishMapper.insertBatch(setmealDishes);
+        setmealDishMapper.insertBatch(giftBoxProducts);
     }
 
     /**
@@ -69,12 +69,12 @@ public class SetmealServiceImpl implements SetmealService {
      * @param setmealPageQueryDTO
      * @return
      */
-    public PageResult pageQuery(SetmealPageQueryDTO setmealPageQueryDTO) {
+    public PageResult pageQuery(GiftBoxPageQueryDTO setmealPageQueryDTO) {
         int pageNum = setmealPageQueryDTO.getPage();
         int pageSize = setmealPageQueryDTO.getPageSize();
 
         PageHelper.startPage(pageNum, pageSize);
-        Page<SetmealVO> page = setmealMapper.pageQuery(setmealPageQueryDTO);
+        Page<GiftBoxVO> page = setmealMapper.pageQuery(setmealPageQueryDTO);
         return new PageResult(page.getTotal(), page.getResult());
     }
 
@@ -85,18 +85,18 @@ public class SetmealServiceImpl implements SetmealService {
     @Transactional
     public void deleteBatch(List<Long> ids) {
         ids.forEach(id -> {
-            Setmeal setmeal = setmealMapper.getById(id);
+            GiftBox setmeal = setmealMapper.getById(id);
             if(StatusConstant.ENABLE == setmeal.getStatus()){
                 //起售中的套餐不能删除
                 throw new DeletionNotAllowedException(MessageConstant.SETMEAL_ON_SALE);
             }
         });
 
-        ids.forEach(setmealId -> {
+        ids.forEach(giftBoxId -> {
             //删除套餐表中的数据
-            setmealMapper.deleteById(setmealId);
+            setmealMapper.deleteById(giftBoxId);
             //删除套餐菜品关系表中的数据
-            setmealDishMapper.deleteBySetmealId(setmealId);
+            setmealDishMapper.deleteBySetmealId(giftBoxId);
         });
     }
 
@@ -106,13 +106,13 @@ public class SetmealServiceImpl implements SetmealService {
      * @param id
      * @return
      */
-    public SetmealVO getByIdWithDish(Long id) {
-        Setmeal setmeal = setmealMapper.getById(id);
-        List<SetmealDish> setmealDishes = setmealDishMapper.getBySetmealId(id);
+    public GiftBoxVO getByIdWithDish(Long id) {
+        GiftBox setmeal = setmealMapper.getById(id);
+        List<GiftBoxProduct> giftBoxProducts = setmealDishMapper.getBySetmealId(id);
 
-        SetmealVO setmealVO = new SetmealVO();
+        GiftBoxVO setmealVO = new GiftBoxVO();
         BeanUtils.copyProperties(setmeal, setmealVO);
-        setmealVO.setSetmealDishes(setmealDishes);
+        setmealVO.setGiftBoxProducts(giftBoxProducts);
 
         return setmealVO;
     }
@@ -123,25 +123,25 @@ public class SetmealServiceImpl implements SetmealService {
      * @param setmealDTO
      */
     @Transactional
-    public void update(SetmealDTO setmealDTO) {
-        Setmeal setmeal = new Setmeal();
+    public void update(GiftBoxDTO setmealDTO) {
+        GiftBox setmeal = new GiftBox();
         BeanUtils.copyProperties(setmealDTO, setmeal);
 
         //1、修改套餐表，执行update
         setmealMapper.update(setmeal);
 
         //套餐id
-        Long setmealId = setmealDTO.getId();
+        Long giftBoxId = setmealDTO.getId();
 
         //2、删除套餐和菜品的关联关系，操作setmeal_dish表，执行delete
-        setmealDishMapper.deleteBySetmealId(setmealId);
+        setmealDishMapper.deleteBySetmealId(giftBoxId);
 
-        List<SetmealDish> setmealDishes = setmealDTO.getSetmealDishes();
-        setmealDishes.forEach(setmealDish -> {
-            setmealDish.setSetmealId(setmealId);
+        List<GiftBoxProduct> giftBoxProducts = setmealDTO.getGiftBoxProducts();
+        giftBoxProducts.forEach(setmealDish -> {
+            setmealDish.setGiftBoxId(giftBoxId);
         });
         //3、重新插入套餐和菜品的关联关系，操作setmeal_dish表，执行insert
-        setmealDishMapper.insertBatch(setmealDishes);
+        setmealDishMapper.insertBatch(giftBoxProducts);
     }
 
     /**
@@ -153,7 +153,7 @@ public class SetmealServiceImpl implements SetmealService {
         //起售套餐时，判断套餐内是否有停售菜品，有停售菜品提示"套餐内包含未启售菜品，无法启售"
         if(status == StatusConstant.ENABLE){
             //select a.* from dish a left join setmeal_dish b on a.id = b.dish_id where b.setmeal_id = ?
-            List<Dish> dishList = dishMapper.getBySetmealId(id);
+            List<Product> dishList = dishMapper.getBySetmealId(id);
             if(dishList != null && dishList.size() > 0){
                 dishList.forEach(dish -> {
                     if(StatusConstant.DISABLE == dish.getStatus()){
@@ -163,7 +163,7 @@ public class SetmealServiceImpl implements SetmealService {
             }
         }
 
-        Setmeal setmeal = Setmeal.builder()
+        GiftBox setmeal = GiftBox.builder()
                 .id(id)
                 .status(status)
                 .build();
@@ -175,8 +175,8 @@ public class SetmealServiceImpl implements SetmealService {
      * @param setmeal
      * @return
      */
-    public List<Setmeal> list(Setmeal setmeal) {
-        List<Setmeal> list = setmealMapper.list(setmeal);
+    public List<GiftBox> list(GiftBox setmeal) {
+        List<GiftBox> list = setmealMapper.list(setmeal);
         return list;
     }
 
@@ -185,7 +185,7 @@ public class SetmealServiceImpl implements SetmealService {
      * @param id
      * @return
      */
-    public List<DishItemVO> getDishItemById(Long id) {
+    public List<ProductItemVO> getDishItemById(Long id) {
         return setmealMapper.getDishItemBySetmealId(id);
     }
 

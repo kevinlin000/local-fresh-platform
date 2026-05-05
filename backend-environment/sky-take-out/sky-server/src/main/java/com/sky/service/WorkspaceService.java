@@ -1,9 +1,9 @@
 package com.sky.service;
 
 import com.sky.vo.BusinessDataVO;
-import com.sky.vo.DishOverViewVO;
+import com.sky.vo.ProductOverViewVO;
 import com.sky.vo.OrderOverViewVO;
-import com.sky.vo.SetmealOverViewVO;
+import com.sky.vo.GiftBoxOverViewVO;
 import java.time.LocalDateTime;
 
 public interface WorkspaceService {
@@ -26,12 +26,12 @@ public interface WorkspaceService {
      * 查询菜品总览
      * @return
      */
-    DishOverViewVO getDishOverView();
+    ProductOverViewVO getDishOverView();
 
     /**
      * 查询套餐总览
      * @return
      */
-    SetmealOverViewVO getSetmealOverView();
+    GiftBoxOverViewVO getSetmealOverView();
 
 }

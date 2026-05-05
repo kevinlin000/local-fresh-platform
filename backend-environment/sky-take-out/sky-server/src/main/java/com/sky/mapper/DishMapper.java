@@ -2,11 +2,11 @@ package com.sky.mapper;
 
 import com.github.pagehelper.Page;
 import com.sky.annotation.AutoFill;
-import com.sky.dto.DishDTO;
-import com.sky.dto.DishPageQueryDTO;
-import com.sky.entity.Dish;
+import com.sky.dto.ProductDTO;
+import com.sky.dto.ProductPageQueryDTO;
+import com.sky.entity.Product;
 import com.sky.enumeration.OperationType;
-import com.sky.vo.DishVO;
+import com.sky.vo.ProductVO;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -30,14 +30,14 @@ public interface DishMapper {
      * @param dish
      */
     @AutoFill(value = OperationType.INSERT)
-    void insert(Dish dish);
+    void insert(Product dish);
 
     /**
      * 菜品的分頁查詢
      * @param dishPageQueryDTO
      * @return
      */
-    Page<DishVO> pageQuery(DishPageQueryDTO dishPageQueryDTO);
+    Page<ProductVO> pageQuery(ProductPageQueryDTO dishPageQueryDTO);
 
     /**
      * 根據主鍵查詢菜品
@@ -45,7 +45,7 @@ public interface DishMapper {
      * @return
      */
     @Select("select * from dish where id = #{id}")
-    Dish getById(Long id);
+    Product getById(Long id);
 
     /**
      * 根據主鍵刪除菜品資料
@@ -65,23 +65,23 @@ public interface DishMapper {
      * @param dish
      */
     @AutoFill(value = OperationType.UPDATE)
-    void update(Dish dish);
+    void update(Product dish);
 
     /**
      * 动态条件查询菜品
      * @param dish
      * @return
      */
-    List<Dish> list(Dish dish);
+    List<Product> list(Product dish);
 
 
     /**
      * 根据套餐id查询菜品
-     * @param setmealId
+     * @param giftBoxId
      * @return
      */
-    @Select("select a.* from dish a left join setmeal_dish b on a.id = b.dish_id where b.setmeal_id = #{setmealId}")
-    List<Dish> getBySetmealId(Long setmealId);
+    @Select("select a.* from dish a left join setmeal_dish b on a.id = b.dish_id where b.setmeal_id = #{giftBoxId}")
+    List<Product> getBySetmealId(Long giftBoxId);
 
     /**
      * 根据条件统计菜品数量

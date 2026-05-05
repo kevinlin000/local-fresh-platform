@@ -1,6 +1,6 @@
 package com.sky.mapper;
 
-import com.sky.entity.SetmealDish;
+import com.sky.entity.GiftBoxProduct;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -19,24 +19,24 @@ public interface SetmealDishMapper {
 
     /**
      * 批量保存套餐和菜品的关联关系
-     * @param setmealDishes
+     * @param giftBoxProducts
      */
-    void insertBatch(List<SetmealDish> setmealDishes);
+    void insertBatch(List<GiftBoxProduct> giftBoxProducts);
 
     /**
      * 根据套餐id删除套餐和菜品的关联关系
-     * @param setmealId
+     * @param giftBoxId
      */
-    @Delete("delete from setmeal_dish where setmeal_id = #{setmealId}")
-    void deleteBySetmealId(Long setmealId);
+    @Delete("delete from setmeal_dish where setmeal_id = #{giftBoxId}")
+    void deleteBySetmealId(Long giftBoxId);
 
     /**
      * 根据套餐id查询套餐和菜品的关联关系
-     * @param setmealId
+     * @param giftBoxId
      * @return
      */
-    @Select("select * from setmeal_dish where setmeal_id = #{setmealId}")
-    List<SetmealDish> getBySetmealId(Long setmealId);
+    @Select("select * from setmeal_dish where setmeal_id = #{giftBoxId}")
+    List<GiftBoxProduct> getBySetmealId(Long giftBoxId);
 
 
 

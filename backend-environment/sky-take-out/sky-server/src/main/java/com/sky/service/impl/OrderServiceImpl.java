@@ -72,7 +72,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderSubmitVO submitOrder(OrdersSubmitDTO ordersSubmitDTO) {
 
         //1. 處理各種業務異常（地址簿為空，購物車數據為空）
-        AddressBook addressBook = addressBookMapper.getById(ordersSubmitDTO.getAddressBookId());
+        ShippingAddress addressBook = addressBookMapper.getById(ordersSubmitDTO.getAddressBookId());
         if (addressBook == null) {
             //拋出業務異常
             throw new AddressBookBusinessException(MessageConstant.ADDRESS_BOOK_IS_NULL);
@@ -84,9 +84,9 @@ public class OrderServiceImpl implements OrderService {
         //查詢當前的購物車異常
         Long userId = BaseContext.getCurrentId();
 
-        ShoppingCart shoppingCart = new ShoppingCart();
+        Cart shoppingCart = new Cart();
         shoppingCart.setUserId(userId);
-        List<ShoppingCart> shoppingCartlist = shoppingCartMapper.list(shoppingCart);
+        List<Cart> shoppingCartlist = shoppingCartMapper.list(shoppingCart);
         if (shoppingCartlist == null || shoppingCartlist.size() == 0) {
             //拋出業務異常
             throw new AddressBookBusinessException(MessageConstant.SHOPPING_CART_IS_NULL);
@@ -107,7 +107,7 @@ public class OrderServiceImpl implements OrderService {
 
         List<OrderDetail> orderDetailList = new ArrayList<>();
         //3. 向訂單明細插入n條數據
-        for (ShoppingCart cart : shoppingCartlist) {
+        for (Cart cart : shoppingCartlist) {
             OrderDetail orderDetail = new OrderDetail(); //訂單明細
             BeanUtils.copyProperties(cart, orderDetail);
             orderDetail.setOrderId(orders.getId()); //設置當前訂單明細關聯的訂單id
@@ -141,7 +141,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderPaymentVO payment(OrdersPaymentDTO ordersPaymentDTO) throws Exception {
         // 当前登录用户id
         Long userId = BaseContext.getCurrentId();
-        User user = userMapper.getById(userId);
+        Member user = userMapper.getById(userId);
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("code", "ORDERPAID");
@@ -331,8 +331,8 @@ public class OrderServiceImpl implements OrderService {
         List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(id);
 
         // 将订单详情对象转换为购物车对象
-        List<ShoppingCart> shoppingCartList = orderDetailList.stream().map(x -> {
-            ShoppingCart shoppingCart = new ShoppingCart();
+        List<Cart> shoppingCartList = orderDetailList.stream().map(x -> {
+            Cart shoppingCart = new Cart();
 
             // 将原订单详情里面的菜品信息重新复制到购物车对象中
             BeanUtils.copyProperties(x, shoppingCart, "id");

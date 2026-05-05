@@ -1,10 +1,10 @@
 package com.sky.controller.user;
 
 import com.sky.constant.StatusConstant;
-import com.sky.entity.Dish;
+import com.sky.entity.Product;
 import com.sky.result.Result;
 import com.sky.service.DishService;
-import com.sky.vo.DishVO;
+import com.sky.vo.ProductVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -34,19 +34,19 @@ public class DishController {
      */
     @GetMapping("/list")
     @ApiOperation("根据分类id查询菜品")
-    public Result<List<DishVO>> list(Long categoryId) {
+    public Result<List<ProductVO>> list(Long categoryId) {
 
         // 構建redis的key,規則：dish_分類id
         String key = "dish_" + categoryId;
 
         // 查询redis中是否有数据
-        List<DishVO> list = (List<DishVO>) redisTemplate.opsForValue().get(key);
+        List<ProductVO> list = (List<ProductVO>) redisTemplate.opsForValue().get(key);
         if(list != null && list.size() > 0){
             // 如果有数据，直接返回
             return Result.success(list);
         }
 
-        Dish dish = new Dish();
+        Product dish = new Product();
         dish.setCategoryId(categoryId);
         dish.setStatus(StatusConstant.ENABLE);//查询起售中的菜品
 
