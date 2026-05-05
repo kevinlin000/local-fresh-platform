@@ -22,5 +22,6 @@ public class GroupBuyVO implements Serializable {
     private Integer currentCount;
     private Integer requiredCount;
     private LocalDateTime expireAt;
+    private String shareUrl;
     private List<GroupBuyParticipantVO> participants;
 }

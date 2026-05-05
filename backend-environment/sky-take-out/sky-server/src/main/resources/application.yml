@@ -63,3 +63,4 @@ sky:
     api-key:  ${sky.google.api-key} # 貼上你的 Google API Key
   group-buy:
     expire-hours: 24
+    share-base-url: http://localhost:5173/groupBuy

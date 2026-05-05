@@ -58,3 +58,4 @@ sky:
       bucket-name: test-bucket
   group-buy:
     expire-hours: 24
+    share-base-url: http://localhost:5173/groupBuy
