@@ -48,6 +48,7 @@ public class GroupBuyServiceImpl implements GroupBuyService {
 
     private static final Integer GROUP_BUY_ACTIVE = 1;
     private static final Integer GROUP_BUY_COMPLETED = 2;
+    private static final Integer GROUP_BUY_FAILED = 3;
 
     @Autowired
     private GroupBuyMapper groupBuyMapper;
@@ -170,6 +171,35 @@ public class GroupBuyServiceImpl implements GroupBuyService {
                 .collect(Collectors.toList());
     }
 
+    // 已知 N+1：每筆過期揪團 + 每個 participant 各一次 getById
+    // 評估：揪團 required_count 通常為個位數、定時任務非熱路徑，
+    // 暫不優化為 batch query。如未來揪團規模或頻率提升，可改用
+    // orderMapper.getByIdsIn(orderIds) 一次撈完。
+    @Override
+    public void handleExpiredGroupBuys() {
+        List<GroupBuy> expiredGroupBuys = groupBuyMapper.listExpiredActive(LocalDateTime.now());
+        for (GroupBuy groupBuy : expiredGroupBuys) {
+            String lockKey = "lock:groupbuy:" + groupBuy.getGroupNo();
+            RLock lock = redissonClient.getLock(lockKey);
+            boolean locked = false;
+            try {
+                locked = lock.tryLock(0, 5, TimeUnit.SECONDS);
+                if (!locked) {
+                    log.info("略過過期揪團，鎖已被佔用: groupNo={}", groupBuy.getGroupNo());
+                    continue;
+                }
+                transactionTemplate.executeWithoutResult(status -> handleExpiredGroupBuyInTransaction(groupBuy.getGroupNo()));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.warn("處理過期揪團時被中斷: groupNo={}", groupBuy.getGroupNo(), e);
+            } finally {
+                if (locked && lock.isHeldByCurrentThread()) {
+                    lock.unlock();
+                }
+            }
+        }
+    }
+
     private JoinGroupBuyResult doJoinGroupBuy(Long memberId, JoinGroupBuyDTO joinGroupBuyDTO) {
         GroupBuy groupBuy = groupBuyMapper.getByGroupNo(joinGroupBuyDTO.getGroupNo());
         if (groupBuy == null) {
@@ -228,6 +258,37 @@ public class GroupBuyServiceImpl implements GroupBuyService {
 
         if (!preOrderIds.isEmpty()) {
             orderMapper.updateStatusBatch(preOrderIds, Orders.PENDING_GROUP, Orders.TO_BE_CONFIRMED);
+        }
+    }
+
+    private void handleExpiredGroupBuyInTransaction(String groupNo) {
+        GroupBuy groupBuy = groupBuyMapper.getByGroupNo(groupNo);
+        if (groupBuy == null) {
+            return;
+        }
+        if (!GROUP_BUY_ACTIVE.equals(groupBuy.getStatus()) || !groupBuy.getExpireAt().isBefore(LocalDateTime.now())) {
+            return;
+        }
+
+        List<GroupBuyParticipant> participants = groupBuyParticipantMapper.listByGroupBuyId(groupBuy.getId());
+        List<Long> preOrderIds = participants.stream()
+                .map(GroupBuyParticipant::getPreOrderId)
+                .collect(Collectors.toList());
+
+        groupBuy.setStatus(GROUP_BUY_FAILED);
+        groupBuy.setUpdatedAt(LocalDateTime.now());
+        groupBuyMapper.update(groupBuy);
+
+        if (!preOrderIds.isEmpty()) {
+            orderMapper.updateStatusBatch(preOrderIds, Orders.PENDING_GROUP, Orders.CANCELLED);
+        }
+
+        for (GroupBuyParticipant participant : participants) {
+            Orders order = orderMapper.getById(participant.getPreOrderId());
+            if (order != null) {
+                log.info("揪團失敗退款: groupNo={}, memberId={}, orderId={}, amount={}",
+                        groupBuy.getGroupNo(), participant.getMemberId(), order.getId(), order.getAmount());
+            }
         }
     }
 
