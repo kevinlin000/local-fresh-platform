@@ -10,16 +10,16 @@
                label-width="180px"
                class="demo-ruleForm">
         <div>
-          <el-form-item label="菜品名称:"
+          <el-form-item label="單品名稱:"
                         prop="name">
             <el-input v-model="ruleForm.name"
-                      placeholder="请填写菜品名称"
+                      placeholder="請輸入單品名稱"
                       maxlength="20" />
           </el-form-item>
-          <el-form-item label="菜品分类:"
+          <el-form-item label="單品分類:"
                         prop="categoryId">
             <el-select v-model="ruleForm.categoryId"
-                       placeholder="请选择菜品分类">
+                       placeholder="請選擇單品分類">
               <el-option v-for="(item, index) in dishList"
                          :key="index"
                          :label="item.name"
@@ -28,10 +28,10 @@
           </el-form-item>
         </div>
         <div>
-          <el-form-item label="菜品价格:"
+          <el-form-item label="單品價格:"
                         prop="price">
             <el-input v-model="ruleForm.price"
-                      placeholder="请设置菜品价格" />
+                      placeholder="請設定單品價格" />
           </el-form-item>
         </div>
         <el-form-item label="口味做法配置:">
@@ -83,7 +83,7 @@
           </el-form-item>
         </el-form-item>
         <div>
-          <el-form-item label="菜品图片:"
+          <el-form-item label="單品圖片:"
                         prop="image">
             <image-upload :prop-image-url="imageUrl"
                           @imageChange="imageChange">
@@ -92,13 +92,13 @@
           </el-form-item>
         </div>
         <div class="address">
-          <el-form-item label="菜品描述:"
+          <el-form-item label="單品描述:"
                         prop="region">
             <el-input v-model="ruleForm.description"
                       type="textarea"
                       :rows="3"
                       maxlength="200"
-                      placeholder="菜品描述，最长200字" />
+                      placeholder="單品描述，最長 200 字" />
           </el-form-item>
         </div>
         <div class="subBox address">
@@ -179,11 +179,11 @@ export default class extends Vue {
           required: true,
           validator: (rule: any, value: string, callback: Function) => {
             if (!value) {
-              callback(new Error('请输入菜品名称'))
+              callback(new Error('請輸入單品名稱'))
             } else {
               const reg = /^([A-Za-z0-9\u4e00-\u9fa5]){2,20}$/
               if (!reg.test(value)) {
-                callback(new Error('菜品名称输入不符，请输入2-20个字符'))
+                callback(new Error('單品名稱格式不符，請輸入 2-20 個字元'))
               } else {
                 callback()
               }
@@ -193,11 +193,11 @@ export default class extends Vue {
         }
       ],
       categoryId: [
-        { required: true, message: '请选择菜品分类', trigger: 'change' }
+        { required: true, message: '請選擇單品分類', trigger: 'change' }
       ],
       image: {
         required: true,
-        message: '菜品图片不能为空'
+        message: '單品圖片不能為空'
       },
       price: [
         {
@@ -208,7 +208,7 @@ export default class extends Vue {
             if (!reg.test(value) || Number(value) <= 0) {
               callback(
                 new Error(
-                  '菜品价格格式有误，请输入大于零且最多保留两位小数的金额'
+                  '單品價格格式有誤，請輸入大於零且最多保留兩位小數的金額'
                 )
               )
             } else {
@@ -346,7 +346,7 @@ export default class extends Vue {
     ;(this.$refs[formName] as any).validate((valid: any) => {
       console.log(valid, 'valid')
       if (valid) {
-        if (!this.ruleForm.image) return this.$message.error('菜品图片不能为空')
+        if (!this.ruleForm.image) return this.$message.error('單品圖片不能為空')
         let params: any = { ...this.ruleForm }
         // params.flavors = this.dishFlavors
         params.status =
@@ -363,7 +363,7 @@ export default class extends Vue {
           addDish(params)
             .then(res => {
               if (res.data.code === 1) {
-                this.$message.success('菜品添加成功！')
+                this.$message.success('單品新增成功！')
                 if (!st) {
                   this.$router.push({ path: '/dish' })
                 } else {
@@ -397,7 +397,7 @@ export default class extends Vue {
             .then(res => {
               if (res && res.data && res.data.code === 1) {
                 this.$router.push({ path: '/dish' })
-                this.$message.success('菜品修改成功！')
+                this.$message.success('單品修改成功！')
               } else {
                 this.$message.error(res.data.desc || res.data.msg)
               }

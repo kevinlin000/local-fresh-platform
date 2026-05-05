@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <h2 class="homeTitle">
-      套餐总览<span><router-link to="setmeal">套餐管理</router-link></span>
+      直送箱總覽<span><router-link to="setmeal">直送箱管理</router-link></span>
     </h2>
     <div class="orderviewBox">
       <ul>
@@ -16,7 +16,7 @@
         <li class="add">
           <router-link to="setmeal/add">
             <i></i>
-            <p>新增套餐</p>
+            <p>新增直送箱</p>
           </router-link>
         </li>
       </ul>

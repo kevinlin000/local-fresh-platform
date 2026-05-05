@@ -80,7 +80,7 @@
           </p>
         </li>
         <li>
-          <p class="tit">用户总量</p>
+          <p class="tit">會員總量</p>
           <p class="num">{{ overviewData.totalUsers }}</p>
           <!-- <p class="tip">
             同比增长：<span v-if="overviewData.newUsersGrowth">
@@ -98,7 +98,7 @@
           </p> -->
         </li>
         <li>
-          <p class="tit">新增用户</p>
+          <p class="tit">新增會員</p>
           <p class="num">{{ overviewData.newUsers }}</p>
           <p class="tip">
             同比增长<span v-if="overviewData.newUsersGrowth">

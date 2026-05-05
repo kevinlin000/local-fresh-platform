@@ -2,10 +2,10 @@
   <div class="dashboard-container">
     <div class="container">
       <div class="tableBar">
-        <label style="margin-right: 5px">套餐名称</label>
-        <el-input v-model="name" placeholder="请输入套餐名称" style="width: 15%" clearable></el-input>
-        <label style="margin-left: 20px; margin-right: 5px">套餐分类</label>
-        <el-select v-model="categoryId" placeholder="请选择套餐分类" clearable>
+        <label style="margin-right: 5px">直送箱名稱</label>
+        <el-input v-model="name" placeholder="請輸入直送箱名稱" style="width: 15%" clearable></el-input>
+        <label style="margin-left: 20px; margin-right: 5px">直送箱分類</label>
+        <el-select v-model="categoryId" placeholder="請選擇直送箱分類" clearable>
           <el-option
             v-for="item in categoryList"
             :key="item.id"
@@ -25,20 +25,20 @@
         <el-button type="primary" style="margin-left: 20px" @click="pageQuery()">搜索</el-button>
         <div style="float: right">
           <el-button type="danger" @click="handleDeleteSetmeal('B')">批量删除</el-button>
-          <el-button type="info" @click="handleAddSetmeal()">+新建套餐</el-button>
+          <el-button type="info" @click="handleAddSetmeal()">+新建直送箱</el-button>
         </div>
       </div>
       <el-table :data="records" border stripe class="tableBox" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="70px"></el-table-column>
-        <el-table-column prop="name" label="套餐名称">
+        <el-table-column prop="name" label="直送箱名稱">
         </el-table-column>
-        <el-table-column label="套餐图片">
+        <el-table-column label="直送箱圖片">
           <template slot-scope="scope">
             <el-image style="width: 80px; height: 40px; border: none" :src="scope.row.image"/>
           </template>
         </el-table-column>
-        <el-table-column prop="categoryName" label="套餐分类"></el-table-column>
-        <el-table-column prop="price" label="套餐价"></el-table-column>
+        <el-table-column prop="categoryName" label="直送箱分類"></el-table-column>
+        <el-table-column prop="price" label="直送箱價"></el-table-column>
         <el-table-column label="售卖状态">
           <template slot-scope="scope">
             <div class="tableColumn-status" :class="{ 'stop-use': scope.row.status === 0 }">
@@ -145,7 +145,7 @@ export default {
       // 更新套装状态
       handleEnableOrDisable(row){
         const status = row.status === 1 ? '停售' : '起售'
-        this.$confirm('您确定要<span style="color:red">' + status + '</span>此套餐的状态吗？', '提示', {
+        this.$confirm('您確定要<span style="color:red">' + status + '</span>此直送箱的狀態嗎？', '提示', {
           dangerouslyUseHTMLString: true,
           confirmButtonText: '确定',
           cancelButtonText: '取消',
@@ -154,7 +154,7 @@ export default {
           const params = {id: row.id, status: row.status == 1 ? 0 : 1}
           enableOrDisableSetmeal(params).then(res =>{
             if(res.data.code === 1){
-              this.$message.success('更新套餐状态成功！')
+              this.$message.success('直送箱狀態更新成功！')
               this.pageQuery()
             }
           }).catch(err =>{
@@ -170,12 +170,12 @@ export default {
       handleDeleteSetmeal(type: string, id: string){
         if(type === 'B'){
           if(this.multipleSelection.length === 0){
-            this.$message.error('请至少选择一个套餐信息！')
+            this.$message.error('請至少選擇一個直送箱！')
             return
           }
         }
 
-        this.$confirm('您确定要删除所选择的套餐信息吗？', '提示', {
+        this.$confirm('您確定要刪除所選的直送箱嗎？', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
@@ -193,7 +193,7 @@ export default {
           }
           deleteSetmeal(param).then(res =>{
             if(res.data.code === 1){
-              this.$message.success('套餐信息删除成功!')
+              this.$message.success('直送箱刪除成功！')
               this.pageQuery()
             }else{
               this.$message.error(res.data.msg)

@@ -8,16 +8,16 @@
                label-width="180px"
                class="demo-ruleForm">
         <div>
-          <el-form-item label="套餐名称:"
+          <el-form-item label="直送箱名稱:"
                         prop="name">
             <el-input v-model="ruleForm.name"
-                      placeholder="请填写套餐名称"
+                      placeholder="請輸入直送箱名稱"
                       maxlength="14" />
           </el-form-item>
-          <el-form-item label="套餐分类:"
+          <el-form-item label="直送箱分類:"
                         prop="idType">
             <el-select v-model="ruleForm.idType"
-                       placeholder="请选择套餐分类"
+                       placeholder="請選擇直送箱分類"
                        @change="$forceUpdate()">
               <el-option v-for="(item, index) in setMealList"
                          :key="index"
@@ -27,27 +27,27 @@
           </el-form-item>
         </div>
         <div>
-          <el-form-item label="套餐价格:"
+          <el-form-item label="直送箱價格:"
                         prop="price">
             <el-input v-model="ruleForm.price"
-                      placeholder="请设置套餐价格" />
+                      placeholder="請設定直送箱價格" />
           </el-form-item>
         </div>
         <div>
-          <el-form-item label="套餐菜品:"
+          <el-form-item label="直送箱單品:"
                         required>
             <el-form-item>
               <div class="addDish">
                 <span v-if="dishTable.length == 0"
                       class="addBut"
                       @click="openAddDish('new')">
-                  + 添加菜品</span>
+                  + 新增單品</span>
                 <div v-if="dishTable.length != 0"
                      class="content">
                   <div class="addBut"
                        style="margin-bottom: 20px"
                        @click="openAddDish('change')">
-                    + 添加菜品
+                    + 新增單品
                   </div>
                   <div class="table">
                     <el-table :data="dishTable"
@@ -96,7 +96,7 @@
           </el-form-item>
         </div>
         <div>
-          <el-form-item label="套餐图片:"
+          <el-form-item label="直送箱圖片:"
                         required
                         prop="image">
             <image-upload :prop-image-url="imageUrl"
@@ -106,12 +106,12 @@
           </el-form-item>
         </div>
         <div class="address">
-          <el-form-item label="套餐描述:">
+          <el-form-item label="直送箱描述:">
             <el-input v-model="ruleForm.description"
                       type="textarea"
                       :rows="3"
                       maxlength="200"
-                      placeholder="套餐描述，最长200字" />
+                      placeholder="直送箱描述，最長 200 字" />
           </el-form-item>
         </div>
         <div class="subBox address">
@@ -134,7 +134,7 @@
       </el-form>
     </div>
     <el-dialog v-if="dialogVisible"
-               title="添加菜品"
+               title="新增單品"
                class="addDishList"
                :visible.sync="dialogVisible"
                width="60%"
@@ -200,11 +200,11 @@ export default class extends Vue {
         required: true,
         validator: (rule: any, value: string, callback: Function) => {
           if (!value) {
-            callback(new Error('请输入套餐名称'))
+            callback(new Error('請輸入直送箱名稱'))
           } else {
             const reg = /^([A-Za-z0-9\u4e00-\u9fa5]){2,20}$/
             if (!reg.test(value)) {
-              callback(new Error('套餐名称输入不符，请输入2-20个字符'))
+              callback(new Error('直送箱名稱格式不符，請輸入 2-20 個字元'))
             } else {
               callback()
             }
@@ -214,12 +214,12 @@ export default class extends Vue {
       },
       idType: {
         required: true,
-        message: '请选择套餐分类',
+        message: '請選擇直送箱分類',
         trigger: 'change'
       },
       image: {
         required: true,
-        message: '菜品图片不能为空'
+        message: '直送箱圖片不能為空'
       },
       price: {
         required: true,
@@ -229,7 +229,7 @@ export default class extends Vue {
           if (!reg.test(value) || Number(value) <= 0) {
             callback(
               new Error(
-                '套餐价格格式有误，请输入大于零且最多保留两位小数的金额'
+                '直送箱價格格式有誤，請輸入大於零且最多保留兩位小數的金額'
               )
             )
           } else {
@@ -333,9 +333,9 @@ export default class extends Vue {
     ;(this.$refs[formName] as any).validate((valid: any) => {
       if (valid) {
         if (this.dishTable.length === 0) {
-          return this.$message.error('套餐下菜品不能为空')
+          return this.$message.error('直送箱內單品不能為空')
         }
-        if (!this.ruleForm.image) return this.$message.error('套餐图片不能为空')
+        if (!this.ruleForm.image) return this.$message.error('直送箱圖片不能為空')
         let prams = { ...this.ruleForm } as any
         prams.setmealDishes = this.dishTable.map((obj: any) => ({
           copies: obj.copies,
@@ -352,7 +352,7 @@ export default class extends Vue {
           addSetmeal(prams)
             .then(res => {
               if (res && res.data && res.data.code === 1) {
-                this.$message.success('套餐添加成功！')
+                this.$message.success('直送箱新增成功！')
                 if (!st) {
                   this.$router.push({ path: '/setmeal' })
                 } else {
@@ -385,7 +385,7 @@ export default class extends Vue {
           editSetmeal(prams)
             .then(res => {
               if (res.data.code === 1) {
-                this.$message.success('套餐修改成功！')
+                this.$message.success('直送箱修改成功！')
                 this.$router.push({ path: '/setmeal' })
               } else {
                 // this.$message.error(res.data.desc || res.data.message)

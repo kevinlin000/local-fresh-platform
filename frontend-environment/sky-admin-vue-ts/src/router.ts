@@ -70,7 +70,7 @@ const router = new Router({
           path: "setmeal",
           component: () => import("@/views/setmeal/index.vue"),
           meta: {
-            title: "套餐管理",
+            title: "直送箱管理",
             icon: "icon-combo"
           }
         },
@@ -78,7 +78,7 @@ const router = new Router({
           path: "dish",
           component: () => import("@/views/dish/index.vue"),
           meta: {
-            title: "菜品管理",
+            title: "單品管理",
             icon: "icon-dish"
           }
         },
@@ -86,7 +86,7 @@ const router = new Router({
           path: "/dish/add",
           component: () => import("@/views/dish/addDishtype.vue"),
           meta: {
-            title: "添加菜品",
+            title: "新增單品",
             hidden: true
           }
         },
@@ -121,7 +121,7 @@ const router = new Router({
           path: "/setmeal/add",
           component: () => import("@/views/setmeal/addSetmeal.vue"),
           meta: {
-            title: "添加套餐",
+            title: "新增直送箱",
             hidden: true
           }
         }

@@ -107,7 +107,7 @@
                 </p>
                 <p>
                   <span
-                    ><label>菜品：</label>{{ item.details.orderDishes }}</span
+                    ><label>單品：</label>{{ item.details.orderDishes }}</span
                   >
                 </p>
               </div>
@@ -162,7 +162,7 @@
                 </p>
                 <p>
                   <span
-                    ><label>今日新增用户：</label
+                    ><label>今日新增會員：</label
                     >{{ item.details.newUsers }}</span
                   >
                   <span

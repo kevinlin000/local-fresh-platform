@@ -151,7 +151,7 @@
               >按销量</span
             >
           </div>
-          <BarChart :chart-data="chartDataC" title="菜品分类占比" />
+          <BarChart :chart-data="chartDataC" title="單品分類占比" />
         </div>
         <div>
           <MixedChart :chart-data="chartDataB" title="菜单销售排行" />

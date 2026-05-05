@@ -38,7 +38,7 @@
     </div>
     <div class="ritCont">
       <div class="tit">
-        已选菜品({{ checkedListAll.length }})
+        已選單品({{ checkedListAll.length }})
       </div>
       <div class="items">
         <div v-for="(item, ind) in checkedListAll"

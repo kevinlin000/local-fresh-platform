@@ -26,7 +26,7 @@
         </li>
 
         <li>
-          <p class="tit">新增用户</p>
+          <p class="tit">新增會員</p>
           <p class="num">{{ overviewData.newUsers }}</p>
         </li>
       </ul>

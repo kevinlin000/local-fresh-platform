@@ -7,7 +7,7 @@ import request from '@/utils/request'
 // 查询列表接口
 export const getDishPage = (params: any) => {
   return request({
-    url: '/dish/page',
+    url: '/product/page',
     method: 'get',
     params
   })
@@ -16,7 +16,7 @@ export const getDishPage = (params: any) => {
 // 删除接口
 export const deleteDish = (ids: string) => {
   return request({
-    url: '/dish',
+    url: '/product',
     method: 'delete',
     params: { ids }
   })
@@ -25,7 +25,7 @@ export const deleteDish = (ids: string) => {
 // 修改接口
 export const editDish = (params: any) => {
   return request({
-    url: '/dish',
+    url: '/product',
     method: 'put',
     data: { ...params }
   })
@@ -34,7 +34,7 @@ export const editDish = (params: any) => {
 // 新增接口
 export const addDish = (params: any) => {
   return request({
-    url: '/dish',
+    url: '/product',
     method: 'post',
     data: { ...params }
   })
@@ -43,7 +43,7 @@ export const addDish = (params: any) => {
 // 查询详情
 export const queryDishById = (id: string | (string | null)[]) => {
   return request({
-    url: `/dish/${id}`,
+    url: `/product/${id}`,
     method: 'get'
   })
 }
@@ -60,7 +60,7 @@ export const getCategoryList = (params: any) => {
 // 查菜品列表的接口
 export const queryDishList = (params: any) => {
   return request({
-    url: '/dish/list',
+    url: '/product/list',
     method: 'get',
     params
   })
@@ -81,7 +81,7 @@ export const commonDownload = (params: any) => {
 // 起售停售---批量起售停售接口
 export const dishStatusByStatus = (params: any) => {
   return request({
-    url: `/dish/status/${params.status}`,
+    url: `/product/status/${params.status}`,
     method: 'post',
     params: { id: params.id }
   })
