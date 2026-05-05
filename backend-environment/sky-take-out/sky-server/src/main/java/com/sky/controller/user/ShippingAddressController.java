@@ -11,20 +11,20 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/user/addressBook")
-@Api(tags = "C端地址簿接口")
-public class AddressBookController {
+@RequestMapping("/user/shippingAddress")
+@Api(tags = "C端收貨地址接口")
+public class ShippingAddressController {
 
     @Autowired
     private ShippingAddressService shippingAddressService;
 
     /**
-     * 查询当前登录用户的所有地址信息
+     * 查询当前登录会员的所有收貨地址
      *
      * @return
      */
     @GetMapping("/list")
-    @ApiOperation("查询当前登录用户的所有地址信息")
+    @ApiOperation("查询当前登录会员的所有收貨地址")
     public Result<List<ShippingAddress>> list() {
         ShippingAddress addressBook = new ShippingAddress();
         addressBook.setMemberId(BaseContext.getCurrentId());
@@ -33,69 +33,69 @@ public class AddressBookController {
     }
 
     /**
-     * 新增地址
+     * 新增收貨地址
      *
      * @param addressBook
      * @return
      */
     @PostMapping
-    @ApiOperation("新增地址")
+    @ApiOperation("新增收貨地址")
     public Result save(@RequestBody ShippingAddress addressBook) {
         shippingAddressService.save(addressBook);
         return Result.success();
     }
 
     @GetMapping("/{id}")
-    @ApiOperation("根据id查询地址")
+    @ApiOperation("根据id查询收貨地址")
     public Result<ShippingAddress> getById(@PathVariable Long id) {
         ShippingAddress addressBook = shippingAddressService.getById(id);
         return Result.success(addressBook);
     }
 
     /**
-     * 根据id修改地址
+     * 根据id修改收貨地址
      *
      * @param addressBook
      * @return
      */
     @PutMapping
-    @ApiOperation("根据id修改地址")
+    @ApiOperation("根据id修改收貨地址")
     public Result update(@RequestBody ShippingAddress addressBook) {
         shippingAddressService.update(addressBook);
         return Result.success();
     }
 
     /**
-     * 设置默认地址
+     * 设置默认收貨地址
      *
      * @param addressBook
      * @return
      */
     @PutMapping("/default")
-    @ApiOperation("设置默认地址")
+    @ApiOperation("设置默认收貨地址")
     public Result setDefault(@RequestBody ShippingAddress addressBook) {
         shippingAddressService.setDefault(addressBook);
         return Result.success();
     }
 
     /**
-     * 根据id删除地址
+     * 根据id删除收貨地址
      *
      * @param id
      * @return
      */
     @DeleteMapping
-    @ApiOperation("根据id删除地址")
+    @ApiOperation("根据id删除收貨地址")
     public Result deleteById(Long id) {
         shippingAddressService.deleteById(id);
         return Result.success();
     }
 
     /**
-     * 查询默认地址
+     * 查询默认收貨地址
      */
     @GetMapping("default")
-    @ApiOperation("查询默认地址")
+    @ApiOperation("查询默认收貨地址")
     public Result<ShippingAddress> getDefault() {
         //SQL:select * from shipping_address where member_id = ? and is_default = 1
         ShippingAddress addressBook = new ShippingAddress();

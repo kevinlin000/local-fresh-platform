@@ -15,11 +15,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
-@RestController("userDishController")
-@RequestMapping("/user/dish")
+@RestController("userProductController")
+@RequestMapping("/user/product")
 @Slf4j
-@Api(tags = "C端-菜品浏览接口")
-public class DishController {
+@Api(tags = "C端-單品瀏覽接口")
+public class ProductController {
     @Autowired
     private ProductService productService;
 
@@ -27,13 +27,13 @@ public class DishController {
     private RedisTemplate redisTemplate;
 
     /**
-     * 根据分类id查询菜品
+     * 根据分类id查询單品
      *
      * @param categoryId
      * @return
      */
     @GetMapping("/list")
-    @ApiOperation("根据分类id查询菜品")
+    @ApiOperation("根据分类id查询單品")
     public Result<List<ProductVO>> list(Long categoryId) {
 
         // 構建redis的key,規則：dish_分類id

@@ -16,24 +16,24 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 套餐管理
+ * 直送箱管理
  */
 @RestController
-@RequestMapping("/admin/setmeal")
-@Api(tags = "套餐相关接口")
+@RequestMapping("/admin/giftbox")
+@Api(tags = "直送箱相關接口")
 @Slf4j
-public class SetmealController {
+public class GiftBoxController {
 
     @Autowired
     private GiftBoxService giftBoxService;
 
     /**
-     * 新增套餐
+     * 新增直送箱
      * @param setmealDTO
      * @return
      */
     @PostMapping
-    @ApiOperation("新增套餐")
+    @ApiOperation("新增直送箱")
     @CacheEvict(cacheNames = "setmealCache",key = "#setmealDTO.categoryId") //key: setmealCache::100
     public Result save(@RequestBody GiftBoxDTO setmealDTO) {
         giftBoxService.saveWithDish(setmealDTO);
@@ -41,24 +41,24 @@ public class SetmealController {
     }
 
     /**
-     * 分页查询
+     * 直送箱分頁查詢
      * @param setmealPageQueryDTO
      * @return
      */
     @GetMapping("/page")
-    @ApiOperation("分页查询")
+    @ApiOperation("直送箱分頁查詢")
     public Result<PageResult> page(GiftBoxPageQueryDTO setmealPageQueryDTO) {
         PageResult pageResult = giftBoxService.pageQuery(setmealPageQueryDTO);
         return Result.success(pageResult);
     }
 
     /**
-     * 批量删除套餐
+     * 批量刪除直送箱
      * @param ids
      * @return
      */
     @DeleteMapping
-    @ApiOperation("批量删除套餐")
+    @ApiOperation("批量刪除直送箱")
     @CacheEvict(cacheNames = "setmealCache",allEntries = true) //清除setmealCache缓存中所有数据
     public Result delete(@RequestParam List<Long> ids){
         giftBoxService.deleteBatch(ids);
@@ -66,26 +66,26 @@ public class SetmealController {
     }
 
     /**
-     * 根据id查询套餐，用于修改页面回显数据
+     * 根据id查询直送箱，用于修改页面回显数据
      *
      * @param id
      * @return
      */
     @GetMapping("/{id}")
-    @ApiOperation("根据id查询套餐")
+    @ApiOperation("根据id查询直送箱")
     public Result<GiftBoxVO> getById(@PathVariable Long id) {
         GiftBoxVO setmealVO = giftBoxService.getByIdWithDish(id);
         return Result.success(setmealVO);
     }
 
     /**
-     * 修改套餐
+     * 修改直送箱
      *
      * @param setmealDTO
      * @return
      */
     @PutMapping
-    @ApiOperation("修改套餐")
+    @ApiOperation("修改直送箱")
     @CacheEvict(cacheNames = "setmealCache",allEntries = true)
     public Result update(@RequestBody GiftBoxDTO setmealDTO) {
         giftBoxService.update(setmealDTO);
@@ -93,13 +93,13 @@ public class SetmealController {
     }
 
     /**
-     * 套餐起售停售
+     * 直送箱起售停售
      * @param status
      * @param id
      * @return
      */
     @PostMapping("/status/{status}")
-    @ApiOperation("套餐起售停售")
+    @ApiOperation("直送箱上架下架")
     @CacheEvict(cacheNames = "setmealCache",allEntries = true)
     public Result startOrStop(@PathVariable Integer status, Long id) {
         giftBoxService.startOrStop(status, id);

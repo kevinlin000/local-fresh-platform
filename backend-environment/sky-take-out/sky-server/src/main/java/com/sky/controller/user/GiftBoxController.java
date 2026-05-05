@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@RestController("userSetmealController")
-@RequestMapping("/user/setmeal")
-@Api(tags = "C端-套餐浏览接口")
-public class SetmealController {
+@RestController("userGiftBoxController")
+@RequestMapping("/user/giftbox")
+@Api(tags = "C端-直送箱瀏覽接口")
+public class GiftBoxController {
     @Autowired
     private GiftBoxService giftBoxService;
 
@@ -30,7 +30,7 @@ public class SetmealController {
      * @return
      */
     @GetMapping("/list")
-    @ApiOperation("根据分类id查询套餐")
+    @ApiOperation("根据分类id查询直送箱")
     @Cacheable(cacheNames = "setmealCache",key = "#categoryId") //key: setmealCache::100
     public Result<List<GiftBox>> list(Long categoryId) {
         GiftBox setmeal = new GiftBox();
@@ -42,13 +42,13 @@ public class SetmealController {
     }
 
     /**
-     * 根据套餐id查询包含的菜品列表
+     * 根据直送箱id查询包含的單品列表
      *
      * @param id
      * @return
      */
-    @GetMapping("/dish/{id}")
-    @ApiOperation("根据套餐id查询包含的菜品列表")
+    @GetMapping("/product/{id}")
+    @ApiOperation("根据直送箱id查询包含的單品列表")
     public Result<List<ProductItemVO>> dishList(@PathVariable("id") Long id) {
         List<ProductItemVO> list = giftBoxService.getDishItemById(id);
         return Result.success(list);

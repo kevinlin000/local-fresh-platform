@@ -14,10 +14,10 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("/user/shoppingCart")
+@RequestMapping("/user/cart")
 @Slf4j
-@Api(tags = "C端購物車相關接口")
-public class ShoppingCartController {
+@Api(tags = "C端購物車接口")
+public class CartController {
 
     @Autowired
     private CartService cartService;

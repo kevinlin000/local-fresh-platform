@@ -22,10 +22,10 @@ import java.util.Map;
 
 
 @RestController
-@RequestMapping("/user/user")
-@Api(tags = "用户相關接口")
+@RequestMapping("/user/member")
+@Api(tags = "會員相關接口")
 @Slf4j
-public class UserController {
+public class MemberController {
 
     @Autowired
     private MemberService memberService;
@@ -33,14 +33,14 @@ public class UserController {
     @Autowired
     private JwtProperties jwtProperties;
     /**
-     * 微信登錄
+     * 會員登入
      * @param userLoginDTO
      * @return
      */
     @PostMapping("/login")
-    @ApiOperation("微信登錄")
+    @ApiOperation("會員登入")
     public Result<MemberLoginVO> login(@RequestBody MemberLoginDTO userLoginDTO) {
-        log.info("微信用戶登錄：{}", userLoginDTO.getCode());
+        log.info("會員登入：{}", userLoginDTO.getCode());
 
         // 微信登錄
         Member user = memberService.wxLogin(userLoginDTO);
