@@ -1,14 +1,15 @@
 package com.sky.service;
 
 import com.sky.dto.MemberLoginDTO;
-import com.sky.entity.Member;
+import com.sky.vo.MemberLoginVO;
 
 public interface MemberService {
 
     /**
-     * 微信登錄
-     * @param userLoginVO
+     * 假登入
+     *
+     * @param memberLoginDTO
      * @return
      */
-    Member wxLogin(MemberLoginDTO userLoginVO);
+    MemberLoginVO mockLogin(MemberLoginDTO memberLoginDTO);
 }

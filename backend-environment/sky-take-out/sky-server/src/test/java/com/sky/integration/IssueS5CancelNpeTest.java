@@ -71,7 +71,7 @@ class IssueS5CancelNpeTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        // 使用 Mock 登入取得 JWT（code 任意，getOpenid 固定回傳 mock_openid_<code>）
+        // 使用假登入取得 JWT（code 任意，openid 會寫成 mock_<code>）
         MvcResult loginResult = mockMvc.perform(
                 post("/user/member/login")
                         .contentType(MediaType.APPLICATION_JSON)
