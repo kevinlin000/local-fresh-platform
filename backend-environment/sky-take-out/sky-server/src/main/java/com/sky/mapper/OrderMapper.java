@@ -6,6 +6,7 @@ import com.sky.dto.GoodsSalesDTO;
 import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.entity.Orders;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
@@ -96,4 +97,8 @@ public interface OrderMapper {
      * @return
      */
     List<GoodsSalesDTO> getSalesTop10(LocalDateTime begin, LocalDateTime end);
+
+    void updateStatusBatch(@Param("ids") List<Long> ids,
+                           @Param("fromStatus") Integer fromStatus,
+                           @Param("toStatus") Integer toStatus);
 }

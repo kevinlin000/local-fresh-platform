@@ -112,4 +112,14 @@
         limit 0,10
     </select>
 
+    <update id="updateStatusBatch">
+        update orders
+        set status = #{toStatus}
+        where status = #{fromStatus}
+          and id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
 </mapper>

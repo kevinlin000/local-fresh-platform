@@ -17,6 +17,7 @@ import com.sky.service.GroupBuyService;
 import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.GroupBuyVO;
 import com.sky.websocket.WebSocketServer;
+import org.redisson.api.RedissonClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,6 +71,9 @@ class GroupBuyServiceTest {
 
     @MockBean
     private RedisConnectionFactory redisConnectionFactory;
+
+    @MockBean
+    private RedissonClient redissonClient;
 
     @MockBean
     private ServerEndpointExporter serverEndpointExporter;

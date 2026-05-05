@@ -1,9 +1,11 @@
 package com.sky.service.impl;
 
 import cn.hutool.core.util.IdUtil;
+import com.alibaba.fastjson.JSON;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
 import com.sky.dto.InitiateGroupBuyDTO;
+import com.sky.dto.JoinGroupBuyDTO;
 import com.sky.entity.GroupBuy;
 import com.sky.entity.GroupBuyParticipant;
 import com.sky.entity.OrderDetail;
@@ -22,14 +24,22 @@ import com.sky.service.GroupBuyService;
 import com.sky.vo.GroupBuyParticipantVO;
 import com.sky.vo.GroupBuyVO;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
+import com.sky.websocket.WebSocketServer;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,6 +47,7 @@ import java.util.stream.Collectors;
 public class GroupBuyServiceImpl implements GroupBuyService {
 
     private static final Integer GROUP_BUY_ACTIVE = 1;
+    private static final Integer GROUP_BUY_COMPLETED = 2;
 
     @Autowired
     private GroupBuyMapper groupBuyMapper;
@@ -56,6 +67,15 @@ public class GroupBuyServiceImpl implements GroupBuyService {
     @Autowired
     private ShippingAddressMapper shippingAddressMapper;
 
+    @Autowired
+    private RedissonClient redissonClient;
+
+    @Autowired
+    private TransactionTemplate transactionTemplate;
+
+    @Autowired
+    private WebSocketServer webSocketServer;
+
     @Value("${sky.group-buy.expire-hours}")
     private Long groupBuyExpireHours;
 
@@ -67,17 +87,8 @@ public class GroupBuyServiceImpl implements GroupBuyService {
             throw new OrderBusinessException(MessageConstant.USER_NOT_LOGIN);
         }
 
-        Product product = productMapper.getById(initiateGroupBuyDTO.getProductId());
-        if (product == null) {
-            throw new OrderBusinessException(MessageConstant.GROUP_BUY_FAILED);
-        }
-
-        ShippingAddress shippingAddress = shippingAddressMapper.getById(initiateGroupBuyDTO.getAddressId());
-        if (shippingAddress == null || !memberId.equals(shippingAddress.getMemberId())) {
-            throw new AddressBookBusinessException(MessageConstant.ADDRESS_BOOK_IS_NULL);
-        }
-
-        Orders preOrder = buildPreOrder(memberId, initiateGroupBuyDTO, shippingAddress, product);
+        Orders preOrder = buildPreOrder(memberId, initiateGroupBuyDTO.getProductId(),
+                initiateGroupBuyDTO.getQuantity(), initiateGroupBuyDTO.getAddressId());
 
         LocalDateTime now = LocalDateTime.now();
         GroupBuy groupBuy = GroupBuy.builder()
@@ -104,6 +115,37 @@ public class GroupBuyServiceImpl implements GroupBuyService {
     }
 
     @Override
+    public GroupBuyVO joinGroupBuy(JoinGroupBuyDTO joinGroupBuyDTO) {
+        Long memberId = BaseContext.getCurrentId();
+        if (memberId == null) {
+            throw new OrderBusinessException(MessageConstant.USER_NOT_LOGIN);
+        }
+
+        String lockKey = "lock:groupbuy:" + joinGroupBuyDTO.getGroupNo();
+        RLock lock = redissonClient.getLock(lockKey);
+        boolean locked = false;
+        try {
+            locked = lock.tryLock(3, 5, TimeUnit.SECONDS);
+            if (!locked) {
+                throw new OrderBusinessException(MessageConstant.GROUP_BUY_BUSY);
+            }
+
+            GroupBuyVO result = transactionTemplate.execute(status -> doJoinGroupBuy(memberId, joinGroupBuyDTO));
+            if (result == null) {
+                throw new OrderBusinessException(MessageConstant.GROUP_BUY_FAILED);
+            }
+            return result;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new OrderBusinessException(MessageConstant.GROUP_BUY_FAILED);
+        } finally {
+            if (locked && lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
+        }
+    }
+
+    @Override
     public GroupBuyVO getByGroupNo(String groupNo) {
         GroupBuy groupBuy = groupBuyMapper.getByGroupNo(groupNo);
         if (groupBuy == null) {
@@ -125,10 +167,83 @@ public class GroupBuyServiceImpl implements GroupBuyService {
                 .collect(Collectors.toList());
     }
 
-    private Orders buildPreOrder(Long memberId, InitiateGroupBuyDTO initiateGroupBuyDTO,
-                                 ShippingAddress shippingAddress, Product product) {
+    private GroupBuyVO doJoinGroupBuy(Long memberId, JoinGroupBuyDTO joinGroupBuyDTO) {
+        GroupBuy groupBuy = groupBuyMapper.getByGroupNo(joinGroupBuyDTO.getGroupNo());
+        if (groupBuy == null) {
+            throw new OrderBusinessException(MessageConstant.GROUP_BUY_NOT_FOUND);
+        }
+        if (!GROUP_BUY_ACTIVE.equals(groupBuy.getStatus())) {
+            throw new OrderBusinessException(MessageConstant.GROUP_BUY_INVALID_STATUS);
+        }
+        if (groupBuy.getExpireAt().isBefore(LocalDateTime.now())) {
+            throw new OrderBusinessException(MessageConstant.GROUP_BUY_EXPIRED);
+        }
+        if (groupBuy.getCurrentCount() >= groupBuy.getRequiredCount()) {
+            throw new OrderBusinessException(MessageConstant.GROUP_BUY_FULL);
+        }
+        if (groupBuyParticipantMapper.countByGroupBuyIdAndMemberId(groupBuy.getId(), memberId) > 0) {
+            throw new OrderBusinessException(MessageConstant.GROUP_BUY_ALREADY_JOINED);
+        }
+
+        Orders preOrder = buildPreOrder(memberId, joinGroupBuyDTO.getProductId(),
+                joinGroupBuyDTO.getQuantity(), joinGroupBuyDTO.getAddressId());
+
+        try {
+            groupBuyParticipantMapper.insert(GroupBuyParticipant.builder()
+                    .groupBuyId(groupBuy.getId())
+                    .memberId(memberId)
+                    .preOrderId(preOrder.getId())
+                    .joinedAt(LocalDateTime.now())
+                    .build());
+        } catch (DuplicateKeyException e) {
+            throw new OrderBusinessException(MessageConstant.GROUP_BUY_ALREADY_JOINED);
+        }
+
+        groupBuy.setCurrentCount(groupBuy.getCurrentCount() + 1);
+        groupBuy.setUpdatedAt(LocalDateTime.now());
+        groupBuyMapper.update(groupBuy);
+
+        if (groupBuy.getCurrentCount().equals(groupBuy.getRequiredCount())) {
+            doCompleteGroupBuy(groupBuy);
+        }
+
+        return buildGroupBuyVO(groupBuyMapper.getById(groupBuy.getId()));
+    }
+
+    private void doCompleteGroupBuy(GroupBuy groupBuy) {
+        List<GroupBuyParticipant> participants = groupBuyParticipantMapper.listByGroupBuyId(groupBuy.getId());
+        List<Long> preOrderIds = participants.stream()
+                .map(GroupBuyParticipant::getPreOrderId)
+                .collect(Collectors.toList());
+
+        groupBuy.setStatus(GROUP_BUY_COMPLETED);
+        groupBuy.setUpdatedAt(LocalDateTime.now());
+        groupBuyMapper.update(groupBuy);
+
+        if (!preOrderIds.isEmpty()) {
+            orderMapper.updateStatusBatch(preOrderIds, Orders.PENDING_GROUP, Orders.TO_BE_CONFIRMED);
+        }
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("type", 1);
+        payload.put("content", "揪團已成團，請商家接單");
+        payload.put("groupNo", groupBuy.getGroupNo());
+        webSocketServer.sendToAllClient(JSON.toJSONString(payload));
+    }
+
+    private Orders buildPreOrder(Long memberId, Long productId, Integer quantity, Long addressId) {
+        Product product = productMapper.getById(productId);
+        if (product == null) {
+            throw new OrderBusinessException(MessageConstant.GROUP_BUY_FAILED);
+        }
+
+        ShippingAddress shippingAddress = shippingAddressMapper.getById(addressId);
+        if (shippingAddress == null || !memberId.equals(shippingAddress.getMemberId())) {
+            throw new AddressBookBusinessException(MessageConstant.ADDRESS_BOOK_IS_NULL);
+        }
+
         LocalDateTime now = LocalDateTime.now();
-        BigDecimal amount = product.getPrice().multiply(BigDecimal.valueOf(initiateGroupBuyDTO.getQuantity()));
+        BigDecimal amount = product.getPrice().multiply(BigDecimal.valueOf(quantity));
 
         Orders preOrder = Orders.builder()
                 .number(String.valueOf(IdUtil.getSnowflakeNextId()))
@@ -152,7 +267,7 @@ public class GroupBuyServiceImpl implements GroupBuyService {
                 .name(product.getProductName())
                 .image(product.getImage())
                 .productId(product.getId())
-                .number(initiateGroupBuyDTO.getQuantity())
+                .number(quantity)
                 .amount(product.getPrice())
                 .build();
         orderDetailMapper.insert(orderDetail);

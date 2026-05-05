@@ -14,6 +14,15 @@ spring:
       schema-locations: classpath:schema-test.sql
       mode: always
 
+springfox:
+  documentation:
+    enabled: false
+
+management:
+  health:
+    redis:
+      enabled: false
+
 # Provide sky.* so that application.yml ${...} placeholders can resolve
 sky:
   datasource:
