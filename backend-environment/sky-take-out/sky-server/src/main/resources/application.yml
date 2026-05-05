@@ -61,6 +61,13 @@ sky:
     address: ${sky.shop.address} # 換成想要的台灣店家地址
   google:
     api-key:  ${sky.google.api-key} # 貼上你的 Google API Key
+  oauth:
+    google:
+      client-id: ${sky.oauth.google.client-id}
+      client-secret: ${sky.oauth.google.client-secret}
+      redirect-uri: ${sky.oauth.google.redirect-uri:http://localhost:5173/oauth/callback}
+  auth:
+    mock-login-enabled: ${sky.auth.mock-login-enabled:true}
   group-buy:
     expire-hours: 24
     share-base-url: http://localhost:5173/groupBuy

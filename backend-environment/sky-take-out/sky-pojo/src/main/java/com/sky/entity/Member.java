@@ -21,6 +21,12 @@ public class Member implements Serializable {
     //微信用户唯一标识
     private String openid;
 
+    // Google OAuth subject
+    private String googleSub;
+
+    // 電子郵件
+    private String email;
+
     //姓名
     private String name;
 
@@ -35,6 +41,12 @@ public class Member implements Serializable {
 
     //头像
     private String avatar;
+
+    // Google 頭像
+    private String avatarUrl;
+
+    // 登入方式
+    private String loginProvider;
 
     //注册时间
     private LocalDateTime createTime;

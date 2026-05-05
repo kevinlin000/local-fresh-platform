@@ -1,6 +1,7 @@
 package com.sky.service;
 
 import com.sky.dto.MemberLoginDTO;
+import com.sky.dto.GoogleOAuthLoginDTO;
 import com.sky.vo.MemberLoginVO;
 
 public interface MemberService {
@@ -12,4 +13,6 @@ public interface MemberService {
      * @return
      */
     MemberLoginVO mockLogin(MemberLoginDTO memberLoginDTO);
+
+    MemberLoginVO googleOAuthLogin(GoogleOAuthLoginDTO googleOAuthLoginDTO);
 }

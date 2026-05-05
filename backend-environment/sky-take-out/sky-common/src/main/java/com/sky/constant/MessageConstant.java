@@ -16,6 +16,7 @@ public class MessageConstant {
     public static final String SHOPPING_CART_IS_NULL = "购物车数据为空，不能下单";
     public static final String ADDRESS_BOOK_IS_NULL = "会员地址为空，不能下单";
     public static final String LOGIN_FAILED = "会员登入失败";
+    public static final String LOGIN_DISABLED = "此登入方式已停用";
     public static final String UPLOAD_FAILED = "文件上传失败";
     public static final String SETMEAL_ENABLE_FAILED = "套餐内包含未启售菜品，无法启售";
     public static final String PASSWORD_EDIT_FAILED = "密码修改失败";
@@ -32,5 +33,7 @@ public class MessageConstant {
     public static final String GROUP_BUY_ALREADY_JOINED = "您已加入此揪團";
     public static final String GROUP_BUY_INVALID_STATUS = "揪團狀態錯誤";
     public static final String GROUP_BUY_ORDER_CREATE_FAILED = "建立揪團預訂單失敗";
+    public static final String GOOGLE_OAUTH_FAILED = "Google 登入失敗";
+    public static final String GOOGLE_OAUTH_TOKEN_INVALID = "Google 身分驗證失敗";
 
 }

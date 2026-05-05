@@ -5,9 +5,21 @@
 
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-        insert into member (openid, name, phone, sex, id_number, avatar, create_time)
-        values (#{openid}, #{name}, #{phone}, #{sex}, #{idNumber}, #{avatar}, #{createTime})
+        insert into member (openid, google_sub, email, name, phone, sex, id_number, avatar, avatar_url, login_provider, create_time)
+        values (#{openid}, #{googleSub}, #{email}, #{name}, #{phone}, #{sex}, #{idNumber}, #{avatar}, #{avatarUrl}, coalesce(#{loginProvider}, 'mock'), #{createTime})
     </insert>
+
+    <update id="updateOAuthInfo">
+        update member
+        <set>
+            <if test="googleSub != null">google_sub = #{googleSub},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="avatarUrl != null">avatar_url = #{avatarUrl},</if>
+            <if test="loginProvider != null">login_provider = #{loginProvider},</if>
+        </set>
+        where id = #{id}
+    </update>
 
     <select id="countByMap" resultType="java.lang.Integer">
         select count(id) from member

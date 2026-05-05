@@ -50,6 +50,13 @@ sky:
     address: "台北市信義區市府路1號"
   google:
     api-key: test-google-api-key
+  oauth:
+    google:
+      client-id: test-google-client-id.apps.googleusercontent.com
+      client-secret: test-google-client-secret
+      redirect-uri: http://localhost:5173/oauth/callback
+  auth:
+    mock-login-enabled: true
   aws:
     s3:
       region: us-east-1

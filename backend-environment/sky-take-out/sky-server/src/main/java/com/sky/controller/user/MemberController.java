@@ -1,5 +1,6 @@
 package com.sky.controller.user;
 
+import com.sky.dto.GoogleOAuthLoginDTO;
 import com.sky.dto.MemberLoginDTO;
 import com.sky.result.Result;
 import com.sky.service.MemberService;
@@ -33,5 +34,12 @@ public class MemberController {
         log.info("會員登入：{}", userLoginDTO.getCode());
         return Result.success(memberService.mockLogin(userLoginDTO));
 
+    }
+
+    @PostMapping("/oauth/google")
+    @ApiOperation("Google OAuth 會員登入")
+    public Result<MemberLoginVO> googleOAuthLogin(@RequestBody GoogleOAuthLoginDTO googleOAuthLoginDTO) {
+        log.info("Google OAuth 會員登入，redirectUri={}", googleOAuthLoginDTO.getRedirectUri());
+        return Result.success(memberService.googleOAuthLogin(googleOAuthLoginDTO));
     }
 }

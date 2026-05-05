@@ -43,13 +43,19 @@ CREATE TABLE category (
 CREATE TABLE member (
     id          BIGINT AUTO_INCREMENT PRIMARY KEY,
     openid      VARCHAR(45),
+    google_sub  VARCHAR(64),
+    email       VARCHAR(128),
     name        VARCHAR(32),
     phone       VARCHAR(11),
     sex         VARCHAR(2),
     id_number   VARCHAR(18),
     avatar      VARCHAR(500),
+    avatar_url  VARCHAR(512),
+    login_provider VARCHAR(16) DEFAULT 'mock' NOT NULL,
     create_time DATETIME
 );
+
+CREATE UNIQUE INDEX uk_member_google_sub ON member (google_sub);
 
 CREATE TABLE product (
     id           BIGINT AUTO_INCREMENT PRIMARY KEY,

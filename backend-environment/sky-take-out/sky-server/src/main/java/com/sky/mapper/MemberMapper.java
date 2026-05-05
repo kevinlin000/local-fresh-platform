@@ -16,6 +16,12 @@ public interface MemberMapper {
     @Select("select * from member where openid = #{openid}")
     Member selectByOpenid(String openid);
 
+    @Select("select * from member where google_sub = #{googleSub}")
+    Member selectByGoogleSub(String googleSub);
+
+    @Select("select * from member where email = #{email}")
+    Member selectByEmail(String email);
+
     /**
      * 插入數據
      * @param user
@@ -32,5 +38,7 @@ public interface MemberMapper {
      * @return
      */
     Integer countByMap(Map map);
+
+    void updateOAuthInfo(Member member);
 
 }
