@@ -112,6 +112,7 @@ class IssueS4ThreadLocalTest {
         order.setStatus(status);
         order.setUserId(userId);
         order.setOrderTime(orderTime);
+        order.setPayMethod(1);
         order.setPayStatus(Orders.UN_PAID);
         order.setAmount(new BigDecimal("100.00"));
         order.setPhone("0912345678");

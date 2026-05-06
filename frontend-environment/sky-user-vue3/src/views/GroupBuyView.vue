@@ -1,33 +1,801 @@
 <template>
   <section class="page-shell">
-    <div class="card">
-      <p class="eyebrow">揪團詳情</p>
-      <h1>揪團頁骨架</h1>
-      <p>路由參數 groupNo：{{ $route.params.groupNo }}</p>
+    <el-skeleton v-if="loading" :rows="10" animated />
+
+    <div v-else-if="groupBuy" class="card">
+      <div class="groupbuy-layout">
+        <div class="media-panel">
+          <img v-if="groupBuy.productImage" :src="groupBuy.productImage" :alt="groupBuy.productName || '揪團商品'" />
+          <div v-else class="image-placeholder">團</div>
+        </div>
+
+        <div class="content-panel">
+          <p class="eyebrow">揪團詳情</p>
+          <h1>{{ groupBuy.productName || '揪團商品' }}</h1>
+          <div class="status-row">
+            <el-tag :type="statusType(groupBuy.status)" size="large" effect="plain">
+              {{ statusText(groupBuy.status) }}
+            </el-tag>
+            <span class="countdown">倒數 {{ countdownText }}</span>
+          </div>
+
+          <div v-if="groupBuy.status === 3" class="status-alert danger">
+            揪團未成立，訂單已取消。
+          </div>
+          <div v-else-if="groupBuy.status === 2" class="status-alert success">
+            揪團已成團，三位成員的訂單已轉為待接單。
+          </div>
+
+          <div class="summary-grid">
+            <div class="summary-item">
+              <span>揪團編號</span>
+              <strong>{{ groupBuy.groupNo }}</strong>
+            </div>
+            <div class="summary-item">
+              <span>商品數量</span>
+              <strong>{{ groupBuy.quantity || 1 }} 件</strong>
+            </div>
+            <div class="summary-item">
+              <span>目前進度</span>
+              <strong>{{ groupBuy.currentCount }}/{{ groupBuy.requiredCount }} 人</strong>
+            </div>
+            <div class="summary-item">
+              <span>還差人數</span>
+              <strong>{{ remainingCount }} 人</strong>
+            </div>
+          </div>
+
+          <div class="actions">
+            <template v-if="groupBuy.status === 1 && !joinedByCurrentMember">
+              <el-button type="success" size="large" :loading="joining" @click="openJoinDialog">
+                加入揪團
+              </el-button>
+            </template>
+            <template v-else-if="groupBuy.status === 1">
+              <el-tag type="success" size="large">已加入，等待其他成員</el-tag>
+            </template>
+            <template v-else>
+              <el-button plain @click="goOrders">回我的揪團</el-button>
+            </template>
+
+            <el-button @click="copyShareUrl">複製分享連結</el-button>
+          </div>
+        </div>
+      </div>
+
+      <div class="participants-card">
+        <div class="participants-header">
+          <div>
+            <p class="eyebrow">已加入成員</p>
+            <h2>目前有 {{ groupBuy.currentCount }} 位成員加入</h2>
+          </div>
+          <span class="refresh-note">狀態為揪團中時，每 5 秒自動更新</span>
+        </div>
+
+        <div class="participant-list">
+          <article
+            v-for="participant in groupBuy.participants"
+            :key="`${participant.memberId}-${participant.joinedAt}`"
+            class="participant-card"
+          >
+            <strong>{{ participant.memberName }}</strong>
+            <span>ID {{ participant.memberId }}</span>
+            <time>{{ formatDate(participant.joinedAt) }}</time>
+          </article>
+        </div>
+      </div>
     </div>
+
+    <el-empty v-else description="找不到這個揪團" />
+
+    <el-dialog v-model="joinDialogVisible" title="加入揪團" width="560px">
+      <div class="dialog-body">
+        <div class="dialog-summary">
+          <div class="summary-image">
+            <img v-if="groupBuy?.productImage" :src="groupBuy.productImage" :alt="groupBuy.productName || '揪團商品'" />
+            <div v-else class="image-placeholder small">團</div>
+          </div>
+          <div>
+            <strong>{{ groupBuy?.productName || '揪團商品' }}</strong>
+            <p>{{ groupBuy?.currentCount }}/{{ groupBuy?.requiredCount }} 人，還差 {{ remainingCount }} 人成團。</p>
+            <span>數量 {{ groupBuy?.quantity || 1 }} 件</span>
+          </div>
+        </div>
+
+        <div class="dialog-section">
+          <div class="section-line">
+            <h3>收貨地址</h3>
+            <el-button text type="success" @click="addressDialogVisible = true">
+              新增地址
+            </el-button>
+          </div>
+
+          <el-alert
+            v-if="joinError"
+            :title="joinError"
+            type="error"
+            show-icon
+            class="dialog-alert"
+            @close="joinError = ''"
+          />
+
+          <el-skeleton v-if="addressLoading" :rows="4" animated />
+
+          <el-empty v-else-if="!addressList.length" description="請先新增至少一筆收貨地址" />
+
+          <el-radio-group v-else v-model="selectedAddressId" class="address-group">
+            <label
+              v-for="address in addressList"
+              :key="address.id"
+              class="address-card"
+              :class="{ active: selectedAddressId === address.id }"
+            >
+              <el-radio :label="address.id">
+                <span />
+              </el-radio>
+              <div class="address-card-body">
+                <div class="address-topline">
+                  <strong>{{ address.consignee }}</strong>
+                  <span>{{ address.phone }}</span>
+                </div>
+                <p>{{ formatAddress(address) }}</p>
+                <div class="address-footer">
+                  <span v-if="address.isDefault === 1" class="default-tag">預設地址</span>
+                  <el-button
+                    v-else
+                    text
+                    type="success"
+                    @click.stop="setAsDefaultAddress(address.id)"
+                  >
+                    設為預設
+                  </el-button>
+                </div>
+              </div>
+            </label>
+          </el-radio-group>
+        </div>
+      </div>
+
+      <template #footer>
+        <el-button @click="joinDialogVisible = false">取消</el-button>
+        <el-button
+          type="success"
+          :loading="joining"
+          :disabled="!selectedAddressId"
+          @click="handleJoinGroupBuy"
+        >
+          確認加入
+        </el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="addressDialogVisible" title="新增收貨地址" width="520px">
+      <el-form label-position="top" :model="addressForm">
+        <el-form-item label="收貨人">
+          <el-input v-model="addressForm.consignee" placeholder="例如：Kevin Lin" />
+        </el-form-item>
+        <el-form-item label="手機號碼">
+          <el-input v-model="addressForm.phone" placeholder="例如：0912345678" />
+        </el-form-item>
+        <el-form-item label="城市">
+          <el-input v-model="addressForm.cityName" placeholder="例如：台北市" />
+        </el-form-item>
+        <el-form-item label="行政區">
+          <el-input v-model="addressForm.districtName" placeholder="例如：信義區" />
+        </el-form-item>
+        <el-form-item label="詳細地址">
+          <el-input v-model="addressForm.detail" placeholder="例如：市府路 1 號" />
+        </el-form-item>
+        <el-form-item label="地址標籤">
+          <el-input v-model="addressForm.label" placeholder="例如：住家 / 公司" />
+        </el-form-item>
+        <el-form-item>
+          <el-checkbox v-model="addressForm.isDefaultChecked">設成預設地址</el-checkbox>
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <el-button @click="addressDialogVisible = false">取消</el-button>
+        <el-button type="success" :loading="savingAddress" @click="createNewAddress">
+          儲存地址
+        </el-button>
+      </template>
+    </el-dialog>
   </section>
 </template>
 
 <script setup lang="ts">
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { ElMessage } from 'element-plus'
+import { useRoute, useRouter } from 'vue-router'
+import {
+  createAddress,
+  fetchAddressList,
+  setDefaultAddress,
+  type ShippingAddress
+} from '@/services/address'
+import {
+  fetchGroupBuy,
+  joinGroupBuy,
+  type GroupBuyRecord
+} from '@/services/groupBuy'
+import { useMemberStore } from '@/stores/member'
+
+const route = useRoute()
+const router = useRouter()
+const memberStore = useMemberStore()
+
+const loading = ref(false)
+const joining = ref(false)
+const groupBuy = ref<GroupBuyRecord | null>(null)
+const joinDialogVisible = ref(false)
+const joinError = ref('')
+
+const addressLoading = ref(false)
+const savingAddress = ref(false)
+const addressDialogVisible = ref(false)
+const addressList = ref<ShippingAddress[]>([])
+const selectedAddressId = ref<number | null>(null)
+
+const addressForm = reactive({
+  consignee: '',
+  phone: '',
+  cityName: '',
+  districtName: '',
+  detail: '',
+  label: '',
+  isDefaultChecked: true
+})
+
+const countdownText = ref('00:00')
+let countdownTimer: number | null = null
+let pollTimer: number | null = null
+let previousStatus: number | null = null
+
+const groupNo = computed(() => String(route.params.groupNo || ''))
+const currentMemberId = computed(() => memberStore.profile.id)
+const shareUrl = computed(() => {
+  if (groupBuy.value?.shareUrl) {
+    return groupBuy.value.shareUrl
+  }
+  if (typeof window === 'undefined' || !groupNo.value) {
+    return ''
+  }
+  return `${window.location.origin}/groupBuy/${groupNo.value}`
+})
+const joinedByCurrentMember = computed(() =>
+  groupBuy.value?.participants.some((participant) => participant.memberId === currentMemberId.value) ?? false
+)
+const remainingCount = computed(() =>
+  Math.max((groupBuy.value?.requiredCount || 0) - (groupBuy.value?.currentCount || 0), 0)
+)
+
+function formatDate(value: string) {
+  return new Date(value).toLocaleString('zh-TW', {
+    hour12: false
+  })
+}
+
+function formatAddress(address: ShippingAddress) {
+  return [address.cityName, address.districtName, address.detail].filter(Boolean).join('')
+}
+
+function statusText(status: number) {
+  switch (status) {
+    case 1:
+      return '揪團中'
+    case 2:
+      return '已成團'
+    case 3:
+      return '已失敗'
+    case 4:
+      return '已完成'
+    default:
+      return `狀態 ${status}`
+  }
+}
+
+function statusType(status: number) {
+  switch (status) {
+    case 2:
+      return 'success'
+    case 3:
+      return 'danger'
+    case 4:
+      return 'info'
+    default:
+      return 'warning'
+  }
+}
+
+function resetAddressForm() {
+  addressForm.consignee = ''
+  addressForm.phone = ''
+  addressForm.cityName = ''
+  addressForm.districtName = ''
+  addressForm.detail = ''
+  addressForm.label = ''
+  addressForm.isDefaultChecked = true
+}
+
+function updateCountdown() {
+  if (!groupBuy.value?.expireAt) {
+    countdownText.value = '00:00'
+    return
+  }
+  const diff = new Date(groupBuy.value.expireAt).getTime() - Date.now()
+  if (diff <= 0) {
+    countdownText.value = '00:00'
+    return
+  }
+  const totalSeconds = Math.floor(diff / 1000)
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+  countdownText.value = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+}
+
+function clearTimers() {
+  if (countdownTimer) {
+    window.clearInterval(countdownTimer)
+    countdownTimer = null
+  }
+  if (pollTimer) {
+    window.clearInterval(pollTimer)
+    pollTimer = null
+  }
+}
+
+function startCountdown() {
+  if (countdownTimer) {
+    window.clearInterval(countdownTimer)
+  }
+  updateCountdown()
+  countdownTimer = window.setInterval(updateCountdown, 1000)
+}
+
+function stopPollingIfInactive() {
+  if (groupBuy.value?.status !== 1 && pollTimer) {
+    window.clearInterval(pollTimer)
+    pollTimer = null
+  }
+}
+
+function handleStatusTransition(newStatus: number) {
+  if (previousStatus === null || previousStatus === newStatus) {
+    previousStatus = newStatus
+    return
+  }
+
+  if (previousStatus === 1 && newStatus === 2) {
+    ElMessage.success('揪團已成團，訂單已更新為待接單')
+    window.setTimeout(() => {
+      void router.push('/orders?tab=group-buy')
+    }, 1200)
+  }
+  if (previousStatus === 1 && newStatus === 3) {
+    ElMessage.warning('揪團未成立，訂單已取消')
+  }
+  previousStatus = newStatus
+}
+
+async function loadGroupBuy(showError = true) {
+  if (!groupNo.value) {
+    return
+  }
+  if (!groupBuy.value) {
+    loading.value = true
+  }
+  try {
+    const result = await fetchGroupBuy(groupNo.value)
+    groupBuy.value = result
+    handleStatusTransition(result.status)
+    startCountdown()
+    stopPollingIfInactive()
+  } catch (error) {
+    if (showError) {
+      ElMessage.error(error instanceof Error ? error.message : '載入揪團失敗')
+    }
+    groupBuy.value = null
+  } finally {
+    loading.value = false
+  }
+}
+
+async function loadAddresses() {
+  addressLoading.value = true
+  try {
+    addressList.value = await fetchAddressList()
+    const defaultAddress = addressList.value.find((item) => item.isDefault === 1)
+    selectedAddressId.value = defaultAddress?.id ?? addressList.value[0]?.id ?? null
+  } finally {
+    addressLoading.value = false
+  }
+}
+
+async function openJoinDialog() {
+  joinError.value = ''
+  joinDialogVisible.value = true
+  await loadAddresses()
+}
+
+async function setAsDefaultAddress(id: number) {
+  try {
+    await setDefaultAddress(id)
+    await loadAddresses()
+    ElMessage.success('已更新預設地址')
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '更新預設地址失敗')
+  }
+}
+
+async function createNewAddress() {
+  if (!addressForm.consignee || !addressForm.phone || !addressForm.cityName || !addressForm.districtName || !addressForm.detail) {
+    ElMessage.warning('請先填完收貨地址必要欄位')
+    return
+  }
+
+  try {
+    savingAddress.value = true
+    const shouldSetDefault = addressForm.isDefaultChecked
+    const addressSnapshot = {
+      consignee: addressForm.consignee,
+      phone: addressForm.phone,
+      cityName: addressForm.cityName,
+      districtName: addressForm.districtName,
+      detail: addressForm.detail
+    }
+    await createAddress({
+      consignee: addressSnapshot.consignee,
+      phone: addressSnapshot.phone,
+      cityName: addressSnapshot.cityName,
+      districtName: addressSnapshot.districtName,
+      detail: addressSnapshot.detail,
+      label: addressForm.label || undefined,
+      isDefault: shouldSetDefault ? 1 : 0
+    })
+    await loadAddresses()
+    if (shouldSetDefault) {
+      const createdAddress = [...addressList.value]
+        .filter((item) =>
+          item.consignee === addressSnapshot.consignee
+          && item.phone === addressSnapshot.phone
+          && item.cityName === addressSnapshot.cityName
+          && item.districtName === addressSnapshot.districtName
+          && item.detail === addressSnapshot.detail
+        )
+        .sort((a, b) => b.id - a.id)[0]
+
+      if (createdAddress) {
+        await setDefaultAddress(createdAddress.id)
+        await loadAddresses()
+      }
+    }
+    addressDialogVisible.value = false
+    resetAddressForm()
+    ElMessage.success('地址已新增')
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '新增地址失敗')
+  } finally {
+    savingAddress.value = false
+  }
+}
+
+async function handleJoinGroupBuy() {
+  if (!groupBuy.value || !selectedAddressId.value || !groupBuy.value.productId) {
+    joinError.value = '揪團資料不完整，無法加入'
+    return
+  }
+
+  try {
+    joining.value = true
+    joinError.value = ''
+    groupBuy.value = await joinGroupBuy({
+      groupNo: groupBuy.value.groupNo,
+      productId: groupBuy.value.productId,
+      quantity: groupBuy.value.quantity || 1,
+      addressId: selectedAddressId.value
+    })
+    previousStatus = groupBuy.value.status
+    joinDialogVisible.value = false
+    startCountdown()
+    stopPollingIfInactive()
+    ElMessage.success(groupBuy.value.status === 2 ? '加入成功，揪團已成團' : '已加入揪團')
+  } catch (error) {
+    joinError.value = error instanceof Error ? error.message : '加入揪團失敗'
+  } finally {
+    joining.value = false
+  }
+}
+
+async function copyShareUrl() {
+  if (!shareUrl.value) {
+    return
+  }
+  try {
+    await navigator.clipboard.writeText(shareUrl.value)
+    ElMessage.success('分享連結已複製')
+  } catch {
+    ElMessage.error('複製失敗，請手動複製連結')
+  }
+}
+
+function goOrders() {
+  void router.push('/orders?tab=group-buy')
+}
+
+watch(() => groupBuy.value?.status, (status) => {
+  if (status === 1) {
+    if (!pollTimer) {
+      pollTimer = window.setInterval(() => {
+        void loadGroupBuy(false)
+      }, 5000)
+    }
+    return
+  }
+  stopPollingIfInactive()
+})
+
+onMounted(async () => {
+  await loadGroupBuy()
+})
+
+onBeforeUnmount(() => {
+  clearTimers()
+})
 </script>
 
 <style scoped>
 .page-shell {
-  padding: 48px;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 32px 40px 52px;
 }
 
-.card {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 36px;
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.9);
+.card,
+.participants-card {
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.93);
   box-shadow: 0 24px 60px rgba(61, 111, 39, 0.12);
 }
 
+.card {
+  padding: 28px;
+}
+
+.groupbuy-layout {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 28px;
+}
+
+.media-panel,
+.summary-image {
+  overflow: hidden;
+  border-radius: 24px;
+  background: linear-gradient(145deg, #edf6e8 0%, #d9ead1 100%);
+}
+
+.media-panel {
+  height: 360px;
+}
+
+.media-panel img,
+.summary-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-placeholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: #4d7150;
+  font-size: 48px;
+  font-weight: 800;
+}
+
+.image-placeholder.small {
+  font-size: 18px;
+}
+
+.content-panel {
+  padding-top: 8px;
+}
+
 .eyebrow {
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   color: #62864e;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  color: #24351e;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.countdown {
+  color: #4b6251;
+  font-weight: 700;
+}
+
+.status-alert {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  font-weight: 700;
+}
+
+.status-alert.success {
+  background: #edf7e8;
+  color: #2f6b1f;
+}
+
+.status-alert.danger {
+  background: #fff0ee;
+  color: #b4412f;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.summary-item {
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: #f7fbf4;
+}
+
+.summary-item span {
+  display: block;
+  color: #6a7866;
+  font-size: 13px;
+}
+
+.summary-item strong {
+  display: block;
+  margin-top: 8px;
+  color: #25361f;
+  font-size: 18px;
+}
+
+.actions {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-top: 28px;
+}
+
+.participants-card {
+  margin-top: 24px;
+  padding: 28px;
+}
+
+.participants-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.refresh-note {
+  color: #6f7c6a;
+  font-size: 13px;
+}
+
+.participant-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.participant-card {
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(83, 126, 62, 0.14);
+  background: #fcfefb;
+}
+
+.participant-card span,
+.participant-card time {
+  display: block;
+  margin-top: 8px;
+  color: #60705b;
+}
+
+.dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.dialog-summary {
+  display: grid;
+  grid-template-columns: 88px 1fr;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 18px;
+  background: #f7fbf4;
+}
+
+.dialog-summary p,
+.dialog-summary span {
+  margin: 8px 0 0;
+  color: #66765f;
+}
+
+.summary-image {
+  width: 88px;
+  height: 88px;
+}
+
+.section-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.dialog-alert {
+  margin-bottom: 14px;
+}
+
+.address-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.address-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid rgba(83, 126, 62, 0.16);
+  border-radius: 18px;
+  background: #fcfefb;
+  cursor: pointer;
+}
+
+.address-card.active {
+  border-color: rgba(58, 116, 35, 0.42);
+  box-shadow: 0 16px 32px rgba(88, 126, 65, 0.12);
+}
+
+.address-topline,
+.address-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.address-card-body p {
+  margin: 8px 0 0;
+  color: #5a6756;
+}
+
+.default-tag {
+  color: #2f6b1f;
+  font-size: 13px;
   font-weight: 700;
 }
 </style>
