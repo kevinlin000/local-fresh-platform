@@ -74,6 +74,10 @@ class GroupBuyControllerTest {
                 .id(1L)
                 .groupNo("GB123456")
                 .initiatorId(1L)
+                .productId(7L)
+                .productName("高山高麗菜")
+                .productImage("https://example.com/cabbage.jpg")
+                .quantity(2)
                 .status(1)
                 .currentCount(1)
                 .requiredCount(3)
@@ -123,6 +127,10 @@ class GroupBuyControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(1))
                 .andExpect(jsonPath("$.data.currentCount").value(1))
+                .andExpect(jsonPath("$.data.productId").value(7))
+                .andExpect(jsonPath("$.data.productName").value("高山高麗菜"))
+                .andExpect(jsonPath("$.data.productImage").value("https://example.com/cabbage.jpg"))
+                .andExpect(jsonPath("$.data.quantity").value(2))
                 .andExpect(jsonPath("$.data.participants[0].memberName").value("測試會員"));
     }
 

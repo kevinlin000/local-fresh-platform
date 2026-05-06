@@ -346,10 +346,25 @@ public class GroupBuyServiceImpl implements GroupBuyService {
 
     private GroupBuyVO buildGroupBuyVO(GroupBuy groupBuy) {
         List<GroupBuyParticipantVO> participants = groupBuyParticipantMapper.listParticipantVOByGroupBuyId(groupBuy.getId());
+        GroupBuyParticipant initiatorParticipant = groupBuyParticipantMapper.listByGroupBuyId(groupBuy.getId()).stream()
+                .filter(participant -> groupBuy.getInitiatorId().equals(participant.getMemberId()))
+                .findFirst()
+                .orElse(null);
+        OrderDetail initiatorOrderDetail = null;
+        if (initiatorParticipant != null && initiatorParticipant.getPreOrderId() != null) {
+            initiatorOrderDetail = orderDetailMapper.getByOrderId(initiatorParticipant.getPreOrderId()).stream()
+                    .findFirst()
+                    .orElse(null);
+        }
+
         return GroupBuyVO.builder()
                 .id(groupBuy.getId())
                 .groupNo(groupBuy.getGroupNo())
                 .initiatorId(groupBuy.getInitiatorId())
+                .productId(initiatorOrderDetail == null ? null : initiatorOrderDetail.getProductId())
+                .productName(initiatorOrderDetail == null ? null : initiatorOrderDetail.getName())
+                .productImage(initiatorOrderDetail == null ? null : initiatorOrderDetail.getImage())
+                .quantity(initiatorOrderDetail == null ? null : initiatorOrderDetail.getNumber())
                 .status(groupBuy.getStatus())
                 .currentCount(groupBuy.getCurrentCount())
                 .requiredCount(groupBuy.getRequiredCount())

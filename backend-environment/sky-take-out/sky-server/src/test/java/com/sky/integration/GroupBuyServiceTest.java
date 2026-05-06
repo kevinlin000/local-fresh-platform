@@ -143,6 +143,9 @@ class GroupBuyServiceTest {
         assertEquals(1, result.getStatus());
         assertEquals(1, result.getCurrentCount());
         assertEquals(3, result.getRequiredCount());
+        assertEquals(productId, result.getProductId());
+        assertEquals("高山高麗菜", result.getProductName());
+        assertEquals(2, result.getQuantity());
         assertEquals(1, result.getParticipants().size());
         assertEquals(memberId, result.getParticipants().get(0).getMemberId());
         assertEquals("揪團測試會員", result.getParticipants().get(0).getMemberName());
@@ -178,11 +181,15 @@ class GroupBuyServiceTest {
 
         GroupBuyVO detail = groupBuyService.getByGroupNo(initiated.getGroupNo());
         assertEquals(initiated.getGroupNo(), detail.getGroupNo());
+        assertEquals(productId, detail.getProductId());
+        assertEquals("高山高麗菜", detail.getProductName());
+        assertEquals(1, detail.getQuantity());
         assertFalse(detail.getParticipants().isEmpty());
         assertEquals("揪團測試會員", detail.getParticipants().get(0).getMemberName());
 
         List<GroupBuyVO> myGroupBuys = groupBuyService.listMyGroupBuys();
         assertEquals(1, myGroupBuys.size());
         assertEquals(initiated.getGroupNo(), myGroupBuys.get(0).getGroupNo());
+        assertEquals(productId, myGroupBuys.get(0).getProductId());
     }
 }

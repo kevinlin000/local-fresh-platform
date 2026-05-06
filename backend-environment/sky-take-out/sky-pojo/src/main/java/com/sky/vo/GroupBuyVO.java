@@ -18,6 +18,10 @@ public class GroupBuyVO implements Serializable {
     private Long id;
     private String groupNo;
     private Long initiatorId;
+    private Long productId;
+    private String productName;
+    private String productImage;
+    private Integer quantity;
     private Integer status;
     private Integer currentCount;
     private Integer requiredCount;
