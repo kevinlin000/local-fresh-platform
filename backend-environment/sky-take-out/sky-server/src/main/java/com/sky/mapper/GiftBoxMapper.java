@@ -22,7 +22,7 @@ public interface GiftBoxMapper {
      * @param id
      * @return
      */
-    @Select("select count(id) from setmeal where category_id = #{categoryId}")
+    @Select("select count(id) from gift_box where category_id = #{categoryId}")
     Integer countByCategoryId(Long id);
 
     /**
@@ -44,14 +44,14 @@ public interface GiftBoxMapper {
      * @param id
      * @return
      */
-    @Select("select * from setmeal where id = #{id}")
+    @Select("select * from gift_box where id = #{id}")
     GiftBox getById(Long id);
 
     /**
      * 根据id删除套餐
      * @param giftBoxId
      */
-    @Delete("delete from setmeal where id = #{id}")
+    @Delete("delete from gift_box where id = #{id}")
     void deleteById(Long giftBoxId);
 
     /**
@@ -66,9 +66,9 @@ public interface GiftBoxMapper {
      * @param giftBoxId
      * @return
      */
-    @Select("select sd.name, sd.copies, d.image, d.description " +
-            "from setmeal_dish sd left join dish d on sd.dish_id = d.id " +
-            "where sd.setmeal_id = #{giftBoxId}")
+    @Select("select gbp.name, gbp.copies, p.image, p.description " +
+            "from gift_box_product gbp left join product p on gbp.product_id = p.id " +
+            "where gbp.gift_box_id = #{giftBoxId}")
     List<ProductItemVO> getDishItemBySetmealId(Long giftBoxId);
 
     /**

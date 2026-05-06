@@ -27,7 +27,7 @@ public interface GiftBoxProductMapper {
      * 根据套餐id删除套餐和菜品的关联关系
      * @param giftBoxId
      */
-    @Delete("delete from setmeal_dish where setmeal_id = #{giftBoxId}")
+    @Delete("delete from gift_box_product where gift_box_id = #{giftBoxId}")
     void deleteBySetmealId(Long giftBoxId);
 
     /**
@@ -35,7 +35,7 @@ public interface GiftBoxProductMapper {
      * @param giftBoxId
      * @return
      */
-    @Select("select * from setmeal_dish where setmeal_id = #{giftBoxId}")
+    @Select("select * from gift_box_product where gift_box_id = #{giftBoxId}")
     List<GiftBoxProduct> getBySetmealId(Long giftBoxId);
 
 
