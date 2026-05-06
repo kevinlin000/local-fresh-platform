@@ -1,5 +1,6 @@
 import axios from 'axios'
 import router from '@/router'
+import { useMemberStore } from '@/stores/member'
 import { clearAuthArtifacts, AUTH_STORAGE_KEYS } from '@/utils/auth'
 
 const http = axios.create({
@@ -20,7 +21,6 @@ http.interceptors.response.use(
   async (error) => {
     if (error.response?.status === 401) {
       clearAuthArtifacts()
-      const { useMemberStore } = await import('@/stores/member')
       useMemberStore().clearMember()
       if (router.currentRoute.value.path !== '/login') {
         await router.push('/login')
