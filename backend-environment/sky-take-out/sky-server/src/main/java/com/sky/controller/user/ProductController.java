@@ -13,6 +13,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
 import java.util.List;
 
 @RestController("userProductController")
@@ -23,8 +25,8 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
-    @Autowired
-    private RedisTemplate redisTemplate;
+    @Resource(name = "appRedisTemplate")
+    private RedisTemplate<String, Object> appRedisTemplate;
 
     /**
      * 根据分类id查询單品
@@ -40,7 +42,7 @@ public class ProductController {
         String key = "dish_" + categoryId;
 
         // 查询redis中是否有数据
-        List<ProductVO> list = (List<ProductVO>) redisTemplate.opsForValue().get(key);
+        List<ProductVO> list = (List<ProductVO>) appRedisTemplate.opsForValue().get(key);
         if(list != null && list.size() > 0){
             // 如果有数据，直接返回
             return Result.success(list);
@@ -52,7 +54,7 @@ public class ProductController {
 
         // 如果没有数据，查询数据库，并将数据存入redis
         list = productService.listWithFlavor(dish);
-        redisTemplate.opsForValue().set(key, list);
+        appRedisTemplate.opsForValue().set(key, list);
 
         return Result.success(list);
     }

@@ -24,6 +24,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -40,8 +41,8 @@ public class ProductServiceImpl implements ProductService {
     private ProductSpecMapper productSpecMapper;
     @Autowired
     private GiftBoxProductMapper giftBoxProductMapper;
-    @Autowired
-    private RedisTemplate redisTemplate;
+    @Resource(name = "appRedisTemplate")
+    private RedisTemplate<String, Object> appRedisTemplate;
     /**
      * 新增菜品
      * @param dishDTO
@@ -238,8 +239,10 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private void cleanCache(String pattern) {
-        Set keys = redisTemplate.keys(pattern);
-        redisTemplate.delete(keys);
+        Set<String> keys = appRedisTemplate.keys(pattern);
+        if (keys != null && !keys.isEmpty()) {
+            appRedisTemplate.delete(keys);
+        }
     }
 
 }
