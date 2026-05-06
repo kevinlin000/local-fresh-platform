@@ -13,6 +13,13 @@ public interface CartService {
     void addShoppingCart(CartDTO shoppingCartDTO);
 
     /**
+     * 減少購物車中商品數量，減到0時自動刪除
+     *
+     * @param cartDTO 購物車商品資訊
+     */
+    void subShoppingCart(CartDTO cartDTO);
+
+    /**
      * 查看購物車
      * @return
      */

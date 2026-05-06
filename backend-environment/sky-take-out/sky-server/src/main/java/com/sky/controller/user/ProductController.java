@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -57,6 +58,19 @@ public class ProductController {
         appRedisTemplate.opsForValue().set(key, list);
 
         return Result.success(list);
+    }
+
+    /**
+     * 根據id查詢商品詳情
+     *
+     * @param id 商品id
+     * @return 商品詳情
+     */
+    @GetMapping("/{id}")
+    @ApiOperation("根據id查詢商品詳情")
+    public Result<ProductVO> getById(@PathVariable Long id) {
+        ProductVO productVO = productService.getByIdWithFlavor(id);
+        return Result.success(productVO);
     }
 
 }

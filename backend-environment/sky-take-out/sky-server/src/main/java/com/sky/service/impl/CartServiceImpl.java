@@ -80,6 +80,32 @@ public class CartServiceImpl implements CartService {
     }
 
     /**
+     * 減少購物車
+     *
+     * @param cartDTO 購物車商品資訊
+     */
+    @Override
+    public void subShoppingCart(CartDTO cartDTO) {
+        Cart cartQuery = new Cart();
+        BeanUtils.copyProperties(cartDTO, cartQuery);
+        cartQuery.setUserId(BaseContext.getCurrentId());
+
+        List<Cart> list = cartMapper.list(cartQuery);
+        if (list == null || list.isEmpty()) {
+            return;
+        }
+
+        Cart cart = list.get(0);
+        if (cart.getNumber() != null && cart.getNumber() > 1) {
+            cart.setNumber(cart.getNumber() - 1);
+            cartMapper.updateNumberById(cart);
+            return;
+        }
+
+        cartMapper.deleteById(cart.getId());
+    }
+
+    /**
      * 查看購物車
      * @return
      */

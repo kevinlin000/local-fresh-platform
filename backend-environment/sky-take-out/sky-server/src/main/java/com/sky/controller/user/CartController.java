@@ -29,8 +29,22 @@ public class CartController {
     @PostMapping("/add")
     @ApiOperation("添加購物車")
     public Result add(@RequestBody CartDTO shoppingCartDTO) {
-        log.info("添加購物車, 商品資訊為", shoppingCartDTO);
+        log.info("添加購物車, 商品資訊為: {}", shoppingCartDTO);
         cartService.addShoppingCart(shoppingCartDTO);
+        return Result.success();
+    }
+
+    /**
+     * 減少購物車中的商品數量，減到0時自動刪除
+     *
+     * @param cartDTO 購物車商品資訊
+     * @return success
+     */
+    @PostMapping("/sub")
+    @ApiOperation("減少購物車商品數量")
+    public Result sub(@RequestBody CartDTO cartDTO) {
+        log.info("減少購物車商品, 商品資訊為: {}", cartDTO);
+        cartService.subShoppingCart(cartDTO);
         return Result.success();
     }
 

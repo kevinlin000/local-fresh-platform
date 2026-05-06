@@ -22,14 +22,14 @@ public interface CartMapper {
      * 根據ID修改商品數量
      * @param shoppingCart
      */
-    @Update("update shopping_cart set number = #{number} where id = #{id}")
+    @Update("update cart set number = #{number} where id = #{id}")
     void updateNumberById(Cart shoppingCart);
 
     /**
      * 插入購物車數據
      * @param shoppingCart
      */
-    @Insert("insert into shopping_cart(name, user_id, dish_id, setmeal_id, dish_flavor, number, amount, image, create_time) " +
+    @Insert("insert into cart(name, user_id, product_id, gift_box_id, product_spec, number, amount, image, create_time) " +
             "values(#{name}, #{userId}, #{productId}, #{giftBoxId}, #{productSpec}, #{number}, #{amount}, #{image},#{createTime})")
     void insert(Cart shoppingCart);
 
@@ -38,8 +38,16 @@ public interface CartMapper {
      * 根據用戶ID刪除購物車數據
      * @param userId
      */
-    @Delete("delete from shopping_cart where user_id = #{userId}")
+    @Delete("delete from cart where user_id = #{userId}")
     void deleteByUserId(Long userId);
+
+    /**
+     * 根據購物車ID刪除單筆資料
+     *
+     * @param id 購物車ID
+     */
+    @Delete("delete from cart where id = #{id}")
+    void deleteById(Long id);
 
     /**
      * 批量插入购物车数据

@@ -19,7 +19,7 @@ public interface ProductSpecMapper {
      * 根據菜品id刪除對應的口味資料
      * @param productId
      */
-    @Delete("delete from dish_flavor where dish_id = #{productId}")
+    @Delete("delete from product_spec where product_id = #{productId}")
     void deleteByDishId(Long productId);
 
     /**
@@ -33,6 +33,6 @@ public interface ProductSpecMapper {
      * @param productId
      * @return
      */
-    @Select("select * from dish_flavor where dish_id = #{productId}")
+    @Select("select * from product_spec where product_id = #{productId}")
     List<ProductSpec> getByDishId(Long productId);
 }
