@@ -1,5 +1,27 @@
 # 在地鮮選 User Web
 
+## 專案介紹
+
+`sky-user-vue3` 是「在地鮮選」的用戶端前端，定位是桌面版生鮮購物網站。
+核心流程包含：
+
+- 會員登入（Google OAuth + dev 假登入）
+- 單品 / 直送箱瀏覽
+- 購物車與下單
+- 揪團湊免運（3 人成團）
+
+本階段重點是把後端 API 串成一個可 demo 的完整 B2C 流程，而不是做重度互動或複雜前端工程。
+
+## 技術棧
+
+- Vue 3
+- Vite 5
+- TypeScript
+- Element Plus
+- Pinia
+- Vue Router 4
+- axios
+
 ## 啟動指令
 
 ```bash
@@ -8,7 +30,7 @@ pnpm dev
 pnpm build
 ```
 
-預設開發網址：
+預設本地網址：
 
 ```text
 http://127.0.0.1:5173
@@ -23,6 +45,13 @@ VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 ```
 
 `.env.local` 已在 `.gitignore` 中，不會進版本庫。
+
+如果你有多組本地憑證，也可以使用：
+
+```text
+.env.local
+.env.development.local
+```
 
 ## Google OAuth 設定步驟
 
@@ -47,26 +76,24 @@ http://127.0.0.1:5173/oauth/callback
 7. 將 `client_id` 寫入前端 `.env.local`。
 8. 將 `client_id / client_secret / redirect_uri` 寫入後端 `application-dev.yml`。
 
-## Dev 模式假登入
+## Dev / Prod 模式差異
 
-開發模式下，登入頁會顯示假登入區塊：
+### Dev 模式
 
-- `測試會員 A`
-- `測試會員 B`
-- `測試會員 C`
-- 自由輸入任意測試 code
+- 登入頁會顯示假登入區塊
+- 可使用：
+  - `測試會員 A`
+  - `測試會員 B`
+  - `測試會員 C`
+  - 任意自訂測試 code
+- 前端判斷條件為 `import.meta.env.DEV`
+- 後端仍會再做一次保護，受 `sky.auth.mock-login-enabled` 控制
 
-前端判斷條件是 `import.meta.env.DEV`，因此：
-
-- `pnpm dev`：顯示假登入區塊
-- `pnpm build` 的 production bundle：不顯示假登入區塊
-
-後端仍會再做一次保護，受 `sky.auth.mock-login-enabled` 控制。
-
-## Prod 模式差異
+### Prod 模式
 
 - 前端不顯示假登入按鈕與手動輸入區塊
-- 後端若將 `sky.auth.mock-login-enabled=false`，`/user/member/login` 會直接拒絕
+- 後端若設定 `sky.auth.mock-login-enabled=false`
+  - `/user/member/login` 會直接拒絕
 - 正式環境應只保留 Google OAuth 流程
 
 ## 後端 Dev 注意事項
@@ -93,6 +120,19 @@ knife4j:
 完整前後端 dev 流程至少需要：
 
 1. MySQL dev schema 已套用 `V2 / V2_1 / V3 / V4` migration
-2. Redis 本地可用（例如 `docker run -d --name redis-dev -p 6379:6379 redis:7.2-alpine`）
+2. Redis 本地可用
+
+```bash
+docker run -d --name redis-dev -p 6379:6379 redis:7.2-alpine
+```
+
 3. 後端以 `dev` profile 啟動
 4. 前端以 `pnpm dev` 啟動
+
+## 已知限制
+
+- 支付仍為 mock，沒有串接真實金流
+- 目前只做桌面版 `1280px` 體驗，不做 RWD
+- 沒有會員中心、收藏、評論
+- Google OAuth 的完整人工授權流程需依賴本地合法 `client_id / client_secret`
+- 揪團頁採輪詢更新，不做 WebSocket 前端推播
