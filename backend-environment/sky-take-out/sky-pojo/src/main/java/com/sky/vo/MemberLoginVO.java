@@ -15,6 +15,7 @@ public class MemberLoginVO implements Serializable {
 
     private Long id;
     private String openid;
+    private String name;
     private String token;
 
 }

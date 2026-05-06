@@ -8,37 +8,38 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: () => import('@/views/LoginView.vue'),
-      meta: { public: true }
+      meta: { public: true, hideChrome: true }
+    },
+    {
+      path: '/oauth/callback',
+      name: 'oauth-callback',
+      component: () => import('@/views/OAuthCallbackView.vue'),
+      meta: { public: true, hideChrome: true }
     },
     {
       path: '/',
       name: 'home',
-      component: () => import('@/views/HomeView.vue'),
-      meta: { public: true }
+      component: () => import('@/views/HomeView.vue')
     },
     {
       path: '/product/:id',
       name: 'product-detail',
-      component: () => import('@/views/ProductDetailView.vue'),
-      meta: { public: true }
+      component: () => import('@/views/ProductDetailView.vue')
     },
     {
       path: '/cart',
       name: 'cart',
-      component: () => import('@/views/CartView.vue'),
-      meta: { public: true }
+      component: () => import('@/views/CartView.vue')
     },
     {
       path: '/orders',
       name: 'orders',
-      component: () => import('@/views/OrdersView.vue'),
-      meta: { public: true }
+      component: () => import('@/views/OrdersView.vue')
     },
     {
       path: '/groupBuy/:groupNo',
       name: 'group-buy',
-      component: () => import('@/views/GroupBuyView.vue'),
-      meta: { public: true }
+      component: () => import('@/views/GroupBuyView.vue')
     }
   ]
 })

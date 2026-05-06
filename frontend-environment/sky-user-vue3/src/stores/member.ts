@@ -1,5 +1,15 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
+import {
+  clearAuthArtifacts,
+  loadStoredProfile,
+  persistMemberSession
+} from '@/utils/auth'
+import {
+  googleOAuthLogin as googleOAuthLoginRequest,
+  mockLogin as mockLoginRequest,
+  type MemberLoginPayload
+} from '@/services/member'
 
 export interface MemberProfile {
   id: number | null
@@ -9,25 +19,18 @@ export interface MemberProfile {
 
 export const useMemberStore = defineStore('member', () => {
   const token = ref(localStorage.getItem('member-token') ?? '')
-  const profile = ref<MemberProfile>({
-    id: Number(localStorage.getItem('member-id') ?? 0) || null,
-    openid: localStorage.getItem('member-openid') ?? '',
-    name: localStorage.getItem('member-name') ?? ''
-  })
+  const profile = ref<MemberProfile>(loadStoredProfile())
 
   const isLoggedIn = computed(() => Boolean(token.value))
 
-  function setMember(payload: { token: string; id: number; openid: string; name: string }) {
+  function setMember(payload: MemberLoginPayload) {
     token.value = payload.token
     profile.value = {
       id: payload.id,
       openid: payload.openid,
       name: payload.name
     }
-    localStorage.setItem('member-token', payload.token)
-    localStorage.setItem('member-id', String(payload.id))
-    localStorage.setItem('member-openid', payload.openid)
-    localStorage.setItem('member-name', payload.name)
+    persistMemberSession(payload)
   }
 
   function clearMember() {
@@ -37,10 +40,19 @@ export const useMemberStore = defineStore('member', () => {
       openid: '',
       name: ''
     }
-    localStorage.removeItem('member-token')
-    localStorage.removeItem('member-id')
-    localStorage.removeItem('member-openid')
-    localStorage.removeItem('member-name')
+    clearAuthArtifacts()
+  }
+
+  async function mockLogin(code: string) {
+    const payload = await mockLoginRequest(code)
+    setMember(payload)
+    return payload
+  }
+
+  async function googleOAuthLogin(code: string, redirectUri: string) {
+    const payload = await googleOAuthLoginRequest(code, redirectUri)
+    setMember(payload)
+    return payload
   }
 
   return {
@@ -48,6 +60,8 @@ export const useMemberStore = defineStore('member', () => {
     profile,
     isLoggedIn,
     setMember,
-    clearMember
+    clearMember,
+    mockLogin,
+    googleOAuthLogin
   }
 })

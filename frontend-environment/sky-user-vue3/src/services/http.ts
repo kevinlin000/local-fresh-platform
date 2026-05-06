@@ -1,5 +1,6 @@
 import axios from 'axios'
 import router from '@/router'
+import { clearAuthArtifacts, AUTH_STORAGE_KEYS } from '@/utils/auth'
 
 const http = axios.create({
   baseURL: '/api',
@@ -7,7 +8,7 @@ const http = axios.create({
 })
 
 http.interceptors.request.use((config) => {
-  const token = localStorage.getItem('member-token')
+  const token = localStorage.getItem(AUTH_STORAGE_KEYS.token)
   if (token) {
     config.headers.authentication = token
   }
@@ -16,10 +17,14 @@ http.interceptors.request.use((config) => {
 
 http.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('member-token')
-      router.push('/login')
+      clearAuthArtifacts()
+      const { useMemberStore } = await import('@/stores/member')
+      useMemberStore().clearMember()
+      if (router.currentRoute.value.path !== '/login') {
+        await router.push('/login')
+      }
     }
     return Promise.reject(error)
   }

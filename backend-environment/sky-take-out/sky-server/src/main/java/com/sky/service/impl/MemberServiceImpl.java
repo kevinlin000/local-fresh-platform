@@ -118,6 +118,7 @@ public class MemberServiceImpl implements MemberService {
         return MemberLoginVO.builder()
                 .id(member.getId())
                 .openid(member.getOpenid() != null ? member.getOpenid() : member.getGoogleSub())
+                .name(member.getName())
                 .token(token)
                 .build();
     }
