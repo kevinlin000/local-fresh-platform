@@ -21,11 +21,11 @@ spring:
 
 
 mybatis:
-  #mapper配置文件
+  # mapper 設定檔
   mapper-locations: classpath:mapper/*.xml
   type-aliases-package: com.sky.entity
   configuration:
-    #开启驼峰命名
+    # 啟用駝峰命名
     map-underscore-to-camel-case: true
 
 logging:
@@ -60,7 +60,7 @@ sky:
   shop:
     address: ${sky.shop.address} # 換成想要的台灣店家地址
   google:
-    api-key:  ${sky.google.api-key} # 貼上你的 Google API Key
+    api-key:  ${sky.google.api-key} # 填入你的 Google API Key
   oauth:
     google:
       client-id: ${sky.oauth.google.client-id}

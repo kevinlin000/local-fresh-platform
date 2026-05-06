@@ -10,7 +10,7 @@
       <template v-else>
         <h1>Google 登入失敗</h1>
         <p>{{ errorMessage }}</p>
-        <el-button type="primary" size="large" @click="goToLogin">返回登入頁</el-button>
+        <el-button type="primary" size="large" @click="goToLogin">回到登入頁</el-button>
       </template>
     </div>
   </section>

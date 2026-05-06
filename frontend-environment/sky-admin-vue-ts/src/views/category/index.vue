@@ -3,17 +3,17 @@
     <div class="container">
       <div class="tableBar"
            style="display: inline-block; width: 100%">
-        <label style="margin-right: 10px">分类名称：</label>
+        <label style="margin-right: 10px">分類名稱：</label>
         <el-input v-model="name"
-                  placeholder="请填写分类名称"
+                  placeholder="請填寫分類名稱"
                   style="width: 15%"
                   clearable
                   @clear="init"
                   @keyup.enter.native="init" />
 
-        <label style="margin-right: 5px; margin-left: 20px">分类类型：</label>
+        <label style="margin-right: 5px; margin-left: 20px">分類類型：</label>
         <el-select v-model="categoryType"
-                   placeholder="请选择"
+                   placeholder="請選擇"
                    clearable
                    style="width: 15%"
                    @clear="init">
@@ -38,7 +38,7 @@
 
         <el-button class="normal-btn continue"
                    @click="init(true)">
-          查询
+          查詢
         </el-button>
       </div>
       <el-table v-if="tableData.length"
@@ -46,9 +46,9 @@
                 stripe
                 class="tableBox">
         <el-table-column prop="name"
-                         label="分类名称" />
+                         label="分類名稱" />
         <el-table-column prop="type"
-                         label="分类类型">
+                         label="分類類型">
           <template slot-scope="scope">
             <span>{{ scope.row.type == '1' ? '單品分類' : '直送箱分類' }}</span>
           </template>
@@ -56,16 +56,16 @@
 
         <el-table-column prop="sort"
                          label="排序" />
-        <el-table-column label="状态">
+        <el-table-column label="狀態">
           <template slot-scope="scope">
             <div class="tableColumn-status"
                  :class="{ 'stop-use': String(scope.row.status) === '0' }">
-              {{ String(scope.row.status) === '0' ? '禁用' : '启用' }}
+              {{ String(scope.row.status) === '0' ? '停用' : '啟用' }}
             </div>
           </template>
         </el-table-column>
         <el-table-column prop="updateTime"
-                         label="操作时间" />
+                         label="操作時間" />
         <el-table-column label="操作"
                          width="200"
                          align="center">
@@ -80,7 +80,7 @@
                        size="small"
                        class="delBut"
                        @click="deleteHandle(scope.row.id)">
-              删除
+              刪除
             </el-button>
             <el-button type="text"
                        size="small"
@@ -90,7 +90,7 @@
                          delBut: scope.row.status != '0'
                        }"
                        @click="statusHandle(scope.row)">
-              {{ scope.row.status == '1' ? '禁用' : '启用' }}
+              {{ scope.row.status == '1' ? '停用' : '啟用' }}
             </el-button>
           </template>
         </el-table-column>
@@ -115,16 +115,16 @@
                class="demo-form-inline"
                :rules="rules"
                label-width="100px">
-        <el-form-item label="分类名称："
+        <el-form-item label="分類名稱："
                       prop="name">
           <el-input v-model="classData.name"
-                    placeholder="请输入分类名称"
+                    placeholder="請輸入分類名稱"
                     maxlength="20" />
         </el-form-item>
         <el-form-item label="排序："
                       prop="sort">
           <el-input v-model="classData.sort"
-                    placeholder="请输入排序" />
+                    placeholder="請輸入排序" />
         </el-form-item>
       </el-form>
       <span slot="footer"
@@ -132,16 +132,16 @@
         <el-button size="medium"
                    @click="
             ;(classData.dialogVisible = false), $refs.classData.resetFields()
-                   ">取 消</el-button>
+                   ">取消</el-button>
         <el-button type="primary"
                    :class="{ continue: actionType === 'add' }"
                    size="medium"
-                   @click="submitForm()">确 定</el-button>
+                   @click="submitForm()">確定</el-button>
         <el-button v-if="action != 'edit'"
                    type="primary"
                    size="medium"
                    @click="submitForm('go')">
-          保存并继续添加
+          保存並繼續新增
         </el-button>
       </span>
     </el-dialog>
@@ -208,11 +208,11 @@ export default class extends Vue {
             // const reg = /[\u4e00-\u9fa5]/
             var reg = new RegExp('^[A-Za-z\u4e00-\u9fa5]+$')
             if (!value) {
-              callback(new Error(this.classData.title + '不能为空'))
+              callback(new Error(this.classData.title + '不可為空'))
             } else if (value.length < 2) {
-              callback(new Error('分类名称输入不符，请输入2-20个字符'))
+              callback(new Error('分類名稱輸入不符，請輸入2-20筆字元'))
             } else if (!reg.test(value)) {
-              callback(new Error('分类名称包含特殊字符'))
+              callback(new Error('分類名稱包含特殊字元'))
             } else {
               callback()
             }
@@ -227,9 +227,9 @@ export default class extends Vue {
             if (value || String(value) === '0') {
               const reg = /^\d+$/
               if (!reg.test(value)) {
-                callback(new Error('排序只能输入数字类型'))
+                callback(new Error('排序只能輸入數字類型'))
               } else if (Number(value) > 99) {
-                callback(new Error('排序只能输入0-99数字'))
+                callback(new Error('排序只能輸入0-99數字'))
               } else {
                 callback()
               }
@@ -246,7 +246,7 @@ export default class extends Vue {
     this.init()
   }
 
-  // 初始化信息
+  // 初始化資訊
   private async init(isSearch?) {
     this.isSearch = isSearch
     await getCategoryPage({
@@ -266,7 +266,7 @@ export default class extends Vue {
       })
       .catch(err => {
         console.log(err, 'err')
-        this.$message.error('请求出错了：' + err.message)
+        this.$message.error('請求發生錯誤：' + err.message)
       })
   }
 
@@ -288,7 +288,7 @@ export default class extends Vue {
 
   // 修改
   private editHandle(dat: any) {
-    this.classData.title = '修改分类'
+    this.classData.title = '修改分類'
     this.action = 'edit'
     this.classData.name = dat.name
     this.classData.sort = dat.sort
@@ -301,16 +301,16 @@ export default class extends Vue {
   private handleClose(st: string) {
     console.log(this.$refs.classData, 'this.$refs.classData')
     this.classData.dialogVisible = false
-    //对该表单项进行重置，将其值重置为初始值并移除校验结果
+    //对該表单项进行重置，將其值重置为初始值并移除校验结果
     this.$refs.classData.resetFields()
   }
 
-  //状态修改
+  //狀態修改
   private statusHandle(row: any) {
     this.id = row.id
     this.status = row.status
-    this.$confirm('确认调整该分类的状态?', '提示', {
-      confirmButtonText: '确定',
+    this.$confirm('確認調整該分類的狀態?', '提示', {
+      confirmButtonText: '確定',
       cancelButtonText: '取消',
       type: 'warning',
       customClass: 'customClass'
@@ -318,34 +318,34 @@ export default class extends Vue {
       enableOrDisableEmployee({ id: this.id, status: !this.status ? 1 : 0 })
         .then(res => {
           if (String(res.status) === '200') {
-            this.$message.success('分类状态更改成功！')
+            this.$message.success('分類狀態更改成功！')
             this.init()
           }
         })
         .catch(err => {
-          this.$message.error('请求出错了：' + err.message)
+          this.$message.error('請求發生錯誤：' + err.message)
         })
     })
   }
 
-  //删除
+  //刪除
   private deleteHandle(id: any) {
-    this.$confirm('此操作将永久删除该分类，是否继续？', '确定删除', {
-      confirmButtonText: '删除',
+    this.$confirm('此操作將永久刪除該分類，是否繼續？', '確定刪除', {
+      confirmButtonText: '刪除',
       cancelButtonText: '取消',
       type: 'warning'
     }).then(() => {
       deleCategory(id)
         .then(res => {
           if (res.data.code === 1) {
-            this.$message.success('删除成功！')
+            this.$message.success('刪除成功！')
             this.init()
           } else {
             this.$message.error(res.data.msg)
           }
         })
         .catch(err => {
-          this.$message.error('请求出错了：' + err.message)
+          this.$message.error('請求發生錯誤：' + err.message)
         })
     })
   }
@@ -354,7 +354,7 @@ export default class extends Vue {
     classData: any
   }
 
-  //数据提交
+  //資料提交
   submitForm(st: any) {
     if (this.action === 'add') {
       this.$refs.classData.validate((value: boolean) => {
@@ -366,7 +366,7 @@ export default class extends Vue {
           })
             .then(res => {
               if (res.data.code === 1) {
-                this.$message.success('分类添加成功！')
+                this.$message.success('分類添加成功！')
                 this.$refs.classData.resetFields()
                 if (!st) {
                   this.classData.dialogVisible = false
@@ -377,7 +377,7 @@ export default class extends Vue {
               }
             })
             .catch(err => {
-              this.$message.error('请求出错了：' + err.message)
+              this.$message.error('請求發生錯誤：' + err.message)
             })
         }
       })
@@ -391,7 +391,7 @@ export default class extends Vue {
           })
             .then(res => {
               if (res.data.code === 1) {
-                this.$message.success('分类修改成功！')
+                this.$message.success('分類修改成功！')
                 this.classData.dialogVisible = false
                 this.$refs.classData.resetFields()
                 this.init()
@@ -400,14 +400,14 @@ export default class extends Vue {
               }
             })
             .catch(err => {
-              this.$message.error('请求出错了：' + err.message)
+              this.$message.error('請求發生錯誤：' + err.message)
             })
         }
       })
     }
   }
 
-  //分页
+  //分頁
   private handleSizeChange(val: any) {
     this.pageSize = val
     this.init()
@@ -447,7 +447,7 @@ export default class extends Vue {
         text-align: center;
         margin-top: 30px;
       }
-      //查询黑色按钮样式
+      //查詢黑色按钮样式
       .normal-btn {
         background: #333333;
         color: white;

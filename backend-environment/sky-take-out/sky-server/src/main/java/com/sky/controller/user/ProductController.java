@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 @RestController("userProductController")
 @RequestMapping("/user/product")
 @Slf4j
-@Api(tags = "C端-單品瀏覽接口")
+@Api(tags = "會員端-單品瀏覽介面")
 public class ProductController {
     @Autowired
     private ProductService productService;
@@ -31,30 +31,30 @@ public class ProductController {
     private RedisTemplate<String, Object> appRedisTemplate;
 
     /**
-     * 根据分类id查询單品
+     * 根據分類 ID 查詢單品
      *
      * @param categoryId
      * @return
      */
     @GetMapping("/list")
-    @ApiOperation("根据分类id查询單品")
+    @ApiOperation("根據分類 ID 查詢單品")
     public Result<List<ProductVO>> list(Long categoryId) {
 
-        // 構建redis的key,規則：product_分類id
+        // 構建redis的key,規則：product_分類 ID
         String key = "product_" + categoryId;
 
-        // 查询redis中是否有数据
+        // 查詢redis中是否有資料
         List<ProductVO> list = (List<ProductVO>) appRedisTemplate.opsForValue().get(key);
         if(list != null && list.size() > 0){
-            // 如果有数据，直接返回
+            // 如果有資料，直接返回
             return Result.success(list);
         }
 
         Product dish = new Product();
         dish.setCategoryId(categoryId);
-        dish.setStatus(StatusConstant.ENABLE);//查询起售中的菜品
+        dish.setStatus(StatusConstant.ENABLE);//查詢起售中的菜品
 
-        // 如果没有数据，查询数据库，并将数据存入redis
+        // 如果没有資料，查詢資料库，并将資料存入redis
         list = productService.listWithFlavor(dish);
         appRedisTemplate.opsForValue().set(key, list, 30, TimeUnit.MINUTES);
 
@@ -62,13 +62,13 @@ public class ProductController {
     }
 
     /**
-     * 根據id查詢商品詳情
+     * 根據 ID 查詢商品詳情
      *
      * @param id 商品id
      * @return 商品詳情
      */
     @GetMapping("/{id}")
-    @ApiOperation("根據id查詢商品詳情")
+    @ApiOperation("根據 ID 查詢商品詳情")
     public Result<ProductVO> getById(@PathVariable Long id) {
         ProductVO productVO = productService.getByIdWithFlavor(id);
         return Result.success(productVO);

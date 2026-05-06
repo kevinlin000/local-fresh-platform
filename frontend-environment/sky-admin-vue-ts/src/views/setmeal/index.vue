@@ -13,8 +13,8 @@
             :value="item.id">
           </el-option>
         </el-select>
-        <label style="margin-left: 20px; margin-right: 5px">售卖状态</label>
-        <el-select v-model="status" placeholder="请选择" clearable>
+        <label style="margin-left: 20px; margin-right: 5px">販售狀態</label>
+        <el-select v-model="status" placeholder="請選擇" clearable>
           <el-option
             v-for="item in statusList"
             :key="item.value"
@@ -24,7 +24,7 @@
         </el-select>
         <el-button type="primary" style="margin-left: 20px" @click="pageQuery()">搜索</el-button>
         <div style="float: right">
-          <el-button type="danger" @click="handleDeleteSetmeal('B')">批量删除</el-button>
+          <el-button type="danger" @click="handleDeleteSetmeal('B')">批量刪除</el-button>
           <el-button type="info" @click="handleAddSetmeal()">+新建直送箱</el-button>
         </div>
       </div>
@@ -39,21 +39,21 @@
         </el-table-column>
         <el-table-column prop="categoryName" label="直送箱分類"></el-table-column>
         <el-table-column prop="price" label="直送箱價"></el-table-column>
-        <el-table-column label="售卖状态">
+        <el-table-column label="販售狀態">
           <template slot-scope="scope">
             <div class="tableColumn-status" :class="{ 'stop-use': scope.row.status === 0 }">
-              {{scope.row.status === 1 ? '起售' : '停售'}}
+              {{scope.row.status === 1 ? '啟售' : '停售'}}
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="updateTime" label="最后操作时间">
+        <el-table-column prop="updateTime" label="最後操作時間">
         </el-table-column>
         <el-table-column label="操作" width="250px">
           <template slot-scope="scope">
             <el-button type="text" @click="handleUpdateSetmeal(scope.row.id)">修改</el-button>
-            <el-button type="text" @click="handleDeleteSetmeal('S', scope.row.id)">删除</el-button>
+            <el-button type="text" @click="handleDeleteSetmeal('S', scope.row.id)">刪除</el-button>
             <el-button type="text" @click="handleEnableOrDisable(scope.row)">
-              {{scope.row.status === 1 ? '停售' : '起售'}}
+              {{scope.row.status === 1 ? '停售' : '啟售'}}
             </el-button>
           </template>
         </el-table-column>
@@ -84,15 +84,15 @@ export default {
       page: 1,
       pageSize: 10,
       categoryList: [],
-      categoryId: '', // 分类id
+      categoryId: '', // 分類id
       statusList: [{
           value: 0,
           label: '停售'
         }, {
           value: 1,
-          label: '起售'
+          label: '啟售'
         }],
-        status: '', // 售卖状态
+        status: '', // 販售狀態
         total: 0,
         records: [],
         multipleSelection: [] // 表格选择的元素
@@ -103,7 +103,7 @@ export default {
       this.pageQuery()
     },
     methods: {
-      // 获取套餐分类列表
+      // 取得直送箱分類列表
       getCategoryList(){
           const params = {type: 2}
           getCategoryByType(params).then(res =>{
@@ -111,10 +111,10 @@ export default {
               this.categoryList = res.data.data
             }
           }).catch(err =>{
-            this.$message.error('请求出错了' + err.message)
+            this.$message.error('請求發生錯誤：' + err.message)
           })
       },
-      // 分页查询
+      // 分頁查詢
       pageQuery(){
         const params = {
           name: this.name,
@@ -129,7 +129,7 @@ export default {
             this.records = res.data.data.records
           }
         }).catch(err =>{
-            this.$message.error('请求出错了' + err.message)
+            this.$message.error('請求發生錯誤：' + err.message)
         })
       },
       // 每页条数发生改变时触发
@@ -142,12 +142,12 @@ export default {
         this.page = page
         this.pageQuery()
       },
-      // 更新套装状态
+      // 更新套装狀態
       handleEnableOrDisable(row){
-        const status = row.status === 1 ? '停售' : '起售'
+        const status = row.status === 1 ? '停售' : '啟售'
         this.$confirm('您確定要<span style="color:red">' + status + '</span>此直送箱的狀態嗎？', '提示', {
           dangerouslyUseHTMLString: true,
-          confirmButtonText: '确定',
+          confirmButtonText: '確定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() =>{
@@ -158,7 +158,7 @@ export default {
               this.pageQuery()
             }
           }).catch(err =>{
-            this.$message.error('请求出错了' + err.message)
+            this.$message.error('請求發生錯誤：' + err.message)
         })
         })
       },
@@ -166,7 +166,7 @@ export default {
       handleSelectionChange(val){
         this.multipleSelection = val
       },
-      // 删除套餐
+      // 刪除直送箱
       handleDeleteSetmeal(type: string, id: string){
         if(type === 'B'){
           if(this.multipleSelection.length === 0){
@@ -176,19 +176,19 @@ export default {
         }
 
         this.$confirm('您確定要刪除所選的直送箱嗎？', '提示', {
-          confirmButtonText: '确定',
+          confirmButtonText: '確定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() =>{
           let param = ''
-          // 若是批量删除
+          // 若是批量刪除
           if(type === 'B'){
             const arr = new Array
             this.multipleSelection.forEach(element => {
               arr.push(element.id)
             })
             param = arr.join(',')
-          }else{ // 若是单个删除
+          }else{ // 若是单筆刪除
             param = id
           }
           deleteSetmeal(param).then(res =>{
@@ -199,15 +199,15 @@ export default {
               this.$message.error(res.data.msg)
             }
           }).catch(err => {
-            this.$message.error('请求出错了' + err.message)
+            this.$message.error('請求發生錯誤：' + err.message)
           })
         })
       },
-      // 新增套餐
+      // 新增直送箱
       handleAddSetmeal(){
         this.$router.push('/setmeal/add')
       },
-      // 更新套餐
+      // 更新直送箱
       handleUpdateSetmeal(id){
         this.$router.push({
           path: '/setmeal/add',
@@ -259,7 +259,7 @@ export default {
         text-align: center;
         margin-top: 30px;
       }
-      //查询黑色按钮样式
+      //查詢黑色按钮样式
       .normal-btn {
         background: #333333;
         color: white;

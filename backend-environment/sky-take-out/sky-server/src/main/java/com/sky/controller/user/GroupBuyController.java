@@ -20,7 +20,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/user/groupBuy")
-@Api(tags = "用戶端揪團接口")
+@Api(tags = "會員端揪團介面")
 @Slf4j
 public class GroupBuyController {
 

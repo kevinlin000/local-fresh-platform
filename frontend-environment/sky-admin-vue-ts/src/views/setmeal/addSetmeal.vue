@@ -53,11 +53,11 @@
                     <el-table :data="dishTable"
                               style="width: 100%">
                       <el-table-column prop="name"
-                                       label="名称"
+                                       label="名稱"
                                        width="180"
                                        align="center" />
                       <el-table-column prop="price"
-                                       label="原价"
+                                       label="原價"
                                        width="180"
                                        align="center">
                         <template slot-scope="scope">
@@ -65,7 +65,7 @@
                         </template>
                       </el-table-column>
                       <el-table-column prop="address"
-                                       label="份数"
+                                       label="份數"
                                        align="center">
                         <template slot-scope="scope">
                           <el-input-number v-model="scope.row.copies"
@@ -84,7 +84,7 @@
                                      size="small"
                                      class="delBut non"
                                      @click="delDishHandle(scope.$index)">
-                            删除
+                            刪除
                           </el-button>
                         </template>
                       </el-table-column>
@@ -101,7 +101,7 @@
                         prop="image">
             <image-upload :prop-image-url="imageUrl"
                           @imageChange="imageChange">
-              图片大小不超过2M<br>仅能上传 PNG JPEG JPG类型图片<br>建议上传200*200或300*300尺寸的图片
+              圖片大小不超過 2MB<br>僅能上傳 PNG、JPEG、JPG 類型圖片<br>建議上傳 200*200 或 300*300 尺寸的圖片
             </image-upload>
           </el-form-item>
         </div>
@@ -127,7 +127,7 @@
             <el-button v-if="actionType == 'add'"
                        type="primary"
                        @click="submitForm('ruleForm', true)">
-              保存并继续添加
+              保存並繼續新增
             </el-button>
           </el-form-item>
         </div>
@@ -147,7 +147,7 @@
                @checkList="getCheckList" />
       <span slot="footer"
             class="dialog-footer">
-        <el-button @click="handleClose">取 消</el-button>
+        <el-button @click="handleClose">取消</el-button>
         <el-button type="primary"
                    @click="addTableList">添 加</el-button>
       </span>
@@ -223,7 +223,7 @@ export default class extends Vue {
       },
       price: {
         required: true,
-        // 'message': '请输入套餐价格',
+        // 'message': '請輸入直送箱價格',
         validator: (rules: any, value: string, callback: Function) => {
           const reg = /^([1-9]\d{0,5}|0)(\.\d{1,2})?$/
           if (!reg.test(value) || Number(value) <= 0) {
@@ -238,7 +238,7 @@ export default class extends Vue {
         },
         trigger: 'blur'
       },
-      code: { required: true, message: '请输入商品码', trigger: 'blur' }
+      code: { required: true, message: '請輸入商品碼', trigger: 'blur' }
     }
   }
 
@@ -269,7 +269,7 @@ export default class extends Vue {
   private seachHandle() {
     this.seachKey = this.value
   }
-  // 获取套餐分类
+  // 取得直送箱分類
   private getDishTypeList() {
     getCategoryList({ type: 2, page: 1, pageSize: 1000 }).then(res => {
       if (res && res.data && res.data.code === 1) {
@@ -283,7 +283,7 @@ export default class extends Vue {
     })
   }
 
-  // 通过套餐ID获取菜品列表分类
+  // 通过直送箱ID取得單品列表分類
   // private getDishList (id:number) {
   //   getDishListType({id}).then(res => {
   //     if (res.data.code == 200) {
@@ -295,24 +295,24 @@ export default class extends Vue {
   //   })
   // }
 
-  // 删除套餐菜品
+  // 刪除直送箱單品
   delDishHandle(index: any) {
     this.dishTable.splice(index, 1)
     this.checkList = this.dishTable
     // this.checkList.splice(index, 1)
   }
 
-  // 获取添加菜品数据 - 确定加菜倒序展示
+  // 取得添加單品資料 - 確定加菜倒序展示
   private getCheckList(value: any) {
     this.checkList = [...value].reverse()
   }
 
-  // 添加菜品
+  // 添加單品
   openAddDish(st: string) {
     this.seachKey = ''
     this.dialogVisible = true
   }
-  // 取消添加菜品
+  // 取消添加單品
   handleClose(done: any) {
     // this.$refs.adddish.close()
     this.dialogVisible = false
@@ -320,7 +320,7 @@ export default class extends Vue {
     // this.dialogVisible = false
   }
 
-  // 保存添加菜品列表
+  // 保存添加單品列表
   public addTableList() {
     this.dishTable = JSON.parse(JSON.stringify(this.checkList))
     this.dishTable.forEach((n: any) => {
@@ -378,7 +378,7 @@ export default class extends Vue {
               }
             })
             .catch(err => {
-              this.$message.error('请求出错了：' + err.message)
+              this.$message.error('請求發生錯誤：' + err.message)
             })
         } else {
           delete prams.updateTime
@@ -392,7 +392,7 @@ export default class extends Vue {
               }
             })
             .catch(err => {
-              this.$message.error('请求出错了：' + err.message)
+              this.$message.error('請求發生錯誤：' + err.message)
             })
         }
       } else {

@@ -1,11 +1,11 @@
 import request from '@/utils/request';
 /**
  *
- * 分类管理
+ * 分類管理
  *
  **/
 
-// 查询分类列表接口
+// 查詢分類列表介面
 export const getCategoryPage = (params: any) => {
   return request({
     url: '/category/page',
@@ -14,7 +14,7 @@ export const getCategoryPage = (params: any) => {
   });
 };
 
-// 删除当前列的接口
+// 刪除目前列的介面
 export const deleCategory = (ids: string) => {
   return request({
     url: '/category',
@@ -23,7 +23,7 @@ export const deleCategory = (ids: string) => {
   });
 };
 
-// 修改接口
+// 修改介面
 export const editCategory = (params: any) => {
   return request({
     url: '/category',
@@ -32,7 +32,7 @@ export const editCategory = (params: any) => {
   });
 };
 
-// 新增接口
+// 新增介面
 export const addCategory = (params: any) => {
   return request({
     url: '/category',
@@ -41,7 +41,7 @@ export const addCategory = (params: any) => {
   });
 };
 
-// 修改---启用禁用接口
+// 修改---啟用停用介面
 export const enableOrDisableEmployee = (params: any) => {
   return request({
     url: `/category/status/${params.status}`,
@@ -50,7 +50,7 @@ export const enableOrDisableEmployee = (params: any) => {
   })
 }
 
-// 根据类型查询分类：1为菜品分类 2为套餐分类
+// 根據類型查詢分類：1为單品分類 2为直送箱分類
 export const getCategoryByType = (params: any) => {
   return request({
     url: `/category/list`,

@@ -19,11 +19,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 
 /**
- * 數據統計相關接口
+ * 數據統計相關介面
  */
 @RestController
 @RequestMapping("/admin/report")
-@Api(tags = "數據統計相關接口")
+@Api(tags = "資料統計相關介面")
 @Slf4j
 
 public class ReportController {
@@ -46,17 +46,17 @@ public class ReportController {
     }
 
     /**
-     * 用戶統計
+     * 會員統計
      * @param begin
      * @param end
      * @return
      */
     @GetMapping("/userStatistics")
-    @ApiOperation("用戶統計")
+    @ApiOperation("會員統計")
     public Result<UserReportVO> userStatistics(
             @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate begin,
             @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate end){
-        log.info("用戶統計，{}，{}", begin, end);
+        log.info("會員統計，{}，{}", begin, end);
         return Result.success(reportService.getUserStatistics(begin, end));
     }
 
@@ -77,13 +77,13 @@ public class ReportController {
 
 
     /**
-     * 銷量排名top10
+     * 銷量排名 Top 10
      * @param begin
      * @param end
      * @return
      */
     @GetMapping("/top10")
-    @ApiOperation("銷量排名top10")
+    @ApiOperation("銷量排名 Top 10")
     public Result<SalesTop10ReportVO> top10(
             @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate begin,
             @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate end){
@@ -92,11 +92,11 @@ public class ReportController {
     }
 
     /**
-     * 導出運營數據報表
+     * 匯出營運資料報表
      * @param response
      */
     @GetMapping("/export")
-    @ApiOperation("導出運營數據報表")
+    @ApiOperation("匯出營運資料報表")
     public void export(HttpServletResponse response){
         reportService.exportBusinessData(response);
 

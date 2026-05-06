@@ -37,15 +37,15 @@ export default class extends Vue {
       //   icon: 'rect', //图例
       //   show: true,
       //   top: 'bottom',
-      //   data: ['用户总量', '新增用户'],
+      //   data: ['會員总量', '新增會員'],
       // },
       tooltip: {
         trigger: 'axis',
-        backgroundColor: '#fff', //背景颜色（此时为默认色）
+        backgroundColor: '#fff', //背景颜色（此时为預設色）
         borderRadius: 2, //边框圆角
         textStyle: {
-          color: '#333', //字体颜色
-          fontSize: 12, //字体大小
+          color: '#333', //字型颜色
+          fontSize: 12, //字型大小
           fontWeight: 300,
         },
       },
@@ -60,7 +60,7 @@ export default class extends Vue {
         type: 'category',
         boundaryGap: false,
         axisLabel: {
-          //X轴字体颜色
+          //X轴字型颜色
           textStyle: {
             color: '#666',
             fontSize: '12px',
@@ -73,7 +73,7 @@ export default class extends Vue {
             width: 1, //x轴线的宽度
           },
         },
-        data: this.userdata.dateList, //后端传来的动态数据
+        data: this.userdata.dateList, //后端传来的动态資料
       },
       yAxis: [
         {

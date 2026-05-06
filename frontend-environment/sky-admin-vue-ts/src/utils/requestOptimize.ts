@@ -1,9 +1,9 @@
 import md5 from 'md5';
 
-//根据请求的地址，方式，参数，统一计算出当前请求的md5值作为key
+//根據请求的地址，方式，参数，统一计算出目前请求的md5值作为key
 const getRequestKey = (config) => {
     if (!config) {
-        // 如果没有获取到请求的相关配置信息，根据时间戳生成
+        // 如果沒有取得到请求的相关配置資訊，根據时间戳生成
         return md5(+new Date());
     }
 
@@ -16,7 +16,7 @@ const getRequestKey = (config) => {
 const pending = {};
 // 检查key值
 const checkPending = (key) => !!pending[key];
-// 删除key值
+// 刪除key值
 const removePending = (key) => {
     // console.log(key,'key')
     delete pending[key];

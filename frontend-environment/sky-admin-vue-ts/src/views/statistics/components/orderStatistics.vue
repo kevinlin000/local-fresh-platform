@@ -1,27 +1,27 @@
 <template>
   <div class="container">
-    <h2 class="homeTitle">订单统计</h2>
+    <h2 class="homeTitle">訂單统计</h2>
     <div class="charBox">
       <div class="orderProportion">
         <div>
-          <p>订单完成率</p>
+          <p>訂單完成率</p>
           <p>{{ (orderdata.orderCompletionRate * 100).toFixed(1) }}%</p>
         </div>
         <div class="symbol">=</div>
         <div>
-          <p>有效订单</p>
+          <p>有效訂單</p>
           <p>{{ orderdata.validOrderCount }}</p>
         </div>
         <div class="symbol">/</div>
         <div>
-          <p>订单总数</p>
+          <p>訂單總數</p>
           <p>{{ orderdata.totalOrderCount }}</p>
         </div>
       </div>
       <div id="ordermain" style="width: 100%; height: 300px"></div>
       <ul class="orderListLine">
-        <li class="one"><span></span>订单总数（个）</li>
-        <li class="three"><span></span>有效订单（个）</li>
+        <li class="one"><span></span>訂單總數（筆）</li>
+        <li class="three"><span></span>有效訂單（筆）</li>
       </ul>
     </div>
   </div>
@@ -47,7 +47,7 @@ export default class extends Vue {
     type EChartsOption = echarts.EChartsOption
     const chartDom = document.getElementById('ordermain') as any
     const myChart = echarts.init(chartDom)
-    // // 循环遍历出x轴的数据
+    // // 循环遍历出x轴的資料
     // const baseDate = this.orderdata.list.map((item) => {
     //   return (item as any).date
     // })
@@ -69,15 +69,15 @@ export default class extends Vue {
       //   icon: 'rect', //图例
       //   show: true,
       //   top: 'bottom',
-      //   data: ['订单完成率', '有效订单', '订单总数'],
+      //   data: ['訂單完成率', '有效訂單', '訂單總數'],
       // },
       tooltip: {
         trigger: 'axis',
-        backgroundColor: '#fff', //背景颜色（此时为默认色）
+        backgroundColor: '#fff', //背景颜色（此时为預設色）
         borderRadius: 2, //边框圆角
         textStyle: {
-          color: '#333', //字体颜色
-          fontSize: 12, //字体大小
+          color: '#333', //字型颜色
+          fontSize: 12, //字型大小
           fontWeight: 300,
         },
       },
@@ -92,7 +92,7 @@ export default class extends Vue {
         type: 'category',
         boundaryGap: false,
         axisLabel: {
-          //X轴字体颜色
+          //X轴字型颜色
           textStyle: {
             color: '#666',
             fontSize: '12px',
@@ -105,7 +105,7 @@ export default class extends Vue {
             width: 1, //x轴线的宽度
           },
         },
-        data: this.orderdata.data.dateList, //后端传来的动态数据
+        data: this.orderdata.data.dateList, //后端传来的动态資料
       },
       yAxis: [
         {
@@ -124,7 +124,7 @@ export default class extends Vue {
       ],
       series: [
         {
-          name: '订单总数',
+          name: '訂單總數',
           type: 'line',
           // stack: 'Total',
           smooth: false, //否平滑曲线
@@ -148,7 +148,7 @@ export default class extends Vue {
           data: this.orderdata.data.orderCountList,
         },
         {
-          name: '有效订单',
+          name: '有效訂單',
           type: 'line',
           // stack: 'Total',
           smooth: false, //否平滑曲线

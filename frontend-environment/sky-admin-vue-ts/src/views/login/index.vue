@@ -17,7 +17,7 @@
               v-model="loginForm.username"
               type="text"
               auto-complete="off"
-              placeholder="账号"
+              placeholder="帳號"
               prefix-icon="iconfont icon-user"
             />
           </el-form-item>
@@ -25,7 +25,7 @@
             <el-input
               v-model="loginForm.password"
               type="password"
-              placeholder="密码"
+              placeholder="密碼"
               prefix-icon="iconfont icon-lock"
               @keyup.enter.native="handleLogin"
             />
@@ -39,8 +39,8 @@
               style="width: 100%"
               @click.native.prevent="handleLogin"
             >
-              <span v-if="!loading">登录</span>
-              <span v-else>登录中...</span>
+              <span v-if="!loading">登入</span>
+              <span v-else>登入中...</span>
             </el-button>
           </el-form-item>
         </el-form>
@@ -62,14 +62,14 @@ import { isValidUsername } from '@/utils/validate'
 export default class extends Vue {
   private validateUsername = (rule: any, value: string, callback: Function) => {
     if (!value) {
-      callback(new Error('请输入用户名'))
+      callback(new Error('請輸入會員名'))
     } else {
       callback()
     }
   }
   private validatePassword = (rule: any, value: string, callback: Function) => {
     if (value.length < 6) {
-      callback(new Error('密码必须在6位以上'))
+      callback(new Error('密碼必须在6位以上'))
     } else {
       callback()
     }
@@ -92,7 +92,7 @@ export default class extends Vue {
   @Watch('$route', { immediate: true })
   private onRouteChange(route: Route) {}
 
-  // 登录
+  // 登入
   private handleLogin() {
     (this.$refs.loginForm as ElForm).validate(async (valid: boolean) => {
       if (valid) {
@@ -100,7 +100,7 @@ export default class extends Vue {
         await UserModule.Login(this.loginForm as any)
           .then((res: any) => {
             if (String(res.code) === '1') {
-              //登录成功，跳转到系统首页
+              //登入成功，跳转到系统首頁
               this.$router.push('/')
             } else {
               // this.$message.error(res.msg)
@@ -108,7 +108,7 @@ export default class extends Vue {
             }
           })
           .catch(() => {
-            // this.$message.error('用户名或密码错误！')
+            // this.$message.error('會員名或密碼错误！')
             this.loading = false
           })
       } else {

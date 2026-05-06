@@ -1,10 +1,10 @@
 import request from '@/utils/request'
 /**
  *
- * 套餐管理
+ * 直送箱管理
  *
  **/
-//套餐分页查询
+//直送箱分頁查詢
 export const getSetmealPage = (params: any) => {
     return request({
         url: '/giftbox/page',
@@ -13,7 +13,7 @@ export const getSetmealPage = (params: any) => {
     })
 }
 
-//套餐启售停售
+//直送箱啟售停售
 export const enableOrDisableSetmeal = (params: any) => {
     return request({
         url: `/giftbox/status/${params.status}`,
@@ -22,7 +22,7 @@ export const enableOrDisableSetmeal = (params: any) => {
     })
 }
 
-//删除套餐
+//刪除直送箱
 export const deleteSetmeal = (ids: string) => {//1,2,3
     return request({
         url: '/giftbox',
@@ -33,7 +33,7 @@ export const deleteSetmeal = (ids: string) => {//1,2,3
 
 
   
-// 修改数据接口
+// 修改資料介面
 export const editSetmeal = (params: any) => {
     return request({
         url: '/giftbox',
@@ -42,7 +42,7 @@ export const editSetmeal = (params: any) => {
     })
 }
 
-// 新增数据接口
+// 新增資料介面
 export const addSetmeal = (params: any) => {
     return request({
         url: '/giftbox',
@@ -51,7 +51,7 @@ export const addSetmeal = (params: any) => {
     })
 }
 
-// 查询详情接口
+// 查詢詳情介面
 export const querySetmealById = (id: string | (string | null)[]) => {
     return request({
         url: `/giftbox/${id}`,

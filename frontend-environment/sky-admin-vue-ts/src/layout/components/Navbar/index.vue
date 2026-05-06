@@ -6,7 +6,7 @@
                  class="hamburger-container"
                  @toggleClick="toggleSideBar" />
       <span v-if="status===1"
-            class="businessBtn">营业中</span>
+            class="businessBtn">營業中</span>
       <span v-else
             class="businessBtn closing">打烊中</span>
     </div>
@@ -22,7 +22,7 @@
                hidden>
           <source src="./../../../assets/reminder.mp3" type="audio/mp3" />
         </audio>
-        <span class="navicon operatingState" @click="handleStatus"><i />营业状态设置</span>
+        <span class="navicon operatingState" @click="handleStatus"><i />營業狀態設定</span>
       </div>
       <div class="avatar-wrapper">
         <div :class="shopShow?'userInfo':''"
@@ -36,40 +36,40 @@
                class="userList">
             <p class="amendPwdIcon"
                @click="handlePwd">
-              修改密码<i />
+              修改密碼<i />
             </p>
             <p class="outLogin"
                @click="logout">
-              退出登录<i />
+              退出登入<i />
             </p>
           </div>
         </div>
       </div>
     </div>
-    <!-- 营业状态弹层 -->
-    <el-dialog title="营业状态设置"
+    <!-- 營業狀態彈層 -->
+    <el-dialog title="營業狀態設定"
                :visible.sync="dialogVisible"
                width="25%"
                :show-close="false">
       <el-radio-group v-model="setStatus">
         <el-radio :label="1">
-          营业中
-          <span>当前餐厅处于营业状态，自动接收任何订单，可点击打烊进入店铺打烊状态。</span>
+          營業中
+          <span>目前餐廳處於營業狀態，會自動接收任何訂單，可點擊打烊進入店舖打烊狀態。</span>
         </el-radio>
         <el-radio :label="0">
           打烊中
-          <span>当前餐厅处于打烊状态，仅接受营业时间内的预定订单，可点击营业中手动恢复营业状态。</span>
+          <span>目前餐廳處於打烊狀態，僅接受營業時間內的預約訂單，可點擊營業中手動恢復營業狀態。</span>
         </el-radio>
       </el-radio-group>
       <span slot="footer"
             class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button @click="dialogVisible = false">取消</el-button>
         <el-button type="primary"
-                   @click="handleSave">确 定</el-button>
+                   @click="handleSave">確定</el-button>
       </span>
     </el-dialog>
     <!-- end -->
-    <!-- 修改密码 -->
+    <!-- 修改密碼 -->
     <Password :dialog-form-visible="dialogFormVisible"
               @handleclose="handlePwdClose" />
     <!-- end -->
@@ -87,9 +87,9 @@ import Cookies from 'js-cookie'
 import { debounce, throttle } from '@/utils/common'
 import { setNewData, getNewData } from '@/utils/cookies'
 
-// 接口
+// 介面
 import { getCountUnread } from '@/api/inform'
-// 修改密码弹层
+// 修改密碼弹层
 import Password from '../components/password.vue'
 
 @Component({
@@ -152,7 +152,7 @@ export default class extends Vue {
     // const msg = {
     //   data: {
     //     type: 2,
-    //     content: '订单1653904906519客户催单，已下单23分钟，仍未接单。',
+    //     content: '訂單1653904906519顧客催單，已下單23分钟，仍未接單。',
     //     details: '434'
     //   }
     // }
@@ -167,7 +167,7 @@ export default class extends Vue {
     this.websocket.close() //离开路由之后断开websocket连接
   }
 
-  // 添加新订单提示弹窗
+  // 添加新訂單提示弹窗
   webSocket() {
     const that = this as any
     let clientId = Math.random().toString(36).substr(2)
@@ -176,7 +176,7 @@ export default class extends Vue {
     if (typeof WebSocket == 'undefined') {
       that.$notify({
         title: '提示',
-        message: '当前浏览器无法接收实时报警信息，请使用谷歌浏览器！',
+        message: '目前瀏覽器無法接收即時警示資訊，請使用Google Chrome！',
         type: 'warning',
         duration: 0,
       })
@@ -184,9 +184,9 @@ export default class extends Vue {
       this.websocket = new WebSocket(socketUrl)
       // 监听socket打开
       this.websocket.onopen = function () {
-        console.log('浏览器WebSocket已打开')
+        console.log('瀏覽器WebSocket已打开')
       }
-      // 监听socket消息接收
+      // 监听socket訊息接收
       this.websocket.onmessage = function (msg) {
         // 转换为json对象
         that.$refs.audioVo.currentTime = 0
@@ -201,7 +201,7 @@ export default class extends Vue {
           that.$refs.audioVo2.play()
         }
         that.$notify({
-          title: jsonMsg.type === 1 ? '待接单' : '催单',
+          title: jsonMsg.type === 1 ? '待接單' : '催單',
           duration: 0,
           dangerouslyUseHTMLString: true,
           onClick: () => {
@@ -214,10 +214,10 @@ export default class extends Vue {
               location.reload()
             }, 100)
           },
-          // 这里也可以把返回信息加入到message中显示
+          // 这里也可以把回到資訊加入到message中显示
           message: `${
             jsonMsg.type === 1
-              ? `<span>您有1个<span style=color:#419EFF>订单待处理</span>,${jsonMsg.content},请及时接单</span>`
+              ? `<span>您有1筆<span style=color:#419EFF>訂單待處理</span>,${jsonMsg.content},請盡快接單</span>`
               : `${jsonMsg.content}<span style='color:#419EFF;cursor: pointer'>去处理</span>`
           }`,
         })
@@ -226,7 +226,7 @@ export default class extends Vue {
       this.websocket.onerror = function () {
         that.$notify({
           title: '错误',
-          message: '服务器错误，无法接收实时报警信息',
+          message: '伺服器错误，無法接收即時警示資訊',
           type: 'error',
           duration: 0,
         })
@@ -249,7 +249,7 @@ export default class extends Vue {
     })
     // this.$router.push(`/login?redirect=${this.$route.fullPath}`)
   }
-  // 获取未读消息
+  // 取得未读訊息
   async getCountUnread() {
     const { data } = await getCountUnread()
     if (data.code === 1) {
@@ -261,7 +261,7 @@ export default class extends Vue {
       this.$message.error(data.msg)
     }
   }
-  // 营业状态
+  // 營業狀態
   async getStatus() {
     const { data } = await getStatus()
     this.status = data.data
@@ -280,11 +280,11 @@ export default class extends Vue {
     // clearTimeout(this.leave)
     // this.shopShow = false
   }
-  // 设置营业状态
+  // 设置營業狀態
   handleStatus() {
     this.dialogVisible = true
   }
-  // 营业状态设置
+  // 營業狀態设置
   async handleSave() {
     const { data } = await setStatus(this.setStatus)
     if (data.code === 1) {
@@ -292,11 +292,11 @@ export default class extends Vue {
       this.getStatus()
     }
   }
-  // 修改密码
+  // 修改密碼
   handlePwd() {
     this.dialogFormVisible = true
   }
-  // 关闭密码编辑弹层
+  // 关闭密碼编辑弹层
   handlePwdClose() {
     this.dialogFormVisible = false
   }

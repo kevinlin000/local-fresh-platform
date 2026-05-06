@@ -1,14 +1,14 @@
 <template>
   <div class="container">
     <h2 class="homeTitle">
-      订单管理<i>{{ days[1] }}</i
-      ><span><router-link to="/order">订单明细</router-link></span>
+      訂單管理<i>{{ days[1] }}</i
+      ><span><router-link to="/order">訂單明細</router-link></span>
     </h2>
     <div class="orderviewBox">
       <ul>
         <li>
           <span class="status"
-            ><i class="iconfont icon-waiting"></i>待接单</span
+            ><i class="iconfont icon-waiting"></i>待接單</span
           >
           <span class="num tip"
             ><router-link to="/order?status=2">{{
@@ -45,7 +45,7 @@
           >
         </li>
         <li>
-          <span class="status"><i class="iconfont icon-all"></i>全部订单</span>
+          <span class="status"><i class="iconfont icon-all"></i>全部訂單</span>
           <span class="num"
             ><router-link to="/order">{{
               orderviewData.allOrders

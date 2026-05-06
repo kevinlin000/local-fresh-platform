@@ -8,25 +8,25 @@
     <div class="container" :class="{ hContainer: tableData.length }">
       <!-- 搜索项 -->
       <div class="tableBar">
-        <label style="margin-right: 10px">订单号：</label>
+        <label style="margin-right: 10px">訂單編號：</label>
         <el-input
           v-model="input"
-          placeholder="请填写订单号"
+          placeholder="請填寫訂單編號"
           style="width: 15%"
           clearable
           @clear="init(orderStatus)"
           @keyup.enter.native="initFun(orderStatus)"
         />
-        <label style="margin-left: 20px">手机号：</label>
+        <label style="margin-left: 20px">手機號碼：</label>
         <el-input
           v-model="phone"
-          placeholder="请填写手机号"
+          placeholder="請填寫手機號碼"
           style="width: 15%"
           clearable
           @clear="init(orderStatus)"
           @keyup.enter.native="initFun(orderStatus)"
         />
-        <label style="margin-left: 20px">下单时间：</label>
+        <label style="margin-left: 20px">下單時間：</label>
         <el-date-picker
           v-model="valueTime"
           clearable
@@ -34,13 +34,13 @@
           range-separator="至"
           :default-time="['00:00:00', '23:59:59']"
           type="daterange"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
+          start-placeholder="開始日期"
+          end-placeholder="結束日期"
           style="width: 25%; margin-left: 10px"
           @clear="init(orderStatus)"
         />
         <el-button class="normal-btn continue" @click="init(orderStatus, true)">
-          查询
+          查詢
         </el-button>
       </div>
       <el-table
@@ -49,7 +49,7 @@
         stripe
         class="tableBox"
       >
-        <el-table-column key="number" prop="number" label="订单号" />
+        <el-table-column key="number" prop="number" label="訂單編號" />
         <el-table-column
           v-if="[2, 3, 4].includes(orderStatus)"
           key="orderDishes"
@@ -59,8 +59,8 @@
         <el-table-column
           v-if="[0].includes(orderStatus)"
           key="status"
-          prop="订单状态"
-          label="订单状态"
+          prop="訂單狀態"
+          label="訂單狀態"
         >
           <template slot-scope="{ row }">
             <span>{{ getOrderType(row) }}</span>
@@ -77,7 +77,7 @@
           v-if="[0, 5, 6].includes(orderStatus)"
           key="phone"
           prop="phone"
-          label="手机号"
+          label="手機號碼"
         />
         <el-table-column
           v-if="[0, 2, 3, 4, 5, 6].includes(orderStatus)"
@@ -90,7 +90,7 @@
           v-if="[0, 6].includes(orderStatus)"
           key="orderTime"
           prop="orderTime"
-          label="下单时间"
+          label="下單時間"
           class-name="orderTime"
           min-width="110"
         />
@@ -99,7 +99,7 @@
           key="cancelTime"
           prop="cancelTime"
           class-name="cancelTime"
-          label="取消时间"
+          label="取消時間"
           min-width="110"
         />
         <el-table-column
@@ -114,20 +114,20 @@
           v-if="[5].includes(orderStatus)"
           key="deliveryTime"
           prop="deliveryTime"
-          label="送达时间"
+          label="送達時間"
         />
         <el-table-column
           v-if="[2, 3, 4].includes(orderStatus)"
           key="estimatedDeliveryTime"
           prop="estimatedDeliveryTime"
-          label="预计送达时间"
+          label="預計送達時間"
           min-width="110"
         />
         <el-table-column
           v-if="[0, 2, 5].includes(orderStatus)"
           key="amount"
           prop="amount"
-          label="实收金额"
+          label="實收金額"
           align="center"
         >
           <template slot-scope="{ row }">
@@ -138,14 +138,14 @@
           v-if="[2, 3, 4, 5].includes(orderStatus)"
           key="remark"
           prop="remark"
-          label="备注"
+          label="備註"
           align="center"
         />
         <el-table-column
           v-if="[2, 3, 4].includes(orderStatus)"
           key="tablewareNumber"
           prop="tablewareNumber"
-          label="餐具数量"
+          label="餐具數量"
           align="center"
           min-width="80"
         />
@@ -171,7 +171,7 @@
                 class="blueBug"
                 @click="orderAccept(row), (isTableOperateBtn = true)"
               >
-                接单
+                接單
               </el-button>
               <el-button
                 v-if="row.status === 3"
@@ -197,7 +197,7 @@
                 class="delBut"
                 @click="orderReject(row), (isTableOperateBtn = true)"
               >
-                拒单
+                拒單
               </el-button>
               <el-button
                 v-if="[1, 3, 4, 5].includes(row.status)"
@@ -235,7 +235,7 @@
 
     <!-- 查看弹框部分 -->
     <el-dialog
-      title="订单信息"
+      title="訂單資訊"
       :visible.sync="dialogVisible"
       width="53%"
       :before-close="handleClose"
@@ -245,7 +245,7 @@
         <div class="order-top">
           <div>
             <div style="display: inline-block">
-              <label style="font-size: 16px">订单号：</label>
+              <label style="font-size: 16px">訂單編號：</label>
               <div class="order-num">
                 {{ diaForm.number }}
               </div>
@@ -261,7 +261,7 @@
               }}
             </div>
           </div>
-          <p><label>下单时间：</label>{{ diaForm.orderTime }}</p>
+          <p><label>下單時間：</label>{{ diaForm.orderTime }}</p>
         </div>
 
         <div class="order-middle">
@@ -272,7 +272,7 @@
                 <span>{{ diaForm.consignee }}</span>
               </div>
               <div class="user-phone">
-                <label>手机号：</label>
+                <label>手機號碼：</label>
                 <span>{{ diaForm.phone }}</span>
               </div>
               <div
@@ -280,7 +280,7 @@
                 class="user-getTime"
               >
                 <label>{{
-                  dialogOrderStatus === 5 ? '送达时间：' : '预计送达时间：'
+                  dialogOrderStatus === 5 ? '送達時間：' : '預計送達時間：'
                 }}</label>
                 <span>{{
                   dialogOrderStatus === 5
@@ -297,7 +297,7 @@
               class="user-remark"
               :class="{ orderCancel: dialogOrderStatus === 6 }"
             >
-              <div>{{ dialogOrderStatus === 6 ? '取消原因' : '备注' }}</div>
+              <div>{{ dialogOrderStatus === 6 ? '取消原因' : '備註' }}</div>
               <span>{{
                 dialogOrderStatus === 6
                   ? diaForm.cancelReason || diaForm.rejectionReason
@@ -336,7 +336,7 @@
 
         <div class="order-bottom">
           <div class="amount-info">
-            <div class="amount-label">费用</div>
+            <div class="amount-label">費用</div>
             <div class="amount-list">
               <div class="dish-amount">
                 <span class="amount-name">單品小計：</span>
@@ -363,7 +363,7 @@
                 >
               </div>
               <div class="all-amount">
-                <span class="amount-name">合计：</span>
+                <span class="amount-name">合計：</span>
                 <span class="amount-price"
                   >￥{{
                     diaForm.amount
@@ -373,13 +373,13 @@
                 >
               </div>
               <div class="pay-type">
-                <span class="pay-name">支付渠道：</span>
+                <span class="pay-name">支付管道：</span>
                 <span class="pay-value">{{
-                  diaForm.payMethod === 1 ? '微信支付' : '支付宝支付'
+                  diaForm.payMethod === 1 ? '第三方付款' : '支付寶付款'
                 }}</span>
               </div>
               <div class="pay-time">
-                <span class="pay-name">支付时间：</span>
+                <span class="pay-name">支付時間：</span>
                 <span class="pay-value">{{ diaForm.checkoutTime }}</span>
               </div>
             </div>
@@ -390,18 +390,18 @@
         <el-checkbox
           v-if="dialogOrderStatus === 2 && orderStatus === 2"
           v-model="isAutoNext"
-          >处理完自动跳转下一条</el-checkbox
+          >處理完自動跳轉下一筆</el-checkbox
         >
         <el-button
           v-if="dialogOrderStatus === 2"
           @click="orderReject(row), (isTableOperateBtn = false)"
-          >拒 单</el-button
+          >拒 單</el-button
         >
         <el-button
           v-if="dialogOrderStatus === 2"
           type="primary"
           @click="orderAccept(row), (isTableOperateBtn = false)"
-          >接 单</el-button
+          >接 單</el-button
         >
 
         <el-button
@@ -425,7 +425,7 @@
           v-if="[1].includes(dialogOrderStatus)"
           type="primary"
           @click="cancelOrder(row)"
-          >取消订单</el-button
+          >取消訂單</el-button
         >
       </span>
     </el-dialog>
@@ -441,7 +441,7 @@
         <el-form-item :label="cancelDialogTitle + '原因：'">
           <el-select
             v-model="cancelReason"
-            :placeholder="'请选择' + cancelDialogTitle + '原因'"
+            :placeholder="'請選擇' + cancelDialogTitle + '原因'"
           >
             <el-option
               v-for="(item, index) in cancelDialogTitle === '取消'
@@ -453,18 +453,18 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="cancelReason === '自定义原因'" label="原因：">
+        <el-form-item v-if="cancelReason === '自訂原因'" label="原因：">
           <el-input
             v-model.trim="remark"
             type="textarea"
-            :placeholder="'请填写您' + cancelDialogTitle + '的原因（限20字内）'"
+            :placeholder="'請填寫您' + cancelDialogTitle + '的原因（限 20 字內）'"
             maxlength="20"
           />
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click=";(cancelDialogVisible = false), (cancelReason = '')"
-          >取 消</el-button
+          >取消</el-button
         >
         <el-button type="primary" @click="confirmCancel">确 定</el-button>
       </span>
@@ -503,12 +503,12 @@ export default class extends Vue {
   private row = {}
   private isAutoNext = true
   private isTableOperateBtn = true
-  private currentPageIndex = 0 //记录查看详情数据的index
-  private orderId = '' //订单号
-  private input = '' //搜索条件的订单号
-  private phone = '' //搜索条件的手机号
+  private currentPageIndex = 0 //记录查看詳情資料的index
+  private orderId = '' //訂單号
+  private input = '' //搜索条件的訂單号
+  private phone = '' //搜索条件的手機號碼
   private valueTime = []
-  private dialogVisible = false //详情弹窗
+  private dialogVisible = false //詳情弹窗
   private cancelDialogVisible = false //取消，拒单弹窗
   private cancelDialogTitle = '' //取消，拒绝弹窗标题
   private cancelReason = ''
@@ -519,12 +519,12 @@ export default class extends Vue {
   private tableData = []
   private diaForm = []
   private isSearch: boolean = false
-  private orderStatus = 0 //列表字段展示所需订单状态,用于分页请求数据
-  private dialogOrderStatus = 0 //弹窗所需订单状态，用于详情展示字段
+  private orderStatus = 0 //列表字段展示所需訂單狀態,用于分頁请求資料
+  private dialogOrderStatus = 0 //弹窗所需訂單狀態，用于詳情展示字段
   private cancelOrderReasonList = [
     {
       value: 1,
-      label: '订单量较多，暂时无法接单',
+      label: '訂單量較多，暫時無法接單',
     },
     {
       value: 2,
@@ -532,18 +532,18 @@ export default class extends Vue {
     },
     {
       value: 3,
-      label: '餐厅已打烊，暂时无法接单',
+      label: '餐廳已打烊，暫時無法接單',
     },
     {
       value: 0,
-      label: '自定义原因',
+      label: '自訂原因',
     },
   ]
 
   private cancelrReasonList = [
     {
       value: 1,
-      label: '订单量较多，暂时无法接单',
+      label: '訂單量較多，暫時無法接單',
     },
     {
       value: 2,
@@ -551,20 +551,20 @@ export default class extends Vue {
     },
     {
       value: 3,
-      label: '骑手不足无法配送',
+      label: '配送員不足無法配送',
     },
     {
       value: 4,
-      label: '客户电话取消',
+      label: '顧客來電取消',
     },
     {
       value: 0,
-      label: '自定义原因',
+      label: '自訂原因',
     },
   ]
   private orderList = [
     {
-      label: '全部订单',
+      label: '全部訂單',
       value: 0,
     },
     {
@@ -572,7 +572,7 @@ export default class extends Vue {
       value: 1,
     },
     {
-      label: '待接单',
+      label: '待接單',
       value: 2,
     },
     {
@@ -598,7 +598,7 @@ export default class extends Vue {
   }
 
   mounted() {
-    //如果有值说明是消息通知点击进来的
+    //如果有值说明是訊息通知点击进来的
     if (
       this.$route.query.orderId &&
       this.$route.query.orderId !== 'undefined'
@@ -627,7 +627,7 @@ export default class extends Vue {
     console.log(activeIndex, '接收到了子组件的index')
   }
 
-  //获取待处理，待派送，派送中数量
+  //取得待處理，待派送，派送中数量
   getOrderListBy3Status() {
     getOrderListBy({})
       .then((res) => {
@@ -638,7 +638,7 @@ export default class extends Vue {
         }
       })
       .catch((err) => {
-        this.$message.error('请求出错了：' + err.message)
+        this.$message.error('請求發生錯誤：' + err.message)
       })
   }
 
@@ -683,7 +683,7 @@ export default class extends Vue {
         }
       })
       .catch((err) => {
-        this.$message.error('请求出错了：' + err.message)
+        this.$message.error('請求發生錯誤：' + err.message)
       })
   }
 
@@ -691,7 +691,7 @@ export default class extends Vue {
     if (row.status === 1) {
       return '待付款'
     } else if (row.status === 2) {
-      return '待接单'
+      return '待接單'
     } else if (row.status === 3) {
       return '待派送'
     } else if (row.status === 4) {
@@ -705,7 +705,7 @@ export default class extends Vue {
     }
   }
 
-  // 查看详情
+  // 查看詳情
   async goDetail(id: any, status: number, row?: any) {
     // console.log(111, index, row)
     this.diaForm = []
@@ -730,7 +730,7 @@ export default class extends Vue {
     this.cancelReason = ''
   }
 
-  //接单
+  //接單
   orderAccept(row: any) {
     this.orderId = row.id
     this.dialogOrderStatus = row.status
@@ -747,11 +747,11 @@ export default class extends Vue {
         }
       })
       .catch((err) => {
-        this.$message.error('请求出错了：' + err.message)
+        this.$message.error('請求發生錯誤：' + err.message)
       })
   }
 
-  //打开取消订单弹窗
+  //打开取消訂單弹窗
   cancelOrder(row: any) {
     this.cancelDialogVisible = true
     this.orderId = row.id
@@ -761,19 +761,19 @@ export default class extends Vue {
     this.cancelReason = ''
   }
 
-  //确认取消或拒绝订单并填写原因
+  //確認取消或拒绝訂單并填写原因
   confirmCancel(type) {
     if (!this.cancelReason) {
-      return this.$message.error(`请选择${this.cancelDialogTitle}原因`)
-    } else if (this.cancelReason === '自定义原因' && !this.remark) {
-      return this.$message.error(`请输入${this.cancelDialogTitle}原因`)
+      return this.$message.error(`請選擇${this.cancelDialogTitle}原因`)
+    } else if (this.cancelReason === '自訂原因' && !this.remark) {
+      return this.$message.error(`請輸入${this.cancelDialogTitle}原因`)
     }
 
     ;(this.cancelDialogTitle === '取消' ? orderCancel : orderReject)({
       id: this.orderId,
       // eslint-disable-next-line standard/computed-property-even-spacing
       [this.cancelDialogTitle === '取消' ? 'cancelReason' : 'rejectionReason']:
-        this.cancelReason === '自定义原因' ? this.remark : this.cancelReason,
+        this.cancelReason === '自訂原因' ? this.remark : this.cancelReason,
     })
       .then((res) => {
         if (res.data.code === 1) {
@@ -787,7 +787,7 @@ export default class extends Vue {
         }
       })
       .catch((err) => {
-        this.$message.error('请求出错了：' + err.message)
+        this.$message.error('請求發生錯誤：' + err.message)
       })
   }
 
@@ -810,7 +810,7 @@ export default class extends Vue {
         }
       })
       .catch((err) => {
-        this.$message.error('请求出错了：' + err.message)
+        this.$message.error('請求發生錯誤：' + err.message)
       })
   }
 
@@ -872,7 +872,7 @@ export default class extends Vue {
         text-align: center;
         margin-top: 30px;
       }
-      //查询黑色按钮样式
+      //查詢黑色按钮样式
       .normal-btn {
         background: #333333;
         color: white;

@@ -13,7 +13,7 @@
         <label style="margin-right: 10px; margin-left: 20px">單品分類：</label>
         <el-select v-model="categoryId"
                    style="width: 14%"
-                   placeholder="请选择"
+                   placeholder="請選擇"
                    clearable
                    @clear="init">
           <el-option v-for="item in dishCategoryList"
@@ -22,10 +22,10 @@
                      :value="item.value" />
         </el-select>
 
-        <label style="margin-right: 10px; margin-left: 20px">售卖状态：</label>
+        <label style="margin-right: 10px; margin-left: 20px">販售狀態：</label>
         <el-select v-model="dishStatus"
                    style="width: 14%"
-                   placeholder="请选择"
+                   placeholder="請選擇"
                    clearable
                    @clear="init">
           <el-option v-for="item in saleStatus"
@@ -35,13 +35,13 @@
         </el-select>
         <el-button class="normal-btn continue"
                    @click="init(true)">
-          查询
+          查詢
         </el-button>
 
         <div class="tableLab">
           <span class="delBut non"
-                @click="deleteHandle('批量', null)">批量删除</span>
-          <!-- <span class="blueBug non" @click="statusHandle('1')">批量启售</span>
+                @click="deleteHandle('批量', null)">批量刪除</span>
+          <!-- <span class="blueBug non" @click="statusHandle('1')">批量啟售</span>
           <span
             style="border: none"
             class="delBut non"
@@ -65,7 +65,7 @@
         <el-table-column prop="name"
                          label="單品名稱" />
         <el-table-column prop="image"
-                         label="图片">
+                         label="圖片">
           <template slot-scope="{ row }">
             <el-image style="width: 80px; height: 40px; border: none; cursor: pointer"
                       :src="row.image">
@@ -79,21 +79,21 @@
         </el-table-column>
         <el-table-column prop="categoryName"
                          label="單品分類" />
-        <el-table-column label="售价">
+        <el-table-column label="售價">
           <template slot-scope="scope">
             <span style="margin-right: 10px">￥{{ (scope.row.price ).toFixed(2)*100/100 }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="售卖状态">
+        <el-table-column label="販售狀態">
           <template slot-scope="scope">
             <div class="tableColumn-status"
                  :class="{ 'stop-use': String(scope.row.status) === '0' }">
-              {{ String(scope.row.status) === '0' ? '停售' : '启售' }}
+              {{ String(scope.row.status) === '0' ? '停售' : '啟售' }}
             </div>
           </template>
         </el-table-column>
         <el-table-column prop="updateTime"
-                         label="最后操作时间" />
+                         label="最後操作時間" />
         <el-table-column label="操作"
                          width="250"
                          align="center">
@@ -108,7 +108,7 @@
                        size="small"
                        class="delBut"
                        @click="deleteHandle('单删', scope.row.id)">
-              删除
+              刪除
             </el-button>
             <el-button type="text"
                        size="small"
@@ -118,7 +118,7 @@
                          delBut: scope.row.status != '0'
                        }"
                        @click="statusHandle(scope.row)">
-              {{ scope.row.status == '0' ? '启售' : '停售' }}
+              {{ scope.row.status == '0' ? '啟售' : '停售' }}
             </el-button>
           </template>
         </el-table-column>
@@ -178,7 +178,7 @@ export default class extends Vue {
     },
     {
       value: 1,
-      label: '启售'
+      label: '啟售'
     }
   ]
 
@@ -213,7 +213,7 @@ export default class extends Vue {
         }
       })
       .catch(err => {
-        this.$message.error('请求出错了：' + err.message)
+        this.$message.error('請求發生錯誤：' + err.message)
       })
   }
 
@@ -226,33 +226,33 @@ export default class extends Vue {
     }
   }
 
-  // 删除
+  // 刪除
   private deleteHandle(type: string, id: any) {
     if (type === '批量' && id === null) {
       if (this.checkList.length === 0) {
-        return this.$message.error('请选择删除对象')
+        return this.$message.error('請選擇刪除对象')
       }
     }
     this.$confirm('確認刪除該單品，是否繼續？', '確定刪除', {
-      confirmButtonText: '删除',
+      confirmButtonText: '刪除',
       cancelButtonText: '取消',
       type: 'warning'
     }).then(() => {
       deleteDish(type === '批量' ? this.checkList.join(',') : id)
         .then(res => {
           if (res && res.data && res.data.code === 1) {
-            this.$message.success('删除成功！')
+            this.$message.success('刪除成功！')
             this.init()
           } else {
             this.$message.error(res.data.msg)
           }
         })
         .catch(err => {
-          this.$message.error('请求出错了：' + err.message)
+          this.$message.error('請求發生錯誤：' + err.message)
         })
     })
   }
-  //获取菜品分类下拉数据
+  //取得單品分類下拉資料
   private getDishCategoryList() {
     dishCategoryList({
       type: 1
@@ -271,7 +271,7 @@ export default class extends Vue {
       .catch(() => {})
   }
 
-  //状态更改
+  //狀態更改
   private statusHandle(row: any) {
     let params: any = {}
     if (typeof row === 'string') {
@@ -287,11 +287,11 @@ export default class extends Vue {
     }
     this.dishState = params
     this.$confirm('確認變更該單品狀態？', '提示', {
-      confirmButtonText: '确定',
+      confirmButtonText: '確定',
       cancelButtonText: '取消',
       type: 'warning'
     }).then(() => {
-      // 起售停售---批量起售停售接口
+      // 起售停售---批量起售停售介面
       dishStatusByStatus(this.dishState)
         .then(res => {
           if (res && res.data && res.data.code === 1) {
@@ -302,7 +302,7 @@ export default class extends Vue {
           }
         })
         .catch(err => {
-          this.$message.error('请求出错了：' + err.message)
+          this.$message.error('請求發生錯誤：' + err.message)
         })
     })
   }
@@ -342,7 +342,7 @@ export default class extends Vue {
       z-index: 1;
       padding: 30px 28px;
       border-radius: 4px;
-      //查询黑色按钮样式
+      //查詢黑色按钮样式
       .normal-btn {
         background: #333333;
         color: white;

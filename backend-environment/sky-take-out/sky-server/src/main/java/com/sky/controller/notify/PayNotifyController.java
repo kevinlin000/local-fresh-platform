@@ -18,7 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 /**
- * 支付回调相关接口
+ * 支付回调相關介面
  */
 @RestController
 @RequestMapping("/notify")
@@ -36,22 +36,22 @@ public class PayNotifyController {
      */
     @RequestMapping("/paySuccess")
     public void paySuccessNotify(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        //读取数据
+        //读取資料
         String body = readData(request);
         log.info("支付成功回调：{}", body);
 
-        //数据解密
+        //資料解密
         String plainText = decryptData(body);
         log.info("解密后的文本：{}", plainText);
 
         JSONObject jsonObject = JSON.parseObject(plainText);
-        String outTradeNo = jsonObject.getString("out_trade_no");//商户平台订单号
+        String outTradeNo = jsonObject.getString("out_trade_no");//商户平台訂單号
         String transactionId = jsonObject.getString("transaction_id");//微信支付交易号
 
-        log.info("商户平台订单号：{}", outTradeNo);
+        log.info("商户平台訂單号：{}", outTradeNo);
         log.info("微信支付交易号：{}", transactionId);
 
-        //业务处理，修改订单状态、来单提醒
+        //业务处理，修改訂單狀態、来单提醒
         orderService.paySuccess(outTradeNo);
 
         //给微信响应
@@ -59,7 +59,7 @@ public class PayNotifyController {
     }
 
     /**
-     * 读取数据
+     * 读取資料
      *
      * @param request
      * @return
@@ -79,7 +79,7 @@ public class PayNotifyController {
     }
 
     /**
-     * 数据解密
+     * 資料解密
      *
      * @param body
      * @return

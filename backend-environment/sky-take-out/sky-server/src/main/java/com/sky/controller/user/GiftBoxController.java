@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 @RestController("userGiftBoxController")
 @RequestMapping("/user/giftbox")
-@Api(tags = "C端-直送箱瀏覽接口")
+@Api(tags = "會員端-直送箱瀏覽介面")
 public class GiftBoxController {
     @Autowired
     private GiftBoxService giftBoxService;
@@ -29,13 +29,13 @@ public class GiftBoxController {
     private RedisTemplate<String, Object> appRedisTemplate;
 
     /**
-     * 条件查询
+     * 条件查詢
      *
      * @param categoryId
      * @return
      */
     @GetMapping("/list")
-    @ApiOperation("根据分类id查询直送箱")
+    @ApiOperation("根據分類 ID 查詢直送箱")
     public Result<List<GiftBox>> list(Long categoryId) {
         String key = "giftbox_" + categoryId;
 
@@ -54,13 +54,13 @@ public class GiftBoxController {
     }
 
     /**
-     * 根据直送箱id查询包含的單品列表
+     * 根據直送箱 ID 查詢包含的單品列表
      *
      * @param id
      * @return
      */
     @GetMapping("/product/{id}")
-    @ApiOperation("根据直送箱id查询包含的單品列表")
+    @ApiOperation("根據直送箱 ID 查詢包含的單品列表")
     public Result<List<ProductItemVO>> dishList(@PathVariable("id") Long id) {
         List<ProductItemVO> list = giftBoxService.getDishItemById(id);
         return Result.success(list);

@@ -34,7 +34,7 @@ service.interceptors.response.use(
     }
     //请求响应中的config的url会带上代理的api需要去掉
     response.config.url = response.config.url.replace('/api', '')
-    // 请求完成，删除请求中状态
+    // 请求完成，刪除请求中狀態
     const key = getRequestKey(response.config);
     removePending(key);
     if (response.data.code === 1) {
@@ -50,12 +50,12 @@ service.interceptors.response.use(
           router.push('/login')
           break;
         case 405:
-          error.message = '请求错误'
+          error.message = '請求錯誤'
       }
     }
     //请求响应中的config的url会带上代理的api需要去掉
     error.config.url = error.config.url.replace('/api', '')
-    // 请求完成，删除请求中状态
+    // 请求完成，刪除请求中狀態
     const key = getRequestKey(error.config);
     removePending(key);
     return Promise.reject(error)

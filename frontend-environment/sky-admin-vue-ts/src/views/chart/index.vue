@@ -15,12 +15,12 @@
     </HeadLable>
     <div class="topLable">
       <div class="tit">
-        <span v-if="act === 'day'">统计时间：00：00 - 24：00</span>
+        <span v-if="act === 'day'">統計時間：00：00 - 24：00</span>
         <span v-if="act === 'week'"
-          >统计时间：{{ stateTime }} -{{ endTime }}</span
+          >統計時間：{{ stateTime }} -{{ endTime }}</span
         >
         <span v-if="act === 'mouth'"
-          >统计时间：{{ stateTime }} -{{ endTime }}</span
+          >統計時間：{{ stateTime }} -{{ endTime }}</span
         >
       </div>
       <div v-if="act === 'day'" class="dataSelect">
@@ -30,14 +30,14 @@
             v-model="dataTime"
             size="mini"
             type="date"
-            placeholder="选择日期"
+            placeholder="選擇日期"
             value-format="yyyy-MM-dd"
             :clearable="false"
             @change="changeDate('day')"
           />
-          <span @click="checkaffterDate('day', 'after')">后一天</span>
+          <span @click="checkaffterDate('day', 'after')">後一天</span>
         </div>
-        <div><span class="but" @click="init()">查看今日数据</span></div>
+        <div><span class="but" @click="init()">查看今日資料</span></div>
       </div>
       <div v-if="act === 'week'" class="dataSelect">
         <div>
@@ -48,14 +48,14 @@
             type="week"
             format="yyyy 第 WW 周"
             value-format="yyyy-MM-dd"
-            placeholder="选择周"
+            placeholder="選擇週"
             :clearable="false"
             @change="changeDate('week')"
           />
-          <span @click="checkaffterDate('week', 'after')">后一周</span>
+          <span @click="checkaffterDate('week', 'after')">後一週</span>
         </div>
         <div>
-          <span class="but" @click="dateAct('week')">查看本周数据</span>
+          <span class="but" @click="dateAct('week')">查看本周資料</span>
         </div>
       </div>
       <div v-if="act === 'mouth'" class="dataSelect">
@@ -66,14 +66,14 @@
             size="mini"
             type="month"
             value-format="yyyy-MM-dd"
-            placeholder="选择月"
+            placeholder="選擇月份"
             :clearable="false"
             @change="changeDate('mouth')"
           />
-          <span @click="checkaffterDate('mouth', 'after')">后一月</span>
+          <span @click="checkaffterDate('mouth', 'after')">後一月</span>
         </div>
         <div>
-          <span class="but" @click="dateAct('mouth')">查看本月数据</span>
+          <span class="but" @click="dateAct('mouth')">查看本月資料</span>
         </div>
       </div>
     </div>
@@ -89,9 +89,9 @@
             />
           </div>
           <div class="item">
-            <div>实收金额</div>
+            <div>實收金額</div>
             <div>{{ topData.payTotal / 100 || 0 }}元</div>
-            <div>较前一日 0%</div>
+            <div>較前一日 0%</div>
           </div>
         </div>
         <div class="box noData">
@@ -99,9 +99,9 @@
             <img src="./../../assets/icons/jine_m-2@2x.png" width="50" alt="" />
           </div>
           <div class="item">
-            <div>未收金额</div>
+            <div>未收金額</div>
             <div>{{ topData.noPayTotal / 100 || 0 }}元</div>
-            <div>较前一日 0%</div>
+            <div>較前一日 0%</div>
           </div>
         </div>
         <div class="box employee">
@@ -109,9 +109,9 @@
             <img src="./../../assets/icons/renshu@2x.png" width="46" alt="" />
           </div>
           <div class="item">
-            <div>就餐人数</div>
+            <div>用餐人數</div>
             <div>{{ topData.totalPerson || 0 }}人</div>
-            <div>较前一日 0%</div>
+            <div>較前一日 0%</div>
           </div>
         </div>
       </div>
@@ -125,14 +125,14 @@
           <span
             :class="{ butAct: typeA == 2 }"
             @click="topActiveHandle('typeA')"
-            >按单数</span
+            >按單數</span
           >
         </div>
         <Basic
           v-if="chartDataA"
           id="line"
           :chart-data="chartDataA"
-          title="时段销售趋势"
+          title="时段銷售趋势"
         />
       </div>
     </div>
@@ -154,7 +154,7 @@
           <BarChart :chart-data="chartDataC" title="單品分類占比" />
         </div>
         <div>
-          <MixedChart :chart-data="chartDataB" title="菜单销售排行" />
+          <MixedChart :chart-data="chartDataB" title="菜单銷售排行" />
         </div>
       </div>
     </div>
@@ -164,9 +164,9 @@
           <BarChart id="bar" :chart-data="chartDataD" title="店内收款构成" />
         </div>
         <div class="itemList">
-          <div class="title">优惠指标</div>
+          <div class="title">優惠指标</div>
           <div class="item topLab">
-            <span>优惠合计</span><span>{{ discountTotal / 100 }}元</span
+            <span>優惠合计</span><span>{{ discountTotal / 100 }}元</span
             ><span>{{ discountPercentTotal * 100 }}%</span>
           </div>
           <div v-for="(item, index) in discount" :key="index" class="item">
@@ -230,15 +230,15 @@ export default class extends Vue {
   private stateTime = moment().format('YYYY-MM-DD')
   private endTime = moment().format('YYYY-MM-DD')
   private act = 'day'
-  private dataType = 1 //类型(1:金额;2:数量)
+  private dataType = 1 //類型(1:金额;2:数量)
   private typeA = 1
   private typeB = 1
-  private chartDataA = {} // 销售趋势
-  private chartDataB = {} // 销售排行
+  private chartDataA = {} // 銷售趋势
+  private chartDataB = {} // 銷售排行
 
-  private chartDataC = {} //分类占比
+  private chartDataC = {} //分類占比
   private chartDataD = {} // 收款构成
-  private discount = [] // 优惠指标
+  private discount = [] // 優惠指标
   private discountTotal = 0
   private discountPercentTotal = 0
 
@@ -297,7 +297,7 @@ export default class extends Vue {
             err = '已经是最后一周了'
             break
           default:
-            err = '已经是最后一个月了'
+            err = '已经是最后一筆月了'
         }
         this.$message.error(err)
       }
@@ -388,7 +388,7 @@ export default class extends Vue {
     }
   }
 
-  // 获取当天数据
+  // 取得當天資料
   private getData() {
     this.getDayData()
     this.getSalesRankData()
@@ -398,7 +398,7 @@ export default class extends Vue {
     this.getprivilegeData()
   }
 
-  // 获取当日销售趋势信息 - 销售趋势图
+  // 取得當日銷售趋势資訊 - 銷售趋势图
   private getDayData() {
     getDayDataes({ type: this.typeA, date: this.dataTime })
       .then((res) => {
@@ -420,10 +420,10 @@ export default class extends Vue {
         }
       })
       .catch((err) => {
-        this.$message.error('请求出错了：' + err.message)
+        this.$message.error('請求發生錯誤：' + err.message)
       })
   }
-  // 获取菜品分类销售排行 - 菜品分类占比 -当日
+  // 取得單品分類銷售排行 - 單品分類占比 -當日
   private getSalesRankData() {
     getSalesRanking({ type: this.typeB, date: this.dataTime })
       .then((res) => {
@@ -455,10 +455,10 @@ export default class extends Vue {
         }
       })
       .catch((err) => {
-        this.$message.error('请求出错了：' + err.message)
+        this.$message.error('請求發生錯誤：' + err.message)
       })
   }
-  // 支付类型数据汇总 - 店内收款构成 - 当日
+  // 支付類型資料汇总 - 店内收款构成 - 當日
   private getDayPayTypeData() {
     getDayPayType({ date: this.dataTime })
       .then((res) => {
@@ -490,10 +490,10 @@ export default class extends Vue {
         }
       })
       .catch((err) => {
-        this.$message.error('请求出错了：' + err.message)
+        this.$message.error('請求發生錯誤：' + err.message)
       })
   }
-  // 获取当日菜品销售排行 - 销售排行图
+  // 取得當日單品銷售排行 - 銷售排行图
   private getDayRankingData() {
     getDayRanking({ type: this.dataType, date: this.dataTime })
       .then((res) => {
@@ -506,12 +506,12 @@ export default class extends Vue {
         }
       })
       .catch((err) => {
-        this.$message.error('请求出错了：' + err.message)
+        this.$message.error('請求發生錯誤：' + err.message)
       })
   }
-  // 获取一天的销售数量 - 顶部数据
+  // 取得一天的銷售数量 - 頂部資料
   private getDaySalesVolumeData() {
-    // 获取当日销售数据
+    // 取得當日銷售資料
     getChartsDataes({ start: this.dataTime, end: this.dataTime })
       .then((res) => {
         if (res.data.code == 200) {
@@ -522,10 +522,10 @@ export default class extends Vue {
         }
       })
       .catch((err) => {
-        this.$message.error('请求出错了：' + err.message)
+        this.$message.error('請求發生錯誤：' + err.message)
       })
   }
-  // 获取当日各种优惠类型数据汇总
+  // 取得當日各种優惠類型資料汇总
   private getprivilegeData() {
     getprivilege({ date: this.dataTime })
       .then((res) => {
@@ -545,11 +545,11 @@ export default class extends Vue {
         }
       })
       .catch((err) => {
-        this.$message.error('请求出错了：' + err.message)
+        this.$message.error('請求發生錯誤：' + err.message)
       })
   }
 
-  // 查看时间段接口调用
+  // 查看时间段介面调用
   private getTimeWuantumData() {
     this.getTimeQuantumData()
     this.getReceivables()
@@ -559,8 +559,8 @@ export default class extends Vue {
     this.getDiscount()
   }
 
-  // 时间段数据获取
-  // 获取时间范围之内的优惠指标汇总数据 - 优惠指标
+  // 时间段資料取得
+  // 取得時間範圍內的優惠指标汇总資料 - 優惠指标
   private getDiscount() {
     getTimeQuantumDiscount({ start: this.stateTime, end: this.endTime })
       .then((res) => {
@@ -580,10 +580,10 @@ export default class extends Vue {
         }
       })
       .catch((err) => {
-        this.$message.error('请求出错了：' + err.message)
+        this.$message.error('請求發生錯誤：' + err.message)
       })
   }
-  // 获取一定日期之内的销售趋势
+  // 取得一定日期之内的銷售趋势
   private getTimeQuantumData() {
     getTimeQuantumDataes({
       type: this.typeA,
@@ -608,7 +608,7 @@ export default class extends Vue {
       }
     })
   }
-  // 获取时间范围之内的各种支付类型数据汇总 - 店内收款构成 - 时间段
+  // 取得時間範圍內的各种支付類型資料汇总 - 店内收款构成 - 时间段
   private getReceivables() {
     getTimeQuantumReceivables({ start: this.stateTime, end: this.endTime })
       .then((res) => {
@@ -640,11 +640,11 @@ export default class extends Vue {
         }
       })
       .catch((err) => {
-        this.$message.error('请求出错了：' + err.message)
+        this.$message.error('請求發生錯誤：' + err.message)
       })
   }
 
-  // 获取时间范围之内的菜品类别销售汇总 -  菜品分类占比 - 时间段
+  // 取得時間範圍內的單品类别銷售汇总 -  單品分類占比 - 时间段
   private getTimeQuantumTypeData() {
     getTimeQuantumType({
       type: this.typeB,
@@ -679,10 +679,10 @@ export default class extends Vue {
         }
       })
       .catch((err) => {
-        this.$message.error('请求出错了：' + err.message)
+        this.$message.error('請求發生錯誤：' + err.message)
       })
   }
-  // 获取时间范围之内的菜品销售排行
+  // 取得時間範圍內的單品銷售排行
   private getTimeQuantumDishesDataes() {
     getTimeQuantumDishes({ start: this.stateTime, end: this.endTime })
       .then((res) => {
@@ -700,7 +700,7 @@ export default class extends Vue {
         }
       })
       .catch((err) => {
-        this.$message.error('请求出错了：' + err.message)
+        this.$message.error('請求發生錯誤：' + err.message)
       })
   }
 }

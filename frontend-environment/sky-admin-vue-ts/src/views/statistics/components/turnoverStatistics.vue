@@ -1,10 +1,10 @@
 <template>
   <div class="container">
-    <h2 class="homeTitle">营业额统计</h2>
+    <h2 class="homeTitle">營業額統計</h2>
     <div class="charBox">
       <div id="main" style="width: 100%; height: 320px"></div>
       <ul class="orderListLine turnover">
-        <li>营业额(元)</li>
+        <li>營業額（元）</li>
       </ul>
     </div>
   </div>
@@ -32,7 +32,7 @@ export default class extends Vue {
     var option: any
     option = {
       // title: {
-      //   text: '营业额(元)',
+      //   text: '營業额(元)',
       //   top: 'bottom',
       //   left: 'center',
       //   textAlign: 'center',
@@ -55,7 +55,7 @@ export default class extends Vue {
         type: 'category',
         boundaryGap: false,
         axisLabel: {
-          //X轴字体颜色
+          //X轴字型颜色
           textStyle: {
             color: '#666',
             fontSize: '12px',
@@ -68,7 +68,7 @@ export default class extends Vue {
             width: 1, //x轴线的宽度
           },
         },
-        data: this.turnoverdata.dateList, //后端传来的动态数据
+        data: this.turnoverdata.dateList, //后端传来的动态資料
       },
       yAxis: [
         {
@@ -87,7 +87,7 @@ export default class extends Vue {
       ],
       series: [
         {
-          name: '营业额',
+          name: '營業額',
           type: 'line',
           // stack: 'Total',
           smooth: false, //否平滑曲线

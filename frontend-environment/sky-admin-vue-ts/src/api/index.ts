@@ -1,37 +1,37 @@
 import request from '@/utils/request'
-// 营业额数据
+// 營業额資料
 // export const getTurnoverDataes = (data) =>
 //   request({
 //     'url': `/report/turnoverStatistics`,
 //     'method': 'get',
 //     data
 //   })
-// 首页数据
-// // 今日数据
+// 首頁資料
+// // 今日資料
 // export const getTodayDataes = () =>
 //   request({
 //     'url': `/workspace/todaydate`,
 //     'method': 'get'
 //   })
-// 订单管理
+// 訂單管理
   export const getOrderData = () =>
   request({
     'url': `/workspace/overviewOrders`,
     'method': 'get'
   })
-// 菜品总览
+// 單品總覽
 export const getOverviewDishes = () =>
 request({
   'url': `/workspace/overviewDishes`,
   'method': 'get'
 })
-// 套餐总览
+// 直送箱總覽
 export const getSetMealStatistics = () =>
 request({
   'url': `/workspace/overviewSetmeals`,
   'method': 'get'
 })
-// 营业数据
+// 營業資料
 export const getBusinessData= () =>
 request({
   'url': `/workspace/businessData`,
@@ -39,11 +39,11 @@ request({
 })
 /**
  *
- * 报表数据
+ * 報表資料
  *
  **/
 // 统计
-// 获取当日销售数据 -> 顶部数据
+// 取得當日銷售資料 -> 頂部資料
 // export const getDataes = (params: any) =>
 //   request({
 //     'url': `/report/amountCollect/${params.date}`,
@@ -51,7 +51,7 @@ request({
 //   })
 
 
-// 营业额统计
+// 營業额统计
 export const getTurnoverStatistics= (params: any) =>
   request({
     'url': `/report/turnoverStatistics`,
@@ -59,14 +59,14 @@ export const getTurnoverStatistics= (params: any) =>
     params
   })
 
-// 用户统计
+// 會員统计
 export const getUserStatistics= (params: any) =>
   request({
     'url': `/report/userStatistics`,
     'method': 'get',
     params
   })
-  // 订单统计
+  // 訂單统计
 export const getOrderStatistics= (params: any) =>
 request({
   'url': `/report/ordersStatistics`,
@@ -80,14 +80,14 @@ request({
     'method': 'get',
     params
   })
-  // 数据概览
+  // 資料概览
   export const getDataOverView= (params: any) =>
   request({
     'url': `/report/dataOverView`,
     'method': 'get',
     params
   })
-  // 导出
+  // 匯出
   export function exportInfor() {
     return request({
       url: '/report/export',

@@ -22,7 +22,7 @@ import java.util.Set;
  */
 @RestController
 @RequestMapping("/admin/giftbox")
-@Api(tags = "直送箱相關接口")
+@Api(tags = "直送箱相關介面")
 @Slf4j
 public class GiftBoxController {
 
@@ -71,13 +71,13 @@ public class GiftBoxController {
     }
 
     /**
-     * 根据id查询直送箱，用于修改页面回显数据
+     * 根據 ID 查詢直送箱，用于修改页面回显資料
      *
      * @param id
      * @return
      */
     @GetMapping("/{id}")
-    @ApiOperation("根据id查询直送箱")
+    @ApiOperation("根據 ID 查詢直送箱")
     public Result<GiftBoxVO> getById(@PathVariable Long id) {
         GiftBoxVO setmealVO = giftBoxService.getByIdWithDish(id);
         return Result.success(setmealVO);

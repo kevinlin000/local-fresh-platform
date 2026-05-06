@@ -13,19 +13,19 @@ import java.util.List;
 
 @RestController("userCategoryController")
 @RequestMapping("/user/category")
-@Api(tags = "C端-分类接口")
+@Api(tags = "會員端-分類介面")
 public class CategoryController {
 
     @Autowired
     private CategoryService categoryService;
 
     /**
-     * 查询分类
+     * 查詢分類
      * @param type
      * @return
      */
     @GetMapping("/list")
-    @ApiOperation("查询分类")
+    @ApiOperation("查詢分類")
     public Result<List<Category>> list(Integer type) {
         List<Category> list = categoryService.list(type);
         return Result.success(list);

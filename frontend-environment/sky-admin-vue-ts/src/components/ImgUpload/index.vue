@@ -22,9 +22,9 @@
             class="el-upload-list__item-actions">
         <span class="el-upload-span"
               @click.stop="oploadImgDel">
-          删除图片
+          刪除圖片
         </span>
-        <span class="el-upload-span"> 重新上传 </span>
+        <span class="el-upload-span"> 重新上傳 </span>
       </span>
     </el-upload>
     <p class="upload-tips">
@@ -59,7 +59,7 @@ export default class extends Vue {
   handleError(err, file, fileList) {
     console.log(err, file, fileList, 'handleError')
     this.$message({
-      message: '图片上传失败',
+      message: '圖片上傳失败',
       type: 'error'
     })
   }
@@ -81,7 +81,7 @@ export default class extends Vue {
     const isLt2M = file.size / 1024 / 1024 < this.size
     if (!isLt2M) {
       this.$message({
-        message: `上传文件大小不能超过${this.size}M!`,
+        message: `上傳檔案大小不能超过${this.size}M!`,
         type: 'error'
       })
       return false

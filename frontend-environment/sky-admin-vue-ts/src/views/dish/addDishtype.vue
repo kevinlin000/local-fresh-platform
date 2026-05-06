@@ -44,7 +44,7 @@
               <div v-if="dishFlavors.length != 0"
                    class="flavor">
                 <div class="title">
-                  <span>口味名（3个字内）</span>
+                  <span>口味名稱（3 個字內）</span>
                   <!-- <span class="des-box">口味标签（输入标签回车添加）</span> -->
                 </div>
                 <div class="cont">
@@ -67,7 +67,7 @@
                            :style="inputStyle" />
                     </div>
                     <span class="delFlavor delBut non"
-                          @click="delFlavor(item.name)">删除</span>
+                          @click="delFlavor(item.name)">刪除</span>
                   </div>
                 </div>
                 <div v-if="
@@ -87,7 +87,7 @@
                         prop="image">
             <image-upload :prop-image-url="imageUrl"
                           @imageChange="imageChange">
-              图片大小不超过2M<br>仅能上传 PNG JPEG JPG类型图片<br>建议上传200*200或300*300尺寸的图片
+              圖片大小不超過 2MB<br>僅能上傳 PNG、JPEG、JPG 類型圖片<br>建議上傳 200*200 或 300*300 尺寸的圖片
             </image-upload>
           </el-form-item>
         </div>
@@ -113,7 +113,7 @@
           <el-button v-if="actionType == 'add'"
                      type="primary"
                      @click="submitForm('ruleForm', 'goAnd')">
-            保存并继续添加
+            保存並繼續新增
           </el-button>
         </div>
       </el-form>
@@ -126,7 +126,7 @@ import { Component, Vue, Watch } from 'vue-property-decorator'
 import HeadLable from '@/components/HeadLable/index.vue'
 import SelectInput from './components/SelectInput.vue'
 import ImageUpload from '@/components/ImgUpload/index.vue'
-// getFlavorList口味列表暂时不做 getDishTypeList
+// getFlavorList口味列表暫時不做 getDishTypeList
 import {
   queryDishById,
   addDish,
@@ -151,9 +151,9 @@ export default class extends Vue {
   private imageUrl: string = ''
   private actionType: string = ''
   private dishList: string[] = []
-  private dishFlavorsData: any[] = [] //原始口味数据
-  private dishFlavors: any[] = [] //待上传口味的数据
-  private leftDishFlavors: any[] = [] //下拉框剩余可选择的口味数据
+  private dishFlavorsData: any[] = [] //原始口味資料
+  private dishFlavors: any[] = [] //待上傳口味的資料
+  private leftDishFlavors: any[] = [] //下拉框剩余可选择的口味資料
   private vueRest = '1'
   private index = 0
   private inputStyle = { flex: 1 }
@@ -202,7 +202,7 @@ export default class extends Vue {
       price: [
         {
           required: true,
-          // 'message': '请填写菜品价格',
+          // 'message': '請填寫單品價格',
           validator: (rules: any, value: string, callback: Function) => {
             const reg = /^([1-9]\d{0,5}|0)(\.\d{1,2})?$/
             if (!reg.test(value) || Number(value) <= 0) {
@@ -218,13 +218,13 @@ export default class extends Vue {
           trigger: 'blur'
         }
       ],
-      code: [{ required: true, message: '请填写商品码', trigger: 'blur' }]
+      code: [{ required: true, message: '請填寫商品碼', trigger: 'blur' }]
     }
   }
 
   created() {
     this.getDishList()
-    // 口味临时数据
+    // 口味临时資料
     this.getFlavorListHand()
     this.actionType = this.$route.query.id ? 'edit' : 'add'
     if (this.$route.query.id) {
@@ -238,7 +238,7 @@ export default class extends Vue {
     this.getLeftDishFlavors()
   }
 
-  //过滤已选择的口味下拉框无法再次选择
+  //过滤已选择的口味下拉框無法再次选择
   getLeftDishFlavors() {
     let arr = []
     this.dishFlavorsData.map(item => {
@@ -284,13 +284,13 @@ export default class extends Vue {
     this.dishFlavors.push({ name: '', value: [] }) // JSON.parse(JSON.stringify(this.dishFlavorsData))
   }
 
-  // 按钮 - 删除口味
+  // 按钮 - 刪除口味
   private delFlavor(name: string) {
     let ind = this.dishFlavors.findIndex(item => item.name === name)
     this.dishFlavors.splice(ind, 1)
   }
 
-  // 按钮 - 删除口味标签
+  // 按钮 - 刪除口味标签
   private delFlavorLabel(index: number, ind: number) {
     this.dishFlavors[index].value.splice(ind, 1)
   }
@@ -314,7 +314,7 @@ export default class extends Vue {
     }
   }
 
-  // 获取菜品分类
+  // 取得單品分類
   private getDishList() {
     getCategoryList({ type: 1 }).then(res => {
       if (res.data.code === 1) {
@@ -331,7 +331,7 @@ export default class extends Vue {
     })
   }
 
-  // 获取口味列表
+  // 取得口味列表
   private getFlavorListHand() {
     // flavor flavorData
     this.dishFlavorsData = [
@@ -388,7 +388,7 @@ export default class extends Vue {
               }
             })
             .catch(err => {
-              this.$message.error('请求出错了：' + err.message)
+              this.$message.error('請求發生錯誤：' + err.message)
             })
         } else {
           delete params.createTime
@@ -403,13 +403,13 @@ export default class extends Vue {
               }
               // if (res.data.code == 200) {
               //   this.$router.push({'path': '/dish'})
-              //   this.$message.success('菜品修改成功！')
+              //   this.$message.success('單品修改成功！')
               // } else {
               //   this.$message.error(res.data.desc || res.data.message)
               // }
             })
             .catch(err => {
-              this.$message.error('请求出错了：' + err.message)
+              this.$message.error('請求發生錯誤：' + err.message)
             })
         }
       } else {

@@ -1,10 +1,10 @@
 import request from '@/utils/request'
 /**
  *
- * 员工管理
+ * 員工管理
  *
  **/
-// 登录
+// 登入
 export const login = (data: any) =>
   request({
     'url': '/employee/login',
@@ -20,7 +20,7 @@ export const login = (data: any) =>
    params
  })
 
-// 获取员工信息列表
+// 取得員工資訊列表
 export const getEmployeeList = (params: any) =>
 request({
   url: '/employee/page',
@@ -28,7 +28,7 @@ request({
   params : params
 })
 
-// 更新员工账号的状态
+// 更新員工帳號的狀態
 export const enableOrDisable = (params: any) =>
 request({
   url: `/employee/status/${params.status}`,
@@ -36,7 +36,7 @@ request({
   params : {id: params.id}
 })
 
-// 添加员工信息
+// 添加員工資訊
 export const addEmployee = (params: any) =>
   request({
     url: '/employee',
@@ -44,14 +44,14 @@ export const addEmployee = (params: any) =>
     data : params
   })
 
-// 根据id获取员工信息
+// 根據id取得員工資訊
 export const getEmployeeById = (id: number) =>
   request({
     url: `/employee/${id}`,
     method: 'get'
   })
 
-// 更新员工信息
+// 更新員工資訊
 export const updateEmployee = (params: any) =>
   request({
     url: '/employee',

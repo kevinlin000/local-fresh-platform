@@ -20,7 +20,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/admin/product")
-@Api(tags = "單品相關接口")
+@Api(tags = "單品相關介面")
 @Slf4j
 public class ProductController {
 
@@ -68,14 +68,14 @@ public class ProductController {
     }
 
     /**
-     * 根據id查詢單品
+     * 根據 ID 查詢單品
      * @param id
      * @return
      */
     @GetMapping ("/{id}")
-    @ApiOperation("根據id查詢單品")
+    @ApiOperation("根據 ID 查詢單品")
     public Result<ProductVO> getById(@PathVariable Long id){
-        log.info("根據id查詢單品：{}", id);
+        log.info("根據 ID 查詢單品：{}", id);
         ProductVO dishVO = productService.getByIdWithFlavor(id);
         return Result.success(dishVO);
     }
@@ -108,12 +108,12 @@ public class ProductController {
     }
 
     /**
-     * 根据分类id查询單品
+     * 根據分類 ID 查詢單品
      * @param categoryId
      * @return
      */
     @GetMapping("/list")
-    @ApiOperation("根据分类id查询單品")
+    @ApiOperation("根據分類 ID 查詢單品")
     public Result<List<Product>> list(Long categoryId){
         List<Product> list = productService.list(categoryId);
         return Result.success(list);

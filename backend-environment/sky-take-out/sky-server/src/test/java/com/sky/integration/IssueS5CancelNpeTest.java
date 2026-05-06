@@ -94,6 +94,6 @@ class IssueS5CancelNpeTest {
                         .header("authentication", userToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(0))
-                .andExpect(jsonPath("$.msg").value("订单不存在"));
+                .andExpect(jsonPath("$.msg").value("訂單不存在"));
     }
 }

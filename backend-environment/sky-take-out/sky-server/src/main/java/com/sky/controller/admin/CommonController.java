@@ -17,11 +17,11 @@ import java.io.IOException;
 import java.util.UUID;
 
 /**
- * 通用接口
+ * 通用介面
  */
 @RestController
 @RequestMapping("/admin/common")
-@Api(tags = "通用接口")
+@Api(tags = "通用介面")
 @Slf4j
 public class CommonController {
 
@@ -29,14 +29,14 @@ public class CommonController {
     private AwsS3Util awsS3Util;
 
     /**
-     * 文件上傳
+     * 檔案上傳
      * @param file
      * @return
      */
     @PostMapping("/upload")
-    @ApiOperation("文件上傳")
+    @ApiOperation("檔案上傳")
     public Result<String> upload(MultipartFile file) {
-        log.info("文件上傳：{}", file);
+        log.info("檔案上傳：{}", file);
         try {
             //原始文件名
             String originalFilename = file.getOriginalFilename();
@@ -49,7 +49,7 @@ public class CommonController {
             return Result.success(filePath);
 
         } catch (IOException e) {
-            log.error("文件上傳失敗：{}",e);
+            log.error("檔案上傳失敗：{}",e);
         }
 
 

@@ -22,18 +22,18 @@ import java.time.LocalTime;
 @RestController
 @RequestMapping("/admin/workspace")
 @Slf4j
-@Api(tags = "工作台相关接口")
+@Api(tags = "工作台相關介面")
 public class WorkSpaceController {
 
     @Autowired
     private WorkspaceService workspaceService;
 
     /**
-     * 工作台今日数据查询
+     * 工作台今日資料查詢
      * @return
      */
     @GetMapping("/businessData")
-    @ApiOperation("工作台今日数据查询")
+    @ApiOperation("工作台今日資料查詢")
     public Result<BusinessDataVO> businessData(){
         //获得当天的开始时间
         LocalDateTime begin = LocalDateTime.now().with(LocalTime.MIN);
@@ -45,11 +45,11 @@ public class WorkSpaceController {
     }
 
     /**
-     * 查询订单管理数据
+     * 查詢訂單管理資料
      * @return
      */
     @GetMapping("/overviewOrders")
-    @ApiOperation("查询订单管理数据")
+    @ApiOperation("查詢訂單管理資料")
     public Result<OrderOverViewVO> orderOverView(){
         return Result.success(workspaceService.getOrderOverView());
     }

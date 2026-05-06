@@ -1,5 +1,5 @@
 import request from '@/utils/request'
-  // 获取列表数据
+  // 取得列表資料
   export const getInformData = (params: any) => {
     return request({
       url: '/messages/page',
@@ -7,7 +7,7 @@ import request from '@/utils/request'
       params,
     },)
   }
-  // 获取未读
+  // 取得未读
   export const getCountUnread = () => {
     return request({
       url: '/messages/countUnread',

@@ -28,12 +28,12 @@ const router = new Router({
     {
       path: "/login",
       component: () => import("@/views/login/index.vue"),
-      meta: { title: "苍穹外卖", hidden: true, notNeedAuth: true }
+      meta: { title: "在地鮮選", hidden: true, notNeedAuth: true }
     },
     {
       path: "/404",
       component: () => import("@/views/404.vue"),
-      meta: { title: "苍穹外卖", hidden: true, notNeedAuth: true }
+      meta: { title: "在地鮮選", hidden: true, notNeedAuth: true }
     },
     {
       path: "/",
@@ -54,7 +54,7 @@ const router = new Router({
           path: "/statistics",
           component: () => import("@/views/statistics/index.vue"),
           meta: {
-            title: "数据统计",
+            title: "資料統計",
             icon: "icon-statistics"
           }
         },
@@ -62,7 +62,7 @@ const router = new Router({
           path: "order",
           component: () => import("@/views/orderDetails/index.vue"),
           meta: {
-            title: "订单管理",
+            title: "訂單管理",
             icon: "icon-order"
           }
         },
@@ -95,7 +95,7 @@ const router = new Router({
           path: "category",
           component: () => import("@/views/category/index.vue"),
           meta: {
-            title: "分类管理",
+            title: "分類管理",
             icon: "icon-category"
           }
         },
@@ -103,7 +103,7 @@ const router = new Router({
           path: "employee",
           component: () => import("@/views/employee/index.vue"),
           meta: {
-            title: "员工管理",
+            title: "員工管理",
             icon: "icon-employee"
           }
         },
@@ -112,7 +112,7 @@ const router = new Router({
           path: "/employee/add",
           component: () => import("@/views/employee/addEmployee.vue"),
           meta: {
-            title: "添加/修改员工",
+            title: "新增／修改員工",
             hidden: true
           }
         },

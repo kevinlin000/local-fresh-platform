@@ -1,10 +1,10 @@
 import request from '@/utils/request'
 /**
  *
- * 菜品管理
+ * 單品管理
  *
  **/
-// 查询列表接口
+// 查詢列表介面
 export const getDishPage = (params: any) => {
   return request({
     url: '/product/page',
@@ -13,7 +13,7 @@ export const getDishPage = (params: any) => {
   })
 }
 
-// 删除接口
+// 刪除介面
 export const deleteDish = (ids: string) => {
   return request({
     url: '/product',
@@ -22,7 +22,7 @@ export const deleteDish = (ids: string) => {
   })
 }
 
-// 修改接口
+// 修改介面
 export const editDish = (params: any) => {
   return request({
     url: '/product',
@@ -31,7 +31,7 @@ export const editDish = (params: any) => {
   })
 }
 
-// 新增接口
+// 新增介面
 export const addDish = (params: any) => {
   return request({
     url: '/product',
@@ -40,7 +40,7 @@ export const addDish = (params: any) => {
   })
 }
 
-// 查询详情
+// 查詢詳情
 export const queryDishById = (id: string | (string | null)[]) => {
   return request({
     url: `/product/${id}`,
@@ -48,7 +48,7 @@ export const queryDishById = (id: string | (string | null)[]) => {
   })
 }
 
-// 获取菜品分类列表
+// 取得單品分類列表
 export const getCategoryList = (params: any) => {
   return request({
     url: '/category/list',
@@ -57,7 +57,7 @@ export const getCategoryList = (params: any) => {
   })
 }
 
-// 查菜品列表的接口
+// 查單品列表的介面
 export const queryDishList = (params: any) => {
   return request({
     url: '/product/list',
@@ -66,7 +66,7 @@ export const queryDishList = (params: any) => {
   })
 }
 
-// 文件down预览
+// 檔案down预览
 export const commonDownload = (params: any) => {
   return request({
     headers: {
@@ -78,7 +78,7 @@ export const commonDownload = (params: any) => {
   })
 }
 
-// 起售停售---批量起售停售接口
+// 起售停售---批量起售停售介面
 export const dishStatusByStatus = (params: any) => {
   return request({
     url: `/product/status/${params.status}`,
@@ -87,7 +87,7 @@ export const dishStatusByStatus = (params: any) => {
   })
 }
 
-//菜品分类数据查询
+//單品分類資料查詢
 export const dishCategoryList = (params: any) => {
   return request({
     url: `/category/list`,

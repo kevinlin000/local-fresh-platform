@@ -1,20 +1,20 @@
 <template>
   <div class="dashboard-container home">
-    <!-- 营业数据 -->
+    <!-- 營業資料 -->
     <Overview :overviewData="overviewData" />
     <!-- end -->
-    <!-- 订单管理 -->
+    <!-- 訂單管理 -->
     <Orderview :orderviewData="orderviewData" />
     <!-- end -->
     <div class="homeMain">
-      <!-- 菜品总览 -->
+      <!-- 單品總覽 -->
       <CuisineStatistics :dishesData="dishesData" />
       <!-- end -->
-      <!-- 套餐总览 -->
+      <!-- 直送箱總覽 -->
       <SetMealStatistics :setMealData="setMealData" />
       <!-- end -->
     </div>
-    <!-- 订单信息 -->
+    <!-- 訂單資訊 -->
     <OrderList
       :order-statics="orderStatics"
       @getOrderListBy3Status="getOrderListBy3Status"
@@ -27,22 +27,22 @@
 import { Component, Vue } from 'vue-property-decorator'
 import {
   getBusinessData,
-  getDataOverView, //营业数据
-  getOrderData, //订单管理今日订单
-  getOverviewDishes, //菜品总览
-  getSetMealStatistics, //套餐总览
+  getDataOverView, //營業資料
+  getOrderData, //訂單管理今日訂單
+  getOverviewDishes, //單品總覽
+  getSetMealStatistics, //直送箱總覽
 } from '@/api/index'
 import { getOrderListBy } from '@/api/order'
 // 组件
-// 营业数据
+// 營業資料
 import Overview from './components/overview.vue'
-// 订单管理
+// 訂單管理
 import Orderview from './components/orderview.vue'
-// 菜品总览
+// 單品總覽
 import CuisineStatistics from './components/cuisineStatistics.vue'
-// 套餐总览
+// 直送箱總覽
 import SetMealStatistics from './components/setMealStatistics.vue'
-// 订单列表
+// 訂單列表
 import OrderList from './components/orderList.vue'
 @Component({
   name: 'Dashboard',
@@ -79,27 +79,27 @@ export default class extends Vue {
       this.getSetMealStatisticsData()
     })
   }
-  // 获取营业数据
+  // 取得營業資料
   async getBusinessData() {
     const data = await getBusinessData()
     this.overviewData = data.data.data
   }
-  // 获取今日订单
+  // 取得今日訂單
   async getOrderStatisticsData() {
     const data = await getOrderData()
     this.orderviewData = data.data.data
   }
-  // 获取菜品总览数据
+  // 取得單品總覽資料
   async getOverStatisticsData() {
     const data = await getOverviewDishes()
     this.dishesData = data.data.data
   }
-  // 获取套餐总览数据
+  // 取得直送箱總覽資料
   async getSetMealStatisticsData() {
     const data = await getSetMealStatistics()
     this.setMealData = data.data.data
   }
-  //获取待处理，待派送，派送中数量
+  //取得待處理，待派送，派送中数量
   getOrderListBy3Status() {
     getOrderListBy({})
       .then((res) => {
@@ -110,7 +110,7 @@ export default class extends Vue {
         }
       })
       .catch((err) => {
-        this.$message.error('请求出错了：' + err.message)
+        this.$message.error('請求發生錯誤：' + err.message)
       })
   }
 }

@@ -16,7 +16,7 @@
     </div>
     <div class="get-time">
       <p>
-        已选时间：{{ tateData[0] }} 至
+        已選時間：{{ tateData[0] }} 至
         {{ tateData[tateData.length - 1] }}
       </p>
     </div>
@@ -24,7 +24,7 @@
       icon="iconfont icon-download"
       class="right-el-button"
       @click="handleExport"
-      >数据导出</el-button
+      >資料匯出</el-button
     >
   </div>
 </template>
@@ -53,11 +53,11 @@ export default class extends Vue {
     this.value = []
     this.$emit('sendTitleInd', index + 1)
   }
-  //  数据导出
-  /** 导出按钮操作 */
+  //  資料匯出
+  /** 匯出按钮操作 */
   handleExport() {
-    this.$confirm('是否确认导出最近30天运营数据?', '提示', {
-      confirmButtonText: '确定',
+    this.$confirm('是否確認匯出最近30天營運資料?', '提示', {
+      confirmButtonText: '確定',
       cancelButtonText: '取消',
       type: 'warning',
     })
@@ -67,7 +67,7 @@ export default class extends Vue {
         var a = document.createElement('a')
         document.body.appendChild(a)
         a.href = url
-        a.download = '运营数据统计报表.xlsx'
+        a.download = '營運資料統計報表.xlsx'
         a.click()
         window.URL.revokeObjectURL(url)
       })

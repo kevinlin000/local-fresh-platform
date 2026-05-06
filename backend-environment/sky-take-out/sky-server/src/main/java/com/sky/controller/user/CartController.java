@@ -16,20 +16,20 @@ import java.util.List;
 @RestController
 @RequestMapping("/user/cart")
 @Slf4j
-@Api(tags = "C端購物車接口")
+@Api(tags = "會員端購物車介面")
 public class CartController {
 
     @Autowired
     private CartService cartService;
     /**
-     * 添加購物車
+     * 加入購物車
      * @param shoppingCartDTO
      * @return
      */
     @PostMapping("/add")
-    @ApiOperation("添加購物車")
+    @ApiOperation("加入購物車")
     public Result add(@RequestBody CartDTO shoppingCartDTO) {
-        log.info("添加購物車, 商品資訊為: {}", shoppingCartDTO);
+        log.info("加入購物車, 商品資訊為: {}", shoppingCartDTO);
         cartService.addShoppingCart(shoppingCartDTO);
         return Result.success();
     }
@@ -49,11 +49,11 @@ public class CartController {
     }
 
     /**
-     * 查看購物車
+     * 查詢購物車
      * @return
      */
     @GetMapping("/list")
-    @ApiOperation("查看購物車")
+    @ApiOperation("查詢購物車")
     public Result<List<Cart>> list() {
         List<Cart> list = cartService.showShoppingCart();
         return Result.success(list);

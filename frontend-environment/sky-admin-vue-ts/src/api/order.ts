@@ -1,6 +1,6 @@
 import request from '@/utils/request'
 
-// 查询列表页接口
+// 查詢列表页介面
 export const getOrderDetailPage = (params: any) => {
   return request({
     url: '/order/conditionSearch',
@@ -9,7 +9,7 @@ export const getOrderDetailPage = (params: any) => {
   })
 }
 
-// 查看接口
+// 查看介面
 export const queryOrderDetailById = (params: any) => {
   return request({
     url: `/order/details/${params.orderId}`,
@@ -17,14 +17,14 @@ export const queryOrderDetailById = (params: any) => {
   })
 }
 
-// 派送接口
+// 派送介面
 export const deliveryOrder = (params: any) => {
   return request({
     url: `/order/delivery/${params.id}`,
     method: 'put' /*  */
   })
 }
-//完成接口
+//完成介面
 export const completeOrder = (params: any) => {
   return request({
     url: `/order/complete/${params.id}`,
@@ -32,7 +32,7 @@ export const completeOrder = (params: any) => {
   })
 }
 
-//订单取消
+//訂單取消
 export const orderCancel = (params: any) => {
   return request({
     url: '/order/cancel',
@@ -41,7 +41,7 @@ export const orderCancel = (params: any) => {
   })
 }
 
-//接单
+//接單
 export const orderAccept = (params: any) => {
   return request({
     url: '/order/confirm',
@@ -59,7 +59,7 @@ export const orderReject = (params: any) => {
   })
 }
 
-//获取待处理，待派送，派送中数量
+//取得待處理，待派送，派送中数量
 export const getOrderListBy = (params: any) => {
   return request({
     url: '/order/statistics',

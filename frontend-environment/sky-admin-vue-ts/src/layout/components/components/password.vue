@@ -1,36 +1,36 @@
 <template>
   <el-dialog
-    title="修改密码"
+    title="修改密碼"
     :visible.sync="dialogFormVisible"
     width="568px"
     class="pwdCon"
     @close="handlePwdClose()"
   >
     <el-form :model="form" label-width="85px" :rules="rules" ref="form">
-      <el-form-item label="原始密码：" prop="oldPassword">
+      <el-form-item label="原始密碼：" prop="oldPassword">
         <el-input
           v-model="form.oldPassword"
           type="password"
-          placeholder="请输入"
+          placeholder="請輸入"
         ></el-input>
       </el-form-item>
-      <el-form-item label="新密码：" prop="newPassword">
+      <el-form-item label="新密碼：" prop="newPassword">
         <el-input
           v-model="form.newPassword"
           type="password"
-          placeholder="6 - 20位密码，数字或字母，区分大小写"
+          placeholder="6 - 20 位密碼，數字或英文字母，區分大小寫"
         ></el-input>
       </el-form-item>
-      <el-form-item label="确认密码：" prop="affirmPassword">
+      <el-form-item label="確認密碼：" prop="affirmPassword">
         <el-input
           v-model="form.affirmPassword"
           type="password"
-          placeholder="请输入"
+          placeholder="請輸入"
         ></el-input>
       </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
-      <el-button @click="handlePwdClose()">取 消</el-button>
+      <el-button @click="handlePwdClose()">取消</el-button>
       <el-button type="primary" @click="handleSave()">保 存</el-button>
     </div>
   </el-dialog>
@@ -38,7 +38,7 @@
 <script lang="ts">
 import { Component, Vue, Prop } from 'vue-property-decorator'
 import { Form as ElForm, Input } from 'element-ui'
-// 接口
+// 介面
 import { editPassword } from '@/api/users'
 @Component({
   name: 'Password',
@@ -48,18 +48,18 @@ export default class extends Vue {
   private validatePwd = (rule: any, value: any, callback: Function) => {
     const reg = /^[0-9A-Za-z]{6,20}$/
     if (!value) {
-      callback(new Error('请输入'))
+      callback(new Error('請輸入'))
     } else if (!reg.test(value)) {
-      callback(new Error('6 - 20位密码，数字或字母，区分大小写'))
+      callback(new Error('6 - 20 位密碼，數字或英文字母，區分大小寫'))
     } else {
       callback()
     }
   }
   private validatePass2 = (rule, value, callback) => {
     if (!value) {
-      callback(new Error('请再次输入密码'))
+      callback(new Error('請再次輸入密碼'))
     } else if (value !== this.form.newPassword) {
-      callback(new Error('密码不一致，请重新输入密码'))
+      callback(new Error('密碼不一致，請重新輸入密碼'))
     } else {
       callback()
     }

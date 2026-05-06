@@ -21,12 +21,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 员工管理
+ * 員工管理
  */
 @RestController
 @RequestMapping("/admin/employee")
 @Slf4j
-@Api(tags = "员工管理相关接口")
+@Api(tags = "員工管理相關介面")
 public class EmployeeController {
 
     @Autowired
@@ -35,7 +35,7 @@ public class EmployeeController {
     private JwtProperties jwtProperties;
 
     /**
-     * 登录
+     * 登入
      *
      * @param employeeLoginDTO
      * @return
@@ -43,11 +43,11 @@ public class EmployeeController {
     @PostMapping("/login")
     @ApiOperation("員工登入")
     public Result<EmployeeLoginVO> login(@RequestBody EmployeeLoginDTO employeeLoginDTO) {
-        log.info("员工登录：{}", employeeLoginDTO);
+        log.info("員工登入：{}", employeeLoginDTO);
 
         Employee employee = employeeService.login(employeeLoginDTO);
 
-        //登录成功后，生成jwt令牌
+        //登入成功后，生成jwt令牌
         Map<String, Object> claims = new HashMap<>();
         claims.put(JwtClaimsConstant.EMP_ID, employee.getId());
         String token = JwtUtil.createJWT(
@@ -95,32 +95,32 @@ public class EmployeeController {
      * @return
      */
     @GetMapping("/page")
-    @ApiOperation("員工分页查询")
+    @ApiOperation("員工分頁查詢")
     public Result<PageResult> page(EmployeePageQueryDTO employeePageQueryDTO){
-        log.info("員工分页查询：{}", employeePageQueryDTO);
+        log.info("員工分頁查詢：{}", employeePageQueryDTO);
         PageResult pageResult = employeeService.pageQuery(employeePageQueryDTO);
         return Result.success(pageResult);
     }
     /**
-     * 啟用或禁用员工帳號
+     * 啟用或停用員工帳號
      * @param status
      * @param id
      * @return
      */
     @PostMapping("/status/{status}")
-    @ApiOperation("啟用或禁用员工帳號")
+    @ApiOperation("啟用或停用員工帳號")
     public Result startOrStop(@PathVariable Integer status, Long id){
-        log.info("啟用禁用員工帳號：{},{}", status, id);
+        log.info("啟用停用員工帳號：{},{}", status, id);
         employeeService.startOrStop(status, id);
         return Result.success();
     }
     /**
-     * 根據id查詢員工資訊
+     * 根據 ID 查詢員工資訊
      * @param id
      * @return
      */
     @GetMapping("/{id}")
-    @ApiOperation("根據id查詢員工資訊")
+    @ApiOperation("根據 ID 查詢員工資訊")
     public Result<Employee> getById(@PathVariable Long id){
         Employee employee = employeeService.getById(id);
         return Result.success(employee);

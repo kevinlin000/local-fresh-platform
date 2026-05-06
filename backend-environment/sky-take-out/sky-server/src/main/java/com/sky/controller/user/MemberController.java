@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/user/member")
-@Api(tags = "會員相關接口")
+@Api(tags = "會員相關介面")
 @Slf4j
 public class MemberController {
 

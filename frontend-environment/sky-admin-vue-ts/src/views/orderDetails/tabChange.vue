@@ -36,11 +36,11 @@ export default class extends Vue {
   get changedOrderList() {
     return [
       {
-        label: '全部订单',
+        label: '全部訂單',
         value: 0
       },
       {
-        label: '待接单',
+        label: '待接單',
         value: 2,
         num: this.orderStatics.toBeConfirmed
       },

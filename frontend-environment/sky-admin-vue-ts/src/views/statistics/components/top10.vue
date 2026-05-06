@@ -29,11 +29,11 @@ export default class extends Vue {
     option = {
       tooltip: {
         trigger: 'axis',
-        backgroundColor: '#fff', //背景颜色（此时为默认色）
+        backgroundColor: '#fff', //背景颜色（此时为預設色）
         borderRadius: 2, //边框圆角
         textStyle: {
-          color: '#333', //字体颜色
-          fontSize: 12, //字体大小
+          color: '#333', //字型颜色
+          fontSize: 12, //字型大小
           fontWeight: 300,
         },
       },
@@ -77,8 +77,8 @@ export default class extends Vue {
             color: '#F3F4F7',
           },
           barWidth: 20,
-          barGap: '80%' /*多个并排柱子设置柱子之间的间距*/,
-          barCategoryGap: '80%' /*多个并排柱子设置柱子之间的间距*/,
+          barGap: '80%' /*多筆并排柱子设置柱子之间的间距*/,
+          barCategoryGap: '80%' /*多筆并排柱子设置柱子之间的间距*/,
 
           itemStyle: {
             emphasis: {
@@ -98,12 +98,12 @@ export default class extends Vue {
                 ]
               ),
               label: {
-                //内容样式
+                //內容样式
                 show: true,
                 formatter: '{@score}',
                 color: '#333',
                 // position: "insideLeft", //内部左对齐
-                position: ['8', '5'], //自定义位置第一个参数为x轴方向，第二个参数为y轴方向，左上角为起点，向右向下为正数，向上向左为负数
+                position: ['8', '5'], //自定义位置第一筆参数为x轴方向，第二筆参数为y轴方向，左上角为起点，向右向下为正数，向上向左为负数
               },
             },
           },

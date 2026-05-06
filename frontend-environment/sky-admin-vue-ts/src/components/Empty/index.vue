@@ -7,7 +7,7 @@
            alt="">
       <img v-else
            src="../../assets/search_table_empty.png">
-      <p>{{ !isSearch ? '这里空空如也~' : 'Sorry，木有找到您搜索的内容哦~' }}</p>
+      <p>{{ !isSearch ? '目前沒有資料喔～' : '找不到符合條件的內容喔～' }}</p>
     </div>
   </div>
 </template>
@@ -18,7 +18,7 @@ import { Vue, Component, Prop } from 'vue-property-decorator'
   name: 'Empty'
 })
 export default class extends Vue {
-  @Prop({ default: false }) isSearch: boolean //用来区分是搜索还是默认无数据
+  @Prop({ default: false }) isSearch: boolean //用来区分是搜索还是預設无資料
 }
 </script>
 <style scoped lang="scss">

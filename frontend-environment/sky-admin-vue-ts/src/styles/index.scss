@@ -93,7 +93,7 @@ a:hover {
 }
 
 
-//列表中的状态启用禁用以及小圆点统一样式
+//列表中的狀態啟用停用以及小圆点统一样式
 .tableColumn-status {
   display: flex;
   align-items: center;
@@ -168,7 +168,7 @@ input[type="number"] {
 }
 
 .avatar-uploader .el-icon-plus:before {
-  content: "上传图片" !important;
+  content: "上傳圖片" !important;
   font-size: 12px;
   color: #000;
 }
@@ -16173,7 +16173,7 @@ input[type="number"] {
       }
     }
 
-    //查询黑色按钮样式
+    //查詢黑色按钮样式
     .normal-btn {
       background: #333333;
       color: white;

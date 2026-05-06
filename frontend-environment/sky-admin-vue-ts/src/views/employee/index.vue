@@ -2,35 +2,35 @@
   <div class="dashboard-container">
     <div class="container">
       <div class="tableBar">
-        <label style="margin-right: 5px">员工姓名</label>
-        <el-input v-model="name" placeholder="请输入员工姓名" style="width: 15%" clearable></el-input>
-        <el-button type="primary" style="margin-left: 20px" @click="pageQuery()">搜索</el-button>
-        <el-button type="primary" style="float: right" @click="addEmployee()">+添加员工</el-button>
+        <label style="margin-right: 5px">員工姓名</label>
+        <el-input v-model="name" placeholder="請輸入員工姓名" style="width: 15%" clearable></el-input>
+        <el-button type="primary" style="margin-left: 20px" @click="pageQuery()">搜尋</el-button>
+        <el-button type="primary" style="float: right" @click="addEmployee()">+新增員工</el-button>
       </div>
       <el-table :data="records" border stripe style="width: 100%">
-        <el-table-column prop="name" label="员工姓名" width="180">
+        <el-table-column prop="name" label="員工姓名" width="180">
         </el-table-column>
-        <el-table-column prop="username" label="账号" width="180">
+        <el-table-column prop="username" label="帳號" width="180">
         </el-table-column>
-        <el-table-column prop="phone" label="手机号"> </el-table-column>
-        <el-table-column label="账号状态" width="180">
+        <el-table-column prop="phone" label="手機號碼"> </el-table-column>
+        <el-table-column label="帳號狀態" width="180">
           <template slot-scope="scope">
             <div class="tableColumn-status" :class="{ 'stop-use': scope.row.status === 0 }">
-              {{scope.row.status === 1 ? '启用' : '禁用'}}
+              {{scope.row.status === 1 ? '啟用' : '停用'}}
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="updateTime" label="最后操作时间" width="180">
+        <el-table-column prop="updateTime" label="最後操作時間" width="180">
         </el-table-column>
         <el-table-column label="操作">
           <template slot-scope="scope">
             <el-button type="text" @click="updateEmployee(scope.row)" v-if="scope.row.username !== 'admin'">修改</el-button>
             <el-button type="text" @click="updateEmployee(scope.row)" disabled v-else>修改</el-button>
             <el-button type="text" @click="handleEnableOrDisable(scope.row)" v-if="scope.row.username !== 'admin'">
-              {{scope.row.status === 1 ? '禁用' : '启用'}}
+              {{scope.row.status === 1 ? '停用' : '啟用'}}
             </el-button>
             <el-button type="text" disabled v-else>
-              {{scope.row.status === 1 ? '禁用' : '启用'}}
+              {{scope.row.status === 1 ? '停用' : '啟用'}}
             </el-button>
           </template>
         </el-table-column>
@@ -67,7 +67,7 @@ export default {
     this.pageQuery()
   },
   methods: {
-    // 分页查询
+    // 分頁查詢
     pageQuery(){
       // 准备请求参数
       const params = {name: this.name, page: this.page, pageSize: this.pageSize}
@@ -77,7 +77,7 @@ export default {
             this.records = res.data.data.records
           }
       }).catch(err => {
-        this.$message.error('请求出错了' + err.message)
+        this.$message.error('請求發生錯誤：' + err.message)
       })
     },
 
@@ -93,33 +93,33 @@ export default {
       this.pageQuery()
     },
 
-    // 更新员工账号状态
+    // 更新員工帳號狀態
     handleEnableOrDisable(row){
-      const status = row.status === 1 ? '禁用' : '启用'
-      this.$confirm('您确定要<span style="color:red">' + status + '</span>此员工账号的状态吗？', '提示', {
+      const status = row.status === 1 ? '停用' : '啟用'
+      this.$confirm('您確定要<span style="color:red">' + status + '</span>此員工帳號的狀態嗎？', '提示', {
         dangerouslyUseHTMLString: true,
-        confirmButtonText: '确定',
+        confirmButtonText: '確定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() =>{
         const params = {id: row.id, status: row.status == 1 ? 0 : 1}
         enableOrDisable(params).then(res =>{
           if(res.data.code === 1){
-            this.$message.success('员工账号状态更新成功')
+            this.$message.success('員工帳號狀態更新成功')
             this.pageQuery()
           }
         }).catch(err =>{
-          this.$message.error('请求出错了' + err.message)
+          this.$message.error('請求發生錯誤：' + err.message)
         })
       })
     },
 
-    // 添加员工
+    // 添加員工
     addEmployee(){
       this.$router.push('/employee/add')
     },
 
-    // 修改员工
+    // 修改員工
     updateEmployee(row){
       this.$router.push({
         path: '/employee/add',
