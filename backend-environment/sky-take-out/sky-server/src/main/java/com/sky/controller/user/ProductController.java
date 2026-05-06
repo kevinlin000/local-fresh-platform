@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @RestController("userProductController")
 @RequestMapping("/user/product")
@@ -39,8 +40,8 @@ public class ProductController {
     @ApiOperation("根据分类id查询單品")
     public Result<List<ProductVO>> list(Long categoryId) {
 
-        // 構建redis的key,規則：dish_分類id
-        String key = "dish_" + categoryId;
+        // 構建redis的key,規則：product_分類id
+        String key = "product_" + categoryId;
 
         // 查询redis中是否有数据
         List<ProductVO> list = (List<ProductVO>) appRedisTemplate.opsForValue().get(key);
@@ -55,7 +56,7 @@ public class ProductController {
 
         // 如果没有数据，查询数据库，并将数据存入redis
         list = productService.listWithFlavor(dish);
-        appRedisTemplate.opsForValue().set(key, list);
+        appRedisTemplate.opsForValue().set(key, list, 30, TimeUnit.MINUTES);
 
         return Result.success(list);
     }

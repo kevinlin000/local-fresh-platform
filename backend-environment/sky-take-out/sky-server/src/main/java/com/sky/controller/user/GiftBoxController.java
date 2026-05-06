@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @RestController("userGiftBoxController")
 @RequestMapping("/user/giftbox")
@@ -48,7 +49,7 @@ public class GiftBoxController {
         setmeal.setStatus(StatusConstant.ENABLE);
 
         List<GiftBox> list = giftBoxService.list(setmeal);
-        appRedisTemplate.opsForValue().set(key, list);
+        appRedisTemplate.opsForValue().set(key, list, 30, TimeUnit.MINUTES);
         return Result.success(list);
     }
 

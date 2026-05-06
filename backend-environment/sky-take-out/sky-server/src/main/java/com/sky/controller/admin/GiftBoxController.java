@@ -10,10 +10,12 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 直送箱管理
@@ -27,6 +29,9 @@ public class GiftBoxController {
     @Autowired
     private GiftBoxService giftBoxService;
 
+    @Resource(name = "appRedisTemplate")
+    private RedisTemplate<String, Object> appRedisTemplate;
+
     /**
      * 新增直送箱
      * @param setmealDTO
@@ -34,9 +39,9 @@ public class GiftBoxController {
      */
     @PostMapping
     @ApiOperation("新增直送箱")
-    @CacheEvict(cacheNames = "setmealCache",key = "#setmealDTO.categoryId") //key: setmealCache::100
     public Result save(@RequestBody GiftBoxDTO setmealDTO) {
         giftBoxService.saveWithDish(setmealDTO);
+        cleanCache("giftbox_*");
         return Result.success();
     }
 
@@ -59,9 +64,9 @@ public class GiftBoxController {
      */
     @DeleteMapping
     @ApiOperation("批量刪除直送箱")
-    @CacheEvict(cacheNames = "setmealCache",allEntries = true) //清除setmealCache缓存中所有数据
     public Result delete(@RequestParam List<Long> ids){
         giftBoxService.deleteBatch(ids);
+        cleanCache("giftbox_*");
         return Result.success();
     }
 
@@ -86,9 +91,9 @@ public class GiftBoxController {
      */
     @PutMapping
     @ApiOperation("修改直送箱")
-    @CacheEvict(cacheNames = "setmealCache",allEntries = true)
     public Result update(@RequestBody GiftBoxDTO setmealDTO) {
         giftBoxService.update(setmealDTO);
+        cleanCache("giftbox_*");
         return Result.success();
     }
 
@@ -100,10 +105,17 @@ public class GiftBoxController {
      */
     @PostMapping("/status/{status}")
     @ApiOperation("直送箱上架下架")
-    @CacheEvict(cacheNames = "setmealCache",allEntries = true)
     public Result startOrStop(@PathVariable Integer status, Long id) {
         giftBoxService.startOrStop(status, id);
+        cleanCache("giftbox_*");
         return Result.success();
+    }
+
+    private void cleanCache(String pattern) {
+        Set<String> keys = appRedisTemplate.keys(pattern);
+        if (keys != null && !keys.isEmpty()) {
+            appRedisTemplate.delete(keys);
+        }
     }
 
 }

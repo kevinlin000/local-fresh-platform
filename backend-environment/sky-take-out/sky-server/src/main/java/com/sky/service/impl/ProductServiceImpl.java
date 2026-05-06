@@ -70,7 +70,7 @@ public class ProductServiceImpl implements ProductService {
             productSpecMapper.insertBatch(productSpecs);
         }
 
-        cleanCache("dish_" + dishDTO.getCategoryId());
+        cleanCache("product_" + dishDTO.getCategoryId());
     }
 
     /**
@@ -113,10 +113,10 @@ public class ProductServiceImpl implements ProductService {
         //sql: delete from dish where id in (?,?,?)
         productMapper.deleteByIds(ids);
         //根據菜品id集合批量刪除關聯的口味資料
-        //sql: delete from dish_flavor where id in (?,?,?)
+        // 刪除單品既有規格資料
         productSpecMapper.deleteByDishIds(ids);
 
-        cleanCache("dish_*");
+        cleanCache("product_*");
     }
 
     /**
@@ -163,7 +163,7 @@ public class ProductServiceImpl implements ProductService {
             productSpecMapper.insertBatch(productSpecs);
         }
 
-        cleanCache("dish_*");
+        cleanCache("product_*");
     }
 
 
@@ -222,7 +222,7 @@ public class ProductServiceImpl implements ProductService {
             // 如果是停售操作，还需要将包含当前菜品的套餐也停售
             List<Long> dishIds = new ArrayList<>();
             dishIds.add(id);
-            // select setmeal_id from setmeal_dish where dish_id in (?,?,?)
+            // 查詢包含該單品的直送箱，停售時一併下架
             List<Long> setmealIds = giftBoxProductMapper.getSetmealIdsByDishIds(dishIds);
             if (setmealIds != null && setmealIds.size() > 0) {
                 for (Long giftBoxId : setmealIds) {
@@ -235,7 +235,7 @@ public class ProductServiceImpl implements ProductService {
             }
         }
 
-        cleanCache("dish_*");
+        cleanCache("product_*");
     }
 
     private void cleanCache(String pattern) {

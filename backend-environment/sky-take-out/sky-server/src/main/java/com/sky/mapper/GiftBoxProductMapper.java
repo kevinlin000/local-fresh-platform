@@ -14,7 +14,7 @@ public interface GiftBoxProductMapper {
      * @param dishIds
      * @return
      */
-    //select setmeal id from setmeal dish where dish id in (1,2,3,4)
+    // select gift_box_id from gift_box_product where product_id in (1,2,3,4)
     List<Long> getSetmealIdsByDishIds(List<Long> dishIds);
 
     /**
