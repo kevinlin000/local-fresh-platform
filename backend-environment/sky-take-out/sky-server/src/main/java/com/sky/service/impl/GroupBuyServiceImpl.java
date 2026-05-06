@@ -80,6 +80,9 @@ public class GroupBuyServiceImpl implements GroupBuyService {
     @Value("${sky.group-buy.expire-hours}")
     private Long groupBuyExpireHours;
 
+    @Value("${sky.group-buy.share-base-url}")
+    private String groupBuyShareBaseUrl;
+
     @Override
     @Transactional
     public GroupBuyVO initiate(InitiateGroupBuyDTO initiateGroupBuyDTO) {
@@ -371,6 +374,7 @@ public class GroupBuyServiceImpl implements GroupBuyService {
                 .currentCount(groupBuy.getCurrentCount())
                 .requiredCount(groupBuy.getRequiredCount())
                 .expireAt(groupBuy.getExpireAt())
+                .shareUrl(groupBuyShareBaseUrl + "/" + groupBuy.getGroupNo())
                 .participants(participants)
                 .build();
     }

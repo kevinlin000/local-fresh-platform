@@ -9,7 +9,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,16 +27,11 @@ public class GroupBuyController {
     @Autowired
     private GroupBuyService groupBuyService;
 
-    @Value("${sky.group-buy.share-base-url}")
-    private String shareBaseUrl;
-
     @PostMapping("/initiate")
     @ApiOperation("發起揪團")
     public Result<GroupBuyVO> initiate(@RequestBody InitiateGroupBuyDTO initiateGroupBuyDTO) {
         log.info("發起揪團: {}", initiateGroupBuyDTO);
-        GroupBuyVO groupBuyVO = groupBuyService.initiate(initiateGroupBuyDTO);
-        groupBuyVO.setShareUrl(buildShareUrl(groupBuyVO.getGroupNo()));
-        return Result.success(groupBuyVO);
+        return Result.success(groupBuyService.initiate(initiateGroupBuyDTO));
     }
 
     @PostMapping("/join")
@@ -57,9 +51,5 @@ public class GroupBuyController {
     @ApiOperation("查詢我參與的揪團列表")
     public Result<List<GroupBuyVO>> listMyGroupBuys() {
         return Result.success(groupBuyService.listMyGroupBuys());
-    }
-
-    private String buildShareUrl(String groupNo) {
-        return shareBaseUrl + "/" + groupNo;
     }
 }

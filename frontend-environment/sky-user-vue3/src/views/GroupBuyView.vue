@@ -329,9 +329,18 @@ function updateCountdown() {
     return
   }
   const totalSeconds = Math.floor(diff / 1000)
-  const minutes = Math.floor(totalSeconds / 60)
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
   const seconds = totalSeconds % 60
-  countdownText.value = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+  if (hours >= 1) {
+    countdownText.value = `${hours} 小時 ${minutes} 分`
+    return
+  }
+  if (minutes >= 1) {
+    countdownText.value = `${minutes} 分 ${String(seconds).padStart(2, '0')} 秒`
+    return
+  }
+  countdownText.value = `${seconds} 秒`
 }
 
 function clearTimers() {

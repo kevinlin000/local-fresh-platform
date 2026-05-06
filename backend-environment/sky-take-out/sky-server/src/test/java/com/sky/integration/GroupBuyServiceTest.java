@@ -146,6 +146,7 @@ class GroupBuyServiceTest {
         assertEquals(productId, result.getProductId());
         assertEquals("高山高麗菜", result.getProductName());
         assertEquals(2, result.getQuantity());
+        assertEquals("http://localhost:5173/groupBuy/" + result.getGroupNo(), result.getShareUrl());
         assertEquals(1, result.getParticipants().size());
         assertEquals(memberId, result.getParticipants().get(0).getMemberId());
         assertEquals("揪團測試會員", result.getParticipants().get(0).getMemberName());
@@ -184,6 +185,7 @@ class GroupBuyServiceTest {
         assertEquals(productId, detail.getProductId());
         assertEquals("高山高麗菜", detail.getProductName());
         assertEquals(1, detail.getQuantity());
+        assertEquals("http://localhost:5173/groupBuy/" + initiated.getGroupNo(), detail.getShareUrl());
         assertFalse(detail.getParticipants().isEmpty());
         assertEquals("揪團測試會員", detail.getParticipants().get(0).getMemberName());
 
@@ -191,5 +193,6 @@ class GroupBuyServiceTest {
         assertEquals(1, myGroupBuys.size());
         assertEquals(initiated.getGroupNo(), myGroupBuys.get(0).getGroupNo());
         assertEquals(productId, myGroupBuys.get(0).getProductId());
+        assertEquals("http://localhost:5173/groupBuy/" + initiated.getGroupNo(), myGroupBuys.get(0).getShareUrl());
     }
 }

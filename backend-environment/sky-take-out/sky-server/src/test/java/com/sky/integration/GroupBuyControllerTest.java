@@ -82,6 +82,7 @@ class GroupBuyControllerTest {
                 .currentCount(1)
                 .requiredCount(3)
                 .expireAt(LocalDateTime.of(2026, 5, 6, 12, 0))
+                .shareUrl("http://localhost:5173/groupBuy/GB123456")
                 .participants(List.of(GroupBuyParticipantVO.builder()
                         .memberId(1L)
                         .memberName("測試會員")
@@ -105,7 +106,8 @@ class GroupBuyControllerTest {
     }
 
     @Test
-    void join_returnsGroupBuyVo_withoutShareUrl() throws Exception {
+    void join_returnsGroupBuyVo_withShareUrl() throws Exception {
+        groupBuyVO.setShareUrl("http://localhost:5173/groupBuy/GB123456");
         when(groupBuyService.joinGroupBuy(any())).thenReturn(groupBuyVO);
 
         mockMvc.perform(post("/user/groupBuy/join")
@@ -115,11 +117,12 @@ class GroupBuyControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(1))
                 .andExpect(jsonPath("$.data.groupNo").value("GB123456"))
-                .andExpect(jsonPath("$.data.shareUrl").doesNotExist());
+                .andExpect(jsonPath("$.data.shareUrl").value("http://localhost:5173/groupBuy/GB123456"));
     }
 
     @Test
     void getByGroupNo_returnsGroupBuyVo() throws Exception {
+        groupBuyVO.setShareUrl("http://localhost:5173/groupBuy/GB123456");
         when(groupBuyService.getByGroupNo("GB123456")).thenReturn(groupBuyVO);
 
         mockMvc.perform(get("/user/groupBuy/GB123456")
@@ -131,18 +134,21 @@ class GroupBuyControllerTest {
                 .andExpect(jsonPath("$.data.productName").value("高山高麗菜"))
                 .andExpect(jsonPath("$.data.productImage").value("https://example.com/cabbage.jpg"))
                 .andExpect(jsonPath("$.data.quantity").value(2))
+                .andExpect(jsonPath("$.data.shareUrl").value("http://localhost:5173/groupBuy/GB123456"))
                 .andExpect(jsonPath("$.data.participants[0].memberName").value("測試會員"));
     }
 
     @Test
     void listMyGroupBuys_returnsGroupBuyList() throws Exception {
+        groupBuyVO.setShareUrl("http://localhost:5173/groupBuy/GB123456");
         when(groupBuyService.listMyGroupBuys()).thenReturn(List.of(groupBuyVO));
 
         mockMvc.perform(get("/user/groupBuy/my")
                         .header("authentication", token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(1))
-                .andExpect(jsonPath("$.data[0].groupNo").value("GB123456"));
+                .andExpect(jsonPath("$.data[0].groupNo").value("GB123456"))
+                .andExpect(jsonPath("$.data[0].shareUrl").value("http://localhost:5173/groupBuy/GB123456"));
     }
 
     @Test
