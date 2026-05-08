@@ -4,7 +4,7 @@ import { useMemberStore } from '@/stores/member'
 import { clearAuthArtifacts, AUTH_STORAGE_KEYS } from '@/utils/auth'
 
 const http = axios.create({
-  baseURL: '/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
   timeout: 15000
 })
 

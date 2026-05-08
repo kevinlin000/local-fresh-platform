@@ -3,6 +3,7 @@ dist/
 dist-ssr/
 *.local
 .env.local
+.env.production.local
 .env.*.local
 .vite/
 *.log
