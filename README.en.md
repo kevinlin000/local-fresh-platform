@@ -7,8 +7,13 @@
 ![Vue 3](https://img.shields.io/badge/Vue-3-42B883?style=flat-square)
 ![License MIT](https://img.shields.io/badge/License-MIT-4E9F3D?style=flat-square)
 
-**Demo URL**  
-Coming soon
+**Demo URL**
+
+[https://d3hqnux25iirgl.cloudfront.net](https://d3hqnux25iirgl.cloudfront.net)
+
+> The user-facing storefront is publicly accessible. Try the dev-mode mock login for instant access, or sign in with a real Google account to experience the full OAuth flow.
+> Backend API endpoint: `https://localfresh-demo.duckdns.org`
+> Deployment topology: Vue 3 storefront hosted on AWS S3 + CloudFront (HTTPS), Spring Boot API on AWS EC2 (Nginx reverse proxy with Let's Encrypt TLS).
 
 ## Overview
 

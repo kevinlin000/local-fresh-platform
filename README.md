@@ -7,8 +7,13 @@
 ![Vue 3](https://img.shields.io/badge/Vue-3-42B883?style=flat-square)
 ![License MIT](https://img.shields.io/badge/License-MIT-4E9F3D?style=flat-square)
 
-**Demo URL**  
-部署中，即將公開
+**Demo URL**
+
+[https://d3hqnux25iirgl.cloudfront.net](https://d3hqnux25iirgl.cloudfront.net)
+
+> 用戶端 demo 開放使用,可透過開發模式快捷登入快速試玩,或使用 Google 帳號登入體驗完整 OAuth 流程。
+> 後端 API 入口:`https://localfresh-demo.duckdns.org`
+> 部署架構:Vue 3 用戶端託管於 AWS S3 + CloudFront(HTTPS),Spring Boot API 部署於 AWS EC2 (Nginx 反向代理 + Let's Encrypt)。
 
 ## 專案簡介
 
