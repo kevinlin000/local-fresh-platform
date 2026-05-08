@@ -16,5 +16,7 @@ public interface GroupBuyService {
 
     List<GroupBuyVO> listMyGroupBuys();
 
+    GroupBuyVO cancelGroupBuy(String groupNo);
+
     void handleExpiredGroupBuys();
 }

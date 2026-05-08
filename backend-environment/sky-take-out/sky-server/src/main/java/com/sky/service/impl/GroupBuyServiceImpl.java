@@ -13,6 +13,7 @@ import com.sky.entity.Orders;
 import com.sky.entity.Product;
 import com.sky.entity.ShippingAddress;
 import com.sky.exception.AddressBookBusinessException;
+import com.sky.exception.ForbiddenOperationException;
 import com.sky.exception.OrderBusinessException;
 import com.sky.mapper.GroupBuyMapper;
 import com.sky.mapper.GroupBuyParticipantMapper;
@@ -49,6 +50,7 @@ public class GroupBuyServiceImpl implements GroupBuyService {
     private static final Integer GROUP_BUY_ACTIVE = 1;
     private static final Integer GROUP_BUY_COMPLETED = 2;
     private static final Integer GROUP_BUY_FAILED = 3;
+    private static final Integer GROUP_BUY_CANCELED = 4;
 
     @Autowired
     private GroupBuyMapper groupBuyMapper;
@@ -174,6 +176,36 @@ public class GroupBuyServiceImpl implements GroupBuyService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public GroupBuyVO cancelGroupBuy(String groupNo) {
+        Long memberId = BaseContext.getCurrentId();
+        if (memberId == null) {
+            throw new OrderBusinessException(MessageConstant.USER_NOT_LOGIN);
+        }
+
+        String lockKey = "lock:groupbuy:" + groupNo;
+        RLock lock = redissonClient.getLock(lockKey);
+        boolean locked = false;
+        try {
+            locked = lock.tryLock(3, 5, TimeUnit.SECONDS);
+            if (!locked) {
+                throw new OrderBusinessException(MessageConstant.GROUP_BUY_BUSY);
+            }
+            GroupBuyVO result = transactionTemplate.execute(status -> doCancelGroupBuy(memberId, groupNo));
+            if (result == null) {
+                throw new OrderBusinessException(MessageConstant.GROUP_BUY_FAILED);
+            }
+            return result;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new OrderBusinessException(MessageConstant.GROUP_BUY_FAILED);
+        } finally {
+            if (locked && lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
+        }
+    }
+
     // 已知 N+1：每筆過期揪團 + 每個 participant 各一次 getById
     // 評估：揪團 required_count 通常為個位數、定時任務非熱路徑，
     // 暫不優化為 batch query。如未來揪團規模或頻率提升，可改用
@@ -247,6 +279,43 @@ public class GroupBuyServiceImpl implements GroupBuyService {
 
         GroupBuy updatedGroupBuy = groupBuyMapper.getById(groupBuy.getId());
         return new JoinGroupBuyResult(buildGroupBuyVO(updatedGroupBuy), groupBuyCompleted, updatedGroupBuy.getGroupNo());
+    }
+
+    private GroupBuyVO doCancelGroupBuy(Long memberId, String groupNo) {
+        GroupBuy groupBuy = groupBuyMapper.getByGroupNo(groupNo);
+        if (groupBuy == null) {
+            throw new OrderBusinessException(MessageConstant.GROUP_BUY_NOT_FOUND);
+        }
+        if (!memberId.equals(groupBuy.getInitiatorId())) {
+            throw new ForbiddenOperationException(MessageConstant.GROUP_BUY_CANCEL_FORBIDDEN);
+        }
+        if (!GROUP_BUY_ACTIVE.equals(groupBuy.getStatus())) {
+            throw new OrderBusinessException(MessageConstant.GROUP_BUY_CANNOT_CANCEL_FINISHED);
+        }
+
+        List<GroupBuyParticipant> participants = groupBuyParticipantMapper.listByGroupBuyId(groupBuy.getId());
+        if (participants.size() > 1) {
+            throw new OrderBusinessException(MessageConstant.GROUP_BUY_CANNOT_CANCEL_WITH_PARTICIPANTS);
+        }
+        if (participants.isEmpty()) {
+            throw new OrderBusinessException(MessageConstant.GROUP_BUY_NOT_FOUND);
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        groupBuy.setStatus(GROUP_BUY_CANCELED);
+        groupBuy.setUpdatedAt(now);
+        groupBuyMapper.update(groupBuy);
+
+        GroupBuyParticipant initiatorParticipant = participants.get(0);
+        Orders preOrder = new Orders();
+        preOrder.setId(initiatorParticipant.getPreOrderId());
+        preOrder.setStatus(Orders.CANCELLED);
+        preOrder.setCancelReason("發起人取消揪團");
+        preOrder.setCancelTime(now);
+        orderMapper.update(preOrder);
+
+        GroupBuy updatedGroupBuy = groupBuyMapper.getById(groupBuy.getId());
+        return buildGroupBuyVO(updatedGroupBuy);
     }
 
     private void doCompleteGroupBuy(GroupBuy groupBuy) {

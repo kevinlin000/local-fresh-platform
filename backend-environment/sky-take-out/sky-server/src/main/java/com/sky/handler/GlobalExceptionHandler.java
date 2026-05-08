@@ -2,10 +2,13 @@ package com.sky.handler;
 
 import com.sky.constant.MessageConstant;
 import com.sky.exception.BaseException;
+import com.sky.exception.ForbiddenOperationException;
 import com.sky.result.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.sql.SQLIntegrityConstraintViolationException;
 
@@ -15,6 +18,13 @@ import java.sql.SQLIntegrityConstraintViolationException;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler
+    public Result exceptionHandler(ForbiddenOperationException ex){
+        log.error("异常信息：{}", ex.getMessage());
+        return Result.error(ex.getMessage());
+    }
 
     /**
      * 捕获业务异常

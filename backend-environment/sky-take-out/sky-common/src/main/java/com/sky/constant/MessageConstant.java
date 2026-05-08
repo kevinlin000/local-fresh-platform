@@ -32,6 +32,9 @@ public class MessageConstant {
     public static final String GROUP_BUY_FAILED = "揪團處理失敗";
     public static final String GROUP_BUY_ALREADY_JOINED = "您已加入此揪團";
     public static final String GROUP_BUY_INVALID_STATUS = "揪團狀態錯誤";
+    public static final String GROUP_BUY_CANCEL_FORBIDDEN = "只有發起人可以取消揪團";
+    public static final String GROUP_BUY_CANNOT_CANCEL_FINISHED = "揪團已結束,無法取消";
+    public static final String GROUP_BUY_CANNOT_CANCEL_WITH_PARTICIPANTS = "已有其他成員加入,無法取消";
     public static final String GROUP_BUY_ORDER_CREATE_FAILED = "建立揪團預約訂單失敗";
     public static final String GOOGLE_OAUTH_FAILED = "Google 登入失敗";
     public static final String GOOGLE_OAUTH_TOKEN_INVALID = "Google 身分驗證失敗";

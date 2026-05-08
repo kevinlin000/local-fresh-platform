@@ -25,6 +25,9 @@
           <div v-else-if="groupBuy.status === 2" class="status-alert success">
             揪團已成團，三位成員的訂單已轉為待接單。
           </div>
+          <div v-else-if="groupBuy.status === 4" class="status-alert info">
+            揪團已取消，預訂單已同步取消。
+          </div>
 
           <div class="summary-grid">
             <div class="summary-item">
@@ -59,6 +62,15 @@
             </template>
 
             <el-button @click="copyShareUrl">複製分享連結</el-button>
+            <el-button
+              v-if="canCancelGroupBuy"
+              type="danger"
+              plain
+              :loading="cancelling"
+              @click="handleCancelGroupBuy"
+            >
+              取消揪團
+            </el-button>
           </div>
         </div>
       </div>
@@ -206,7 +218,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import {
   createAddress,
@@ -215,6 +227,7 @@ import {
   type ShippingAddress
 } from '@/services/address'
 import {
+  cancelGroupBuy,
   fetchGroupBuy,
   joinGroupBuy,
   type GroupBuyRecord
@@ -227,6 +240,7 @@ const memberStore = useMemberStore()
 
 const loading = ref(false)
 const joining = ref(false)
+const cancelling = ref(false)
 const groupBuy = ref<GroupBuyRecord | null>(null)
 const joinDialogVisible = ref(false)
 const joinError = ref('')
@@ -263,6 +277,12 @@ const shareUrl = computed(() => {
 const joinedByCurrentMember = computed(() =>
   groupBuy.value?.participants.some((participant) => participant.memberId === currentMemberId.value) ?? false
 )
+const isInitiator = computed(() => groupBuy.value?.initiatorId === currentMemberId.value)
+const canCancelGroupBuy = computed(() =>
+  groupBuy.value?.status === 1
+  && groupBuy.value.participants.length === 1
+  && isInitiator.value
+)
 const remainingCount = computed(() =>
   Math.max((groupBuy.value?.requiredCount || 0) - (groupBuy.value?.currentCount || 0), 0)
 )
@@ -286,7 +306,7 @@ function statusText(status: number) {
     case 3:
       return '已失敗'
     case 4:
-      return '已完成'
+      return '已取消'
     default:
       return `狀態 ${status}`
   }
@@ -380,6 +400,9 @@ function handleStatusTransition(newStatus: number) {
   }
   if (previousStatus === 1 && newStatus === 3) {
     ElMessage.warning('揪團未成立，訂單已取消')
+  }
+  if (previousStatus === 1 && newStatus === 4) {
+    ElMessage.info('揪團已取消')
   }
   previousStatus = newStatus
 }
@@ -522,6 +545,36 @@ async function copyShareUrl() {
     ElMessage.success('分享連結已複製')
   } catch {
     ElMessage.error('複製失敗，請手動複製連結')
+  }
+}
+
+async function handleCancelGroupBuy() {
+  if (!groupBuy.value?.groupNo || !canCancelGroupBuy.value) {
+    return
+  }
+
+  try {
+    await ElMessageBox.confirm(
+      '取消後將保留揪團資料，並同步取消目前的預訂單。確定要取消嗎？',
+      '取消揪團',
+      {
+        confirmButtonText: '確認取消',
+        cancelButtonText: '返回',
+        type: 'warning'
+      }
+    )
+
+    cancelling.value = true
+    await cancelGroupBuy(groupBuy.value.groupNo)
+    ElMessage.success('揪團已取消')
+    await router.push('/')
+  } catch (error) {
+    if (error === 'cancel') {
+      return
+    }
+    ElMessage.error(error instanceof Error ? error.message : '取消揪團失敗')
+  } finally {
+    cancelling.value = false
   }
 }
 

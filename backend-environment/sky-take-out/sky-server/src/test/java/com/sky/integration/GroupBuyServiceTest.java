@@ -1,13 +1,18 @@
 package com.sky.integration;
 
 import com.sky.context.BaseContext;
+import com.sky.exception.ForbiddenOperationException;
 import com.sky.dto.InitiateGroupBuyDTO;
 import com.sky.dto.OrdersPageQueryDTO;
+import com.sky.entity.GroupBuy;
+import com.sky.entity.GroupBuyParticipant;
 import com.sky.entity.Member;
 import com.sky.entity.OrderDetail;
 import com.sky.entity.Orders;
 import com.sky.entity.Product;
 import com.sky.entity.ShippingAddress;
+import com.sky.mapper.GroupBuyMapper;
+import com.sky.mapper.GroupBuyParticipantMapper;
 import com.sky.mapper.MemberMapper;
 import com.sky.mapper.OrderDetailMapper;
 import com.sky.mapper.OrderMapper;
@@ -17,7 +22,9 @@ import com.sky.service.GroupBuyService;
 import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.GroupBuyVO;
 import com.sky.websocket.WebSocketServer;
+import org.junit.jupiter.api.Assertions;
 import org.redisson.api.RedissonClient;
+import org.redisson.api.RLock;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,11 +42,17 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -58,6 +71,12 @@ class GroupBuyServiceTest {
 
     @Autowired
     private ShippingAddressMapper shippingAddressMapper;
+
+    @Autowired
+    private GroupBuyMapper groupBuyMapper;
+
+    @Autowired
+    private GroupBuyParticipantMapper groupBuyParticipantMapper;
 
     @Autowired
     private OrderMapper orderMapper;
@@ -87,6 +106,7 @@ class GroupBuyServiceTest {
     private Long memberId;
     private Long productId;
     private Long addressId;
+    private RLock groupBuyLock;
 
     @BeforeEach
     void setUp() {
@@ -122,6 +142,15 @@ class GroupBuyServiceTest {
                 .build();
         shippingAddressMapper.insert(shippingAddress);
         addressId = shippingAddress.getId();
+
+        groupBuyLock = mock(RLock.class);
+        when(redissonClient.getLock(anyString())).thenReturn(groupBuyLock);
+        try {
+            when(groupBuyLock.tryLock(anyLong(), anyLong(), any(TimeUnit.class))).thenReturn(true);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        when(groupBuyLock.isHeldByCurrentThread()).thenReturn(true);
     }
 
     @AfterEach
@@ -194,5 +223,117 @@ class GroupBuyServiceTest {
         assertEquals(initiated.getGroupNo(), myGroupBuys.get(0).getGroupNo());
         assertEquals(productId, myGroupBuys.get(0).getProductId());
         assertEquals("http://localhost:5173/groupBuy/" + initiated.getGroupNo(), myGroupBuys.get(0).getShareUrl());
+    }
+
+    @Test
+    void cancelGroupBuy_marksGroupCanceled_andCancelsPendingOrder() {
+        GroupBuyVO initiated = initiateGroupBuyFixture();
+
+        GroupBuyVO canceled = groupBuyService.cancelGroupBuy(initiated.getGroupNo());
+
+        assertEquals(4, canceled.getStatus());
+        GroupBuy groupBuy = groupBuyMapper.getByGroupNo(initiated.getGroupNo());
+        assertEquals(4, groupBuy.getStatus());
+
+        List<GroupBuyParticipant> participants = groupBuyParticipantMapper.listByGroupBuyId(groupBuy.getId());
+        assertEquals(1, participants.size());
+        Orders preOrder = orderMapper.getById(participants.get(0).getPreOrderId());
+        assertEquals(Orders.CANCELLED, preOrder.getStatus());
+        assertEquals("發起人取消揪團", preOrder.getCancelReason());
+        assertNotNull(preOrder.getCancelTime());
+    }
+
+    @Test
+    void cancelGroupBuy_whenNotInitiator_throwsForbidden() {
+        GroupBuyVO initiated = initiateGroupBuyFixture();
+        Member otherMember = createMember("group-buy-other", "其他會員");
+
+        BaseContext.setCurrentId(otherMember.getId());
+        ForbiddenOperationException exception = Assertions.assertThrows(
+                ForbiddenOperationException.class,
+                () -> groupBuyService.cancelGroupBuy(initiated.getGroupNo())
+        );
+        assertEquals("只有發起人可以取消揪團", exception.getMessage());
+    }
+
+    @Test
+    void cancelGroupBuy_whenStatusNotActive_throwsBusinessException() {
+        GroupBuyVO initiated = initiateGroupBuyFixture();
+        GroupBuy groupBuy = groupBuyMapper.getByGroupNo(initiated.getGroupNo());
+        groupBuy.setStatus(2);
+        groupBuy.setUpdatedAt(LocalDateTime.now());
+        groupBuyMapper.update(groupBuy);
+
+        com.sky.exception.OrderBusinessException exception = Assertions.assertThrows(
+                com.sky.exception.OrderBusinessException.class,
+                () -> groupBuyService.cancelGroupBuy(initiated.getGroupNo())
+        );
+        assertEquals("揪團已結束,無法取消", exception.getMessage());
+    }
+
+    @Test
+    void cancelGroupBuy_whenAnotherParticipantJoined_throwsBusinessException() {
+        GroupBuyVO initiated = initiateGroupBuyFixture();
+        Member joiner = createMember("group-buy-joiner", "加入會員");
+        Long joinerAddressId = createAddress(joiner.getId(), "加入會員");
+
+        BaseContext.setCurrentId(joiner.getId());
+        com.sky.dto.JoinGroupBuyDTO joinGroupBuyDTO = new com.sky.dto.JoinGroupBuyDTO();
+        joinGroupBuyDTO.setGroupNo(initiated.getGroupNo());
+        joinGroupBuyDTO.setProductId(productId);
+        joinGroupBuyDTO.setQuantity(1);
+        joinGroupBuyDTO.setAddressId(joinerAddressId);
+        groupBuyService.joinGroupBuy(joinGroupBuyDTO);
+
+        BaseContext.setCurrentId(memberId);
+        com.sky.exception.OrderBusinessException exception = Assertions.assertThrows(
+                com.sky.exception.OrderBusinessException.class,
+                () -> groupBuyService.cancelGroupBuy(initiated.getGroupNo())
+        );
+        assertEquals("已有其他成員加入,無法取消", exception.getMessage());
+    }
+
+    @Test
+    void cancelGroupBuy_whenGroupNoNotFound_throwsBusinessException() {
+        BaseContext.setCurrentId(memberId);
+        com.sky.exception.OrderBusinessException exception = Assertions.assertThrows(
+                com.sky.exception.OrderBusinessException.class,
+                () -> groupBuyService.cancelGroupBuy("NOT_FOUND_GROUP")
+        );
+        assertEquals("揪團不存在", exception.getMessage());
+    }
+
+    private GroupBuyVO initiateGroupBuyFixture() {
+        InitiateGroupBuyDTO dto = new InitiateGroupBuyDTO();
+        dto.setProductId(productId);
+        dto.setQuantity(1);
+        dto.setAddressId(addressId);
+        dto.setRequiredCount(3);
+        BaseContext.setCurrentId(memberId);
+        return groupBuyService.initiate(dto);
+    }
+
+    private Member createMember(String openid, String name) {
+        Member member = Member.builder()
+                .openid(openid)
+                .name(name)
+                .createTime(LocalDateTime.now())
+                .build();
+        memberMapper.insert(member);
+        return member;
+    }
+
+    private Long createAddress(Long ownerId, String consignee) {
+        ShippingAddress shippingAddress = ShippingAddress.builder()
+                .memberId(ownerId)
+                .consignee(consignee)
+                .phone("0912345678")
+                .cityName("台北市")
+                .districtName("信義區")
+                .detail("市府路1號")
+                .isDefault(1)
+                .build();
+        shippingAddressMapper.insert(shippingAddress);
+        return shippingAddress.getId();
     }
 }

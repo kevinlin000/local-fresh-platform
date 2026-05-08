@@ -51,3 +51,7 @@ export function fetchGroupBuy(groupNo: string) {
 export function fetchMyGroupBuys() {
   return unwrap<GroupBuyRecord[]>(http.get('/user/groupBuy/my'))
 }
+
+export function cancelGroupBuy(groupNo: string): Promise<GroupBuyRecord> {
+  return unwrap<GroupBuyRecord>(http.post(`/user/groupBuy/${groupNo}/cancel`))
+}

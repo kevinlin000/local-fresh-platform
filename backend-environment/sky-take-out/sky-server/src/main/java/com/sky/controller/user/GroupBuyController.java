@@ -41,6 +41,13 @@ public class GroupBuyController {
         return Result.success(groupBuyService.joinGroupBuy(joinGroupBuyDTO));
     }
 
+    @PostMapping("/{groupNo}/cancel")
+    @ApiOperation("取消揪團")
+    public Result<GroupBuyVO> cancelGroupBuy(@PathVariable String groupNo) {
+        log.info("取消揪團: {}", groupNo);
+        return Result.success(groupBuyService.cancelGroupBuy(groupNo));
+    }
+
     @GetMapping("/{groupNo}")
     @ApiOperation("查詢揪團狀態")
     public Result<GroupBuyVO> getByGroupNo(@PathVariable String groupNo) {

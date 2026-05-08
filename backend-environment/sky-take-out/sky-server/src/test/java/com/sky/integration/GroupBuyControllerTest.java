@@ -2,6 +2,7 @@ package com.sky.integration;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.sky.exception.ForbiddenOperationException;
 import com.sky.service.GroupBuyService;
 import com.sky.test.support.LoginResult;
 import com.sky.utils.WeChatPayUtil;
@@ -121,6 +122,29 @@ class GroupBuyControllerTest {
     }
 
     @Test
+    void cancel_returnsGroupBuyVo() throws Exception {
+        when(groupBuyService.cancelGroupBuy("GB123456")).thenReturn(groupBuyVO);
+
+        mockMvc.perform(post("/user/groupBuy/GB123456/cancel")
+                        .header("authentication", token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(1))
+                .andExpect(jsonPath("$.data.groupNo").value("GB123456"));
+    }
+
+    @Test
+    void cancel_whenNotInitiator_returns403() throws Exception {
+        when(groupBuyService.cancelGroupBuy("GB123456"))
+                .thenThrow(new ForbiddenOperationException("只有發起人可以取消揪團"));
+
+        mockMvc.perform(post("/user/groupBuy/GB123456/cancel")
+                        .header("authentication", token))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.msg").value("只有發起人可以取消揪團"));
+    }
+
+    @Test
     void getByGroupNo_returnsGroupBuyVo() throws Exception {
         groupBuyVO.setShareUrl("http://localhost:5173/groupBuy/GB123456");
         when(groupBuyService.getByGroupNo("GB123456")).thenReturn(groupBuyVO);
@@ -156,6 +180,12 @@ class GroupBuyControllerTest {
         mockMvc.perform(post("/user/groupBuy/initiate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"productId\":1,\"quantity\":2,\"addressId\":3,\"requiredCount\":3}"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void cancel_withoutLogin_returns401() throws Exception {
+        mockMvc.perform(post("/user/groupBuy/GB123456/cancel"))
                 .andExpect(status().isUnauthorized());
     }
 
