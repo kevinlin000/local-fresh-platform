@@ -78,7 +78,7 @@ const router = useRouter()
 const route = useRoute()
 const memberStore = useMemberStore()
 
-const isDev = import.meta.env.DEV
+const isDev = import.meta.env.DEV || import.meta.env.VITE_ENABLE_MOCK_LOGIN === 'true'
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined
 const manualCode = ref('')
 const redirecting = ref(false)
