@@ -5,6 +5,7 @@ import com.sky.interceptor.JwtTokenUserInterceptor;
 import com.sky.json.JacksonObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -35,6 +36,9 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
     @Autowired
     private JwtTokenUserInterceptor jwtTokenUserInterceptor;
 
+    @Value("${sky.cors.allowed-origin-patterns:http://localhost:*,http://127.0.0.1:*}")
+    private String[] allowedOriginPatterns;
+
     /**
      * 注册自定义拦截器
      *
@@ -58,7 +62,7 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
     @Override
     protected void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOriginPatterns("http://localhost:*", "http://127.0.0.1:*")
+                .allowedOriginPatterns(allowedOriginPatterns)
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .exposedHeaders("token", "authentication")

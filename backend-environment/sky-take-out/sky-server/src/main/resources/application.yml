@@ -37,6 +37,10 @@ logging:
         controller: info
 
 sky:
+  cors:
+    allowed-origin-patterns:
+      - http://localhost:*
+      - http://127.0.0.1:*
   jwt:
     admin-secret-key: ${sky.jwt.admin-secret-key}
     admin-ttl: 7200000000
