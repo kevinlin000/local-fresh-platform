@@ -138,7 +138,7 @@
           <template #extra>
             <div class="share-box">
               <p class="share-label">分享連結</p>
-              <el-input :model-value="createdGroupBuy?.shareUrl || ''" readonly />
+              <el-input :model-value="sharedGroupBuyLink" readonly />
             </div>
             <div class="success-actions">
               <el-button @click="copyShareUrl">複製連結</el-button>
@@ -233,6 +233,15 @@ const addressForm = reactive({
 })
 
 const productId = computed(() => Number(route.params.id))
+const sharedGroupBuyLink = computed(() => {
+  if (!createdGroupBuy.value?.groupNo) {
+    return ''
+  }
+  if (typeof window === 'undefined') {
+    return ''
+  }
+  return `${window.location.origin}/groupBuy/${createdGroupBuy.value.groupNo}`
+})
 
 const specOptions = computed(() => {
   if (!product.value?.productSpecs?.length) {
@@ -402,11 +411,11 @@ async function handleInitiateGroupBuy() {
 }
 
 async function copyShareUrl() {
-  if (!createdGroupBuy.value?.shareUrl) {
+  if (!sharedGroupBuyLink.value) {
     return
   }
   try {
-    await navigator.clipboard.writeText(createdGroupBuy.value.shareUrl)
+    await navigator.clipboard.writeText(sharedGroupBuyLink.value)
     ElMessage.success('分享連結已複製')
   } catch {
     ElMessage.error('複製失敗，請手動複製連結')
