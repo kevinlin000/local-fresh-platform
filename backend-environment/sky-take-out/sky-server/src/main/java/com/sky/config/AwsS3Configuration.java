@@ -17,7 +17,9 @@ public class AwsS3Configuration {
     @Bean
     @ConditionalOnMissingBean // 確保 Spring 容器中只有一個這樣的 Bean
     public AwsS3Util awsS3Util(AwsS3Properties awsS3Properties) {
-        log.info("開始建立 AWS S3 檔案上傳工具類別物件：{}", awsS3Properties);
+        log.info("AWS S3 初始化:region={}, bucket={}",
+                awsS3Properties.getRegion(),
+                awsS3Properties.getBucketName());
 
         return new AwsS3Util(
                 awsS3Properties.getRegion(),
