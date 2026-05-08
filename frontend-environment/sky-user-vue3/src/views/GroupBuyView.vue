@@ -255,9 +255,6 @@ let previousStatus: number | null = null
 const groupNo = computed(() => String(route.params.groupNo || ''))
 const currentMemberId = computed(() => memberStore.profile.id)
 const shareUrl = computed(() => {
-  if (groupBuy.value?.shareUrl) {
-    return groupBuy.value.shareUrl
-  }
   if (typeof window === 'undefined' || !groupNo.value) {
     return ''
   }
