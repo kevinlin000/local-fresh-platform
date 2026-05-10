@@ -15,6 +15,10 @@
            class="sidebar-logo">
         <img src="@/assets/login/logo.png"
              style="width: 120px; height: 31px">
+        <div class="sidebar-brand-copy">
+          <span class="sidebar-brand-title">在地鮮選</span>
+          <span class="sidebar-brand-subtitle">LOCAL FRESH</span>
+        </div>
       </div>
       <div v-else
            class="sidebar-logo-mini">
@@ -44,7 +48,7 @@
             <img
               src="./../../../assets/icons/btn_close@2x.png"
               class="outLogin"
-              alt="退出"
+              alt="登出"
               @click="logout"
             />
           </div>
@@ -141,6 +145,30 @@ export default class extends Vue {
   img {
     display: inline-block;
   }
+}
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.sidebar-brand-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.05;
+}
+.sidebar-brand-title {
+  color: #2a2a2a;
+  font-size: 16px;
+  font-weight: 700;
+}
+.sidebar-brand-subtitle {
+  margin-top: 4px;
+  color: rgba(42, 42, 42, 0.72);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
 }
 .sidebar-logo-mini {
   img {

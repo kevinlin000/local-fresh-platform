@@ -87,7 +87,7 @@
                 <span>【催單】</span>{{ item.arrNew[0] }}
                 <!-- <span
                   class="fontOrderTip"
-                  >去处理</span
+                  >前往處理</span
                 > -->
                 <span class="time">{{ item.createTime }}</span>
               </div>
@@ -170,7 +170,7 @@
                     >{{ item.details.cancelledOrders }} 筆</span
                   >
                   <span
-                    ><label>今日取消金額：</label>￥{{
+                    ><label>今日取消金額：</label>NT$ {{
                       item.details.cancelledAmount
                     }}</span
                   >
@@ -262,9 +262,9 @@ export default class extends Vue {
       let objNew = {} as any
       let arrDetails = []
       this.baseData.forEach((val) => {
-        // 处理后端回到的状訂單字元串转义
+        // 處理後端回傳的狀態字串轉義
         const arrContent = val.content.split(' ')
-        // 处理催單、打烊詳情資料
+        // 處理催單與店休詳情資料
         val.arrNew = arrContent
         objNew = { ...val }
         objNew.details = eval('(' + objNew.details + ')')

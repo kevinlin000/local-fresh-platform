@@ -34,3 +34,6 @@ AGENTS.md
 CLAUDE.md
 docs/refactor-summary-phase1-5.md
 docs/code-review-report.md
+# AWS infra one-shot configs (not for repo)
+bucket-policy-admin.json
+cloudfront-config-admin.json

@@ -12,7 +12,7 @@ export const login = (data: any) =>
     data: data
   })
 
-  // 退出
+  // 登出
  export const userLogout = (params: any) =>
  request({
    'url': '/employee/logout',
@@ -36,7 +36,7 @@ request({
   params : {id: params.id}
 })
 
-// 添加員工資訊
+// 新增員工資訊
 export const addEmployee = (params: any) =>
   request({
     url: '/employee',

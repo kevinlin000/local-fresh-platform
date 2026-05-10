@@ -45,7 +45,7 @@
              :key="ind"
              class="item">
           <span>{{ item.dishName || item.name }}</span>
-          <span class="price">￥ {{ (Number(item.price) ).toFixed(2)*100/100 }} </span>
+          <span class="price">NT$ {{ (Number(item.price) ).toFixed(2)*100/100 }} </span>
           <span class="del"
                 @click="delCheck(item.name)">
             <img src="./../../../assets/icons/btn_clean@2x.png"
@@ -166,13 +166,13 @@ export default class extends Vue {
     this.keyInd = ind
     this.getDishList(id)
   }
-  // 添加單品
+  // 新增單品
   private checkedListHandle(value: [string]) {
-    // TODO 实现倒序 由于value是组件内封装無法从前面添加 所有取巧处理倒序添加
-    // 倒序展示 - 資料处理前反正 为正序
+    // TODO：元件內部 value 封裝限制，先以倒序方式處理新增清單
+    // 倒序展示：資料處理前先反轉為正序
     this.checkedListAll.reverse()
-    // value 是一筆只包含單品名的数组 需要从 dishList中筛选出 對應的詳情
-    // 操作添加單品
+    // value 是只包含單品名稱的陣列，需從 dishList 篩出對應詳情
+    // 執行新增單品
     const list = this.allDishList.filter((item: any) => {
       let data
       value.forEach((it: any) => {
@@ -182,8 +182,8 @@ export default class extends Vue {
       })
       return data
     })
-    // 编辑的时候需要与已有單品合并
-    // 与目前请求下的选择性 然后去重就是目前的列表
+    // 編輯時需要與既有單品合併
+    // 與目前已選單品合併後再去重
     const dishListCat = [...this.checkedListAll, ...list]
     let arrData: any[] = []
     this.checkedListAll = dishListCat.filter((item: any) => {
@@ -200,7 +200,7 @@ export default class extends Vue {
       }
       return allArrDate
     })
-    // 如果是减菜 走这里
+    // 若為移除單品，走這段邏輯
     if (value.length < arrData.length) {
       this.checkedListAll = this.checkedListAll.filter((item: any) => {
         if (value.some(it => it == item.name)) {
@@ -209,7 +209,7 @@ export default class extends Vue {
       })
     }
     this.$emit('checkList', this.checkedListAll)
-    // 資料处理完反转为倒序
+    // 資料處理完成後再反轉回倒序
     this.checkedListAll.reverse()
   }
 

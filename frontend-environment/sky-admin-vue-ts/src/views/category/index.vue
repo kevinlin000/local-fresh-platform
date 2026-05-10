@@ -141,7 +141,7 @@
                    type="primary"
                    size="medium"
                    @click="submitForm('go')">
-          保存並繼續新增
+          儲存並繼續新增
         </el-button>
       </span>
     </el-dialog>
@@ -270,7 +270,7 @@ export default class extends Vue {
       })
   }
 
-  // 添加
+  // 新增
   private addClass(st: any) {
     if (st == 'class') {
       this.classData.title = '新增單品分類'
@@ -297,11 +297,11 @@ export default class extends Vue {
     this.actionType = 'edit'
   }
 
-  // 关闭弹窗
+  // 關閉彈窗
   private handleClose(st: string) {
     console.log(this.$refs.classData, 'this.$refs.classData')
     this.classData.dialogVisible = false
-    //对該表单项进行重置，將其值重置为初始值并移除校验结果
+    // 對該表單項重置為初始值，並移除校驗結果
     this.$refs.classData.resetFields()
   }
 
@@ -366,7 +366,7 @@ export default class extends Vue {
           })
             .then(res => {
               if (res.data.code === 1) {
-                this.$message.success('分類添加成功！')
+                this.$message.success('分類新增成功！')
                 this.$refs.classData.resetFields()
                 if (!st) {
                   this.classData.dialogVisible = false

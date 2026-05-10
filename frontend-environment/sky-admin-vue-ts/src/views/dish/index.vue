@@ -81,7 +81,7 @@
                          label="單品分類" />
         <el-table-column label="售價">
           <template slot-scope="scope">
-            <span style="margin-right: 10px">￥{{ (scope.row.price ).toFixed(2)*100/100 }}</span>
+            <span style="margin-right: 10px">NT$ {{ (scope.row.price ).toFixed(2)*100/100 }}</span>
           </template>
         </el-table-column>
         <el-table-column label="販售狀態">

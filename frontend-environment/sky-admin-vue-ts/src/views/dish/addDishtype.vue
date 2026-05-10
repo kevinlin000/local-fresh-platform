@@ -40,7 +40,7 @@
               <span v-if="dishFlavors.length == 0"
                     class="addBut"
                     @click="addFlavore">
-                + 添加口味</span>
+                + 新增口味</span>
               <div v-if="dishFlavors.length != 0"
                    class="flavor">
                 <div class="title">
@@ -76,7 +76,7 @@
                      "
                      class="addBut"
                      @click="addFlavore">
-                  添加口味
+                  新增口味
                 </div>
               </div>
             </div>
@@ -108,12 +108,12 @@
           <el-button type="primary"
                      :class="{ continue: actionType === 'add' }"
                      @click="submitForm('ruleForm')">
-            保存
+            儲存
           </el-button>
           <el-button v-if="actionType == 'add'"
                      type="primary"
                      @click="submitForm('ruleForm', 'goAnd')">
-            保存並繼續新增
+            儲存並繼續新增
           </el-button>
         </div>
       </el-form>
@@ -279,18 +279,18 @@ export default class extends Vue {
     })
   }
 
-  // 按钮 - 添加口味
+  // 按鈕 - 新增口味
   private addFlavore() {
     this.dishFlavors.push({ name: '', value: [] }) // JSON.parse(JSON.stringify(this.dishFlavorsData))
   }
 
-  // 按钮 - 刪除口味
+  // 按鈕 - 刪除口味
   private delFlavor(name: string) {
     let ind = this.dishFlavors.findIndex(item => item.name === name)
     this.dishFlavors.splice(ind, 1)
   }
 
-  // 按钮 - 刪除口味标签
+  // 按鈕 - 刪除口味標籤
   private delFlavorLabel(index: number, ind: number) {
     this.dishFlavors[index].value.splice(ind, 1)
   }
@@ -300,7 +300,7 @@ export default class extends Vue {
     this.index = index
   }
 
-  // 添加口味标签
+  // 新增口味標籤
   private keyDownHandle(val: any) {
     if (event) {
       event.cancelBubble = true

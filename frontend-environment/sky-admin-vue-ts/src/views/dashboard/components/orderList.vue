@@ -260,14 +260,14 @@
                 <span class="dish-name">{{ item.name }}</span>
                 <span class="dish-num">x{{ item.number }}</span>
                 <span class="dish-price"
-                  >￥{{ item.amount ? item.amount.toFixed(2) : '' }}</span
+                  >NT$ {{ item.amount ? item.amount.toFixed(2) : '' }}</span
                 >
               </div>
             </div>
             <div class="dish-all-amount">
               <label>單品小計</label>
               <span
-                >￥{{
+                >NT$ {{
                   (diaForm.amount - 6 - diaForm.packAmount).toFixed(2)
                 }}</span
               >
@@ -282,7 +282,7 @@
               <div class="dish-amount">
                 <span class="amount-name">單品小計：</span>
                 <span class="amount-price"
-                  >￥{{
+                  >NT$ {{
                     ((diaForm.amount - 6 - diaForm.packAmount).toFixed(2) *
                       100) /
                     100
@@ -291,12 +291,12 @@
               </div>
               <div class="send-amount">
                 <span class="amount-name">派送費：</span>
-                <span class="amount-price">￥{{ 6 }}</span>
+                <span class="amount-price">NT$ {{ 6 }}</span>
               </div>
               <div class="package-amount">
                 <span class="amount-name">打包費：</span>
                 <span class="amount-price"
-                  >￥{{
+                  >NT$ {{
                     diaForm.packAmount
                       ? (diaForm.packAmount.toFixed(2) * 100) / 100
                       : ''
@@ -306,7 +306,7 @@
               <div class="all-amount">
                 <span class="amount-name">合計：</span>
                 <span class="amount-price"
-                  >￥{{
+                  >NT$ {{
                     diaForm.amount
                       ? (diaForm.amount.toFixed(2) * 100) / 100
                       : ''
@@ -316,7 +316,7 @@
               <div class="pay-type">
                 <span class="pay-name">支付管道：</span>
                 <span class="pay-value">{{
-                  diaForm.payMethod === 1 ? '第三方付款' : '支付寶付款'
+                  diaForm.payMethod === 1 ? '第三方付款' : '其他付款'
                 }}</span>
               </div>
               <div class="pay-time">
@@ -371,7 +371,7 @@
       </span>
     </el-dialog>
     <!-- end -->
-    <!-- 拒单，取消弹窗 -->
+    <!-- 拒單、取消彈窗 -->
     <el-dialog
       :title="cancelDialogTitle + '原因'"
       :visible.sync="cancelDialogVisible"
@@ -437,15 +437,15 @@ import {
 export default class extends Vue {
   @Prop({ default: '' }) orderStatics!: any
 
-  private orderId = '' //訂單号
-  private dialogOrderStatus = 0 //弹窗所需訂單狀態，用于詳情展示字段
+  private orderId = '' // 訂單號
+  private dialogOrderStatus = 0 // 彈窗所需訂單狀態，用於詳情展示欄位
   private activeIndex = 0
 
-  private dialogVisible = false //詳情弹窗
-  private cancelDialogVisible = false //取消，拒单弹窗
-  private cancelDialogTitle = '' //取消，拒绝弹窗标题
+  private dialogVisible = false // 詳情彈窗
+  private cancelDialogVisible = false // 取消、拒單彈窗
+  private cancelDialogTitle = '' // 取消、拒單彈窗標題
   private cancelReason = ''
-  private remark = '' //自定义原因
+  private remark = '' // 自訂原因
   private diaForm = []
   private row = {}
   private isAutoNext = true
@@ -467,7 +467,7 @@ export default class extends Vue {
     },
     {
       value: 3,
-      label: '餐廳已打烊，暫時無法接單',
+      label: '店休中，暫時無法接單',
     },
     {
       value: 0,
@@ -590,7 +590,7 @@ export default class extends Vue {
         this.$message.error('請求發生錯誤：' + err.message)
       })
   }
-  //打开取消訂單弹窗
+  // 開啟取消訂單彈窗
   cancelOrder(row: any, event) {
     event.stopPropagation()
     this.cancelDialogVisible = true
@@ -600,7 +600,7 @@ export default class extends Vue {
     this.dialogVisible = false
     this.cancelReason = ''
   }
-  //打开拒单弹窗
+  // 開啟拒單彈窗
   orderReject(row: any, event) {
     event.stopPropagation()
     this.cancelDialogVisible = true
@@ -610,7 +610,7 @@ export default class extends Vue {
     this.dialogVisible = false
     this.cancelReason = ''
   }
-  //確認取消或拒绝訂單并填写原因
+  // 確認取消或拒單訂單並填寫原因
   confirmCancel(type) {
     if (!this.cancelReason) {
       return this.$message.error(`請選擇${this.cancelDialogTitle}原因`)
@@ -674,7 +674,7 @@ export default class extends Vue {
     this.diaForm = data.data
     this.row = row
   }
-  // 关闭弹层
+  // 關閉彈層
   handleClose() {
     this.dialogVisible = false
   }

@@ -8,7 +8,7 @@
       <ul>
         <li>
           <p class="tit">營業額</p>
-          <p class="num">¥ {{ overviewData.turnover }}</p>
+          <p class="num">NT$ {{ overviewData.turnover }}</p>
         </li>
         <li>
           <p class="tit">有效訂單</p>
@@ -22,7 +22,7 @@
         </li>
         <li>
           <p class="tit">平均客單價</p>
-          <p class="num">¥ {{ overviewData.unitPrice }}</p>
+          <p class="num">NT$ {{ overviewData.unitPrice }}</p>
         </li>
 
         <li>

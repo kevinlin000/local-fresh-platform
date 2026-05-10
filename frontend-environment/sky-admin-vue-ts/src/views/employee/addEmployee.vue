@@ -19,11 +19,11 @@
           <el-input v-model="ruleForm.idNumber"></el-input>
         </el-form-item>
         <div class="subBox">
-          <el-button type="primary" @click="submitForm('ruleForm',false)">保存</el-button>
+          <el-button type="primary" @click="submitForm('ruleForm',false)">儲存</el-button>
           <el-button 
             v-if="this.optType === 'add'" 
             type="primary" 
-            @click="submitForm('ruleForm',true)">保存並繼續新增員工
+            @click="submitForm('ruleForm',true)">儲存並繼續新增員工
           </el-button>
           <el-button @click="() => this.$router.push('/employee')">回到</el-button>
         </div>
@@ -45,7 +45,7 @@ export default {
         sex: 1,
         idNumber: ''
       },
-      // 操作類型:add-添加員工，edit-修改員工
+      // 操作類型：add-新增員工，edit-修改員工
       optType: 'add',
       rules: {
           username: [
@@ -78,10 +78,10 @@ export default {
     }
   },
   created() {
-    // 若是传过来的参数有id，则是更新页面，否则为添加页面
+    // 若傳入參數含 id，則為修改頁面，否則為新增頁面
     this.optType = this.$route.query.id ? 'update' : 'add'
     if(this.optType === 'update'){
-      // 回显員工的資訊
+      // 回填員工資訊
       getEmployeeById(this.$route.query.id).then(res =>{
         if(res.data.code === 1){
           this.ruleForm = res.data.data
@@ -93,18 +93,18 @@ export default {
   },
   methods: {
 
-    // 提交表单
+    // 提交表單
     submitForm(formName, isContinued){
-      // 进行表单校验
+      // 進行表單校驗
       this.$refs[formName].validate(valid =>{
-        // 表单校验通过
+        // 表單校驗通過
         if(valid){
-          // 若是添加員工操作
+          // 若為新增員工操作
           if(this.optType === 'add'){
             addEmployee(this.ruleForm).then(res =>{
               if(res.data.code === 1){
-                this.$message.success('添加員工資訊成功')
-                // 若点击的是"保存并繼續添加員工"按钮
+                this.$message.success('新增員工資料成功')
+                // 若點擊的是「儲存並繼續新增員工」按鈕
                 if(isContinued){
                   this.ruleForm = {
                     username: '',

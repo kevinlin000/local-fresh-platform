@@ -8,7 +8,7 @@
       <span v-if="status===1"
             class="businessBtn">營業中</span>
       <span v-else
-            class="businessBtn closing">打烊中</span>
+            class="businessBtn closing">店休中</span>
     </div>
 
     <div :key="restKey"
@@ -40,7 +40,7 @@
             </p>
             <p class="outLogin"
                @click="logout">
-              退出登入<i />
+              登出<i />
             </p>
           </div>
         </div>
@@ -54,11 +54,11 @@
       <el-radio-group v-model="setStatus">
         <el-radio :label="1">
           營業中
-          <span>目前餐廳處於營業狀態，會自動接收任何訂單，可點擊打烊進入店舖打烊狀態。</span>
+          <span>目前店舖處於營業狀態，會自動接收任何訂單，可點擊店休中進入暫停接單狀態。</span>
         </el-radio>
         <el-radio :label="0">
-          打烊中
-          <span>目前餐廳處於打烊狀態，僅接受營業時間內的預約訂單，可點擊營業中手動恢復營業狀態。</span>
+          店休中
+          <span>目前店舖處於店休狀態，僅接受營業時間內的預約訂單，可點擊營業中手動恢復營業狀態。</span>
         </el-radio>
       </el-radio-group>
       <span slot="footer"
@@ -164,10 +164,10 @@ export default class extends Vue {
   onload() {
   }
   destroyed() {
-    this.websocket.close() //离开路由之后断开websocket连接
+    this.websocket.close() // 離開路由後中斷 websocket 連線
   }
 
-  // 添加新訂單提示弹窗
+  // 新增新訂單提示彈窗
   webSocket() {
     const that = this as any
     let clientId = Math.random().toString(36).substr(2)
@@ -181,14 +181,19 @@ export default class extends Vue {
         duration: 0,
       })
     } else {
-      this.websocket = new WebSocket(socketUrl)
-      // 监听socket打开
-      this.websocket.onopen = function () {
-        console.log('瀏覽器WebSocket已打开')
+      try {
+        this.websocket = new WebSocket(socketUrl)
+      } catch (error) {
+        console.warn('WebSocket 初始化失敗', error)
+        return
       }
-      // 监听socket訊息接收
+      // 監聽 socket 開啟
+      this.websocket.onopen = function () {
+        console.log('瀏覽器 WebSocket 已開啟')
+      }
+      // 監聽 socket 訊息接收
       this.websocket.onmessage = function (msg) {
-        // 转换为json对象
+        // 轉換為 JSON 物件
         that.$refs.audioVo.currentTime = 0
         that.$refs.audioVo2.currentTime = 0
 
@@ -214,26 +219,21 @@ export default class extends Vue {
               location.reload()
             }, 100)
           },
-          // 这里也可以把回到資訊加入到message中显示
+          // 這裡也可以把回傳資訊加入 message 顯示
           message: `${
             jsonMsg.type === 1
               ? `<span>您有1筆<span style=color:#419EFF>訂單待處理</span>,${jsonMsg.content},請盡快接單</span>`
-              : `${jsonMsg.content}<span style='color:#419EFF;cursor: pointer'>去处理</span>`
+              : `${jsonMsg.content}<span style='color:#419EFF;cursor: pointer'>前往處理</span>`
           }`,
         })
       }
-      // 监听socket错误
-      this.websocket.onerror = function () {
-        that.$notify({
-          title: '错误',
-          message: '伺服器错误，無法接收即時警示資訊',
-          type: 'error',
-          duration: 0,
-        })
+      // 監聽 socket 錯誤
+      this.websocket.onerror = function (error) {
+        console.warn('WebSocket 連線異常，已略過即時警示功能', error)
       }
-      // 监听socket关闭
+      // 監聽 socket 關閉
       this.websocket.onclose = function () {
-        console.log('WebSocket已关闭')
+        console.log('WebSocket 已關閉')
       }
     }
   }
@@ -241,7 +241,7 @@ export default class extends Vue {
   private toggleSideBar() {
     AppModule.ToggleSideBar(false)
   }
-  // 退出
+  // 登出
   private async logout() {
     this.$store.dispatch('LogOut').then(() => {
       // location.href = '/'
@@ -267,24 +267,24 @@ export default class extends Vue {
     this.status = data.data
     this.setStatus = this.status
   }
-  // 下拉菜单显示
+  // 顯示下拉選單
   toggleShow() {
     this.shopShow = true
   }
-  // 下拉菜单隐藏
+  // 隱藏下拉選單
   mouseLeaves() {
     this.shopShow = false
   }
-  // 触发空白处下来菜单关闭
+  // 點擊空白處時關閉下拉選單
   handleClose() {
     // clearTimeout(this.leave)
     // this.shopShow = false
   }
-  // 设置營業狀態
+  // 設定營業狀態
   handleStatus() {
     this.dialogVisible = true
   }
-  // 營業狀態设置
+  // 營業狀態設定
   async handleSave() {
     const { data } = await setStatus(this.setStatus)
     if (data.code === 1) {
@@ -296,7 +296,7 @@ export default class extends Vue {
   handlePwd() {
     this.dialogFormVisible = true
   }
-  // 关闭密碼编辑弹层
+  // 關閉密碼編輯彈層
   handlePwdClose() {
     this.dialogFormVisible = false
   }

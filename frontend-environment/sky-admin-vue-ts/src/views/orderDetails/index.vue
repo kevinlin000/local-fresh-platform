@@ -131,7 +131,7 @@
           align="center"
         >
           <template slot-scope="{ row }">
-            <span>￥{{ (row.amount.toFixed(2) * 100) / 100 }}</span>
+            <span>NT$ {{ (row.amount.toFixed(2) * 100) / 100 }}</span>
           </template>
         </el-table-column>
         <el-table-column
@@ -319,14 +319,14 @@
                   <span class="dish-num">x{{ item.number }}</span>
                 </div>
                 <span class="dish-price"
-                  >￥{{ item.amount ? item.amount.toFixed(2) : '' }}</span
+                  >NT$ {{ item.amount ? item.amount.toFixed(2) : '' }}</span
                 >
               </div>
             </div>
             <div class="dish-all-amount">
               <label>單品小計</label>
               <span
-                >￥{{
+                >NT$ {{
                   (diaForm.amount - 6 - diaForm.packAmount).toFixed(2)
                 }}</span
               >
@@ -341,7 +341,7 @@
               <div class="dish-amount">
                 <span class="amount-name">單品小計：</span>
                 <span class="amount-price"
-                  >￥{{
+                  >NT$ {{
                     ((diaForm.amount - 6 - diaForm.packAmount).toFixed(2) *
                       100) /
                     100
@@ -349,13 +349,13 @@
                 >
               </div>
               <div class="send-amount">
-                <span class="amount-name">派送费：</span>
-                <span class="amount-price">￥{{ 6 }}</span>
+                <span class="amount-name">派送費：</span>
+                <span class="amount-price">NT$ {{ 6 }}</span>
               </div>
               <div class="package-amount">
-                <span class="amount-name">打包费：</span>
+                <span class="amount-name">打包費：</span>
                 <span class="amount-price"
-                  >￥{{
+                  >NT$ {{
                     diaForm.packAmount
                       ? (diaForm.packAmount.toFixed(2) * 100) / 100
                       : ''
@@ -365,7 +365,7 @@
               <div class="all-amount">
                 <span class="amount-name">合計：</span>
                 <span class="amount-price"
-                  >￥{{
+                  >NT$ {{
                     diaForm.amount
                       ? (diaForm.amount.toFixed(2) * 100) / 100
                       : ''
@@ -375,7 +375,7 @@
               <div class="pay-type">
                 <span class="pay-name">支付管道：</span>
                 <span class="pay-value">{{
-                  diaForm.payMethod === 1 ? '第三方付款' : '支付寶付款'
+                  diaForm.payMethod === 1 ? '第三方付款' : '其他付款'
                 }}</span>
               </div>
               <div class="pay-time">
@@ -429,7 +429,7 @@
         >
       </span>
     </el-dialog>
-    <!-- 拒单，取消弹窗 -->
+    <!-- 拒單、取消彈窗 -->
     <el-dialog
       :title="cancelDialogTitle + '原因'"
       :visible.sync="cancelDialogVisible"
@@ -503,24 +503,24 @@ export default class extends Vue {
   private row = {}
   private isAutoNext = true
   private isTableOperateBtn = true
-  private currentPageIndex = 0 //记录查看詳情資料的index
-  private orderId = '' //訂單号
-  private input = '' //搜索条件的訂單号
-  private phone = '' //搜索条件的手機號碼
+  private currentPageIndex = 0 // 記錄查看詳情資料的 index
+  private orderId = '' // 訂單號
+  private input = '' // 搜尋條件的訂單號
+  private phone = '' // 搜尋條件的手機號碼
   private valueTime = []
-  private dialogVisible = false //詳情弹窗
-  private cancelDialogVisible = false //取消，拒单弹窗
-  private cancelDialogTitle = '' //取消，拒绝弹窗标题
+  private dialogVisible = false // 詳情彈窗
+  private cancelDialogVisible = false // 取消、拒單彈窗
+  private cancelDialogTitle = '' // 取消、拒單彈窗標題
   private cancelReason = ''
-  private remark = '' //自定义原因
+  private remark = '' // 自訂原因
   private counts: number = 0
   private page: number = 1
   private pageSize: number = 10
   private tableData = []
   private diaForm = []
   private isSearch: boolean = false
-  private orderStatus = 0 //列表字段展示所需訂單狀態,用于分頁请求資料
-  private dialogOrderStatus = 0 //弹窗所需訂單狀態，用于詳情展示字段
+  private orderStatus = 0 // 列表欄位展示所需訂單狀態，用於分頁請求資料
+  private dialogOrderStatus = 0 // 彈窗所需訂單狀態，用於詳情展示欄位
   private cancelOrderReasonList = [
     {
       value: 1,
@@ -532,7 +532,7 @@ export default class extends Vue {
     },
     {
       value: 3,
-      label: '餐廳已打烊，暫時無法接單',
+      label: '店休中，暫時無法接單',
     },
     {
       value: 0,
@@ -598,7 +598,7 @@ export default class extends Vue {
   }
 
   mounted() {
-    //如果有值说明是訊息通知点击进来的
+    // 若有值，表示從訊息通知點擊進來
     if (
       this.$route.query.orderId &&
       this.$route.query.orderId !== 'undefined'
@@ -627,7 +627,7 @@ export default class extends Vue {
     console.log(activeIndex, '接收到了子组件的index')
   }
 
-  //取得待處理，待派送，派送中数量
+  // 取得待處理、待派送、派送中數量
   getOrderListBy3Status() {
     getOrderListBy({})
       .then((res) => {
@@ -720,7 +720,7 @@ export default class extends Vue {
     }
   }
 
-  //打开拒单弹窗
+  // 開啟拒單彈窗
   orderReject(row: any) {
     this.cancelDialogVisible = true
     this.orderId = row.id
@@ -751,7 +751,7 @@ export default class extends Vue {
       })
   }
 
-  //打开取消訂單弹窗
+  // 開啟取消訂單彈窗
   cancelOrder(row: any) {
     this.cancelDialogVisible = true
     this.orderId = row.id
@@ -761,7 +761,7 @@ export default class extends Vue {
     this.cancelReason = ''
   }
 
-  //確認取消或拒绝訂單并填写原因
+  // 確認取消或拒單訂單並填寫原因
   confirmCancel(type) {
     if (!this.cancelReason) {
       return this.$message.error(`請選擇${this.cancelDialogTitle}原因`)

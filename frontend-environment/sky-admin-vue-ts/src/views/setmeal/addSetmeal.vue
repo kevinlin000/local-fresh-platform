@@ -122,12 +122,12 @@
             <el-button type="primary"
                        :class="{ continue: actionType === 'add' }"
                        @click="submitForm('ruleForm', false)">
-              保存
+              儲存
             </el-button>
             <el-button v-if="actionType == 'add'"
                        type="primary"
                        @click="submitForm('ruleForm', true)">
-              保存並繼續新增
+              儲存並繼續新增
             </el-button>
           </el-form-item>
         </div>
@@ -302,17 +302,17 @@ export default class extends Vue {
     // this.checkList.splice(index, 1)
   }
 
-  // 取得添加單品資料 - 確定加菜倒序展示
+  // 取得新增單品資料，確認後倒序展示
   private getCheckList(value: any) {
     this.checkList = [...value].reverse()
   }
 
-  // 添加單品
+  // 新增單品
   openAddDish(st: string) {
     this.seachKey = ''
     this.dialogVisible = true
   }
-  // 取消添加單品
+  // 取消新增單品
   handleClose(done: any) {
     // this.$refs.adddish.close()
     this.dialogVisible = false
@@ -320,7 +320,7 @@ export default class extends Vue {
     // this.dialogVisible = false
   }
 
-  // 保存添加單品列表
+  // 儲存新增單品清單
   public addTableList() {
     this.dishTable = JSON.parse(JSON.stringify(this.checkList))
     this.dishTable.forEach((n: any) => {
