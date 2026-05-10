@@ -96,7 +96,7 @@
 外部服務：
 - Google OAuth 2.0：會員登入
 - Google Maps API：配送範圍計算
-- AWS（規劃中）：EC2 / RDS / S3 / CloudFront
+- AWS：EC2（Docker MySQL + Redis）+ S3 + CloudFront + DuckDNS
 ```
 
 ### 技術棧
@@ -106,7 +106,7 @@
 | 後端 | Java 17、Spring Boot 2.7.3、MyBatis、PageHelper、JWT、Druid |
 | 前端 | Vue 3、Vite 5、TypeScript、Pinia、Vue Router 4、Element Plus |
 | 基礎設施 | MySQL 8、Redis 7、Redisson、Testcontainers、Docker |
-| 第三方服務 | Google OAuth 2.0、Google Maps API、AWS EC2 / RDS / S3 / CloudFront（規劃中） |
+| 第三方服務 | Google OAuth 2.0、Google Maps API、AWS EC2 + S3 + CloudFront + DuckDNS |
 
 ## 核心功能
 
@@ -146,7 +146,7 @@
 
 ### 7. 可部署導向的全流程設計
 
-這個專案雖然是求職作品，但實作方式不是只做出 API 或畫面，而是完整串成「可啟動、可測試、可部署規劃」的系統。從 migration 版本化、環境變數管理、dev/test profile 分流、Google OAuth 設定隔離，到前端 Vite proxy 與後端 CORS 協作，都是以未來可實際部署到 AWS 為前提在設計。AWS 相關章節目前先保留為規劃，但資料庫、Redis、靜態前端與 API server 的切分方式已經能自然對應到 EC2、RDS、S3、CloudFront 的部署模型。
+這個專案雖然是求職作品，但實作方式不是只做出 API 或畫面，而是完整串成「可啟動、可測試、可實際部署」的系統。從 migration 版本化、環境變數管理、dev/test profile 分流、Google OAuth 設定隔離，到前端 Vite proxy 與後端 CORS 協作，都是以實際上線為前提在設計。目前 demo 已部署於 AWS，前端靜態資源、API 服務與 DNS 入口的切分方式，也與實際的 EC2、S3、CloudFront、DuckDNS 架構一致。
 
 ## 設計決策 Q&A
 
@@ -302,17 +302,15 @@ pnpm dev
 
 ## 部署
 
-目前規劃的部署架構如下：
+目前上線中的部署架構如下：
 
 - **EC2**：部署 Spring Boot API
-- **RDS (MySQL)**：儲存商品、會員、訂單與揪團資料
+- **EC2 內 Docker MySQL + Redis**：儲存商品、會員、訂單、揪團資料與快取 / 鎖協作
 - **S3**：承載前端靜態檔案
 - **CloudFront**：對外提供 CDN 與 HTTPS 存取
+- **DuckDNS**：提供後端 API 對外網域入口
 
-**Demo URL**  
-部署中，即將公開
-
-> 部署步驟與架構圖會在部署完成後補齊。
+> 詳細架構與時序圖請參考 `docs/architecture.md`。
 
 ## 已知限制
 
@@ -328,7 +326,7 @@ pnpm dev
 
 - [docs/known-issues.md](docs/known-issues.md)
 - [frontend-environment/sky-user-vue3/README.md](frontend-environment/sky-user-vue3/README.md)
-- `docs/architecture.md`（規劃中）
+- `docs/architecture.md`（系統架構與時序圖）
 
 ## License
 

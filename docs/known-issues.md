@@ -1,6 +1,6 @@
 ## 測試環境與生產環境 schema 約束不完全等價
 
-蒼穹外賣原始的 `orders` 表在 production MySQL 為 `NOT NULL DEFAULT 1`
+上游 schema 中的 `orders` 表在 production MySQL 為 `NOT NULL DEFAULT 1`
 的欄位（`pay_method`, `delivery_status`），但測試環境 `H2 schema-test.sql`
 原本未強制這些約束。這導致 `buildPreOrder` 等方法在不設定這些欄位時，
 測試環境通過（H2 接受 `NULL`）但 dev/prod MySQL 靠 default 靜默兜底。

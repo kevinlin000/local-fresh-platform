@@ -100,7 +100,7 @@ Online grocery commerce in Taiwan often runs into two practical problems: small 
 External services:
 - Google OAuth 2.0 for member login
 - Google Maps API for delivery range checks
-- AWS (planned): EC2 / RDS / S3 / CloudFront
+- AWS: EC2 (Dockerized MySQL + Redis), S3, CloudFront, DuckDNS
 ```
 
 ### Tech Stack
@@ -110,7 +110,7 @@ External services:
 | Backend | Java 17, Spring Boot 2.7.3, MyBatis, PageHelper, JWT, Druid |
 | Frontend | Vue 3, Vite 5, TypeScript, Pinia, Vue Router 4, Element Plus |
 | Infrastructure | MySQL 8, Redis 7, Redisson, Testcontainers, Docker |
-| Third-party Services | Google OAuth 2.0, Google Maps API, AWS EC2 / RDS / S3 / CloudFront (planned) |
+| Third-party Services | Google OAuth 2.0, Google Maps API, AWS EC2 + S3 + CloudFront + DuckDNS |
 
 ## Core Features
 
@@ -150,7 +150,7 @@ Redis plays two distinct roles in this system: distributed coordination for grou
 
 ### 7. Built with deployment readiness in mind
 
-Although this is a portfolio project, it is structured with deployment realism in mind rather than as a collection of disconnected demos. Database migrations are versioned, environment-specific configuration is separated cleanly, OAuth credentials are kept out of source control, and frontend/backend integration is designed around realistic local-to-cloud transitions. The AWS section is still marked as planned, but the current architecture already maps naturally to EC2, RDS, S3, and CloudFront without requiring a redesign later.
+Although this is a portfolio project, it is structured with deployment realism in mind rather than as a collection of disconnected demos. Database migrations are versioned, environment-specific configuration is separated cleanly, OAuth credentials are kept out of source control, and frontend/backend integration is designed around realistic local-to-cloud transitions. The deployment topology described below is the actual production setup serving the demo URL.
 
 ## Design Decisions Q&A
 
@@ -306,17 +306,15 @@ For the full frontend-side OAuth setup, see:
 
 ## Deployment
 
-The planned deployment topology is:
+The deployment topology is:
 
 - **EC2** for the Spring Boot API
-- **RDS (MySQL)** for products, members, orders, and group-buy data
+- **Dockerized MySQL + Redis on EC2** for products, members, orders, group-buy data, cache, and locking
 - **S3** for hosting frontend static assets
 - **CloudFront** for CDN delivery and HTTPS entry points
+- **DuckDNS** for the public backend API domain
 
-**Demo URL**  
-Coming soon
-
-> The detailed deployment walkthrough and infrastructure diagram will be added after deployment is completed.
+> For detailed diagrams and request flows, see `docs/architecture.md`.
 
 ## Known Limitations
 
@@ -332,7 +330,7 @@ See also:
 
 - [docs/known-issues.md](docs/known-issues.md)
 - [frontend-environment/sky-user-vue3/README.md](frontend-environment/sky-user-vue3/README.md)
-- `docs/architecture.md` (planned)
+- `docs/architecture.md` (system architecture and sequence diagrams)
 
 ## License
 
