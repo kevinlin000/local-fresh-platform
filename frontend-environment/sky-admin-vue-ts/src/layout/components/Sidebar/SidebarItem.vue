@@ -61,7 +61,6 @@
 import path from 'path'
 import { Component, Prop, Vue } from 'vue-property-decorator'
 import { UserModule } from '@/store/modules/user'
-import { Route, RouteConfig } from 'vue-router'
 import { isExternal } from '@/utils/validate'
 import SidebarItemLink from './SidebarItemLink.vue'
 
@@ -72,7 +71,7 @@ import SidebarItemLink from './SidebarItemLink.vue'
   },
 })
 export default class extends Vue {
-  @Prop({ required: true }) private item!: RouteConfig
+  @Prop({ required: true }) private item!: any
   @Prop({ default: false }) private isCollapse!: boolean
   @Prop({ default: true }) private isFirstLevel!: boolean
   @Prop({ default: '' }) private basePath!: string

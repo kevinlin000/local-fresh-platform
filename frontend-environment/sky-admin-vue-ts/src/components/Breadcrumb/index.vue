@@ -24,16 +24,15 @@
 <script lang="ts">
 import pathToRegexp from 'path-to-regexp'
 import { Component, Vue, Watch } from 'vue-property-decorator'
-import { RouteRecord, Route } from 'vue-router'
 
 @Component({
   'name': 'Breadcrumb'
 })
 
 export default class extends Vue {
-  private breadcrumbs: RouteRecord[] = []
+  private breadcrumbs: any[] = []
   @Watch('$route')
-  private onRouteChange(route: Route) {
+  private onRouteChange(route: any) {
     // if you go to the redirect page, do not update the breadcrumbs
     if (route.path.startsWith('/redirect/')) {
       return
@@ -61,7 +60,7 @@ export default class extends Vue {
     })
   }
 
-  private isDashboard (route: RouteRecord) {
+  private isDashboard (route: any) {
     const name = route && route.meta && route.meta.title
     return name === '集团管理'
   }

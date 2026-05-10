@@ -10,7 +10,10 @@
               style="width: 149px; height: 38px"
               alt=""
             />
-            <!-- <span class="title-label">苍穹外卖</span> -->
+            <div class="brand-copy">
+              <span class="title-label">在地鮮選</span>
+              <span class="title-subtitle">LOCAL FRESH</span>
+            </div>
           </div>
           <el-form-item prop="username">
             <el-input
@@ -51,7 +54,6 @@
 
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator'
-import { Route } from 'vue-router'
 import { Form as ElForm, Input } from 'element-ui'
 import { UserModule } from '@/store/modules/user'
 import { isValidUsername } from '@/utils/validate'
@@ -62,14 +64,14 @@ import { isValidUsername } from '@/utils/validate'
 export default class extends Vue {
   private validateUsername = (rule: any, value: string, callback: Function) => {
     if (!value) {
-      callback(new Error('請輸入會員名'))
+      callback(new Error('請輸入帳號'))
     } else {
       callback()
     }
   }
   private validatePassword = (rule: any, value: string, callback: Function) => {
     if (value.length < 6) {
-      callback(new Error('密碼必须在6位以上'))
+      callback(new Error('密碼必須至少 6 碼'))
     } else {
       callback()
     }
@@ -90,7 +92,7 @@ export default class extends Vue {
   private redirect?: string
 
   @Watch('$route', { immediate: true })
-  private onRouteChange(route: Route) {}
+  private onRouteChange(route: any) {}
 
   // 登入
   private handleLogin() {
@@ -100,7 +102,7 @@ export default class extends Vue {
         await UserModule.Login(this.loginForm as any)
           .then((res: any) => {
             if (String(res.code) === '1') {
-              //登入成功，跳转到系统首頁
+              // 登入成功後跳轉到系統首頁
               this.$router.push('/')
             } else {
               // this.$message.error(res.msg)
@@ -108,7 +110,7 @@ export default class extends Vue {
             }
           })
           .catch(() => {
-            // this.$message.error('會員名或密碼错误！')
+            // this.$message.error('帳號或密碼錯誤！')
             this.loading = false
           })
       } else {
@@ -221,11 +223,22 @@ export default class extends Vue {
   justify-content: center;
   align-items: center;
   margin-bottom: 40px;
+  .brand-copy {
+    display: flex;
+    flex-direction: column;
+    margin-left: 10px;
+    line-height: 1.1;
+  }
   .title-label {
     font-weight: 500;
     font-size: 20px;
     color: #333333;
-    margin-left: 10px;
+  }
+  .title-subtitle {
+    margin-top: 4px;
+    color: #7d7d7d;
+    font-size: 11px;
+    letter-spacing: 0.12em;
   }
 }
 </style>
