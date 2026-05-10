@@ -88,9 +88,12 @@
         <div class="checkout-section">
           <div class="section-header">
             <h3>收貨地址</h3>
-            <el-button text type="success" @click="addressDialogVisible = true">
-              新增地址
-            </el-button>
+            <div class="address-toolbar">
+              <el-button text @click="goAddresses">管理地址</el-button>
+              <el-button text type="success" @click="addressDialogVisible = true">
+                新增地址
+              </el-button>
+            </div>
           </div>
 
           <el-alert
@@ -451,6 +454,10 @@ function goHome() {
   void router.push('/')
 }
 
+function goAddresses() {
+  void router.push('/addresses')
+}
+
 onMounted(() => {
   void loadCart()
 })
@@ -548,7 +555,8 @@ h3 {
 .summary-total,
 .checkout-summary,
 .address-topline,
-.address-footer {
+.address-footer,
+.address-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;

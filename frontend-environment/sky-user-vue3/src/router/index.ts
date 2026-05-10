@@ -37,6 +37,12 @@ const router = createRouter({
       component: () => import('@/views/OrdersView.vue')
     },
     {
+      path: '/addresses',
+      name: 'addresses',
+      component: () => import('@/views/AddressView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/groupBuy/:groupNo',
       name: 'group-buy',
       component: () => import('@/views/GroupBuyView.vue')

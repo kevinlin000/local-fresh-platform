@@ -40,6 +40,18 @@ export function createAddress(payload: CreateAddressPayload) {
   return unwrap<void>(http.post('/user/shippingAddress', payload))
 }
 
+export function getAddressById(id: number) {
+  return unwrap<ShippingAddress>(http.get(`/user/shippingAddress/${id}`))
+}
+
+export function updateAddress(payload: ShippingAddress) {
+  return unwrap<void>(http.put('/user/shippingAddress', payload))
+}
+
 export function setDefaultAddress(id: number) {
   return unwrap<void>(http.put('/user/shippingAddress/default', { id }))
+}
+
+export function deleteAddress(id: number) {
+  return unwrap<void>(http.delete('/user/shippingAddress', { params: { id } }))
 }

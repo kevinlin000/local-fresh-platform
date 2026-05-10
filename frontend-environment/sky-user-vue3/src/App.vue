@@ -9,6 +9,7 @@
         <RouterLink to="/">首頁</RouterLink>
         <RouterLink to="/cart">購物車</RouterLink>
         <RouterLink to="/orders">我的訂單</RouterLink>
+        <RouterLink to="/addresses">我的地址</RouterLink>
       </nav>
 
       <div class="member-bar">
