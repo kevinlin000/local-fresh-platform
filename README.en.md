@@ -15,6 +15,49 @@
 > Backend API endpoint: `https://localfresh-demo.duckdns.org`
 > Deployment topology: Vue 3 storefront hosted on AWS S3 + CloudFront (HTTPS), Spring Boot API on AWS EC2 (Nginx reverse proxy with Let's Encrypt TLS).
 
+## Demo Screenshots
+
+End-to-end user flow: browse → checkout → group buy → order tracking.
+
+### 1. Home — Local Farm to Table
+
+Hero section showcases the core "3 friends → free shipping" group-buy proposition;
+products organized into 7 categories (leafy greens, roots, meat, seafood, etc.).
+
+![Home](docs/screenshots/01-home.png)
+
+### 2. Product List — Category Switching
+
+Switch categories to filter products instantly; each item paired with origin description and TWD pricing.
+
+![Product List](docs/screenshots/02-product-list.png)
+
+### 3. Product Detail — Two Checkout Paths
+
+Either "Add to Cart" for batch checkout, or "Start Group Buy" to launch a 3-person free-shipping group.
+
+![Product Detail](docs/screenshots/03-product-detail.png)
+
+### 4. Group Buy Detail — Live Progress & Initiator Cancellation
+
+Countdown + participant progress + shareable link; the initiator can cancel
+the group when no one else has joined, with the pre-order auto-canceled.
+
+![Group Buy](docs/screenshots/04-group-buy.png)
+
+### 5. Cart — Real-time Total
+
+Quantity adjustments update total instantly; one-click "clear cart".
+
+![Cart](docs/screenshots/05-cart.png)
+
+### 6. My Orders — Multi-State Tracking
+
+Lists orders across all states (completed / delivering / accepted / unpaid / canceled),
+with product details and cancellation notes.
+
+![My Orders](docs/screenshots/06-orders.png)
+
 ## Overview
 
 Online grocery commerce in Taiwan often runs into two practical problems: small orders are heavily penalized by shipping fees, and most platforms stop at catalog plus checkout without offering a mechanism that encourages collaborative purchasing. Local Fresh Platform addresses both issues by combining local farm-to-table delivery with group-buy incentives. Users can browse individual products and curated gift boxes, add items to cart, manage delivery addresses, and place orders through a conventional checkout flow. If they want to reduce shipping costs, they can launch a group-buy campaign, share a link with others, and unlock free shipping once the required member count is reached. The platform also includes administrative capabilities for product operations, order handling, and store status management. The project is intentionally built as a production-oriented full-stack portfolio piece, with an emphasis on strong engineering fundamentals, coherent domain modeling, and deployment readiness.
