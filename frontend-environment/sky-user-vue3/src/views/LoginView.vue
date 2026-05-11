@@ -13,7 +13,6 @@
 
     <div class="login-panel">
       <div class="login-card">
-        <img class="brand-mark" :src="loginImage" alt="菜籃日 Cailán Day" />
         <p class="eyebrow">菜籃日 · Cailán Day</p>
         <h1>會員登入</h1>
         <p class="description">使用 Google 帳號登入，或在開發模式下使用假登入快捷入口。</p>
@@ -228,16 +227,6 @@ function startGoogleLogin() {
   border-radius: 28px;
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 24px 56px rgba(74, 124, 58, 0.12);
-}
-
-.brand-mark {
-  display: block;
-  width: 72px;
-  height: 72px;
-  margin-bottom: 20px;
-  border-radius: 24px;
-  object-fit: cover;
-  box-shadow: 0 16px 32px rgba(74, 124, 58, 0.12);
 }
 
 .eyebrow {
