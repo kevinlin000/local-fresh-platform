@@ -34,7 +34,8 @@
                       placeholder="請設定單品價格" />
           </el-form-item>
         </div>
-        <el-form-item label="口味做法配置:">
+        <el-form-item v-if="false"
+                      label="口味做法配置:">
           <el-form-item>
             <div class="flavorBox">
               <span v-if="dishFlavors.length == 0"
