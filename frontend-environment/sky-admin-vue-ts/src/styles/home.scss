@@ -51,7 +51,7 @@ li {
 
       .active {
         height: 38px;
-        background: #ffc200;
+        background: #4A7C3A;
       }
     }
   }
@@ -329,7 +329,7 @@ li {
 
     li {
       flex: 1;
-      background: #fffbf0;
+      background: #f5f0e6;
       border-radius: 4px;
       margin-left: 20px;
       padding:20px;
@@ -339,10 +339,11 @@ li {
       &.add {
         width: 100px;
         flex: none;
-        background: #FFC100;
+        background: #f5f0e6;
+        border: 1px dashed #4A7C3A;
         border-radius: 4px;
         text-align: center;
-        color: #333;
+        color: #2f4f27;
         padding: 18px 20px 10px;
 
         p {
@@ -357,6 +358,7 @@ li {
           background: url(../../src/assets/icons/btn_add@2x.png) no-repeat;
           background-size: contain;
           margin-bottom: 5px;
+          filter: sepia(1) saturate(2.8) hue-rotate(52deg) brightness(0.78);
         }
       }
     }
@@ -448,7 +450,7 @@ li {
     cursor: pointer;
 
     &.active {
-      background: #FFC200;
+      background: #4A7C3A;
     }
   }
 

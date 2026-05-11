@@ -788,8 +788,8 @@ export default class extends Vue {
     .user-remark {
       height: 43px;
       line-height: 43px;
-      background: #fffbf0;
-      border: 1px solid #fbe396;
+      background: #f5f0e6;
+      border: 1px solid rgba(74, 124, 58, 0.24);
       border-radius: 4px;
       margin-top: 10px;
       padding: 6px;
@@ -799,7 +799,7 @@ export default class extends Vue {
         display: inline-block;
         min-width: 53px;
         height: 32px;
-        background: #fbe396;
+        background: rgba(74, 124, 58, 0.14);
         border-radius: 4px;
         text-align: center;
         line-height: 32px;
@@ -808,7 +808,7 @@ export default class extends Vue {
         // padding: 12px 6px;
       }
       span {
-        color: #f2a402;
+        color: #4A7C3A;
       }
     }
     .orderCancel {

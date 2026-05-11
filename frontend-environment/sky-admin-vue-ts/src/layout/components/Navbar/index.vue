@@ -308,7 +308,7 @@ export default class extends Vue {
   height: 60px;
   // overflow: hidden;
   position: relative;
-  background: #ffc100;
+  background: #f5f0e6;
 
   // box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
   .statusBox {
@@ -457,7 +457,7 @@ export default class extends Vue {
   .businessBtn {
     height: 22px;
     line-height: 20px;
-    background: #fd3333;
+    background: #4A7C3A;
     border: 1px solid #ffffff;
     border-radius: 4px;
     display: inline-block;
@@ -544,7 +544,7 @@ export default class extends Vue {
     }
     .el-radio-group {
       & > .is-checked {
-        border: 1px solid #ffc200;
+        border: 1px solid #4A7C3A;
       }
     }
     .el-radio {
