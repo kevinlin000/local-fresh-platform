@@ -36,7 +36,7 @@
       </div>
       <el-table :data="records" border stripe class="tableBox" @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="70px" />
-        <el-table-column prop="name" label="直送箱名稱" />
+        <el-table-column prop="boxName" label="直送箱名稱" />
         <el-table-column label="直送箱圖片">
           <template slot-scope="scope">
             <el-image style="width: 80px; height: 40px; border: none" :src="scope.row.image" />
@@ -124,7 +124,7 @@ export default {
       // 分頁查詢
       pageQuery() {
         const params = {
-          name: this.name,
+          boxName: this.name,
           categoryId: this.categoryId,
           status: this.status,
           page: this.page,

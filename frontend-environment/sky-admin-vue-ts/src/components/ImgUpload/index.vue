@@ -51,9 +51,9 @@ export default class extends Vue {
   private imageUrl = ''
   handleRemove() {}
 
-  @Watch('propImageUrl')
+  @Watch('propImageUrl', { immediate: true })
   private onChange(val) {
-    this.imageUrl = val
+    this.imageUrl = val || ''
   }
 
   handleError(err, file, fileList) {
@@ -166,7 +166,7 @@ export default class extends Vue {
 }
 
 .avatar-uploader .el-upload:hover {
-  border-color: #ffc200;
+  border-color: #4A7C3A;
 }
 .el-upload-span {
   width: 100px;

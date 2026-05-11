@@ -11,8 +11,8 @@
                class="demo-ruleForm">
         <div>
           <el-form-item label="單品名稱:"
-                        prop="name">
-            <el-input v-model="ruleForm.name"
+                        prop="productName">
+            <el-input v-model="ruleForm.productName"
                       placeholder="請輸入單品名稱"
                       maxlength="20" />
           </el-form-item>
@@ -161,7 +161,7 @@ export default class extends Vue {
     token: getToken()
   }
   private ruleForm = {
-    name: '',
+    productName: '',
     id: '',
     price: '',
     code: '',
@@ -174,7 +174,7 @@ export default class extends Vue {
 
   get rules() {
     return {
-      name: [
+      productName: [
         {
           required: true,
           validator: (rule: any, value: string, callback: Function) => {
@@ -229,13 +229,48 @@ export default class extends Vue {
     this.actionType = this.$route.query.id ? 'edit' : 'add'
     if (this.$route.query.id) {
       this.init()
+    } else {
+      this.resetForm()
     }
   }
 
   mounted() {}
+  @Watch('$route.query.id')
+  onRouteIdChange(value: string | (string | null)[] | undefined) {
+    this.actionType = value ? 'edit' : 'add'
+    if (value) {
+      this.init()
+    } else {
+      this.resetForm()
+    }
+  }
+
   @Watch('dishFlavors')
   changeDishFlavors() {
     this.getLeftDishFlavors()
+  }
+
+  private resetForm() {
+    this.ruleForm = {
+      productName: '',
+      id: '',
+      price: '',
+      code: '',
+      image: '',
+      description: '',
+      dishFlavors: [],
+      status: true,
+      categoryId: ''
+    }
+    this.imageUrl = ''
+    this.dishFlavors = []
+    this.leftDishFlavors = [...this.dishFlavorsData]
+    this.restKey++
+    this.$nextTick(() => {
+      if (this.$refs.ruleForm) {
+        ;(this.$refs.ruleForm as any).clearValidate()
+      }
+    })
   }
 
   //过滤已选择的口味下拉框無法再次选择
@@ -264,12 +299,12 @@ export default class extends Vue {
         this.ruleForm = { ...res.data.data }
         this.ruleForm.price = String(res.data.data.price)
         this.ruleForm.status = res.data.data.status == '1'
-        this.dishFlavors =
-          res.data.data.flavors &&
-          res.data.data.flavors.map(obj => ({
+        this.dishFlavors = Array.isArray(res.data.data.flavors)
+          ? res.data.data.flavors.map(obj => ({
             ...obj,
             value: JSON.parse(obj.value)
           }))
+          : []
         let arr = []
         this.getLeftDishFlavors()
         this.imageUrl = res.data.data.image
@@ -367,21 +402,7 @@ export default class extends Vue {
                 if (!st) {
                   this.$router.push({ path: '/dish' })
                 } else {
-                  this.dishFlavors = []
-                  // this.dishFlavorsData = []
-                  this.imageUrl = ''
-                  this.ruleForm = {
-                    name: '',
-                    id: '',
-                    price: '',
-                    code: '',
-                    image: '',
-                    description: '',
-                    dishFlavors: [],
-                    status: true,
-                    categoryId: ''
-                  }
-                  this.restKey++
+                  this.resetForm()
                 }
               } else {
                 this.$message.error(res.data.desc || res.data.msg)
@@ -471,7 +492,7 @@ export default class extends Vue {
   width: 777px;
 
   .addBut {
-    background: #ffc200;
+    background: #4A7C3A;
     display: inline-block;
     padding: 0px 20px;
     border-radius: 3px;
@@ -524,7 +545,7 @@ export default class extends Vue {
 
           span {
             display: inline-block;
-            color: #ffc200;
+            color: #4A7C3A;
             margin: 5px;
             line-height: 26px;
             padding: 0 10px;

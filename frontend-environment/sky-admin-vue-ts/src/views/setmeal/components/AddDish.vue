@@ -97,7 +97,7 @@ export default class extends Vue {
     // 菜单列表資料取得
     this.getDishType()
     // 初始化选项
-    this.checkedList = this.checkList.map((it: any) => it.name)
+    this.checkedList = this.checkList.map((it: any) => it.productName || it.dishName || it.name)
     // 已选项的單品-詳細資訊
     this.checkedListAll = this.checkList.reverse()
   }
@@ -131,9 +131,10 @@ export default class extends Vue {
         let newArr = res.data.data
         newArr.forEach((n: any) => {
           n.dishId = n.id
+          n.productId = n.id
           n.copies = 1
-          // n.dishCopies = 1
-          n.dishName = n.name
+          n.name = n.productName
+          n.dishName = n.productName
         })
         this.dishList = newArr
         if (!this.ids.has(id)) {
@@ -153,7 +154,9 @@ export default class extends Vue {
         let newArr = res.data.data
         newArr.forEach((n: any) => {
           n.dishId = n.id
-          n.dishName = n.name
+          n.productId = n.id
+          n.name = n.productName
+          n.dishName = n.productName
         })
         this.dishList = newArr
       } else {

@@ -62,7 +62,7 @@
                 @selection-change="handleSelectionChange">
         <el-table-column type="selection"
                          width="25" />
-        <el-table-column prop="name"
+        <el-table-column prop="productName"
                          label="單品名稱" />
         <el-table-column prop="image"
                          label="圖片">
@@ -202,7 +202,7 @@ export default class extends Vue {
     await getDishPage({
       page: this.page,
       pageSize: this.pageSize,
-      name: this.input || undefined,
+      productName: this.input || undefined,
       categoryId: this.categoryId || undefined,
       status: this.dishStatus
     })

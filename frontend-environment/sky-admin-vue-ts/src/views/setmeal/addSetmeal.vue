@@ -9,8 +9,8 @@
                class="demo-ruleForm">
         <div>
           <el-form-item label="直送箱名稱:"
-                        prop="name">
-            <el-input v-model="ruleForm.name"
+                        prop="boxName">
+            <el-input v-model="ruleForm.boxName"
                       placeholder="請輸入直送箱名稱"
                       maxlength="14" />
           </el-form-item>
@@ -52,7 +52,7 @@
                   <div class="table">
                     <el-table :data="dishTable"
                               style="width: 100%">
-                      <el-table-column prop="name"
+                      <el-table-column prop="productName"
                                        label="名稱"
                                        width="180"
                                        align="center" />
@@ -156,12 +156,12 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator'
+import { Component, Vue, Watch } from 'vue-property-decorator'
 import HeadLable from '@/components/HeadLable/index.vue'
 import ImageUpload from '@/components/ImgUpload/index.vue'
 import AddDish from './components/AddDish.vue'
 import { querySetmealById, addSetmeal, editSetmeal } from '@/api/setMeal'
-import { getCategoryList } from '@/api/dish'
+import { getCategoryList, getDishPage } from '@/api/dish'
 import { baseUrl } from '@/config.json'
 
 @Component({
@@ -174,16 +174,16 @@ import { baseUrl } from '@/config.json'
 })
 export default class extends Vue {
   private value: string = ''
-  private setMealList: [] = []
+  private setMealList: any[] = []
   private seachKey: string = ''
-  private dishList: [] = []
+  private dishList: any[] = []
   private imageUrl: string = ''
   private actionType: string = ''
-  private dishTable: [] = []
+  private dishTable: any[] = []
   private dialogVisible: boolean = false
   private checkList: any[] = []
   private ruleForm = {
-    name: '',
+    boxName: '',
     categoryId: '',
     price: '',
     code: '',
@@ -196,7 +196,7 @@ export default class extends Vue {
 
   get rules() {
     return {
-      name: {
+      boxName: {
         required: true,
         validator: (rule: any, value: string, callback: Function) => {
           if (!value) {
@@ -247,22 +247,82 @@ export default class extends Vue {
     this.actionType = this.$route.query.id ? 'edit' : 'add'
     if (this.actionType == 'edit') {
       this.init()
+    } else {
+      this.resetForm()
     }
   }
 
+  @Watch('$route.query.id')
+  onRouteIdChange(value: string | (string | null)[] | undefined) {
+    this.actionType = value ? 'edit' : 'add'
+    if (value) {
+      this.init()
+    } else {
+      this.resetForm()
+    }
+  }
+
+  private resetForm() {
+    this.ruleForm = {
+      boxName: '',
+      categoryId: '',
+      price: '',
+      code: '',
+      image: '',
+      description: '',
+      dishList: [],
+      status: true,
+      idType: ''
+    } as any
+    this.imageUrl = ''
+    this.dishTable = []
+    this.checkList = []
+    this.dialogVisible = false
+    this.seachKey = ''
+    this.$nextTick(() => {
+      if (this.$refs.ruleForm) {
+        ;(this.$refs.ruleForm as any).clearValidate()
+      }
+    })
+  }
+
   private async init() {
-    querySetmealById(this.$route.query.id).then(res => {
+    querySetmealById(this.$route.query.id).then(async res => {
       if (res && res.data && res.data.code === 1) {
         this.ruleForm = res.data.data
         this.ruleForm.status = res.data.data.status == '1'
         ;(this.ruleForm as any).price = res.data.data.price
         // this.imageUrl = `http://172.17.2.120:8080/common/download?name=${res.data.data.image}`
         this.imageUrl = res.data.data.image
-        this.checkList = res.data.data.setmealDishes
-        this.dishTable = res.data.data.setmealDishes.reverse()
+        const giftBoxProducts = await this.hydrateGiftBoxProducts(
+          res.data.data.giftBoxProducts || []
+        )
+        this.checkList = giftBoxProducts
+        this.dishTable = [...giftBoxProducts].reverse()
         this.ruleForm.idType = res.data.data.categoryId
       } else {
         this.$message.error(res.data.msg)
+      }
+    })
+  }
+
+  private async hydrateGiftBoxProducts(giftBoxProducts: any[]) {
+    const res = await getDishPage({
+      page: 1,
+      pageSize: 1000
+    })
+    const records: any[] = (res && res.data && res.data.data && res.data.data.records) || []
+    const productMap: Map<number, any> = new Map(records.map((item: any) => [item.id, item]))
+    return giftBoxProducts.map((item: any) => {
+      const product: any = productMap.get(item.productId) || {}
+      const productName = item.name || product.productName || ''
+      return {
+        ...item,
+        dishId: item.productId,
+        productId: item.productId,
+        productName,
+        name: productName,
+        price: item.price != null ? item.price : (product.price != null ? product.price : 0)
       }
     })
   }
@@ -337,10 +397,10 @@ export default class extends Vue {
         }
         if (!this.ruleForm.image) return this.$message.error('直送箱圖片不能為空')
         let prams = { ...this.ruleForm } as any
-        prams.setmealDishes = this.dishTable.map((obj: any) => ({
+        prams.giftBoxProducts = this.dishTable.map((obj: any) => ({
           copies: obj.copies,
-          dishId: obj.dishId,
-          name: obj.name,
+          productId: obj.productId || obj.dishId,
+          name: obj.productName || obj.name,
           price: obj.price
         }))
         ;(prams as any).status =
@@ -356,22 +416,7 @@ export default class extends Vue {
                 if (!st) {
                   this.$router.push({ path: '/setmeal' })
                 } else {
-                  ;(this as any).$refs.ruleForm.resetFields()
-                  this.dishList = []
-                  this.dishTable = []
-                  this.ruleForm = {
-                    name: '',
-                    categoryId: '',
-                    price: '',
-                    code: '',
-                    image: '',
-                    description: '',
-                    dishList: [],
-                    status: true,
-                    id: '',
-                    idType: ''
-                  } as any
-                  this.imageUrl = ''
+                  this.resetForm()
                 }
               } else {
                 this.$message.error(res.data.msg)
@@ -435,7 +480,7 @@ export default class extends Vue {
   }
 
   .avatar-uploader .el-upload:hover {
-    border-color: #ffc200;
+    border-color: #4A7C3A;
   }
 
   .avatar-uploader-icon {
@@ -552,7 +597,7 @@ export default class extends Vue {
         width: 777px;
 
         .addBut {
-          background: #ffc200;
+          background: #4A7C3A;
           display: inline-block;
           padding: 0px 20px;
           border-radius: 3px;
