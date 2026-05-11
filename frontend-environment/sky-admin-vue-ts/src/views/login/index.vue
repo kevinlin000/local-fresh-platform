@@ -1,18 +1,13 @@
 <template>
-  <div class="login">
+    <div class="login">
     <div class="login-box">
-      <img src="@/assets/login/login-l.png" alt="" />
+      <img src="@/assets/brand/login.png" alt="" />
       <div class="login-form">
         <el-form ref="loginForm" :model="loginForm" :rules="loginRules">
           <div class="login-form-title">
-            <img
-              src="@/assets/login/icon_logo.png"
-              style="width: 149px; height: 38px"
-              alt=""
-            />
             <div class="brand-copy">
-              <span class="title-label">在地鮮選</span>
-              <span class="title-subtitle">LOCAL FRESH</span>
+              <span class="title-label">菜籃日</span>
+              <span class="title-subtitle">CAILÁN DAY</span>
             </div>
           </div>
           <el-form-item prop="username">
@@ -209,36 +204,37 @@ export default class extends Vue {
   font-weight: 500;
   color: #333333;
   // background: #09a57a;
-  background-color: #ffc200;
+  background-color: #4A7C3A;
   &:hover,
   &:focus {
     // background: #09a57a;
-    background-color: #ffc200;
+    background-color: #4A7C3A;
     color: #ffffff;
   }
 }
 .login-form-title {
-  height: 36px;
+  min-height: 52px;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: flex-start;
+  align-items: flex-start;
   margin-bottom: 40px;
   .brand-copy {
     display: flex;
     flex-direction: column;
-    margin-left: 10px;
-    line-height: 1.1;
+    align-items: flex-start;
+    line-height: 1.08;
   }
   .title-label {
-    font-weight: 500;
-    font-size: 20px;
+    font-weight: 700;
+    font-size: 24px;
     color: #333333;
+    font-family: 'Noto Serif TC', serif;
   }
   .title-subtitle {
-    margin-top: 4px;
+    margin-top: 6px;
     color: #7d7d7d;
-    font-size: 11px;
-    letter-spacing: 0.12em;
+    font-size: 12px;
+    letter-spacing: 0.18em;
   }
 }
 </style>

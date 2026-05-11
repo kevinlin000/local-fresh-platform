@@ -13,16 +13,12 @@
       /> -->
       <div v-if="!isCollapse"
            class="sidebar-logo">
-        <img src="@/assets/login/logo.png"
-             style="width: 120px; height: 31px">
-        <div class="sidebar-brand-copy">
-          <span class="sidebar-brand-title">在地鮮選</span>
-          <span class="sidebar-brand-subtitle">LOCAL FRESH</span>
-        </div>
+        <span class="sidebar-brand-title">菜籃日</span>
+        <span class="sidebar-brand-subtitle">Cailán Day</span>
       </div>
       <div v-else
            class="sidebar-logo-mini">
-        <img src="@/assets/login/mini-logo.png">
+        <span class="sidebar-brand-mini">🧺 日</span>
       </div>
     </div>
     <el-scrollbar wrap-class="scrollbar-wrapper">
@@ -139,42 +135,43 @@ export default class extends Vue {
 <style lang="scss" scoped>
 .logo {
   text-align: center;
-  background-color: #ffc100;
+  background-color: rgb(52, 55, 68);
   padding: 15px 0 0;
   height: 60px;
-  img {
-    display: inline-block;
-  }
 }
 .sidebar-logo {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-.sidebar-brand-copy {
-  display: flex;
   flex-direction: column;
   align-items: flex-start;
+  justify-content: center;
+  gap: 3px;
+  width: 100%;
+  padding: 0 22px;
+  text-align: left;
   line-height: 1.05;
 }
 .sidebar-brand-title {
-  color: #2a2a2a;
-  font-size: 16px;
+  color: #ffffff;
+  font-size: 18px;
   font-weight: 700;
+  font-family: 'Noto Serif TC', serif;
 }
 .sidebar-brand-subtitle {
-  margin-top: 4px;
-  color: rgba(42, 42, 42, 0.72);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
 }
 .sidebar-logo-mini {
-  img {
-    width: 30px;
-    height: 30px;
-  }
+  display: grid;
+  place-items: center;
+}
+.sidebar-brand-mini {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 700;
+  font-family: 'Noto Serif TC', serif;
+  letter-spacing: 0.06em;
 }
 .el-scrollbar {
   height: 100%;

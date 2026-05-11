@@ -28,12 +28,12 @@ const router = new Router({
     {
       path: "/login",
       component: () => import("@/views/login/index.vue"),
-      meta: { title: "在地鮮選", hidden: true, notNeedAuth: true }
+      meta: { title: "菜籃日", hidden: true, notNeedAuth: true }
     },
     {
       path: "/404",
       component: () => import("@/views/404.vue"),
-      meta: { title: "在地鮮選", hidden: true, notNeedAuth: true }
+      meta: { title: "菜籃日", hidden: true, notNeedAuth: true }
     },
     {
       path: "/",
