@@ -2,7 +2,7 @@
   <div class="app-shell">
     <header v-if="showNavbar" class="navbar">
       <div class="brand">
-        <RouterLink to="/">在地鮮選</RouterLink>
+        <RouterLink to="/">菜籃日</RouterLink>
       </div>
 
       <nav class="nav-links">
