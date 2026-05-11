@@ -280,6 +280,20 @@ onMounted(() => {
   background: rgba(255, 255, 255, 0.92);
 }
 
+.address-card-header {
+  flex-wrap: wrap;
+}
+
+.address-card-header > div:first-child {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.address-topline {
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
 .address-topline h2 {
   margin: 0;
   color: #24351e;
@@ -289,6 +303,7 @@ onMounted(() => {
 .address-topline span {
   color: #5d6d57;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .address-tags {
@@ -319,11 +334,33 @@ onMounted(() => {
   align-items: center;
   flex-wrap: wrap;
   justify-content: flex-end;
+  flex: 0 0 auto;
 }
 
 .address-text {
   margin: 18px 0 0;
   color: #40503a;
   line-height: 1.7;
+  word-break: break-word;
+}
+
+@media (max-width: 768px) {
+  .address-shell {
+    padding: 24px 20px 40px;
+  }
+
+  .address-page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .address-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .address-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
 }
 </style>

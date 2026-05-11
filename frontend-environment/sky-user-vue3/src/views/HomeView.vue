@@ -1,12 +1,14 @@
 <template>
   <section class="home-shell">
     <header class="hero">
-      <div>
-        <p class="eyebrow">在地小農直送</p>
-        <h1>把當季新鮮食材，直接送到你的餐桌</h1>
-        <p class="hero-copy">
-          先選分類，再把喜歡的單品或直送箱加入購物車，也可以直接發起揪團，和朋友一起湊滿 3 人免運。
-        </p>
+      <div class="hero-main" :style="{ backgroundImage: heroBackground }">
+        <div class="hero-main-content">
+          <p class="eyebrow">在地小農直送</p>
+          <h1>把當季新鮮食材，直接送到你的餐桌</h1>
+          <p class="hero-copy">
+            先選分類，再把喜歡的單品或直送箱加入購物車，也可以直接發起揪團，和朋友一起湊滿 3 人免運。
+          </p>
+        </div>
       </div>
       <div class="hero-banner">
         <span>揪團中</span>
@@ -125,6 +127,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
+import heroImage from '@/assets/brand/hero.png'
 import {
   addToCart
 } from '@/services/cart'
@@ -172,6 +175,8 @@ const activeCategoryName = computed(() => {
   const category = activeCategories.value.find((item) => item.id === activeCategoryId.value)
   return category?.name || '請先選擇分類'
 })
+
+const heroBackground = `linear-gradient(rgba(245, 240, 230, 0.42), rgba(245, 240, 230, 0.42)), url(${heroImage})`
 
 function formatPrice(value: number) {
   return Number(value || 0).toLocaleString('zh-TW')
@@ -303,7 +308,7 @@ onMounted(async () => {
   margin: 0 auto 24px;
 }
 
-.hero > div:first-child,
+.hero-main,
 .hero-banner,
 .catalog-card {
   border-radius: 28px;
@@ -311,8 +316,18 @@ onMounted(async () => {
   box-shadow: 0 24px 60px rgba(61, 111, 39, 0.1);
 }
 
-.hero > div:first-child {
+.hero-main {
   padding: 36px 40px;
+  min-height: 320px;
+  display: flex;
+  align-items: flex-end;
+  background-size: cover;
+  background-position: left center;
+  background-repeat: no-repeat;
+}
+
+.hero-main-content {
+  max-width: 560px;
 }
 
 .hero h1 {
@@ -320,12 +335,15 @@ onMounted(async () => {
   color: #21331c;
   font-size: 40px;
   line-height: 1.2;
+  font-family: 'Noto Serif TC', serif;
+  font-weight: 700;
 }
 
 .hero-copy {
   margin: 16px 0 0;
   color: #5a6954;
   line-height: 1.8;
+  font-family: 'Noto Sans TC', sans-serif;
 }
 
 .eyebrow {
@@ -335,14 +353,21 @@ onMounted(async () => {
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+  font-family: 'Noto Sans TC', sans-serif;
 }
 
 .hero-banner {
   padding: 32px;
   background:
-    linear-gradient(160deg, rgba(63, 124, 55, 0.95), rgba(97, 144, 81, 0.9)),
-    #4e7f3e;
+    linear-gradient(165deg, rgba(74, 124, 58, 0.98), rgba(59, 101, 45, 0.94)),
+    #4a7c3a;
   color: white;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.hero-banner:hover {
+  transform: scale(1.02);
+  box-shadow: 0 28px 64px rgba(53, 88, 41, 0.26);
 }
 
 .hero-banner span {
@@ -365,7 +390,8 @@ onMounted(async () => {
 .hero-banner p {
   margin: 16px 0 0;
   color: rgba(255, 255, 255, 0.86);
-  line-height: 1.7;
+  line-height: 1.85;
+  padding-right: 12px;
 }
 
 .catalog-card {

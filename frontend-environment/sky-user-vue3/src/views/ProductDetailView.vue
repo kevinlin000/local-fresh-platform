@@ -15,7 +15,7 @@
           <p class="price">NT$ {{ formatPrice(product.price) }}</p>
           <p class="description">{{ product.description || '來自在地產區的當季鮮選，適合日常料理與家庭備菜。' }}</p>
 
-          <div class="specs-panel">
+          <div v-if="specOptions.length" class="specs-panel">
             <h2>商品規格</h2>
             <el-radio-group v-model="selectedSpec">
               <el-radio-button
