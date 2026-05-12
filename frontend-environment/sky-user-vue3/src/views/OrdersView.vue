@@ -22,7 +22,7 @@
         </el-empty>
 
         <div v-else class="order-list">
-          <article v-for="order in orders" :key="order.id" class="order-card">
+          <article v-for="order in orders" :key="order.id" class="order-card clickable-card" @click="openOrderDetail(order.id)">
             <div class="order-head">
               <div>
                 <div class="order-number">訂單編號 {{ order.number }}</div>
@@ -58,6 +58,16 @@
             </div>
 
             <p v-if="order.remark" class="order-remark">備註：{{ order.remark }}</p>
+
+            <div v-if="order.status === 1" class="order-actions">
+              <el-button
+                type="success"
+                :loading="payingOrderNumber === order.number"
+                @click.stop="handlePayOrder(order.number)"
+              >
+                模擬付款
+              </el-button>
+            </div>
           </article>
         </div>
       </template>
@@ -113,6 +123,72 @@
       </template>
     </div>
   </section>
+
+  <el-dialog v-model="orderDetailVisible" title="訂單詳情" width="640px">
+    <el-skeleton v-if="loadingOrderDetail" :rows="8" animated />
+
+    <div v-else-if="selectedOrder" class="order-detail-panel">
+      <div class="order-detail-grid">
+        <div class="detail-item">
+          <span>訂單編號</span>
+          <strong>{{ selectedOrder.number }}</strong>
+        </div>
+        <div class="detail-item">
+          <span>狀態</span>
+          <strong>{{ orderStatusText(selectedOrder.status) }}</strong>
+        </div>
+        <div class="detail-item">
+          <span>下單時間</span>
+          <strong>{{ formatDate(selectedOrder.orderTime) }}</strong>
+        </div>
+        <div class="detail-item">
+          <span>金額</span>
+          <strong>NT$ {{ formatPrice(selectedOrder.amount) }}</strong>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h3>商品列表</h3>
+        <div class="detail-list">
+          <div
+            v-for="detail in selectedOrder.orderDetailList"
+            :key="detail.id"
+            class="detail-list-row"
+          >
+            <div>
+              <strong>{{ detail.name }}</strong>
+              <span v-if="detail.productSpec" class="spec">{{ detail.productSpec }}</span>
+            </div>
+            <div class="order-item-side">
+              <span>x{{ detail.number }}</span>
+              <span>NT$ {{ formatPrice(detail.amount) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h3>收貨資訊</h3>
+        <p>{{ selectedOrder.consignee }} {{ selectedOrder.phone }}</p>
+        <p>{{ selectedOrder.address }}</p>
+      </div>
+
+      <div class="detail-section">
+        <h3>備註</h3>
+        <p>{{ selectedOrder.remark || '無' }}</p>
+      </div>
+
+      <div v-if="selectedOrder.cancelReason" class="detail-section">
+        <h3>取消理由</h3>
+        <p>{{ selectedOrder.cancelReason }}</p>
+      </div>
+
+      <div v-if="selectedOrder.rejectionReason" class="detail-section">
+        <h3>拒單理由</h3>
+        <p>{{ selectedOrder.rejectionReason }}</p>
+      </div>
+    </div>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
@@ -120,7 +196,7 @@ import { onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import { fetchMyGroupBuys, type GroupBuyRecord } from '@/services/groupBuy'
-import { fetchOrderHistory, type OrderRecord } from '@/services/order'
+import { fetchOrderDetail, fetchOrderHistory, payOrder, type OrderRecord } from '@/services/order'
 
 const route = useRoute()
 const router = useRouter()
@@ -130,6 +206,10 @@ const loadingOrders = ref(false)
 const loadingGroupBuys = ref(false)
 const orders = ref<OrderRecord[]>([])
 const groupBuys = ref<GroupBuyRecord[]>([])
+const payingOrderNumber = ref<string | null>(null)
+const orderDetailVisible = ref(false)
+const loadingOrderDetail = ref(false)
+const selectedOrder = ref<OrderRecord | null>(null)
 
 function formatPrice(value: number) {
   return Number(value || 0).toLocaleString('zh-TW')
@@ -243,6 +323,32 @@ async function refreshCurrentTab() {
   await loadGroupBuys()
 }
 
+async function handlePayOrder(orderNumber: string) {
+  payingOrderNumber.value = orderNumber
+  try {
+    await payOrder(orderNumber, 1)
+    ElMessage.success('付款成功')
+    await loadOrders()
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '付款失敗')
+  } finally {
+    payingOrderNumber.value = null
+  }
+}
+
+async function openOrderDetail(orderId: number) {
+  orderDetailVisible.value = true
+  loadingOrderDetail.value = true
+  try {
+    selectedOrder.value = await fetchOrderDetail(orderId)
+  } catch (error) {
+    orderDetailVisible.value = false
+    ElMessage.error(error instanceof Error ? error.message : '載入訂單詳情失敗')
+  } finally {
+    loadingOrderDetail.value = false
+  }
+}
+
 function openGroupBuy(groupNo: string) {
   void router.push(`/groupBuy/${groupNo}`)
 }
@@ -318,6 +424,17 @@ h2 {
   border: 1px solid rgba(83, 126, 62, 0.14);
   border-radius: 22px;
   background: #fcfefb;
+}
+
+.clickable-card {
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.clickable-card:hover {
+  border-color: rgba(83, 126, 62, 0.28);
+  box-shadow: 0 14px 28px rgba(61, 111, 39, 0.08);
+  transform: translateY(-1px);
 }
 
 .groupbuy-card {
@@ -427,5 +544,61 @@ h2 {
 .order-remark {
   margin: 14px 0 0;
   color: #52604d;
+}
+
+.order-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.order-detail-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.order-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.detail-item,
+.detail-section {
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: #f6faf3;
+}
+
+.detail-item span,
+.detail-section h3 {
+  display: block;
+  margin: 0 0 8px;
+  color: #62864e;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.detail-item strong,
+.detail-section p {
+  color: #25361f;
+}
+
+.detail-section p {
+  margin: 0;
+  line-height: 1.7;
+}
+
+.detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.detail-list-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
 }
 </style>

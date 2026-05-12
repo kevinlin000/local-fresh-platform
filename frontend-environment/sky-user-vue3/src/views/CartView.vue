@@ -120,22 +120,25 @@
                 <span />
               </el-radio>
               <div class="address-card-body">
-                <div class="address-topline">
-                  <strong>{{ address.consignee }}</strong>
-                  <span>{{ address.phone }}</span>
+                <div class="address-card-header">
+                  <div class="address-topline">
+                    <strong>{{ address.consignee }}</strong>
+                    <span>{{ address.phone }}</span>
+                  </div>
+                  <div class="address-card-action">
+                    <span v-if="address.isDefault === 1" class="default-tag">預設地址</span>
+                    <el-button
+                      v-else
+                      text
+                      type="success"
+                      size="small"
+                      @click.stop="setAsDefault(address.id)"
+                    >
+                      設為預設
+                    </el-button>
+                  </div>
                 </div>
-                <p>{{ formatAddress(address) }}</p>
-                <div class="address-footer">
-                  <span v-if="address.isDefault === 1" class="default-tag">預設地址</span>
-                  <el-button
-                    v-else
-                    text
-                    type="success"
-                    @click.stop="setAsDefault(address.id)"
-                  >
-                    設為預設
-                  </el-button>
-                </div>
+                <p class="address-detail">{{ formatAddress(address) }}</p>
               </div>
             </label>
           </el-radio-group>
@@ -555,7 +558,6 @@ h3 {
 .summary-total,
 .checkout-summary,
 .address-topline,
-.address-footer,
 .address-toolbar {
   display: flex;
   justify-content: space-between;
@@ -634,26 +636,46 @@ h3 {
   display: grid;
   grid-template-columns: 28px 1fr;
   gap: 12px;
-  padding: 14px 16px;
-  border: 1px solid rgba(84, 125, 65, 0.16);
+  padding: 16px 18px;
+  border: 1px solid #cfd8cd;
   border-radius: 18px;
   background: #fbfef9;
   cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .address-card.active {
-  border-color: rgba(74, 137, 55, 0.42);
+  border-color: #63a34f;
   background: #eef8e7;
+  box-shadow: 0 0 0 1px rgba(99, 163, 79, 0.12);
 }
 
 .address-card :deep(.el-radio__label) {
   display: none;
 }
 
-.address-card-body p {
-  margin: 8px 0 0;
+.address-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.address-card-action {
+  flex-shrink: 0;
+}
+
+.address-topline {
+  justify-content: flex-start;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.address-detail {
+  margin: 10px 0 0;
   color: #5b6854;
   line-height: 1.6;
+  word-break: break-word;
 }
 
 .default-tag {

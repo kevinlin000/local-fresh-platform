@@ -28,6 +28,7 @@ export interface OrderRecord {
   address: string
   consignee: string
   cancelReason: string | null
+  rejectionReason: string | null
   estimatedDeliveryTime: string | null
   deliveryStatus: number | null
   packAmount: number
@@ -35,6 +36,16 @@ export interface OrderRecord {
   tablewareStatus: number | null
   orderDishes?: string | null
   orderDetailList: OrderDetail[]
+}
+
+export interface PayOrderPayload {
+  orderNumber: string
+  payMethod?: number
+}
+
+export interface PayOrderResult {
+  code?: string | null
+  packageStr?: string | null
 }
 
 export interface SubmitOrderPayload {
@@ -70,4 +81,17 @@ export function fetchOrderHistory(params: {
       params
     })
   )
+}
+
+export function payOrder(orderNumber: string, payMethod = 1) {
+  return unwrap<PayOrderResult>(
+    http.put('/user/order/payment', {
+      orderNumber,
+      payMethod
+    })
+  )
+}
+
+export function fetchOrderDetail(id: number) {
+  return unwrap<OrderRecord>(http.get(`/user/order/orderDetail/${id}`))
 }
