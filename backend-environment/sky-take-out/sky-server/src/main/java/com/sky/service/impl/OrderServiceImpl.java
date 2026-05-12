@@ -101,6 +101,7 @@ public class OrderServiceImpl implements OrderService {
         orders.setNumber(String.valueOf(IdUtil.getSnowflakeNextId()));
         orders.setPhone(addressBook.getPhone());
         orders.setConsignee(addressBook.getConsignee());
+        orders.setAddress(addressBook.getCityName() + addressBook.getDistrictName() + addressBook.getDetail());
         orders.setUserId(userId);
 
         orderMapper.insert(orders);
