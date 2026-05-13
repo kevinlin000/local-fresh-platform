@@ -1,4 +1,4 @@
-# 在地鮮選 Local Fresh Platform
+# 菜籃日 Cailán Day
 
 > 結合在地小農生鮮直送與揪團湊免運的 B2C 電商平台
 
@@ -12,6 +12,9 @@
 [https://d3hqnux25iirgl.cloudfront.net](https://d3hqnux25iirgl.cloudfront.net)
 
 > 用戶端 demo 開放使用,可透過開發模式快捷登入快速試玩,或使用 Google 帳號登入體驗完整 OAuth 流程。
+> 商家端 demo:https://d3czahyk4cnvb9.cloudfront.net
+> 商家端為原 Vue 2 + Element UI 管理後台,延續品牌綠化改造,負責訂單接單、商品上下架、營運數據檢視。
+> 如需登入體驗,請聯繫專案作者取得測試帳號(避免公開憑證遭濫用)。
 > 後端 API 入口:`https://localfresh-demo.duckdns.org`
 > 部署架構:Vue 3 用戶端託管於 AWS S3 + CloudFront(HTTPS),Spring Boot API 部署於 AWS EC2 (Nginx 反向代理 + Let's Encrypt)。
 
@@ -57,7 +60,7 @@
 
 ## 專案簡介
 
-台灣生鮮電商常見兩個痛點：第一，運費門檻高，少量購買時消費者容易卻步；第二，平台多半只做商品陳列與配送，缺少能提升轉換率與社群擴散的購物機制。在地鮮選的設計目標，就是把「在地小農直送」與「揪團湊免運」結合成一個完整的 B2C 訂購流程。消費者可以瀏覽單品與直送箱、加入購物車、建立收貨地址並完成下單；若希望降低運費，也可以發起揪團，透過分享連結邀請其他會員加入，達到 3 人成團後即免運。平台後端同時提供商品、訂單、店鋪狀態與營運管理能力，前後端整體圍繞「基本功扎實、流程完整、可實際部署」作為實作目標。
+台灣生鮮電商常見兩個痛點：第一，運費門檻高，少量購買時消費者容易卻步；第二，平台多半只做商品陳列與配送，缺少能提升轉換率與社群擴散的購物機制。菜籃日的設計目標，就是把「在地小農直送」與「揪團湊免運」結合成一個完整的 B2C 訂購流程。消費者可以瀏覽單品與直送箱、加入購物車、建立收貨地址並完成下單；若希望降低運費，也可以發起揪團，透過分享連結邀請其他會員加入，達到 3 人成團後即免運。平台後端同時提供商品、訂單、店鋪狀態與營運管理能力，前後端整體圍繞「基本功扎實、流程完整、可實際部署」作為實作目標。
 
 ## 技術架構
 
@@ -327,6 +330,30 @@ pnpm dev
 - [docs/known-issues.md](docs/known-issues.md)
 - [frontend-environment/sky-user-vue3/README.md](frontend-environment/sky-user-vue3/README.md)
 - `docs/architecture.md`（系統架構與時序圖）
+
+## Roadmap
+
+本專案目前已完成核心業務閉環,接下來規劃的迭代方向圍繞「展示工程深度」與「貼近真實生產系統」兩個目標進行。
+
+### 進行中
+
+- **揪團併發壓測證據**:現有 Redisson 分散式鎖實作已通過 100-thread 內部測試,接下來補充 JMeter 200 QPS 壓測報告與 P95 延遲量測,放入 README 作為可驗證的工程證據。
+- **訂單狀態機重構**:目前訂單狀態流轉散落於 Service 層多處 if-else,計畫改用集中式狀態機(Enum + Strategy 或 Spring State Machine),搭配 Spring Application Event 解耦副作用(通知、退款、庫存),提升可測試性與可維護性。
+- **核心 Service 單元測試 + JaCoCo**:現有測試以揪團整合測試為主,接下來補齊 OrderService / GroupBuyService / PaymentService 的單元測試,目標 Service 層覆蓋率 ≥ 70%,並在 README 附 JaCoCo 報告截圖。
+
+### 規劃中
+
+- **TapPay 沙箱金流串接**:取代現有 mock 付款,實作完整的 idempotency key 機制(Redis SETNX)、Webhook 簽章驗證,以及 reconciliation job 處理回呼遺失場景。
+- **可觀測性三件套**:Spring Boot Actuator + Prometheus + Grafana,自訂業務 metric(揪團成團率、支付成功率),搭配結構化 log 與 Trace ID 串穿全鏈路。
+- **CI/CD 自動化**:GitHub Actions 自動跑測試、build Docker image、推送 ECR,觸發 EC2 滾動部署。
+
+### 已完成里程碑
+
+- 雙端品牌改造:菜籃日 Cailán Day,草綠 #4A7C3A / 暖米 #F5F0E6 / 紅磚 #C76E4E 配色,Noto Serif TC 標題字
+- 揪團發起 / 加入 / 取消 / 過期失敗回滾完整流程
+- Google OAuth 2.0 Authorization Code Flow + JWT 雙軌登入(mock login dev 開關)
+- 完整 AWS 部署:EC2 (Spring Boot + Docker MySQL/Redis) + S3 + CloudFront + DuckDNS + Let's Encrypt
+- Testcontainers Redis 整合測試 + Flyway migration 版本化
 
 ## License
 
