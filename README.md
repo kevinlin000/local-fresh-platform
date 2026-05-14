@@ -9,14 +9,21 @@
 
 **Demo URL**
 
+用戶端 demo
+
 [https://d3hqnux25iirgl.cloudfront.net](https://d3hqnux25iirgl.cloudfront.net)
 
 > 用戶端 demo 開放使用,可透過開發模式快捷登入快速試玩,或使用 Google 帳號登入體驗完整 OAuth 流程。
-> 商家端 demo:https://d3czahyk4cnvb9.cloudfront.net
+
+商家端 demo
+
+[https://d3czahyk4cnvb9.cloudfront.net](https://d3czahyk4cnvb9.cloudfront.net)
+
 > 商家端為原 Vue 2 + Element UI 管理後台,延續品牌綠化改造,負責訂單接單、商品上下架、營運數據檢視。
-> 如需登入體驗,請聯繫專案作者取得測試帳號(避免公開憑證遭濫用)。
-> 後端 API 入口:`https://localfresh-demo.duckdns.org`
-> 部署架構:Vue 3 用戶端託管於 AWS S3 + CloudFront(HTTPS),Spring Boot API 部署於 AWS EC2 (Nginx 反向代理 + Let's Encrypt)。
+
+- 如需登入體驗,請聯繫專案作者取得測試帳號(避免公開憑證遭濫用)。
+- 後端 API 入口:`https://localfresh-demo.duckdns.org`
+- 部署架構:Vue 3 用戶端託管於 AWS S3 + CloudFront(HTTPS),Spring Boot API 部署於 AWS EC2 (Nginx 反向代理 + Let's Encrypt)。
 
 ## Demo 流程截圖
 
