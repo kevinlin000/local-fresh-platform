@@ -29,6 +29,7 @@ frontend-environment/sky-admin-vue-ts/dist/
 
 # 本地開發設定（含機密資訊，不進版本庫）
 backend-environment/sky-take-out/sky-server/src/main/resources/application-dev.yml
+backend-environment/sky-take-out/.env
 .claude/
 AGENTS.md
 CLAUDE.md

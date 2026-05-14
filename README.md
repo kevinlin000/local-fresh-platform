@@ -253,26 +253,21 @@ knife4j:
   enable: false
 ```
 
-### 3. 執行資料庫 migration
+### 3. 啟動本地 MySQL / Redis
 
-依序執行：
-
-```text
-backend-environment/sky-take-out/sky-server/src/main/resources/db/migration/
+```bash
+cd backend-environment/sky-take-out
+cp .env.example .env
+docker compose up -d
 ```
 
-順序如下：
-
-1. `V2__rename_to_grocery.sql`
-2. `V2_1__align_naming.sql`
-3. `V3__add_groupbuy_tables.sql`
-4. `V4__add_oauth_columns.sql`
+目前 repo 內沒有正式的 `sky.sql` baseline，也尚未接入 Flyway 自動 migration，因此 local compose 會使用 `sky-server/src/test/resources/schema-test.sql` 初始化 MySQL，目的在於快速啟動本地開發與壓測環境。
 
 ### 4. 啟動後端
 
 ```bash
 cd backend-environment/sky-take-out
-mvn -pl sky-server spring-boot:run
+mvn spring-boot:run -pl sky-server -Dspring-boot.run.profiles=dev
 ```
 
 ### 5. 準備前端 `.env.local`
