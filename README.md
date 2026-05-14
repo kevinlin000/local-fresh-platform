@@ -102,6 +102,33 @@
 - AWS：EC2（Docker MySQL + Redis）+ S3 + CloudFront + DuckDNS
 ```
 
+## 揪團核心資料模型
+
+如果面試官只看一段資料設計，我認為最值得看的就是揪團主線。這個專案不是把多人湊團硬塞進單一訂單，而是拆成「揪團活動本身」與「每位參與者自己的預訂單」兩層模型。
+
+```mermaid
+erDiagram
+    MEMBER ||--o{ SHIPPING_ADDRESS : has
+    MEMBER ||--o{ ORDERS : places
+    MEMBER ||--o{ GROUP_BUY : initiates
+    MEMBER ||--o{ GROUP_BUY_PARTICIPANT : joins
+    SHIPPING_ADDRESS ||--o{ ORDERS : selected_for
+    GROUP_BUY ||--o{ GROUP_BUY_PARTICIPANT : contains
+    ORDERS ||--o{ GROUP_BUY_PARTICIPANT : linked_preorder
+```
+
+- `group_buy`：描述一場揪團活動，負責保存 `group_no / initiator_id / required_count / current_count / status / expire_at`
+- `group_buy_participant`：描述「誰參加了哪一團」，並用 `pre_order_id` 連回該會員自己的預訂單
+- `orders`：揪團期間先建立 `PENDING_GROUP(8)` 預訂單；成團後批次轉成 `TO_BE_CONFIRMED(2)`，失敗則轉成 `CANCELLED(6)`
+
+這樣設計的好處是：
+
+- 每位參與者都有自己的地址、金額與訂單快照，不需要多人共用同一張訂單
+- 成團與失敗只需要做狀態流轉，不必在成團瞬間重建正式訂單
+- `group_buy_participant (group_buy_id, member_id)` 的唯一鍵可以和 Redisson lock 一起防止重複加團
+
+完整架構、ER 圖與設計取捨請參考 [docs/architecture.md](docs/architecture.md)。
+
 ### 技術棧
 
 | 區域 | 技術 |
@@ -128,6 +155,27 @@
 揪團的關鍵風險在於多人同時加入時，不能超過成團人數，也不能讓同一位會員重複加入。這個專案使用 Redisson 的 `RLock` 對每個 `groupNo` 建立細粒度鎖，採用 `tryLock(3, 5, TimeUnit.SECONDS)`，讓請求在 3 秒內嘗試取得鎖，並把鎖持有時間限制在 5 秒內。實作上將「檢查狀態、建立預訂單、寫入 participant、更新 currentCount、必要時觸發成團」包在同一段交易內，確保資料一致性；而 WebSocket 通知則刻意放在 transaction commit 之後，避免商家收到通知時資料尚未落庫。
 
 除了 `100-thread` 的 Testcontainers Redis 整合測試外，這組邏輯也補上 JMeter 本地壓測證據：`100` 個併發會員加入同一團時，`POST /user/groupBuy/join` 的 `P95 = 2847.65 ms`、`P99 = 2952.75 ms`、`error rate = 0.00%`，且資料庫最終 `current_count = 101`、`group_buy_participant = 100`，代表沒有出現超賣、重複加入或資料不一致。完整報告請參考 [docs/perf/README.md](docs/perf/README.md)。
+
+### 1.1 壓測摘要
+
+以下是目前主 README 直接保留的關鍵數字，目的是讓 reviewer 不進 `docs/` 也能先看到工程證據：
+
+| 指標 | 結果 |
+|---|---|
+| 併發情境 | `100` 個會員在 `1` 秒內同時加入同一團 |
+| API | `POST /user/groupBuy/join` |
+| Throughput | `33.26 req/s` |
+| P50 | `1971.0 ms` |
+| P95 | `2847.65 ms` |
+| P99 | `2952.75 ms` |
+| Error rate | `0.00%` |
+| DB 驗證 | `current_count = 101`、`participant = 100` |
+
+這裡的 `101` 代表：
+
+- 團主原本已經算 `1` 位 participant
+- 本次壓測 `100` 位使用者全部成功加入
+- 最終資料庫狀態與 HTTP 層結果一致
 
 ### 2. 預訂單與正式訂單分離的揪團建模
 
