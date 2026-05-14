@@ -206,7 +206,7 @@ erDiagram
 
     CART {
         bigint id PK
-        bigint member_id FK
+        bigint user_id FK
         bigint product_id FK
         int number
     }
@@ -221,7 +221,8 @@ erDiagram
     ORDERS {
         bigint id PK
         string number UK
-        bigint member_id FK
+        bigint user_id FK
+        bigint address_book_id FK
         int status
         decimal amount
     }
@@ -271,6 +272,101 @@ erDiagram
     ORDERS ||--o{ GROUP_BUY_PARTICIPANT : linked_preorder
 ```
 
+### 揪團核心資料模型
+
+如果只看揪團這條主線，實際上最重要的是以下 5 張表：
+
+```mermaid
+erDiagram
+    MEMBER {
+        bigint id PK
+        string openid
+        string google_sub
+    }
+
+    SHIPPING_ADDRESS {
+        bigint id PK
+        bigint member_id FK
+        string consignee
+        int is_default
+    }
+
+    ORDERS {
+        bigint id PK
+        string number UK
+        bigint user_id FK
+        bigint address_book_id FK
+        int status
+        decimal amount
+    }
+
+    GROUP_BUY {
+        bigint id PK
+        string group_no UK
+        bigint initiator_id FK
+        int required_count
+        int current_count
+        int status
+    }
+
+    GROUP_BUY_PARTICIPANT {
+        bigint id PK
+        bigint group_buy_id FK
+        bigint member_id FK
+        bigint pre_order_id FK
+    }
+
+    MEMBER ||--o{ SHIPPING_ADDRESS : has
+    MEMBER ||--o{ ORDERS : places
+    MEMBER ||--o{ GROUP_BUY : initiates
+    MEMBER ||--o{ GROUP_BUY_PARTICIPANT : joins
+    SHIPPING_ADDRESS ||--o{ ORDERS : selected_for
+    GROUP_BUY ||--o{ GROUP_BUY_PARTICIPANT : contains
+    ORDERS ||--o{ GROUP_BUY_PARTICIPANT : linked_preorder
+```
+
+### 為什麼揪團不直接掛在一般訂單上
+
+這個專案的揪團不是「多人一起改同一張訂單」，而是：
+
+1. 每位參與者各自建立一張 `PENDING_GROUP` 預訂單
+2. 用 `group_buy` 描述這次團購活動本身
+3. 用 `group_buy_participant` 連接「誰參加了哪一團」以及「他對應的預訂單是哪一筆」
+
+這樣做有三個直接好處：
+
+- **避免多人共用同一筆訂單資料**
+  每位會員的地址、金額、下單時間都可以保留在自己的預訂單上，不需要在同一筆訂單裡塞多位收件資訊。
+
+- **成團與失敗只需要做狀態流轉**
+  成團時把所有 participant 的預訂單由 `PENDING_GROUP(8)` 批次改成 `TO_BE_CONFIRMED(2)`；失敗時統一改成 `CANCELLED(6)`，不需要重建正式訂單。
+
+- **資料追溯清楚**
+  面對「這個會員有沒有加入過這團」「這團對應到哪些預訂單」「哪筆預訂單屬於哪一團」這類查詢時，關聯會比把所有資訊混在 `orders` 裡清楚得多。
+
+### 為什麼 `group_buy` 不直接存 `product_id`
+
+這個決策很容易被問到，也是這份文件最值得保留的一點。
+
+目前 `group_buy` 只存：
+
+- 揪團編號 `group_no`
+- 發起人 `initiator_id`
+- 成團門檻 `required_count`
+- 當前人數 `current_count`
+- 狀態與到期時間
+
+商品資訊則是透過「發起人的 `pre_order -> order_detail`」反推。這樣做的理由是：
+
+- **避免雙寫**
+  如果 `group_buy` 自己也存一份 `product_id / quantity`，就會與發起人的預訂單資料重複，未來一旦修改規格或數量，兩邊可能不一致。
+
+- **維持揪團本體只描述活動，不描述交易細節**
+  `group_buy` 負責回答「這是一個怎樣的團」，`orders / order_detail` 負責回答「實際買了什麼」。
+
+- **目前業務模型只支援單商品揪團**
+  發起人建團時本來就會同時建立一筆預訂單，因此用預訂單當商品事實來源，邏輯上已足夠。
+
 ### 關鍵約束說明
 
 - `member.google_sub`：Google OAuth 使用者唯一識別
@@ -282,6 +378,25 @@ erDiagram
   同一會員、同一商品與規格，邏輯上應聚合成同一筆 cart item
 - `order_detail`：
   作為訂單快照，保留當下的名稱、圖片、價格等資訊
+
+### 索引與查詢熱點
+
+目前與揪團最相關、也最值得在面試時主動提的索引有：
+
+- `group_buy.uk_group_no`
+  對外查詢、分享連結、加團流程都以 `group_no` 為入口。
+
+- `group_buy.idx_status_expire(status, expire_at)`
+  給定時任務掃描「仍在揪團中且已過期」的資料使用。
+
+- `group_buy.idx_initiator(initiator_id)`
+  給會員查詢自己發起的揪團使用。
+
+- `group_buy_participant.uk_group_member(group_buy_id, member_id)`
+  這是防止重複加團的關鍵 constraint，與 Redisson lock 共同形成雙保險。
+
+- `group_buy_participant.idx_group(group_buy_id)`
+  用於查詢某團 participant 清單與成團後批次更新預訂單。
 
 ---
 
@@ -509,12 +624,12 @@ stateDiagram-v2
     [*] --> 揪團中
     揪團中 --> 已成團
     揪團中 --> 已失敗
-    已成團 --> 已完成
+    揪團中 --> 已取消
 
     state "揪團中(1)" as 揪團中
     state "已成團(2)" as 已成團
     state "已失敗(3)" as 已失敗
-    state "已完成(4)" as 已完成
+    state "已取消(4)" as 已取消
 ```
 
 ---

@@ -327,8 +327,8 @@ pnpm dev
 ## 相關文件
 
 - [docs/known-issues.md](docs/known-issues.md)
+- [docs/architecture.md](docs/architecture.md)
 - [frontend-environment/sky-user-vue3/README.md](frontend-environment/sky-user-vue3/README.md)
-- `docs/architecture.md`（系統架構與時序圖）
 
 ## Roadmap
 
