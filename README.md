@@ -125,7 +125,9 @@
 
 ### 1. 揪團模組的併發控制
 
-揪團的關鍵風險在於多人同時加入時，不能超過成團人數，也不能讓同一位會員重複加入。這個專案使用 Redisson 的 `RLock` 對每個 `groupNo` 建立細粒度鎖，採用 `tryLock(3, 5, TimeUnit.SECONDS)`，讓請求在 3 秒內嘗試取得鎖，並把鎖持有時間限制在 5 秒內。實作上將「檢查狀態、建立預訂單、寫入 participant、更新 currentCount、必要時觸發成團」包在同一段交易內，確保資料一致性；而 WebSocket 通知則刻意放在 transaction commit 之後，避免商家收到通知時資料尚未落庫。這組邏輯另外以 100-thread 併發測試驗證，確認最終人數不會超過 required count。
+揪團的關鍵風險在於多人同時加入時，不能超過成團人數，也不能讓同一位會員重複加入。這個專案使用 Redisson 的 `RLock` 對每個 `groupNo` 建立細粒度鎖，採用 `tryLock(3, 5, TimeUnit.SECONDS)`，讓請求在 3 秒內嘗試取得鎖，並把鎖持有時間限制在 5 秒內。實作上將「檢查狀態、建立預訂單、寫入 participant、更新 currentCount、必要時觸發成團」包在同一段交易內，確保資料一致性；而 WebSocket 通知則刻意放在 transaction commit 之後，避免商家收到通知時資料尚未落庫。
+
+除了 `100-thread` 的 Testcontainers Redis 整合測試外，這組邏輯也補上 JMeter 本地壓測證據：`100` 個併發會員加入同一團時，`POST /user/groupBuy/join` 的 `P95 = 2847.65 ms`、`P99 = 2952.75 ms`、`error rate = 0.00%`，且資料庫最終 `current_count = 101`、`group_buy_participant = 100`，代表沒有出現超賣、重複加入或資料不一致。完整報告請參考 [docs/perf/README.md](docs/perf/README.md)。
 
 ### 2. 預訂單與正式訂單分離的揪團建模
 
@@ -253,6 +255,8 @@ knife4j:
   enable: false
 ```
 
+若僅需本地開發、功能驗證或壓測，可先使用 `mock-login-enabled: true` 的開發模式，不必先完成 Google OAuth 憑證申請；Google OAuth 主要用於展示正式登入流程。
+
 ### 3. 啟動本地 MySQL / Redis
 
 ```bash
@@ -332,7 +336,6 @@ pnpm dev
 
 ### 進行中
 
-- **揪團併發壓測證據**:現有 Redisson 分散式鎖實作已通過 100-thread 內部測試,接下來補充 JMeter 200 QPS 壓測報告與 P95 延遲量測,放入 README 作為可驗證的工程證據。
 - **訂單狀態機重構**:目前訂單狀態流轉散落於 Service 層多處 if-else,計畫改用集中式狀態機(Enum + Strategy 或 Spring State Machine),搭配 Spring Application Event 解耦副作用(通知、退款、庫存),提升可測試性與可維護性。
 - **核心 Service 單元測試 + JaCoCo**:現有測試以揪團整合測試為主,接下來補齊 OrderService / GroupBuyService / PaymentService 的單元測試,目標 Service 層覆蓋率 ≥ 70%,並在 README 附 JaCoCo 報告截圖。
 
@@ -344,11 +347,12 @@ pnpm dev
 
 ### 已完成里程碑
 
+- 揪團分散式鎖壓測證據:100 concurrent join JMeter 壓測,`joinGroupBuy` error rate `0.00%`, P95 `2847.65 ms`, DB 最終 `current_count=101 / participant=100`
 - 雙端品牌改造:菜籃日 Cailán Day,草綠 #4A7C3A / 暖米 #F5F0E6 / 紅磚 #C76E4E 配色,Noto Serif TC 標題字
 - 揪團發起 / 加入 / 取消 / 過期失敗回滾完整流程
 - Google OAuth 2.0 Authorization Code Flow + JWT 雙軌登入(mock login dev 開關)
 - 完整 AWS 部署:EC2 (Spring Boot + Docker MySQL/Redis) + S3 + CloudFront + DuckDNS + Let's Encrypt
-- Testcontainers Redis 整合測試 + Flyway migration 版本化
+- Testcontainers Redis 整合測試 + SQL migration 檔案版本化(V2~V6)
 
 ## License
 
