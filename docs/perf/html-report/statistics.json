@@ -1,0 +1,50 @@
+{
+  "Total" : {
+    "transaction" : "Total",
+    "sampleCount" : 200,
+    "errorCount" : 0,
+    "errorPct" : 0.0,
+    "meanResTime" : 1449.9149999999997,
+    "medianResTime" : 1158.5,
+    "minResTime" : 492.0,
+    "maxResTime" : 2953.0,
+    "pct1ResTime" : 2571.5,
+    "pct2ResTime" : 2780.0499999999997,
+    "pct3ResTime" : 2927.76,
+    "throughput" : 47.103155911446066,
+    "receivedKBytesPerSec" : 115.32867331017427,
+    "sentKBytesPerSec" : 14.920062632477624
+  },
+  "POST /user/groupBuy/join" : {
+    "transaction" : "POST /user/groupBuy/join",
+    "sampleCount" : 100,
+    "errorCount" : 0,
+    "errorPct" : 0.0,
+    "meanResTime" : 1984.06,
+    "medianResTime" : 1971.0,
+    "minResTime" : 1021.0,
+    "maxResTime" : 2953.0,
+    "pct1ResTime" : 2778.1000000000004,
+    "pct2ResTime" : 2847.6499999999996,
+    "pct3ResTime" : 2952.75,
+    "throughput" : 33.25573661456601,
+    "receivedKBytesPerSec" : 147.56031499418023,
+    "sentKBytesPerSec" : 13.403295955271034
+  },
+  "POST /user/member/login" : {
+    "transaction" : "POST /user/member/login",
+    "sampleCount" : 100,
+    "errorCount" : 0,
+    "errorPct" : 0.0,
+    "meanResTime" : 915.7699999999999,
+    "medianResTime" : 953.0,
+    "minResTime" : 492.0,
+    "maxResTime" : 1167.0,
+    "pct1ResTime" : 1152.7,
+    "pct2ResTime" : 1160.9,
+    "pct3ResTime" : 1167.0,
+    "throughput" : 85.25149190110827,
+    "receivedKBytesPerSec" : 39.191542785592496,
+    "sentKBytesPerSec" : 19.647804774083546
+  }
+}
