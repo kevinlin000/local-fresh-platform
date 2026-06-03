@@ -1,6 +1,5 @@
 package com.sky.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
 import com.sky.dto.*;
@@ -8,6 +7,7 @@ import com.sky.entity.*;
 import com.sky.exception.OrderBusinessException;
 import com.sky.mapper.*;
 import com.sky.service.OrderCancellationService;
+import com.sky.service.OrderFulfillmentService;
 import com.sky.service.OrderPaymentService;
 import com.sky.service.OrderQueryService;
 import com.sky.result.PageResult;
@@ -25,9 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.sky.service.support.OrderStatusTransitionPolicy.Transition;
@@ -61,7 +59,7 @@ public class OrderServiceImpl implements OrderService {
     private OrderSubmissionService orderSubmissionService;
 
     @Autowired
-    private WebSocketServer webSocketServer;
+    private OrderFulfillmentService orderFulfillmentService;
 
     /**
      * 用戶下單
@@ -217,15 +215,7 @@ public class OrderServiceImpl implements OrderService {
      * @param ordersConfirmDTO
      */
     public void confirm(OrdersConfirmDTO ordersConfirmDTO) {
-        Orders ordersDB = orderMapper.getById(ordersConfirmDTO.getId());
-        OrderStatusTransitionPolicy.requireAllowed(ordersDB, Transition.ADMIN_CONFIRM);
-
-        Orders orders = Orders.builder()
-                .id(ordersConfirmDTO.getId())
-                .status(Orders.CONFIRMED)
-                .build();
-
-        orderMapper.update(orders);
+        orderFulfillmentService.confirm(ordersConfirmDTO);
     }
 
     /**
@@ -266,17 +256,7 @@ public class OrderServiceImpl implements OrderService {
      * @param id
      */
     public void delivery(Long id) {
-        // 根据id查询订单
-        Orders ordersDB = orderMapper.getById(id);
-
-        OrderStatusTransitionPolicy.requireAllowed(ordersDB, Transition.START_DELIVERY);
-
-        Orders orders = new Orders();
-        orders.setId(ordersDB.getId());
-        // 更新订单状态,状态转为派送中
-        orders.setStatus(Orders.DELIVERY_IN_PROGRESS);
-
-        orderMapper.update(orders);
+        orderFulfillmentService.delivery(id);
     }
 
     /**
@@ -285,18 +265,7 @@ public class OrderServiceImpl implements OrderService {
      * @param id
      */
     public void complete(Long id) {
-        // 根据id查询订单
-        Orders ordersDB = orderMapper.getById(id);
-
-        OrderStatusTransitionPolicy.requireAllowed(ordersDB, Transition.COMPLETE_DELIVERY);
-
-        Orders orders = new Orders();
-        orders.setId(ordersDB.getId());
-        // 更新订单状态,状态转为完成
-        orders.setStatus(Orders.COMPLETED);
-        orders.setDeliveryTime(LocalDateTime.now());
-
-        orderMapper.update(orders);
+        orderFulfillmentService.complete(id);
     }
 
     /**
@@ -304,20 +273,7 @@ public class OrderServiceImpl implements OrderService {
      * @param id
      */
     public void reminder(Long id) {
-        Orders ordersDB = orderMapper.getById(id);
-
-        // 驗證訂單存在且屬於當前用戶
-        if (ordersDB == null || !ordersDB.getUserId().equals(BaseContext.getCurrentId())) {
-            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
-        }
-
-        // 通過websocket向客戶端推送催單訊息
-        Map map = new HashMap();
-        map.put("type",2);  // 1表示來單提醒，2表示客戶催單
-        map.put("orderId", id);
-        map.put("content","訂單號：" + ordersDB.getNumber());
-
-        webSocketServer.sendToAllClient(JSON.toJSONString(map));
+        orderFulfillmentService.reminder(id);
     }
 
 }

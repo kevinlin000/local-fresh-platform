@@ -9,17 +9,15 @@ import com.sky.dto.OrdersRejectionDTO;
 import com.sky.dto.OrdersSubmitDTO;
 import com.sky.entity.Orders;
 import com.sky.exception.OrderBusinessException;
-import com.sky.mapper.OrderDetailMapper;
 import com.sky.mapper.OrderMapper;
 import com.sky.service.OrderCancellationService;
+import com.sky.service.OrderFulfillmentService;
 import com.sky.service.OrderPaymentService;
 import com.sky.service.OrderQueryService;
 import com.sky.service.OrderSubmissionService;
-import com.sky.websocket.WebSocketServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -27,7 +25,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -43,12 +40,6 @@ class OrderServiceImplTest {
     private OrderMapper orderMapper;
 
     @Mock
-    private OrderDetailMapper orderDetailMapper;
-
-    @Mock
-    private WebSocketServer webSocketServer;
-
-    @Mock
     private OrderCancellationService orderCancellationService;
 
     @Mock
@@ -59,6 +50,9 @@ class OrderServiceImplTest {
 
     @Mock
     private OrderSubmissionService orderSubmissionService;
+
+    @Mock
+    private OrderFulfillmentService orderFulfillmentService;
 
     @InjectMocks
     private OrderServiceImpl orderService;
@@ -107,32 +101,20 @@ class OrderServiceImplTest {
     }
 
     @Test
-    void confirmShouldRejectOrderThatIsNotWaitingForAcceptance() {
-        Orders completedOrder = orderWithStatus(10L, Orders.COMPLETED);
-        when(orderMapper.getById(10L)).thenReturn(completedOrder);
-
+    void confirmShouldDelegateToFulfillmentService() {
         OrdersConfirmDTO dto = new OrdersConfirmDTO();
         dto.setId(10L);
 
-        OrderBusinessException exception = assertThrows(OrderBusinessException.class,
-                () -> orderService.confirm(dto));
+        orderService.confirm(dto);
 
-        assertEquals(MessageConstant.ORDER_STATUS_ERROR, exception.getMessage());
-        verify(orderMapper, never()).update(any(Orders.class));
+        verify(orderFulfillmentService).confirm(dto);
     }
 
     @Test
-    void confirmShouldUpdateOnlyWhenOrderIsWaitingForAcceptance() {
-        Orders order = orderWithStatus(11L, Orders.TO_BE_CONFIRMED);
-        when(orderMapper.getById(11L)).thenReturn(order);
+    void deliveryShouldDelegateToFulfillmentService() {
+        orderService.delivery(41L);
 
-        OrdersConfirmDTO dto = new OrdersConfirmDTO();
-        dto.setId(11L);
-
-        orderService.confirm(dto);
-
-        verify(orderMapper).update(any(Orders.class));
-        verifyNoInteractions(orderDetailMapper);
+        verify(orderFulfillmentService).delivery(41L);
     }
 
     @Test
@@ -217,50 +199,10 @@ class OrderServiceImplTest {
     }
 
     @Test
-    void deliveryShouldRejectOrderThatIsNotConfirmed() {
-        Orders order = orderWithStatus(40L, Orders.TO_BE_CONFIRMED);
-        when(orderMapper.getById(40L)).thenReturn(order);
-
-        OrderBusinessException exception = assertThrows(OrderBusinessException.class,
-                () -> orderService.delivery(40L));
-
-        assertEquals(MessageConstant.ORDER_STATUS_ERROR, exception.getMessage());
-        verify(orderMapper, never()).update(any(Orders.class));
-    }
-
-    @Test
-    void deliveryShouldMoveConfirmedOrderToDeliveryInProgress() {
-        Orders order = orderWithStatus(41L, Orders.CONFIRMED);
-        when(orderMapper.getById(41L)).thenReturn(order);
-
-        orderService.delivery(41L);
-
-        Orders updated = captureUpdatedOrder();
-        assertEquals(Orders.DELIVERY_IN_PROGRESS, updated.getStatus());
-    }
-
-    @Test
-    void completeShouldRejectOrderThatIsNotInDelivery() {
-        Orders order = orderWithStatus(50L, Orders.CONFIRMED);
-        when(orderMapper.getById(50L)).thenReturn(order);
-
-        OrderBusinessException exception = assertThrows(OrderBusinessException.class,
-                () -> orderService.complete(50L));
-
-        assertEquals(MessageConstant.ORDER_STATUS_ERROR, exception.getMessage());
-        verify(orderMapper, never()).update(any(Orders.class));
-    }
-
-    @Test
-    void completeShouldSetCompletedStatusAndDeliveryTime() {
-        Orders order = orderWithStatus(51L, Orders.DELIVERY_IN_PROGRESS);
-        when(orderMapper.getById(51L)).thenReturn(order);
-
+    void completeShouldDelegateToFulfillmentService() {
         orderService.complete(51L);
 
-        Orders updated = captureUpdatedOrder();
-        assertEquals(Orders.COMPLETED, updated.getStatus());
-        assertNotNull(updated.getDeliveryTime());
+        verify(orderFulfillmentService).complete(51L);
     }
 
     @Test
@@ -279,10 +221,11 @@ class OrderServiceImplTest {
         verify(orderSubmissionService).submitOrder(dto);
     }
 
-    private Orders captureUpdatedOrder() {
-        ArgumentCaptor<Orders> captor = ArgumentCaptor.forClass(Orders.class);
-        verify(orderMapper).update(captor.capture());
-        return captor.getValue();
+    @Test
+    void reminderShouldDelegateToFulfillmentService() {
+        orderService.reminder(61L);
+
+        verify(orderFulfillmentService).reminder(61L);
     }
 
     private static OrdersPaymentDTO paymentDTO(String orderNumber) {
