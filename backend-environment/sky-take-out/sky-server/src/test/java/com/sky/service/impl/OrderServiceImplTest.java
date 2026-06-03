@@ -13,6 +13,7 @@ import com.sky.mapper.OrderMapper;
 import com.sky.service.InventoryService;
 import com.sky.service.OrderCancellationService;
 import com.sky.service.OrderPaymentService;
+import com.sky.service.OrderQueryService;
 import com.sky.websocket.WebSocketServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -54,6 +55,9 @@ class OrderServiceImplTest {
 
     @Mock
     private OrderPaymentService orderPaymentService;
+
+    @Mock
+    private OrderQueryService orderQueryService;
 
     @InjectMocks
     private OrderServiceImpl orderService;
@@ -260,14 +264,10 @@ class OrderServiceImplTest {
     }
 
     @Test
-    void detailsShouldRejectMissingOrderWithoutQueryingDetails() {
-        when(orderMapper.getById(99L)).thenReturn(null);
+    void detailsShouldDelegateToQueryService() {
+        orderService.details(99L);
 
-        OrderBusinessException exception = assertThrows(OrderBusinessException.class,
-                () -> orderService.details(99L));
-
-        assertEquals(MessageConstant.ORDER_NOT_FOUND, exception.getMessage());
-        verifyNoInteractions(orderDetailMapper);
+        verify(orderQueryService).details(99L);
     }
 
     private Orders captureUpdatedOrder() {
