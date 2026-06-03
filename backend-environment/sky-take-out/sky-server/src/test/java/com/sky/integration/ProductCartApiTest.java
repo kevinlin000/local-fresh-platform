@@ -98,6 +98,37 @@ class ProductCartApiTest {
     }
 
     @Test
+    void productListShouldSearchEnabledProductsAcrossCategories() throws Exception {
+        Product matchingProduct = Product.builder()
+                .productName("高山有機菠菜")
+                .categoryId(2L)
+                .price(new BigDecimal("120.00"))
+                .description("清甜葉菜")
+                .status(1)
+                .build();
+        productMapper.insert(matchingProduct);
+
+        Product disabledProduct = Product.builder()
+                .productName("有機停售番茄")
+                .categoryId(2L)
+                .price(new BigDecimal("150.00"))
+                .description("停售商品")
+                .status(0)
+                .build();
+        productMapper.insert(disabledProduct);
+
+        mockMvc.perform(get("/user/product/list")
+                        .header("authentication", loginResult.token())
+                        .param("productName", "有機"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code", is(1)))
+                .andExpect(jsonPath("$.data", hasSize(2)))
+                .andExpect(jsonPath("$.data[?(@.productName == '有機小黃瓜')]", hasSize(1)))
+                .andExpect(jsonPath("$.data[?(@.productName == '高山有機菠菜')]", hasSize(1)))
+                .andExpect(jsonPath("$.data[?(@.productName == '有機停售番茄')]", hasSize(0)));
+    }
+
+    @Test
     void cartSubShouldDecreaseQuantityWhenMoreThanOne() throws Exception {
         addToCart();
         addToCart();

@@ -20,20 +20,38 @@
     <section class="catalog-card">
       <div class="catalog-toolbar">
         <el-segmented v-model="activeTab" :options="tabOptions" />
+        <el-input
+          v-if="activeTab === 'product'"
+          v-model="productSearchDraft"
+          class="catalog-search"
+          clearable
+          placeholder="搜尋蔬果、肉品或商品關鍵字"
+        />
       </div>
 
       <div class="catalog-layout">
         <aside class="category-panel">
           <div class="panel-header">
             <h2>{{ activeTab === 'product' ? '單品分類' : '直送箱分類' }}</h2>
-            <span>{{ activeCategories.length }} 類</span>
+            <span>{{ activeTab === 'product' ? activeCategories.length + 1 : activeCategories.length }} 類</span>
           </div>
 
           <el-skeleton v-if="categoryLoading" :rows="6" animated />
 
-          <el-empty v-else-if="!activeCategories.length" description="目前沒有可用分類" />
+          <el-empty
+            v-else-if="activeTab === 'giftbox' && !activeCategories.length"
+            description="目前沒有可用分類"
+          />
 
           <div v-else class="category-list">
+            <button
+              v-if="activeTab === 'product'"
+              class="category-button"
+              :class="{ active: activeCategoryId === null }"
+              @click="selectCategory(null)"
+            >
+              <span>全部單品</span>
+            </button>
             <button
               v-for="category in activeCategories"
               :key="category.id"
@@ -51,20 +69,38 @@
             <div>
               <p class="eyebrow">{{ activeTab === 'product' ? '鮮選單品' : '主題直送箱' }}</p>
               <h2>{{ activeCategoryName }}</h2>
+              <p v-if="activeTab === 'product'" class="result-copy">{{ productResultCopy }}</p>
             </div>
             <el-button text type="success" @click="refreshCurrentTab">重新整理</el-button>
+          </div>
+
+          <div v-if="activeTab === 'product'" class="product-controls">
+            <el-select v-model="productSort" class="sort-select" placeholder="排序">
+              <el-option label="最新上架" value="recommended" />
+              <el-option label="價格低到高" value="priceAsc" />
+              <el-option label="價格高到低" value="priceDesc" />
+              <el-option label="商品名稱 A-Z" value="nameAsc" />
+            </el-select>
+            <el-input-number
+              v-model="productPriceCap"
+              :min="0"
+              :step="50"
+              controls-position="right"
+              placeholder="最高價格"
+            />
+            <el-button @click="resetProductFilters">清除篩選</el-button>
           </div>
 
           <el-skeleton v-if="itemsLoading" :rows="8" animated />
 
           <el-empty
-            v-else-if="activeTab === 'product' ? !productItems.length : !giftBoxItems.length"
-            description="這個分類目前沒有可販售商品"
+            v-else-if="activeTab === 'product' ? !displayedProductItems.length : !giftBoxItems.length"
+            :description="activeTab === 'product' ? '找不到符合條件的可販售商品' : '這個分類目前沒有可販售商品'"
           />
 
           <div v-else-if="activeTab === 'product'" class="product-grid">
             <article
-              v-for="product in productItems"
+              v-for="product in displayedProductItems"
               :key="product.id"
               class="product-card"
               @click="openProduct(product.id)"
@@ -124,7 +160,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import heroImage from '@/assets/brand/hero.png'
@@ -135,7 +171,7 @@ import {
   fetchCategories,
   fetchGiftBoxProducts,
   fetchGiftBoxesByCategory,
-  fetchProductsByCategory,
+  fetchProducts,
   type Category,
   type GiftBox,
   type Product,
@@ -161,6 +197,11 @@ const activeCategoryId = ref<number | null>(null)
 
 const productItems = ref<Product[]>([])
 const giftBoxItems = ref<GiftBoxCard[]>([])
+const productSearchDraft = ref('')
+const productSearchTerm = ref('')
+const productPriceCap = ref<number | null>(null)
+const productSort = ref<'recommended' | 'priceAsc' | 'priceDesc' | 'nameAsc'>('recommended')
+let productSearchTimer: ReturnType<typeof setTimeout> | undefined
 
 const tabOptions = [
   { label: '當季單品', value: 'product' },
@@ -172,17 +213,43 @@ const activeCategories = computed(() =>
 )
 
 const activeCategoryName = computed(() => {
+  if (activeTab.value === 'product' && activeCategoryId.value === null) {
+    return '全部單品'
+  }
   const category = activeCategories.value.find((item) => item.id === activeCategoryId.value)
   return category?.name || '請先選擇分類'
 })
 
 const heroBackground = `linear-gradient(rgba(245, 240, 230, 0.42), rgba(245, 240, 230, 0.42)), url(${heroImage})`
 
+const displayedProductItems = computed(() => {
+  const priceCap = productPriceCap.value
+  const products = productItems.value
+    .filter((product) => priceCap === null || Number(product.price || 0) <= priceCap)
+    .slice()
+
+  if (productSort.value === 'priceAsc') {
+    return products.sort((a, b) => Number(a.price || 0) - Number(b.price || 0))
+  }
+  if (productSort.value === 'priceDesc') {
+    return products.sort((a, b) => Number(b.price || 0) - Number(a.price || 0))
+  }
+  if (productSort.value === 'nameAsc') {
+    return products.sort((a, b) => a.productName.localeCompare(b.productName, 'zh-Hant'))
+  }
+  return products
+})
+
+const productResultCopy = computed(() => {
+  const keyword = productSearchTerm.value ? `「${productSearchTerm.value}」` : '所有商品'
+  return `${keyword}，顯示 ${displayedProductItems.value.length} / ${productItems.value.length} 項可販售商品`
+})
+
 function formatPrice(value: number) {
   return Number(value || 0).toLocaleString('zh-TW')
 }
 
-function selectCategory(categoryId: number) {
+function selectCategory(categoryId: number | null) {
   activeCategoryId.value = categoryId
 }
 
@@ -196,7 +263,14 @@ async function loadCategories() {
     productCategories.value = products
     giftBoxCategories.value = giftBoxes
 
-    if (!activeCategoryId.value || !activeCategories.value.some((item) => item.id === activeCategoryId.value)) {
+    if (activeTab.value === 'product') {
+      activeCategoryId.value = activeCategoryId.value && products.some((item) => item.id === activeCategoryId.value)
+        ? activeCategoryId.value
+        : null
+      return
+    }
+
+    if (!activeCategoryId.value || !giftBoxes.some((item) => item.id === activeCategoryId.value)) {
       activeCategoryId.value = activeCategories.value[0]?.id ?? null
     }
   } finally {
@@ -204,10 +278,13 @@ async function loadCategories() {
   }
 }
 
-async function loadProducts(categoryId: number) {
+async function loadProducts(categoryId: number | null) {
   itemsLoading.value = true
   try {
-    productItems.value = await fetchProductsByCategory(categoryId)
+    productItems.value = await fetchProducts({
+      categoryId,
+      productName: productSearchTerm.value
+    })
   } finally {
     itemsLoading.value = false
   }
@@ -240,14 +317,22 @@ async function loadGiftBoxes(categoryId: number) {
 }
 
 async function refreshCurrentTab() {
-  if (!activeCategoryId.value) {
-    return
-  }
   if (activeTab.value === 'product') {
     await loadProducts(activeCategoryId.value)
     return
   }
+
+  if (!activeCategoryId.value) {
+    return
+  }
   await loadGiftBoxes(activeCategoryId.value)
+}
+
+function resetProductFilters() {
+  productSearchDraft.value = ''
+  productSearchTerm.value = ''
+  productPriceCap.value = null
+  productSort.value = 'recommended'
 }
 
 async function addGiftBoxToCart(giftBoxId: number) {
@@ -264,23 +349,37 @@ function openProduct(id: number) {
 }
 
 watch(activeTab, () => {
-  activeCategoryId.value = activeCategories.value[0]?.id ?? null
+  activeCategoryId.value = activeTab.value === 'product' ? null : activeCategories.value[0]?.id ?? null
 })
 
 watch(activeCategoryId, async (categoryId) => {
-  if (!categoryId) {
-    productItems.value = []
-    giftBoxItems.value = []
-    return
-  }
-
   if (activeTab.value === 'product') {
     await loadProducts(categoryId)
     return
   }
 
+  if (!categoryId) {
+    giftBoxItems.value = []
+    return
+  }
+
   await loadGiftBoxes(categoryId)
 }, { immediate: false })
+
+watch(productSearchDraft, (value) => {
+  if (productSearchTimer) {
+    clearTimeout(productSearchTimer)
+  }
+  productSearchTimer = setTimeout(() => {
+    productSearchTerm.value = value.trim()
+  }, 300)
+})
+
+watch(productSearchTerm, async () => {
+  if (activeTab.value === 'product') {
+    await loadProducts(activeCategoryId.value)
+  }
+})
 
 onMounted(async () => {
   try {
@@ -290,6 +389,12 @@ onMounted(async () => {
     }
   } catch (error) {
     ElMessage.error(error instanceof Error ? error.message : '載入首頁資料失敗')
+  }
+})
+
+onBeforeUnmount(() => {
+  if (productSearchTimer) {
+    clearTimeout(productSearchTimer)
   }
 })
 </script>
@@ -402,8 +507,13 @@ onMounted(async () => {
 
 .catalog-toolbar {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  gap: 16px;
   margin-bottom: 20px;
+}
+
+.catalog-search {
+  max-width: 360px;
 }
 
 .catalog-layout {
@@ -472,6 +582,28 @@ onMounted(async () => {
 
 .content-header {
   margin-bottom: 18px;
+}
+
+.result-copy {
+  margin: 8px 0 0;
+  color: #71806a;
+  font-size: 14px;
+}
+
+.product-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin: -4px 0 18px;
+  padding: 14px;
+  border-radius: 18px;
+  background: #f7faf4;
+  border: 1px solid rgba(86, 126, 67, 0.1);
+}
+
+.sort-select {
+  width: 160px;
 }
 
 .product-grid,
@@ -589,5 +721,67 @@ onMounted(async () => {
   display: flex;
   justify-content: flex-end;
   margin-top: 18px;
+}
+
+@media (max-width: 980px) {
+  .home-shell {
+    padding: 20px 16px 36px;
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .catalog-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .category-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .product-grid,
+  .giftbox-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-main {
+    min-height: 260px;
+    padding: 28px 24px;
+  }
+
+  .hero h1 {
+    font-size: 30px;
+  }
+
+  .catalog-card {
+    padding: 18px;
+  }
+
+  .catalog-toolbar,
+  .content-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .catalog-search,
+  .sort-select {
+    max-width: none;
+    width: 100%;
+  }
+
+  .category-list,
+  .product-grid,
+  .giftbox-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .product-controls :deep(.el-input-number),
+  .product-controls .el-button {
+    width: 100%;
+  }
 }
 </style>

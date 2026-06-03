@@ -1,10 +1,13 @@
 package com.sky.service.impl;
 
+import com.sky.constant.MessageConstant;
+import com.sky.constant.StatusConstant;
 import com.sky.context.BaseContext;
 import com.sky.dto.CartDTO;
 import com.sky.entity.Product;
 import com.sky.entity.GiftBox;
 import com.sky.entity.Cart;
+import com.sky.exception.ShoppingCartBusinessException;
 import com.sky.mapper.ProductMapper;
 import com.sky.mapper.GiftBoxMapper;
 import com.sky.mapper.CartMapper;
@@ -35,6 +38,7 @@ public class CartServiceImpl implements CartService {
      * @param shoppingCartDTO
      */
     public void addShoppingCart(CartDTO shoppingCartDTO) {
+        validateCartItemSelected(shoppingCartDTO);
 
         //判斷當前加入到購物車中的商品是否已經存在了
         Cart shoppingCart = new Cart();
@@ -57,6 +61,9 @@ public class CartServiceImpl implements CartService {
             if (productId != null) {
                 //本次添加到購物車的是菜品
                 Product dish = productMapper.getById(productId);
+                if (dish == null || !StatusConstant.ENABLE.equals(dish.getStatus())) {
+                    throw new ShoppingCartBusinessException(MessageConstant.PRODUCT_NOT_AVAILABLE);
+                }
                 shoppingCart.setName(dish.getProductName());
                 shoppingCart.setImage(dish.getImage());
                 shoppingCart.setAmount(dish.getPrice());
@@ -66,6 +73,9 @@ public class CartServiceImpl implements CartService {
                 Long giftBoxId = shoppingCart.getGiftBoxId();
 
                 GiftBox setmeal = giftBoxMapper.getById(giftBoxId);
+                if (setmeal == null || !StatusConstant.ENABLE.equals(setmeal.getStatus())) {
+                    throw new ShoppingCartBusinessException(MessageConstant.GIFT_BOX_NOT_AVAILABLE);
+                }
                 shoppingCart.setName(setmeal.getBoxName());
                 shoppingCart.setImage(setmeal.getImage());
                 shoppingCart.setAmount(setmeal.getPrice());
@@ -86,6 +96,8 @@ public class CartServiceImpl implements CartService {
      */
     @Override
     public void subShoppingCart(CartDTO cartDTO) {
+        validateCartItemSelected(cartDTO);
+
         Cart cartQuery = new Cart();
         BeanUtils.copyProperties(cartDTO, cartQuery);
         cartQuery.setUserId(BaseContext.getCurrentId());
@@ -128,5 +140,14 @@ public class CartServiceImpl implements CartService {
         Long userId = BaseContext.getCurrentId();
         cartMapper.deleteByUserId(userId);
 
+    }
+
+    private void validateCartItemSelected(CartDTO cartDTO) {
+        if (cartDTO == null || (cartDTO.getProductId() == null && cartDTO.getGiftBoxId() == null)) {
+            throw new ShoppingCartBusinessException(MessageConstant.SHOPPING_CART_ITEM_REQUIRED);
+        }
+        if (cartDTO.getProductId() != null && cartDTO.getGiftBoxId() != null) {
+            throw new ShoppingCartBusinessException(MessageConstant.SHOPPING_CART_ITEM_AMBIGUOUS);
+        }
     }
 }

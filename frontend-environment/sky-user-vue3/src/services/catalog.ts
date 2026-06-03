@@ -27,6 +27,11 @@ export interface Product {
   productSpecs: ProductSpec[]
 }
 
+export interface ProductSearchParams {
+  categoryId?: number | null
+  productName?: string
+}
+
 export interface GiftBox {
   id: number
   categoryId: number
@@ -52,12 +57,24 @@ export function fetchCategories(type: number) {
   )
 }
 
-export function fetchProductsByCategory(categoryId: number) {
+export function fetchProducts(params: ProductSearchParams = {}) {
+  const requestParams: Record<string, string | number> = {}
+  if (params.categoryId) {
+    requestParams.categoryId = params.categoryId
+  }
+  if (params.productName?.trim()) {
+    requestParams.productName = params.productName.trim()
+  }
+
   return unwrap<Product[]>(
     http.get('/user/product/list', {
-      params: { categoryId }
+      params: requestParams
     })
   )
+}
+
+export function fetchProductsByCategory(categoryId: number) {
+  return fetchProducts({ categoryId })
 }
 
 export function fetchProductDetail(id: number) {

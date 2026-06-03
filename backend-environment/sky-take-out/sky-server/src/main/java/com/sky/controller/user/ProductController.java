@@ -10,9 +10,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.annotation.Resource;
@@ -37,26 +39,32 @@ public class ProductController {
      * @return
      */
     @GetMapping("/list")
-    @Operation(summary = "根據分類 ID 查詢單品")
-    public Result<List<ProductVO>> list(Long categoryId) {
+    @Operation(summary = "查詢可販售單品")
+    @SuppressWarnings("unchecked")
+    public Result<List<ProductVO>> list(@RequestParam(required = false) Long categoryId,
+                                        @RequestParam(required = false) String productName) {
+        String normalizedProductName = normalizeProductName(productName);
+        boolean cacheable = !StringUtils.hasText(normalizedProductName);
 
-        // 構建redis的key,規則：product_分類 ID
-        String key = "product_" + categoryId;
+        String key = "product_" + (categoryId == null ? "all" : categoryId);
 
-        // 查詢redis中是否有資料
-        List<ProductVO> list = (List<ProductVO>) appRedisTemplate.opsForValue().get(key);
-        if(list != null && list.size() > 0){
-            // 如果有資料，直接返回
-            return Result.success(list);
+        if (cacheable) {
+            // 分類瀏覽可以快取；關鍵字搜尋不快取，避免低命中率查詢污染 Redis。
+            List<ProductVO> cachedList = (List<ProductVO>) appRedisTemplate.opsForValue().get(key);
+            if (cachedList != null) {
+                return Result.success(cachedList);
+            }
         }
 
         Product dish = new Product();
         dish.setCategoryId(categoryId);
+        dish.setProductName(normalizedProductName);
         dish.setStatus(StatusConstant.ENABLE);//查詢起售中的菜品
 
-        // 如果没有資料，查詢資料库，并将資料存入redis
-        list = productService.listWithFlavor(dish);
-        appRedisTemplate.opsForValue().set(key, list, 30, TimeUnit.MINUTES);
+        List<ProductVO> list = productService.listWithFlavor(dish);
+        if (cacheable) {
+            appRedisTemplate.opsForValue().set(key, list, 30, TimeUnit.MINUTES);
+        }
 
         return Result.success(list);
     }
@@ -72,6 +80,13 @@ public class ProductController {
     public Result<ProductVO> getById(@PathVariable Long id) {
         ProductVO productVO = productService.getByIdWithFlavor(id);
         return Result.success(productVO);
+    }
+
+    private String normalizeProductName(String productName) {
+        if (!StringUtils.hasText(productName)) {
+            return null;
+        }
+        return productName.trim();
     }
 
 }

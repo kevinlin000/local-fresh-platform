@@ -14,6 +14,10 @@ public class MessageConstant {
     public static final String CATEGORY_BE_RELATED_BY_SETMEAL = "目前分類關聯了直送箱，不能刪除";
     public static final String CATEGORY_BE_RELATED_BY_DISH = "目前分類關聯了單品，不能刪除";
     public static final String SHOPPING_CART_IS_NULL = "購物車資料為空，不能下單";
+    public static final String SHOPPING_CART_ITEM_REQUIRED = "商品或直送箱不能為空";
+    public static final String SHOPPING_CART_ITEM_AMBIGUOUS = "商品與直送箱不能同時指定";
+    public static final String PRODUCT_NOT_AVAILABLE = "商品不存在或已下架";
+    public static final String GIFT_BOX_NOT_AVAILABLE = "直送箱不存在或已下架";
     public static final String ADDRESS_BOOK_IS_NULL = "會員地址為空，不能下單";
     public static final String LOGIN_FAILED = "會員登入失敗";
     public static final String LOGIN_DISABLED = "此登入方式已停用";
