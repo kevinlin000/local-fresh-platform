@@ -4,19 +4,17 @@ import com.sky.dto.GiftBoxDTO;
 import com.sky.dto.GiftBoxPageQueryDTO;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
+import com.sky.service.CacheService;
 import com.sky.service.GiftBoxService;
 import com.sky.vo.GiftBoxVO;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import java.util.List;
-import java.util.Set;
 
 /**
  * 直送箱管理
@@ -30,8 +28,8 @@ public class GiftBoxController {
     @Autowired
     private GiftBoxService giftBoxService;
 
-    @Resource(name = "appRedisTemplate")
-    private RedisTemplate<String, Object> appRedisTemplate;
+    @Autowired
+    private CacheService cacheService;
 
     /**
      * 新增直送箱
@@ -113,10 +111,7 @@ public class GiftBoxController {
     }
 
     private void cleanCache(String pattern) {
-        Set<String> keys = appRedisTemplate.keys(pattern);
-        if (keys != null && !keys.isEmpty()) {
-            appRedisTemplate.delete(keys);
-        }
+        cacheService.evictByPattern(pattern);
     }
 
 }

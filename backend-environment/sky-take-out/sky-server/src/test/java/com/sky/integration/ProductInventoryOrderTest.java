@@ -17,6 +17,7 @@ import com.sky.mapper.ProductMapper;
 import com.sky.mapper.ProductInventoryLogMapper;
 import com.sky.mapper.ShippingAddressMapper;
 import com.sky.properties.JwtProperties;
+import com.sky.service.CacheService;
 import com.sky.test.support.LoginResult;
 import com.sky.utils.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +25,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -35,14 +35,11 @@ import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -86,8 +83,8 @@ class ProductInventoryOrderTest {
     @MockitoBean
     private ServerEndpointExporter serverEndpointExporter;
 
-    @MockitoBean(name = "appRedisTemplate")
-    private RedisTemplate<String, Object> appRedisTemplate;
+    @MockitoBean
+    private CacheService cacheService;
 
     private LoginResult loginResult;
     private Product product;
@@ -95,7 +92,6 @@ class ProductInventoryOrderTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        when(appRedisTemplate.keys(anyString())).thenReturn(Collections.emptySet());
         loginResult = login("inventory-order-user");
 
         product = Product.builder()

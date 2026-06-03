@@ -20,6 +20,7 @@ import com.sky.mapper.ProductMapper;
 import com.sky.mapper.GiftBoxProductMapper;
 import com.sky.mapper.GiftBoxMapper;
 import com.sky.result.PageResult;
+import com.sky.service.CacheService;
 import com.sky.service.InventoryService;
 import com.sky.service.ProductService;
 import com.sky.vo.ProductInventoryLogVO;
@@ -27,14 +28,11 @@ import com.sky.vo.ProductVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Service
 @Slf4j
@@ -57,8 +55,8 @@ public class ProductServiceImpl implements ProductService {
     private ProductInventoryLogMapper productInventoryLogMapper;
     @Autowired
     private InventoryService inventoryService;
-    @Resource(name = "appRedisTemplate")
-    private RedisTemplate<String, Object> appRedisTemplate;
+    @Autowired
+    private CacheService cacheService;
     /**
      * 新增菜品
      * @param dishDTO
@@ -279,10 +277,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private void cleanCache(String pattern) {
-        Set<String> keys = appRedisTemplate.keys(pattern);
-        if (keys != null && !keys.isEmpty()) {
-            appRedisTemplate.delete(keys);
-        }
+        cacheService.evictByPattern(pattern);
     }
 
     private void applyInventoryDefaults(Product product) {
