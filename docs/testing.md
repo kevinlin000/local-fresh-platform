@@ -1,24 +1,73 @@
-# 測試執行說明
+# Testing Strategy
 
-## 一般測試
+This project uses a small but explicit test pyramid. The goal is not to chase
+coverage numbers; it is to prove the business boundaries that matter for a
+backend portfolio project.
 
-後端一般測試不依賴本機 Redis 或 Docker，可直接執行：
+## Test Layers
+
+| Layer | Purpose | Examples |
+|---|---|---|
+| Unit tests | Validate isolated business rules without Spring context cost. | `OrderStatusTransitionPolicyTest`, `OrderServiceImplTest`, `GoogleOAuthClientImplTest` |
+| Spring integration tests | Validate HTTP/interceptor/mapper behavior against H2 in MySQL mode. | IDOR order/address regression tests, product/cart API tests, group-buy controller tests |
+| Redis integration tests | Validate Redisson lock behavior against real Redis through Testcontainers. | `GroupBuyRedisIntegrationTest` |
+
+## Default Backend Test Command
+
+The default command is CI-safe and does not require local Redis or Docker:
 
 ```bash
 cd backend-environment/sky-take-out
 mvn test
 ```
 
-`sky-server` 的 Maven Surefire 預設排除 JUnit tag `redis`，避免 reviewer
-在沒有 Docker/Testcontainers 環境時被 Redis 整合測試阻塞。
+`sky-server` configures Maven Surefire with `excludedGroups=redis`, so Redis
+Testcontainers tests are skipped by default. This keeps ordinary local review
+and GitHub Actions runs deterministic.
 
-## Redis 整合測試
+## Redis / Testcontainers Command
 
-揪團分散式鎖測試需要 Docker 與 Testcontainers：
+Run the Redis-tagged concurrency tests when Docker is available:
 
 ```bash
 cd backend-environment/sky-take-out
 mvn -pl sky-server -DexcludedGroups= -Dgroups=redis test
 ```
 
-這類測試會啟動 Redis container，驗證 Redisson lock 的真實併發行為。
+These tests intentionally use real Redis instead of pure mocks because the risk
+being tested is distributed lock behavior under concurrent group-buy joins.
+
+## Frontend Checks
+
+The admin frontend is checked in CI with:
+
+```bash
+cd frontend-environment/sky-admin-vue-ts
+npm ci
+npm run build
+npm audit --omit=dev
+```
+
+The user storefront is still demo-focused and should be added to CI once its
+dependency and build baseline are normalized.
+
+## Test Profile
+
+Backend tests run with `application-test.yml`:
+
+- H2 runs in MySQL compatibility mode.
+- Flyway is disabled; `schema-test.sql` initializes the test schema.
+- Redis health and repository auto-configuration are disabled unless a specific
+  Redis/Testcontainers test opts in.
+- SpringDoc and mapper DEBUG logs are suppressed to keep CI output readable.
+- Spring Boot deprecated `@MockBean` usage has been migrated to Spring
+  Framework `@MockitoBean`.
+
+## Current Coverage Priorities
+
+- Keep adding pure service tests before adding new features.
+- Prefer integration tests for IDOR/security boundaries and request
+  interceptors.
+- Keep Testcontainers reserved for infrastructure behavior that mocks cannot
+  prove, such as Redisson locking.
+- Avoid UI E2E until the deployment target and demo flows are stable.

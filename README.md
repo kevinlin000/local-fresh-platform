@@ -405,6 +405,7 @@ pnpm dev
 
 - [docs/known-issues.md](docs/known-issues.md)
 - [docs/architecture.md](docs/architecture.md)
+- [docs/testing.md](docs/testing.md)
 - [frontend-environment/sky-user-vue3/README.md](frontend-environment/sky-user-vue3/README.md)
 
 ## Roadmap

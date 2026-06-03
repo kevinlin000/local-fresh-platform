@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
@@ -74,13 +74,13 @@ class GroupBuyRedisIntegrationTest extends RedisContainerTestBase {
     @Autowired
     private OrderMapper orderMapper;
 
-    @MockBean
+    @MockitoBean
     private ServerEndpointExporter serverEndpointExporter;
 
-    @MockBean
+    @MockitoBean
     private WebSocketServer webSocketServer;
 
-    @MockBean
+    @MockitoBean
     private WeChatPayUtil weChatPayUtil;
 
     private Long initiatorId;

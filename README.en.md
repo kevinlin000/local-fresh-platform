@@ -352,6 +352,7 @@ See also:
 ## Related Documents
 
 - [docs/known-issues.md](docs/known-issues.md)
+- [docs/testing.md](docs/testing.md)
 - [frontend-environment/sky-user-vue3/README.md](frontend-environment/sky-user-vue3/README.md)
 - `docs/architecture.md` (system architecture and sequence diagrams)
 

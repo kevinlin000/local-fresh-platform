@@ -31,7 +31,7 @@ import org.redisson.api.RedissonClient;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
@@ -75,13 +75,13 @@ class GroupBuyExpirationServiceTest extends RedisContainerTestBase {
     @Autowired
     private RedissonClient redissonClient;
 
-    @MockBean
+    @MockitoBean
     private ServerEndpointExporter serverEndpointExporter;
 
-    @MockBean
+    @MockitoBean
     private WebSocketServer webSocketServer;
 
-    @MockBean
+    @MockitoBean
     private WeChatPayUtil weChatPayUtil;
 
     @AfterEach

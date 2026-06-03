@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate; //NOSONAR raw type matches bean definition
 import org.springframework.http.MediaType;
@@ -43,28 +43,28 @@ class IssueS5CancelNpeTest {
      * 用 Mock 隔離以確保測試環境可重複且不需要真實 Redis 連線。
      * 使用 raw type 以匹配 RedisConfiguration 定義的 bean 型別。
      */
-    @MockBean(name = "redisTemplate")
+    @MockitoBean(name = "redisTemplate")
     @SuppressWarnings("rawtypes")
     private RedisTemplate redisTemplate;
 
-    @MockBean
+    @MockitoBean
     private RedisConnectionFactory redisConnectionFactory;
 
     /**
      * ServerEndpointExporter 在 MOCK Web 環境（無真實 Servlet 容器）會失敗，
      * 需要 Mock 掉以讓 WebSocket 端點不被真正注冊。
      */
-    @MockBean
+    @MockitoBean
     private ServerEndpointExporter serverEndpointExporter;
 
-    @MockBean
+    @MockitoBean
     private WebSocketServer webSocketServer;
 
     /**
      * WeChatPayUtil 在 cancel 流程中（status=TO_BE_CONFIRMED）才會被呼叫，
      * 但為防止任何意外的外部 HTTP 呼叫，統一 Mock 掉。
      */
-    @MockBean
+    @MockitoBean
     private WeChatPayUtil weChatPayUtil;
 
     private String userToken;

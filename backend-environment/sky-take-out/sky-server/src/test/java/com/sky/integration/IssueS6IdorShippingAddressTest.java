@@ -12,7 +12,7 @@ import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
@@ -43,20 +43,20 @@ class IssueS6IdorShippingAddressTest {
     @Autowired
     private ShippingAddressMapper shippingAddressMapper;
 
-    @MockBean(name = "redisTemplate")
+    @MockitoBean(name = "redisTemplate")
     @SuppressWarnings("rawtypes")
     private RedisTemplate redisTemplate;
 
-    @MockBean
+    @MockitoBean
     private RedisConnectionFactory redisConnectionFactory;
 
-    @MockBean
+    @MockitoBean
     private ServerEndpointExporter serverEndpointExporter;
 
-    @MockBean
+    @MockitoBean
     private WebSocketServer webSocketServer;
 
-    @MockBean
+    @MockitoBean
     private RedissonClient redissonClient;
 
     private String tokenB;

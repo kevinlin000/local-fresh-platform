@@ -1,4 +1,6 @@
 spring:
+  main:
+    banner-mode: off
   autoconfigure:
     exclude:
       - com.alibaba.druid.spring.boot3.autoconfigure.DruidDataSourceAutoConfigure
@@ -20,6 +22,24 @@ management:
   health:
     redis:
       enabled: false
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+logging:
+  level:
+    root: warn
+    com.sky.handler: off
+    com.sky.mapper: warn
+    com.sky.service: warn
+    com.sky.controller: warn
+    com.sky.interceptor: warn
+    com.sky.config: warn
+    io.netty.resolver.dns.DnsServerAddressStreamProviders: off
+    org.springdoc: off
 
 # Provide sky.* so that application.yml ${...} placeholders can resolve
 sky:
