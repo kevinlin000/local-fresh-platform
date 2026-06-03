@@ -13,6 +13,7 @@ import com.sky.entity.*;
 import com.sky.exception.AddressBookBusinessException;
 import com.sky.exception.OrderBusinessException;
 import com.sky.mapper.*;
+import com.sky.service.InventoryService;
 import com.sky.result.PageResult;
 import com.sky.service.OrderService;
 import com.sky.service.support.OrderStatusTransitionPolicy;
@@ -47,7 +48,6 @@ public class OrderServiceImpl implements OrderService {
 
     private static final String INVENTORY_REASON_ORDER_RESERVE = "ORDER_RESERVE";
     private static final String INVENTORY_REASON_ORDER_CANCEL_RESTORE = "ORDER_CANCEL_RESTORE";
-    private static final String INVENTORY_REFERENCE_ORDER = "ORDER";
     private static final String INVENTORY_OPERATOR_MEMBER = "MEMBER";
     private static final String INVENTORY_OPERATOR_ADMIN = "ADMIN";
 
@@ -64,13 +64,10 @@ public class OrderServiceImpl implements OrderService {
     private CartMapper cartMapper;
 
     @Autowired
-    private ProductMapper productMapper;
-
-    @Autowired
     private GiftBoxProductMapper giftBoxProductMapper;
 
     @Autowired
-    private ProductInventoryLogMapper productInventoryLogMapper;
+    private InventoryService inventoryService;
 
     @Autowired
     private WeChatPayUtil weChatPayUtil;
@@ -540,7 +537,8 @@ public class OrderServiceImpl implements OrderService {
     private void reserveProductStock(List<Cart> shoppingCartList, Long orderId, Long userId) {
         for (Cart cart : shoppingCartList) {
             if (cart.getProductId() != null) {
-                decreaseProductStock(cart.getProductId(), cart.getNumber(), orderId, INVENTORY_OPERATOR_MEMBER, userId);
+                inventoryService.reserveProduct(cart.getProductId(), cart.getNumber(),
+                        INVENTORY_REASON_ORDER_RESERVE, orderId, INVENTORY_OPERATOR_MEMBER, userId);
                 continue;
             }
             if (cart.getGiftBoxId() != null) {
@@ -553,7 +551,8 @@ public class OrderServiceImpl implements OrderService {
         List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orderId);
         for (OrderDetail orderDetail : orderDetailList) {
             if (orderDetail.getProductId() != null && orderDetail.getNumber() != null && orderDetail.getNumber() > 0) {
-                increaseProductStock(orderDetail.getProductId(), orderDetail.getNumber(), orderId, operatorType, operatorId);
+                inventoryService.restoreProduct(orderDetail.getProductId(), orderDetail.getNumber(),
+                        INVENTORY_REASON_ORDER_CANCEL_RESTORE, orderId, operatorType, operatorId);
             }
             if (orderDetail.getGiftBoxId() != null && orderDetail.getNumber() != null && orderDetail.getNumber() > 0) {
                 restoreGiftBoxStock(orderDetail.getGiftBoxId(), orderDetail.getNumber(), orderId, operatorType, operatorId);
@@ -569,7 +568,8 @@ public class OrderServiceImpl implements OrderService {
 
         for (GiftBoxProduct giftBoxProduct : giftBoxProducts) {
             int requiredQuantity = giftBoxQuantity * giftBoxProduct.getCopies();
-            decreaseProductStock(giftBoxProduct.getProductId(), requiredQuantity, orderId, INVENTORY_OPERATOR_MEMBER, userId);
+            inventoryService.reserveProduct(giftBoxProduct.getProductId(), requiredQuantity,
+                    INVENTORY_REASON_ORDER_RESERVE, orderId, INVENTORY_OPERATOR_MEMBER, userId);
         }
     }
 
@@ -577,55 +577,9 @@ public class OrderServiceImpl implements OrderService {
         List<GiftBoxProduct> giftBoxProducts = giftBoxProductMapper.getBySetmealId(giftBoxId);
         for (GiftBoxProduct giftBoxProduct : giftBoxProducts) {
             int restoredQuantity = giftBoxQuantity * giftBoxProduct.getCopies();
-            increaseProductStock(giftBoxProduct.getProductId(), restoredQuantity, orderId, operatorType, operatorId);
+            inventoryService.restoreProduct(giftBoxProduct.getProductId(), restoredQuantity,
+                    INVENTORY_REASON_ORDER_CANCEL_RESTORE, orderId, operatorType, operatorId);
         }
-    }
-
-    private void decreaseProductStock(Long productId, Integer quantity, Long orderId, String operatorType, Long operatorId) {
-        if (productId == null || quantity == null || quantity <= 0) {
-            throw new OrderBusinessException(MessageConstant.PRODUCT_STOCK_NOT_ENOUGH);
-        }
-        if (productMapper.getById(productId) == null) {
-            throw new OrderBusinessException(MessageConstant.PRODUCT_STOCK_NOT_ENOUGH);
-        }
-        int updatedRows = productMapper.decreaseStock(productId, quantity);
-        if (updatedRows == 0) {
-            throw new OrderBusinessException(MessageConstant.PRODUCT_STOCK_NOT_ENOUGH);
-        }
-        int stockAfter = productMapper.getById(productId).getStock();
-        int stockBefore = stockAfter + quantity;
-        writeInventoryLog(productId, -quantity, stockBefore, stockBefore - quantity,
-                INVENTORY_REASON_ORDER_RESERVE, orderId, operatorType, operatorId);
-    }
-
-    private void increaseProductStock(Long productId, Integer quantity, Long orderId, String operatorType, Long operatorId) {
-        if (productId == null || quantity == null || quantity <= 0) {
-            return;
-        }
-        if (productMapper.getById(productId) == null) {
-            return;
-        }
-        productMapper.increaseStock(productId, quantity);
-        int stockAfter = productMapper.getById(productId).getStock();
-        int stockBefore = stockAfter - quantity;
-        writeInventoryLog(productId, quantity, stockBefore, stockBefore + quantity,
-                INVENTORY_REASON_ORDER_CANCEL_RESTORE, orderId, operatorType, operatorId);
-    }
-
-    private void writeInventoryLog(Long productId, Integer changeQuantity, Integer stockBefore, Integer stockAfter,
-                                   String reason, Long orderId, String operatorType, Long operatorId) {
-        productInventoryLogMapper.insert(ProductInventoryLog.builder()
-                .productId(productId)
-                .changeQuantity(changeQuantity)
-                .stockBefore(stockBefore)
-                .stockAfter(stockAfter)
-                .reason(reason)
-                .referenceType(INVENTORY_REFERENCE_ORDER)
-                .referenceId(orderId)
-                .operatorType(operatorType)
-                .operatorId(operatorId)
-                .createdAt(LocalDateTime.now())
-                .build());
     }
 
     /**

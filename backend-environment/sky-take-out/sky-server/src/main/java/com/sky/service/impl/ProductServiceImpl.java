@@ -20,6 +20,7 @@ import com.sky.mapper.ProductMapper;
 import com.sky.mapper.GiftBoxProductMapper;
 import com.sky.mapper.GiftBoxMapper;
 import com.sky.result.PageResult;
+import com.sky.service.InventoryService;
 import com.sky.service.ProductService;
 import com.sky.vo.ProductInventoryLogVO;
 import com.sky.vo.ProductVO;
@@ -31,7 +32,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.annotation.Resource;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -55,6 +55,8 @@ public class ProductServiceImpl implements ProductService {
     private GiftBoxProductMapper giftBoxProductMapper;
     @Autowired
     private ProductInventoryLogMapper productInventoryLogMapper;
+    @Autowired
+    private InventoryService inventoryService;
     @Resource(name = "appRedisTemplate")
     private RedisTemplate<String, Object> appRedisTemplate;
     /**
@@ -269,34 +271,9 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public void adjustInventory(Long id, ProductInventoryAdjustDTO productInventoryAdjustDTO) {
-        Product product = productMapper.getById(id);
-        if (product == null) {
-            throw new BaseException(MessageConstant.PRODUCT_NOT_AVAILABLE);
-        }
-
-        Integer changeQuantity = productInventoryAdjustDTO.getChangeQuantity();
-        if (changeQuantity == null || changeQuantity == 0) {
-            throw new BaseException("庫存異動量不能為 0");
-        }
-
-        int updatedRows = productMapper.adjustStock(id, changeQuantity);
-        if (updatedRows == 0) {
-            throw new BaseException(MessageConstant.PRODUCT_STOCK_NOT_ENOUGH);
-        }
-
-        int stockAfter = productMapper.getById(id).getStock();
-        int stockBefore = stockAfter - changeQuantity;
-        productInventoryLogMapper.insert(ProductInventoryLog.builder()
-                .productId(id)
-                .changeQuantity(changeQuantity)
-                .stockBefore(stockBefore)
-                .stockAfter(stockAfter)
-                .reason(INVENTORY_REASON_MANUAL_ADJUSTMENT)
-                .remark(productInventoryAdjustDTO.getReason())
-                .operatorType(INVENTORY_OPERATOR_ADMIN)
-                .operatorId(BaseContext.getCurrentId())
-                .createdAt(LocalDateTime.now())
-                .build());
+        inventoryService.adjustProduct(id, productInventoryAdjustDTO.getChangeQuantity(),
+                INVENTORY_REASON_MANUAL_ADJUSTMENT, productInventoryAdjustDTO.getReason(),
+                INVENTORY_OPERATOR_ADMIN, BaseContext.getCurrentId());
 
         cleanCache("product_*");
     }
