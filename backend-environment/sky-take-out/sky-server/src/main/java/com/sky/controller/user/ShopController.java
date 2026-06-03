@@ -16,6 +16,7 @@ import jakarta.annotation.Resource;
 public class ShopController {
 
     public static final String KEY = "SHOP_STATUS";
+    private static final Integer DEFAULT_STATUS = 1;
 
     @Resource(name = "appRedisTemplate")
     private RedisTemplate<String, Object> appRedisTemplate;
@@ -29,7 +30,11 @@ public class ShopController {
     @Operation(summary = "取得店舖營業狀態")
     public Result<Integer> getStatus(){
         Integer status = (Integer) appRedisTemplate.opsForValue().get(KEY);
-        String statusText = status == null ? "未設置" : (status == 1 ? "營業中" : "打烊中");
+        if (status == null) {
+            status = DEFAULT_STATUS;
+            appRedisTemplate.opsForValue().set(KEY, status);
+        }
+        String statusText = status == 1 ? "營業中" : "打烊中";
         log.info("取得店舖的營業狀態為：{}", statusText);
         return Result.success(status);
     }

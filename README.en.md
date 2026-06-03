@@ -3,7 +3,7 @@
 > A B2C grocery platform combining local farm-to-table delivery with group-buy promotions
 
 ![Java 17](https://img.shields.io/badge/Java-17-3A7D44?style=flat-square)
-![Spring Boot 2.7](https://img.shields.io/badge/Spring%20Boot-2.7-6DB33F?style=flat-square)
+![Spring Boot 3.5](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?style=flat-square)
 ![Vue 3](https://img.shields.io/badge/Vue-3-42B883?style=flat-square)
 ![License MIT](https://img.shields.io/badge/License-MIT-4E9F3D?style=flat-square)
 
@@ -73,7 +73,7 @@ Online grocery commerce in Taiwan often runs into two practical problems: small 
                │ HTTP / JWT
                ▼
 ┌──────────────────────────────────────────────┐
-│         Spring Boot 2.7 Backend API         │
+│         Spring Boot 3.5 Backend API         │
 │ Member / Product / Cart / Order / GroupBuy  │
 │ Google OAuth / Cache / Scheduler / WS       │
 └───────┬──────────────────┬──────────────────┘
@@ -107,9 +107,9 @@ External services:
 
 | Layer | Technologies |
 |---|---|
-| Backend | Java 17, Spring Boot 2.7.3, MyBatis, PageHelper, JWT, Druid |
-| Frontend | Vue 3, Vite 5, TypeScript, Pinia, Vue Router 4, Element Plus |
-| Infrastructure | MySQL 8, Redis 7, Redisson, Testcontainers, Docker |
+| Backend | Java 17, Spring Boot 3.5.14, MyBatis, PageHelper, Flyway, JWT, Druid, Actuator |
+| Frontend | User Vue 3 + Vite 5, Admin Vue 3 + Vite 8, TypeScript, Pinia, Vue Router 4, Element Plus |
+| Infrastructure | MySQL 8, Redis 7, Redisson, Testcontainers, Docker, GitHub Actions |
 | Third-party Services | Google OAuth 2.0, Google Maps API, AWS EC2 + S3 + CloudFront + DuckDNS |
 
 ## Core Features
@@ -170,9 +170,9 @@ Redis key expiration events look attractive at first, but they require `notify-k
 
 Mocks are appropriate for isolating business logic, but not for validating distributed locking behavior. The point of the concurrency test is to prove that the real Redis-backed lock behaves as expected under contention. Testcontainers provides that realism in a local and reproducible way, without requiring a permanently provisioned shared Redis instance for CI. The tradeoff is heavier test execution, but the confidence gain is worth it for this part of the system.
 
-### Q5. Why keep the admin app on Vue 2 while building the user app with Vue 3?
+### Q5. Why migrate the admin app to Vue 3 as well?
 
-The admin console already existed as a pre-existing Vue 2 + vue-cli initial implementation. Rebuilding it entirely in Vue 3 would have required a large amount of migration work without producing proportional value for the project’s main narrative. The user-facing storefront, on the other hand, is the part most relevant to the product concept and most visible in demos, so rebuilding that side with Vue 3, Vite, Pinia, and Element Plus offered much better return on effort.
+The admin console started as a Vue 2 + vue-cli course-era implementation, which made the repository look unfinished next to the upgraded backend and user storefront. It has now been migrated to Vue 3 + Vite + TypeScript + Pinia + Element Plus, covering login, list pages, forms, order operations, dashboards, and API proxy integration without expanding the project beyond its fundamentals-focused scope.
 
 ### Q6. Why keep both mock login and Google OAuth in the same repository?
 
@@ -181,7 +181,7 @@ Pure OAuth-only development would make local testing depend heavily on live cred
 ## System Requirements
 
 - Java 17+
-- Node.js 18+ with pnpm
+- Node.js 22+ (admin uses npm; user storefront can use pnpm)
 - MySQL 8.x
 - Redis 7.x (Docker is acceptable)
 - A Google OAuth client for frontend and backend local development
@@ -254,20 +254,27 @@ knife4j:
   enable: false
 ```
 
-### 3. Run database migrations
+### 3. Start local MySQL / Redis
 
-Execute the SQL scripts under:
+```bash
+cd backend-environment/sky-take-out
+cp .env.example .env
+docker compose up -d
+```
+
+The backend uses Flyway and automatically applies migrations from:
 
 ```text
 backend-environment/sky-take-out/sky-server/src/main/resources/db/migration/
 ```
 
-In this order:
+For a fresh database, no manual SQL step is required. For an existing non-empty schema that does not yet have `flyway_schema_history`, start the backend once with `FLYWAY_BASELINE_ON_MIGRATE=true`, then disable that flag afterward.
 
-1. `V2__rename_to_grocery.sql`
-2. `V2_1__align_naming.sql`
-3. `V3__add_groupbuy_tables.sql`
-4. `V4__add_oauth_columns.sql`
+If local port `3306` is already occupied, start only Redis and point the backend to your existing MySQL instance:
+
+```bash
+docker compose up -d redis
+```
 
 ### 4. Start the backend
 
@@ -276,7 +283,23 @@ cd backend-environment/sky-take-out
 mvn -pl sky-server spring-boot:run
 ```
 
-### 5. Prepare frontend `.env.local`
+For the first Flyway baseline on a legacy database:
+
+```bash
+FLYWAY_BASELINE_ON_MIGRATE=true mvn -pl sky-server spring-boot:run
+```
+
+### 5. Start the admin frontend
+
+```bash
+cd frontend-environment/sky-admin-vue-ts
+npm ci
+npm run dev -- --host 127.0.0.1
+```
+
+The admin app defaults to `http://127.0.0.1:5174`, with `/api` proxied to `http://localhost:8080/admin`.
+
+### 6. Prepare user frontend `.env.local`
 
 Create:
 
@@ -290,7 +313,7 @@ Example:
 VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 ```
 
-### 6. Start the frontend
+### 7. Start the user frontend
 
 ```bash
 cd frontend-environment/sky-user-vue3
@@ -298,7 +321,7 @@ pnpm install
 pnpm dev
 ```
 
-### 7. Google OAuth setup guide
+### 8. Google OAuth setup guide
 
 For the full frontend-side OAuth setup, see:
 
@@ -319,9 +342,9 @@ The deployment topology is:
 ## Known Limitations
 
 - Payment is still mocked; no real payment gateway integration is included yet.
-- The admin console is retained as an earlier iteration, while deployment and demo focus are currently on the user-facing site.
+- The admin console has been migrated to Vue 3, but it remains focused on core CRUD, order operations, and operations data rather than a fully polished back-office product.
 - The user frontend is desktop-first and does not yet implement responsive design.
-- Some schema constraints still differ between the H2 test environment and MySQL dev/prod environments.
+- Legacy databases need a one-time Flyway baseline; fresh databases can apply migrations directly.
 
 See also:
 - [docs/known-issues.md](docs/known-issues.md)

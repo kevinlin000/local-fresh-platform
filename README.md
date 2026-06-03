@@ -3,7 +3,7 @@
 > 結合在地小農生鮮直送與揪團湊免運的 B2C 電商平台
 
 ![Java 17](https://img.shields.io/badge/Java-17-3A7D44?style=flat-square)
-![Spring Boot 2.7](https://img.shields.io/badge/Spring%20Boot-2.7-6DB33F?style=flat-square)
+![Spring Boot 3.5](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?style=flat-square)
 ![Vue 3](https://img.shields.io/badge/Vue-3-42B883?style=flat-square)
 ![License MIT](https://img.shields.io/badge/License-MIT-4E9F3D?style=flat-square)
 
@@ -19,7 +19,7 @@
 
 [https://d3czahyk4cnvb9.cloudfront.net](https://d3czahyk4cnvb9.cloudfront.net)
 
-> 商家端為原 Vue 2 + Element UI 管理後台,延續品牌綠化改造,負責訂單接單、商品上下架、營運數據檢視。
+> 商家端已升級為 Vue 3 + Vite + Element Plus 管理後台,負責訂單接單、商品上下架、員工 / 分類 / 直送箱管理與營運數據檢視。
 
 - 如需登入體驗,請聯繫專案作者取得測試帳號(避免公開憑證遭濫用)。
 - 後端 API 入口:`https://localfresh-demo.duckdns.org`
@@ -79,7 +79,7 @@
                │ HTTP / JWT
                ▼
 ┌──────────────────────────────────────────────┐
-│         Spring Boot 2.7 Backend API         │
+│         Spring Boot 3.5 Backend API         │
 │  Member / Product / Cart / Order / GroupBuy │
 │  Google OAuth / JWT / Cache / Scheduler     │
 └───────┬──────────────────┬──────────────────┘
@@ -140,9 +140,9 @@ erDiagram
 
 | 區域 | 技術 |
 |---|---|
-| 後端 | Java 17、Spring Boot 2.7.3、MyBatis、PageHelper、JWT、Druid |
-| 前端 | Vue 3、Vite 5、TypeScript、Pinia、Vue Router 4、Element Plus |
-| 基礎設施 | MySQL 8、Redis 7、Redisson、Testcontainers、Docker |
+| 後端 | Java 17、Spring Boot 3.5.14、MyBatis、PageHelper、Flyway、JWT、Druid、Actuator |
+| 前端 | 用戶端 Vue 3 + Vite 5、管理端 Vue 3 + Vite 8、TypeScript、Pinia、Vue Router 4、Element Plus |
+| 基礎設施 | MySQL 8、Redis 7、Redisson、Testcontainers、Docker、GitHub Actions |
 | 第三方服務 | Google OAuth 2.0、Google Maps API、AWS EC2 + S3 + CloudFront + DuckDNS |
 
 ## 核心功能
@@ -202,7 +202,7 @@ erDiagram
 
 ### 6. Redisson 與 Spring Data Redis 職責分離
 
-專案中 Redis 有兩種用途：一種是一般 KV / cache，例如商品列表、店鋪營業狀態；另一種是揪團需要的分散式鎖。如果所有 Redis 存取都混用同一套 client，實務上容易出現相容性與責任界線不清的問題。這個專案最後採取的策略是：`RedissonClient` 專責分散式鎖與協調，`RedisTemplate` 則回到 Spring Boot 2.7 預設的 Lettuce 路徑處理快取與一般資料存取。這個分離避免了 `Tuple` 類別相容性問題，也讓後續維護者更容易理解「哪種場景該用哪種 Redis API」。
+專案中 Redis 有兩種用途：一種是一般 KV / cache，例如商品列表、店鋪營業狀態；另一種是揪團需要的分散式鎖。如果所有 Redis 存取都混用同一套 client，實務上容易出現相容性與責任界線不清的問題。這個專案最後採取的策略是：`RedissonClient` 專責分散式鎖與協調，`RedisTemplate` 則使用 Spring Boot 3 預設的 Lettuce 路徑處理快取與一般資料存取。這個分離避免了 `Tuple` 類別相容性問題，也讓後續維護者更容易理解「哪種場景該用哪種 Redis API」。
 
 ### 7. 可部署導向的全流程設計
 
@@ -226,9 +226,9 @@ Redis key 過期事件看起來很直覺，但在真實系統裡，若採用這�
 
 不是所有功能都需要 Testcontainers，但像揪團併發控制這種問題，如果只 mock 掉 Redis 鎖，本質上就跳過了最重要的風險區域。Testcontainers 的價值在於，它讓測試可以在本地與 CI 以接近真實環境的方式啟動 Redis，驗證 Redisson 的實際鎖行為與多執行緒競爭結果。對比 mock，它執行成本較高，但換來的是更強的可信度；這對面試展示來說是值得的。
 
-### Q5. 為什麼保留管理端 Vue 2，卻新建用戶端 Vue 3？
+### Q5. 為什麼管理端也升級到 Vue 3？
 
-管理端原本已有一套 Vue 2 + vue-cli 的初版實作，若整包重寫成 Vue 3，改動量大、風險高，而且對這個專案的加分有限。相反地，用戶端是這次作品的主要展示面，直接用 Vue 3 + Vite + Pinia + Element Plus 重建，能更直接反映目前主流前端工程實務。這個決策本質上是在控制重構成本，把時間投資在真正會被看到、也更能展示判斷力的部分。
+管理端原本是課程延伸的 Vue 2 + vue-cli 初版，已不符合目前作品要展示的工程水準。這次升級採用 Vue 3 + Vite + TypeScript + Pinia + Element Plus，保留「基本功展示專案」的範圍，不追求複雜 UI，但把登入、列表、表單、訂單操作、營運報表與 API proxy 串接補齊。這樣比保留舊棧更能避免 reviewer 把它判定成未整理的 toy project。
 
 ### Q6. 為什麼 repo 內同時保留 mock login 與 Google OAuth？
 
@@ -237,7 +237,7 @@ Redis key 過期事件看起來很直覺，但在真實系統裡，若採用這�
 ## 系統需求
 
 - Java 17+
-- Node.js 18+ 與 pnpm
+- Node.js 22+（管理端使用 npm；用戶端可使用 pnpm）
 - MySQL 8.x
 - Redis 7.x（可使用 Docker 啟動）
 - Google OAuth Client（前端與後端需自行申請本地開發憑證）
@@ -320,16 +320,38 @@ cp .env.example .env
 docker compose up -d
 ```
 
-目前 repo 內沒有正式的 `sky.sql` baseline，也尚未接入 Flyway 自動 migration，因此 local compose 會使用 `sky-server/src/test/resources/schema-test.sql` 初始化 MySQL，目的在於快速啟動本地開發與壓測環境。
+後端已接入 Flyway，啟動時會自動執行 `sky-server/src/main/resources/db/migration/` 內的版本化 migration。全新資料庫可直接啟動；若使用的是舊有非空 schema 且尚未有 `flyway_schema_history`，第一次啟動請加上 `FLYWAY_BASELINE_ON_MIGRATE=true` 完成 baseline，之後再關閉此設定。
+
+若本機 `3306` 已被 MySQL 佔用，可只啟動 Redis，並讓後端連到既有 MySQL：
+
+```bash
+docker compose up -d redis
+```
 
 ### 4. 啟動後端
 
 ```bash
 cd backend-environment/sky-take-out
-mvn spring-boot:run -pl sky-server -Dspring-boot.run.profiles=dev
+mvn -pl sky-server spring-boot:run
 ```
 
-### 5. 準備前端 `.env.local`
+舊資料庫第一次導入 Flyway 時：
+
+```bash
+FLYWAY_BASELINE_ON_MIGRATE=true mvn -pl sky-server spring-boot:run
+```
+
+### 5. 啟動管理端
+
+```bash
+cd frontend-environment/sky-admin-vue-ts
+npm ci
+npm run dev -- --host 127.0.0.1
+```
+
+管理端預設啟動於 `http://127.0.0.1:5174`，Vite proxy 會將 `/api` 轉到 `http://localhost:8080/admin`。
+
+### 6. 準備用戶端 `.env.local`
 
 請建立：
 
@@ -343,7 +365,7 @@ frontend-environment/sky-user-vue3/.env.local
 VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 ```
 
-### 6. 啟動前端
+### 7. 啟動用戶端
 
 ```bash
 cd frontend-environment/sky-user-vue3
@@ -351,7 +373,7 @@ pnpm install
 pnpm dev
 ```
 
-### 7. Google OAuth Client 申請步驟
+### 8. Google OAuth Client 申請步驟
 
 完整的前端 OAuth 設定說明請參考：
 
@@ -372,9 +394,9 @@ pnpm dev
 ## 已知限制
 
 - 支付流程仍為 mock，未串接真實金流
-- 管理端以前期初版實作為基礎，目前部署與展示重點放在用戶端
+- 管理端已升級 Vue 3，但仍以基本 CRUD、訂單操作與營運資料展示為主，尚未做完整 E2E 視覺回歸
 - 用戶端目前僅提供桌面版體驗，未做 RWD
-- 測試環境與生產環境的部分 schema 約束仍存在差異
+- 舊資料庫第一次導入 Flyway 時需要 baseline；全新資料庫可直接套用 migration
 
 更多細節請參考：
 - [docs/known-issues.md](docs/known-issues.md)
@@ -407,7 +429,9 @@ pnpm dev
 - 揪團發起 / 加入 / 取消 / 過期失敗回滾完整流程
 - Google OAuth 2.0 Authorization Code Flow + JWT 雙軌登入(mock login dev 開關)
 - 完整 AWS 部署:EC2 (Spring Boot + Docker MySQL/Redis) + S3 + CloudFront + DuckDNS + Let's Encrypt
-- Testcontainers Redis 整合測試 + SQL migration 檔案版本化(V2~V6)
+- Spring Boot 3.5 升級 + Flyway migration 檔案版本化(V1~V6)
+- 管理端 Vue 3 + Vite + TypeScript + Pinia + Element Plus 升級
+- Testcontainers Redis 整合測試 + GitHub Actions backend/frontend checks
 
 ## License
 
