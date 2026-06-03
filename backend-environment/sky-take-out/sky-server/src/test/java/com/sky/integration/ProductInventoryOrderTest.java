@@ -4,9 +4,13 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sky.entity.Cart;
+import com.sky.entity.GiftBox;
+import com.sky.entity.GiftBoxProduct;
 import com.sky.entity.Product;
 import com.sky.entity.ShippingAddress;
 import com.sky.mapper.CartMapper;
+import com.sky.mapper.GiftBoxMapper;
+import com.sky.mapper.GiftBoxProductMapper;
 import com.sky.mapper.ProductMapper;
 import com.sky.mapper.ShippingAddressMapper;
 import com.sky.test.support.LoginResult;
@@ -25,6 +29,7 @@ import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,6 +52,12 @@ class ProductInventoryOrderTest {
 
     @Autowired
     private ProductMapper productMapper;
+
+    @Autowired
+    private GiftBoxMapper giftBoxMapper;
+
+    @Autowired
+    private GiftBoxProductMapper giftBoxProductMapper;
 
     @Autowired
     private CartMapper cartMapper;
@@ -125,6 +136,54 @@ class ProductInventoryOrderTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(0))
                 .andExpect(jsonPath("$.msg").value("商品庫存不足"));
+
+        assertEquals(3, productMapper.getById(product.getId()).getStock());
+    }
+
+    @Test
+    void submitGiftBoxOrderShouldReserveComponentProductStockAndCancelShouldRestoreIt() throws Exception {
+        GiftBox giftBox = GiftBox.builder()
+                .boxName("庫存測試直送箱")
+                .categoryId(2L)
+                .price(new BigDecimal("180.00"))
+                .status(1)
+                .description("內含兩份高麗菜")
+                .build();
+        giftBoxMapper.insert(giftBox);
+        giftBoxProductMapper.insertBatch(List.of(GiftBoxProduct.builder()
+                .giftBoxId(giftBox.getId())
+                .productId(product.getId())
+                .name(product.getProductName())
+                .price(product.getPrice())
+                .copies(2)
+                .build()));
+
+        cartMapper.insert(Cart.builder()
+                .name(giftBox.getBoxName())
+                .userId(loginResult.userId())
+                .giftBoxId(giftBox.getId())
+                .number(1)
+                .amount(giftBox.getPrice())
+                .createTime(LocalDateTime.now())
+                .build());
+
+        MvcResult submitResult = mockMvc.perform(post("/user/order/submit")
+                        .header("authentication", loginResult.token())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(orderSubmitRequest(new BigDecimal("180.00")))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(1))
+                .andReturn();
+
+        assertEquals(1, productMapper.getById(product.getId()).getStock());
+
+        Long orderId = JSON.parseObject(submitResult.getResponse().getContentAsString())
+                .getJSONObject("data")
+                .getLong("id");
+        mockMvc.perform(put("/user/order/cancel/{id}", orderId)
+                        .header("authentication", loginResult.token()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(1));
 
         assertEquals(3, productMapper.getById(product.getId()).getStock());
     }

@@ -61,6 +61,9 @@ public class OrderServiceImpl implements OrderService {
     private ProductMapper productMapper;
 
     @Autowired
+    private GiftBoxProductMapper giftBoxProductMapper;
+
+    @Autowired
     private WeChatPayUtil weChatPayUtil;
 
     @Autowired
@@ -528,12 +531,12 @@ public class OrderServiceImpl implements OrderService {
 
     private void reserveProductStock(List<Cart> shoppingCartList) {
         for (Cart cart : shoppingCartList) {
-            if (cart.getProductId() == null) {
+            if (cart.getProductId() != null) {
+                decreaseProductStock(cart.getProductId(), cart.getNumber());
                 continue;
             }
-            int updatedRows = productMapper.decreaseStock(cart.getProductId(), cart.getNumber());
-            if (updatedRows == 0) {
-                throw new OrderBusinessException(MessageConstant.PRODUCT_STOCK_NOT_ENOUGH);
+            if (cart.getGiftBoxId() != null) {
+                reserveGiftBoxStock(cart.getGiftBoxId(), cart.getNumber());
             }
         }
     }
@@ -544,6 +547,39 @@ public class OrderServiceImpl implements OrderService {
             if (orderDetail.getProductId() != null && orderDetail.getNumber() != null && orderDetail.getNumber() > 0) {
                 productMapper.increaseStock(orderDetail.getProductId(), orderDetail.getNumber());
             }
+            if (orderDetail.getGiftBoxId() != null && orderDetail.getNumber() != null && orderDetail.getNumber() > 0) {
+                restoreGiftBoxStock(orderDetail.getGiftBoxId(), orderDetail.getNumber());
+            }
+        }
+    }
+
+    private void reserveGiftBoxStock(Long giftBoxId, Integer giftBoxQuantity) {
+        List<GiftBoxProduct> giftBoxProducts = giftBoxProductMapper.getBySetmealId(giftBoxId);
+        if (CollectionUtils.isEmpty(giftBoxProducts)) {
+            throw new OrderBusinessException(MessageConstant.PRODUCT_STOCK_NOT_ENOUGH);
+        }
+
+        for (GiftBoxProduct giftBoxProduct : giftBoxProducts) {
+            int requiredQuantity = giftBoxQuantity * giftBoxProduct.getCopies();
+            decreaseProductStock(giftBoxProduct.getProductId(), requiredQuantity);
+        }
+    }
+
+    private void restoreGiftBoxStock(Long giftBoxId, Integer giftBoxQuantity) {
+        List<GiftBoxProduct> giftBoxProducts = giftBoxProductMapper.getBySetmealId(giftBoxId);
+        for (GiftBoxProduct giftBoxProduct : giftBoxProducts) {
+            int restoredQuantity = giftBoxQuantity * giftBoxProduct.getCopies();
+            productMapper.increaseStock(giftBoxProduct.getProductId(), restoredQuantity);
+        }
+    }
+
+    private void decreaseProductStock(Long productId, Integer quantity) {
+        if (productId == null || quantity == null || quantity <= 0) {
+            throw new OrderBusinessException(MessageConstant.PRODUCT_STOCK_NOT_ENOUGH);
+        }
+        int updatedRows = productMapper.decreaseStock(productId, quantity);
+        if (updatedRows == 0) {
+            throw new OrderBusinessException(MessageConstant.PRODUCT_STOCK_NOT_ENOUGH);
         }
     }
 
