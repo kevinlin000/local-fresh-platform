@@ -11,6 +11,7 @@ import com.sky.utils.WeChatPayUtil;
 import com.sky.websocket.WebSocketServer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,6 +30,7 @@ import java.time.LocalDateTime;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -62,6 +64,9 @@ class IssueS2IdorOrderTest {
 
     @MockBean
     private WeChatPayUtil weChatPayUtil;
+
+    @MockBean
+    private RedissonClient redissonClient;
 
     private String tokenA;
     private String tokenB;
@@ -113,6 +118,35 @@ class IssueS2IdorOrderTest {
                         .header("authentication", tokenB))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(0));
+    }
+
+    @Test
+    void userB_cannotCancel_userA_order() throws Exception {
+        Orders pendingOrder = insertOrder(userAId, Orders.PENDING_PAYMENT, LocalDateTime.now());
+
+        mockMvc.perform(put("/user/order/cancel/{id}", pendingOrder.getId())
+                        .header("authentication", tokenB))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0));
+
+        Orders orderAfterCancelAttempt = orderMapper.getById(pendingOrder.getId());
+        org.junit.jupiter.api.Assertions.assertEquals(Orders.PENDING_PAYMENT, orderAfterCancelAttempt.getStatus());
+    }
+
+    @Test
+    void userB_cannotPay_userA_order() throws Exception {
+        Orders pendingOrder = insertOrder(userAId, Orders.PENDING_PAYMENT, LocalDateTime.now());
+
+        mockMvc.perform(put("/user/order/payment")
+                        .header("authentication", tokenB)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"orderNumber\":\"" + pendingOrder.getNumber() + "\",\"payMethod\":1}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0));
+
+        Orders orderAfterPaymentAttempt = orderMapper.getById(pendingOrder.getId());
+        org.junit.jupiter.api.Assertions.assertEquals(Orders.PENDING_PAYMENT, orderAfterPaymentAttempt.getStatus());
+        org.junit.jupiter.api.Assertions.assertEquals(Orders.UN_PAID, orderAfterPaymentAttempt.getPayStatus());
     }
 
     private LoginResult login(String code) throws Exception {

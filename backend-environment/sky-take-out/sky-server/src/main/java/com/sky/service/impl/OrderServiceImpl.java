@@ -49,9 +49,6 @@ public class OrderServiceImpl implements OrderService {
     private OrderDetailMapper orderDetailMapper;
 
     @Autowired
-    private MemberMapper memberMapper;
-
-    @Autowired
     private ShippingAddressMapper  shippingAddressMapper;
 
     @Autowired
@@ -70,19 +67,17 @@ public class OrderServiceImpl implements OrderService {
      */
     @Transactional
     public OrderSubmitVO submitOrder(OrdersSubmitDTO ordersSubmitDTO) {
+        Long userId = BaseContext.getCurrentId();
 
         //1. 處理各種業務異常（地址簿為空，購物車數據為空）
         ShippingAddress addressBook = shippingAddressMapper.getById(ordersSubmitDTO.getAddressBookId());
-        if (addressBook == null) {
+        if (addressBook == null || !userId.equals(addressBook.getMemberId())) {
             //拋出業務異常
             throw new AddressBookBusinessException(MessageConstant.ADDRESS_BOOK_IS_NULL);
         }
 
         // 檢查使用者的收貨地址是否超出配送範圍
         checkOutOfRange(addressBook.getCityName() + addressBook.getDistrictName() + addressBook.getDetail());
-
-        //查詢當前的購物車異常
-        Long userId = BaseContext.getCurrentId();
 
         Cart shoppingCart = new Cart();
         shoppingCart.setUserId(userId);
@@ -142,7 +137,13 @@ public class OrderServiceImpl implements OrderService {
     public OrderPaymentVO payment(OrdersPaymentDTO ordersPaymentDTO) throws Exception {
         // 当前登录用户id
         Long userId = BaseContext.getCurrentId();
-        Member user = memberMapper.getById(userId);
+        Orders ordersDB = orderMapper.getByNumber(ordersPaymentDTO.getOrderNumber());
+        if (ordersDB == null || !userId.equals(ordersDB.getUserId())) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        if (!Orders.PENDING_PAYMENT.equals(ordersDB.getStatus()) || !Orders.UN_PAID.equals(ordersDB.getPayStatus())) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("code", "ORDERPAID");
@@ -154,7 +155,7 @@ public class OrderServiceImpl implements OrderService {
         //发现没有将支付时间 check_out属性赋值，所以在这里更新
         LocalDateTime check_out_time = LocalDateTime.now();
         //获取订单号码
-        String orderNumber = ordersPaymentDTO.getOrderNumber();
+        String orderNumber = ordersDB.getNumber();
         log.info("调用updateStatus，用于替换微信支付更新数据库状态的问题");
         orderMapper.updateStatus(OrderStatus, OrderPaidStatus, check_out_time, orderNumber);
 
@@ -170,6 +171,9 @@ public class OrderServiceImpl implements OrderService {
 
         // 根据订单号查询订单
         Orders ordersDB = orderMapper.getByNumber(outTradeNo);
+        if (ordersDB == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
 
         // 根据订单id更新订单的状态、支付方式、支付状态、结账时间
         Orders orders = Orders.builder()
@@ -285,6 +289,9 @@ public class OrderServiceImpl implements OrderService {
         if (ordersDB == null) {
             throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
         }
+        if (!ordersDB.getUserId().equals(BaseContext.getCurrentId())) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
 
         //订单状态 1待付款 2待接单 3已接单 4派送中 5已完成 6已取消
         if (ordersDB.getStatus() > 2) {
@@ -300,8 +307,8 @@ public class OrderServiceImpl implements OrderService {
             weChatPayUtil.refund(
                     ordersDB.getNumber(), //商户订单号
                     ordersDB.getNumber(), //商户退款单号
-                    new BigDecimal(0.01),//退款金额，单位 元
-                    new BigDecimal(0.01));//原订单金额
+                    ordersDB.getAmount(),//退款金额，单位 元
+                    ordersDB.getAmount());//原订单金额
 
             //支付状态修改为 退款
             orders.setPayStatus(Orders.REFUND);

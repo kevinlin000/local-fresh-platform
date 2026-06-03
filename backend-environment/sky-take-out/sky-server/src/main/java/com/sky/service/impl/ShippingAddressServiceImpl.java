@@ -1,7 +1,9 @@
 package com.sky.service.impl;
 
 import com.sky.context.BaseContext;
+import com.sky.constant.MessageConstant;
 import com.sky.entity.ShippingAddress;
+import com.sky.exception.AddressBookBusinessException;
 import com.sky.mapper.ShippingAddressMapper;
 import com.sky.service.ShippingAddressService;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +47,7 @@ public class ShippingAddressServiceImpl implements ShippingAddressService {
      */
     public ShippingAddress getById(Long id) {
         ShippingAddress addressBook = shippingAddressMapper.getById(id);
+        checkAddressOwner(addressBook);
         return addressBook;
     }
 
@@ -54,6 +57,8 @@ public class ShippingAddressServiceImpl implements ShippingAddressService {
      * @param addressBook
      */
     public void update(ShippingAddress addressBook) {
+        ShippingAddress addressBookDB = shippingAddressMapper.getById(addressBook.getId());
+        checkAddressOwner(addressBookDB);
         shippingAddressMapper.update(addressBook);
     }
 
@@ -64,6 +69,9 @@ public class ShippingAddressServiceImpl implements ShippingAddressService {
      */
     @Transactional
     public void setDefault(ShippingAddress addressBook) {
+        ShippingAddress addressBookDB = shippingAddressMapper.getById(addressBook.getId());
+        checkAddressOwner(addressBookDB);
+
         //1、将当前会员的所有地址修改为非默认地址
         addressBook.setIsDefault(0);
         addressBook.setMemberId(BaseContext.getCurrentId());
@@ -80,7 +88,16 @@ public class ShippingAddressServiceImpl implements ShippingAddressService {
      * @param id
      */
     public void deleteById(Long id) {
+        ShippingAddress addressBook = shippingAddressMapper.getById(id);
+        checkAddressOwner(addressBook);
         shippingAddressMapper.deleteById(id);
+    }
+
+    private void checkAddressOwner(ShippingAddress addressBook) {
+        Long currentMemberId = BaseContext.getCurrentId();
+        if (addressBook == null || !currentMemberId.equals(addressBook.getMemberId())) {
+            throw new AddressBookBusinessException(MessageConstant.ADDRESS_BOOK_IS_NULL);
+        }
     }
 
 }

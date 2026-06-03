@@ -36,6 +36,9 @@ public class GoogleOAuthClientImpl implements GoogleOAuthClient {
             String resolvedRedirectUri = (redirectUri == null || redirectUri.isBlank())
                     ? googleOAuthProperties.getRedirectUri()
                     : redirectUri;
+            if (!googleOAuthProperties.getRedirectUri().equals(resolvedRedirectUri)) {
+                throw new LoginFailedException(MessageConstant.GOOGLE_OAUTH_FAILED);
+            }
 
             GoogleTokenResponse tokenResponse = new GoogleAuthorizationCodeTokenRequest(
                     transport,
