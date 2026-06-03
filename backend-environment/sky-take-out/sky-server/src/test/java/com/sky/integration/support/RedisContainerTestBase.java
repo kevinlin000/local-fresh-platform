@@ -1,11 +1,13 @@
 package com.sky.integration.support;
 
+import org.junit.jupiter.api.Tag;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+@Tag("redis")
 @Testcontainers
 public abstract class RedisContainerTestBase {
 
@@ -20,5 +22,6 @@ public abstract class RedisContainerTestBase {
         registry.add("spring.redis.port", () -> REDIS.getMappedPort(6379));
         registry.add("sky.redis.host", REDIS::getHost);
         registry.add("sky.redis.port", () -> REDIS.getMappedPort(6379));
+        registry.add("sky.test.mock-redisson", () -> false);
     }
 }
