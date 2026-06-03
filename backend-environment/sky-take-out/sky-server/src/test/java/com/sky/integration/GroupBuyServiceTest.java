@@ -10,12 +10,14 @@ import com.sky.entity.Member;
 import com.sky.entity.OrderDetail;
 import com.sky.entity.Orders;
 import com.sky.entity.Product;
+import com.sky.entity.ProductInventoryLog;
 import com.sky.entity.ShippingAddress;
 import com.sky.mapper.GroupBuyMapper;
 import com.sky.mapper.GroupBuyParticipantMapper;
 import com.sky.mapper.MemberMapper;
 import com.sky.mapper.OrderDetailMapper;
 import com.sky.mapper.OrderMapper;
+import com.sky.mapper.ProductInventoryLogMapper;
 import com.sky.mapper.ProductMapper;
 import com.sky.mapper.ShippingAddressMapper;
 import com.sky.service.GroupBuyService;
@@ -68,6 +70,9 @@ class GroupBuyServiceTest {
 
     @Autowired
     private ProductMapper productMapper;
+
+    @Autowired
+    private ProductInventoryLogMapper productInventoryLogMapper;
 
     @Autowired
     private ShippingAddressMapper shippingAddressMapper;
@@ -125,6 +130,8 @@ class GroupBuyServiceTest {
                 .categoryId(1L)
                 .price(new BigDecimal("88.00"))
                 .status(1)
+                .stock(5)
+                .lowStockThreshold(1)
                 .createTime(LocalDateTime.now())
                 .updateTime(LocalDateTime.now())
                 .build();
@@ -197,6 +204,32 @@ class GroupBuyServiceTest {
         assertEquals(productId, details.get(0).getProductId());
         assertEquals(2, details.get(0).getNumber());
         assertEquals(new BigDecimal("88.00"), details.get(0).getAmount());
+
+        assertEquals(3, productMapper.getById(productId).getStock());
+        List<ProductInventoryLog> logs = productInventoryLogMapper.listByProductId(productId);
+        assertEquals(1, logs.size());
+        assertInventoryLog(logs.get(0), -2, 5, 3, "GROUP_BUY_RESERVE", preOrder.getId(), "MEMBER", memberId);
+    }
+
+    @Test
+    void initiate_whenProductStockIsNotEnough_throwsBusinessExceptionAndDoesNotCreatePreOrder() {
+        InitiateGroupBuyDTO dto = new InitiateGroupBuyDTO();
+        dto.setProductId(productId);
+        dto.setQuantity(6);
+        dto.setAddressId(addressId);
+        dto.setRequiredCount(3);
+
+        com.sky.exception.OrderBusinessException exception = Assertions.assertThrows(
+                com.sky.exception.OrderBusinessException.class,
+                () -> groupBuyService.initiate(dto)
+        );
+        assertEquals("商品庫存不足", exception.getMessage());
+        assertEquals(5, productMapper.getById(productId).getStock());
+
+        OrdersPageQueryDTO queryDTO = new OrdersPageQueryDTO();
+        queryDTO.setUserId(memberId);
+        assertEquals(0, orderMapper.pageQuery(queryDTO).size());
+        assertEquals(0, productInventoryLogMapper.listByProductId(productId).size());
     }
 
     @Test
@@ -241,6 +274,12 @@ class GroupBuyServiceTest {
         assertEquals(Orders.CANCELLED, preOrder.getStatus());
         assertEquals("發起人取消揪團", preOrder.getCancelReason());
         assertNotNull(preOrder.getCancelTime());
+        assertEquals(5, productMapper.getById(productId).getStock());
+
+        List<ProductInventoryLog> logs = productInventoryLogMapper.listByProductId(productId);
+        assertEquals(2, logs.size());
+        assertInventoryLog(logs.get(0), -1, 5, 4, "GROUP_BUY_RESERVE", preOrder.getId(), "MEMBER", memberId);
+        assertInventoryLog(logs.get(1), 1, 4, 5, "GROUP_BUY_CANCEL_RESTORE", preOrder.getId(), "MEMBER", memberId);
     }
 
     @Test
@@ -335,5 +374,17 @@ class GroupBuyServiceTest {
                 .build();
         shippingAddressMapper.insert(shippingAddress);
         return shippingAddress.getId();
+    }
+
+    private void assertInventoryLog(ProductInventoryLog log, int changeQuantity, int stockBefore, int stockAfter,
+                                    String reason, Long orderId, String operatorType, Long operatorId) {
+        assertEquals(changeQuantity, log.getChangeQuantity());
+        assertEquals(stockBefore, log.getStockBefore());
+        assertEquals(stockAfter, log.getStockAfter());
+        assertEquals(reason, log.getReason());
+        assertEquals("ORDER", log.getReferenceType());
+        assertEquals(orderId, log.getReferenceId());
+        assertEquals(operatorType, log.getOperatorType());
+        assertEquals(operatorId, log.getOperatorId());
     }
 }

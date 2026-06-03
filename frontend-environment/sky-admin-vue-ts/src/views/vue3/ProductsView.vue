@@ -473,6 +473,8 @@ function inventoryReasonLabel(reason: string) {
   const labels: Record<string, string> = {
     ORDER_RESERVE: '訂單預留庫存',
     ORDER_CANCEL_RESTORE: '訂單取消回補',
+    GROUP_BUY_RESERVE: '揪團預留庫存',
+    GROUP_BUY_CANCEL_RESTORE: '揪團取消回補',
     MANUAL_ADJUSTMENT: '人工調整'
   }
   return labels[reason] || reason || '-'

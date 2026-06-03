@@ -11,6 +11,7 @@ import com.sky.entity.GroupBuyParticipant;
 import com.sky.entity.OrderDetail;
 import com.sky.entity.Orders;
 import com.sky.entity.Product;
+import com.sky.entity.ProductInventoryLog;
 import com.sky.entity.ShippingAddress;
 import com.sky.exception.AddressBookBusinessException;
 import com.sky.exception.ForbiddenOperationException;
@@ -19,6 +20,7 @@ import com.sky.mapper.GroupBuyMapper;
 import com.sky.mapper.GroupBuyParticipantMapper;
 import com.sky.mapper.OrderDetailMapper;
 import com.sky.mapper.OrderMapper;
+import com.sky.mapper.ProductInventoryLogMapper;
 import com.sky.mapper.ProductMapper;
 import com.sky.mapper.ShippingAddressMapper;
 import com.sky.service.GroupBuyService;
@@ -51,6 +53,11 @@ public class GroupBuyServiceImpl implements GroupBuyService {
     private static final Integer GROUP_BUY_COMPLETED = 2;
     private static final Integer GROUP_BUY_FAILED = 3;
     private static final Integer GROUP_BUY_CANCELED = 4;
+    private static final String INVENTORY_REASON_GROUP_BUY_RESERVE = "GROUP_BUY_RESERVE";
+    private static final String INVENTORY_REASON_GROUP_BUY_CANCEL_RESTORE = "GROUP_BUY_CANCEL_RESTORE";
+    private static final String INVENTORY_REFERENCE_ORDER = "ORDER";
+    private static final String INVENTORY_OPERATOR_MEMBER = "MEMBER";
+    private static final String INVENTORY_OPERATOR_SYSTEM = "SYSTEM";
 
     @Autowired
     private GroupBuyMapper groupBuyMapper;
@@ -66,6 +73,9 @@ public class GroupBuyServiceImpl implements GroupBuyService {
 
     @Autowired
     private ProductMapper productMapper;
+
+    @Autowired
+    private ProductInventoryLogMapper productInventoryLogMapper;
 
     @Autowired
     private ShippingAddressMapper shippingAddressMapper;
@@ -313,6 +323,7 @@ public class GroupBuyServiceImpl implements GroupBuyService {
         preOrder.setCancelReason("發起人取消揪團");
         preOrder.setCancelTime(now);
         orderMapper.update(preOrder);
+        restoreGroupBuyStock(initiatorParticipant.getPreOrderId(), INVENTORY_OPERATOR_MEMBER, memberId);
 
         GroupBuy updatedGroupBuy = groupBuyMapper.getById(groupBuy.getId());
         return buildGroupBuyVO(updatedGroupBuy);
@@ -356,6 +367,7 @@ public class GroupBuyServiceImpl implements GroupBuyService {
         }
 
         for (GroupBuyParticipant participant : participants) {
+            restoreGroupBuyStock(participant.getPreOrderId(), INVENTORY_OPERATOR_SYSTEM, null);
             Orders order = orderMapper.getById(participant.getPreOrderId());
             if (order != null) {
                 log.info("揪團失敗退款: groupNo={}, memberId={}, orderId={}, amount={}",
@@ -376,6 +388,13 @@ public class GroupBuyServiceImpl implements GroupBuyService {
         Product product = productMapper.getById(productId);
         if (product == null) {
             throw new OrderBusinessException(MessageConstant.GROUP_BUY_FAILED);
+        }
+        if (!Integer.valueOf(1).equals(product.getStatus())
+                || quantity == null
+                || quantity <= 0
+                || product.getStock() == null
+                || product.getStock() < quantity) {
+            throw new OrderBusinessException(MessageConstant.PRODUCT_STOCK_NOT_ENOUGH);
         }
 
         ShippingAddress shippingAddress = shippingAddressMapper.getById(addressId);
@@ -404,6 +423,7 @@ public class GroupBuyServiceImpl implements GroupBuyService {
                 .tablewareStatus(0)
                 .build();
         orderMapper.insert(preOrder);
+        reserveGroupBuyStock(product, quantity, preOrder.getId(), memberId);
 
         OrderDetail orderDetail = OrderDetail.builder()
                 .orderId(preOrder.getId())
@@ -416,6 +436,54 @@ public class GroupBuyServiceImpl implements GroupBuyService {
         orderDetailMapper.insert(orderDetail);
 
         return preOrder;
+    }
+
+    private void reserveGroupBuyStock(Product product, Integer quantity, Long orderId, Long memberId) {
+        if (quantity == null || quantity <= 0) {
+            throw new OrderBusinessException(MessageConstant.PRODUCT_STOCK_NOT_ENOUGH);
+        }
+        int updatedRows = productMapper.decreaseStock(product.getId(), quantity);
+        if (updatedRows == 0) {
+            throw new OrderBusinessException(MessageConstant.PRODUCT_STOCK_NOT_ENOUGH);
+        }
+        int stockAfter = productMapper.getById(product.getId()).getStock();
+        int stockBefore = stockAfter + quantity;
+        writeInventoryLog(product.getId(), -quantity, stockBefore, stockAfter,
+                INVENTORY_REASON_GROUP_BUY_RESERVE, orderId, INVENTORY_OPERATOR_MEMBER, memberId);
+    }
+
+    private void restoreGroupBuyStock(Long orderId, String operatorType, Long operatorId) {
+        List<OrderDetail> orderDetails = orderDetailMapper.getByOrderId(orderId);
+        for (OrderDetail orderDetail : orderDetails) {
+            if (orderDetail.getProductId() == null || orderDetail.getNumber() == null || orderDetail.getNumber() <= 0) {
+                continue;
+            }
+            Product product = productMapper.getById(orderDetail.getProductId());
+            if (product == null) {
+                continue;
+            }
+            productMapper.increaseStock(orderDetail.getProductId(), orderDetail.getNumber());
+            int stockAfter = productMapper.getById(orderDetail.getProductId()).getStock();
+            int stockBefore = stockAfter - orderDetail.getNumber();
+            writeInventoryLog(orderDetail.getProductId(), orderDetail.getNumber(), stockBefore, stockAfter,
+                    INVENTORY_REASON_GROUP_BUY_CANCEL_RESTORE, orderId, operatorType, operatorId);
+        }
+    }
+
+    private void writeInventoryLog(Long productId, Integer changeQuantity, Integer stockBefore, Integer stockAfter,
+                                   String reason, Long orderId, String operatorType, Long operatorId) {
+        productInventoryLogMapper.insert(ProductInventoryLog.builder()
+                .productId(productId)
+                .changeQuantity(changeQuantity)
+                .stockBefore(stockBefore)
+                .stockAfter(stockAfter)
+                .reason(reason)
+                .referenceType(INVENTORY_REFERENCE_ORDER)
+                .referenceId(orderId)
+                .operatorType(operatorType)
+                .operatorId(operatorId)
+                .createdAt(LocalDateTime.now())
+                .build());
     }
 
     private GroupBuyVO buildGroupBuyVO(GroupBuy groupBuy) {
