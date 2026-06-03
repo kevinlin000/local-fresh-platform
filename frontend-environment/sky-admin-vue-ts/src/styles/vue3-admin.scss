@@ -112,3 +112,40 @@ a {
   justify-content: flex-end;
   margin-top: 20px;
 }
+
+.inline-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+}
+
+.inline-actions {
+  display: grid;
+  grid-template-columns: 1fr 64px;
+  gap: 10px;
+  align-items: center;
+}
+
+.relation-list {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+}
+
+.relation-row {
+  display: grid;
+  grid-template-columns: 1fr 120px 64px;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--admin-line);
+  border-radius: 12px;
+  background: #fffdf7;
+}
+
+.helper-text {
+  margin: 0;
+  color: #7c8b77;
+  font-size: 12px;
+}
