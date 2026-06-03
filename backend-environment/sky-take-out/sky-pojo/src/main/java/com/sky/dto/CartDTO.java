@@ -2,7 +2,7 @@ package com.sky.dto;
 
 import lombok.Data;
 import java.io.Serializable;
-import javax.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.AssertTrue;
 
 @Data
 public class CartDTO implements Serializable {

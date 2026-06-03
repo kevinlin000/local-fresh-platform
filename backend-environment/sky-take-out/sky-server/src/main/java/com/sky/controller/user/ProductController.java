@@ -5,8 +5,8 @@ import com.sky.entity.Product;
 import com.sky.result.Result;
 import com.sky.service.ProductService;
 import com.sky.vo.ProductVO;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -15,14 +15,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @RestController("userProductController")
 @RequestMapping("/user/product")
 @Slf4j
-@Api(tags = "會員端-單品瀏覽介面")
+@Tag(name = "會員端-單品瀏覽介面")
 public class ProductController {
     @Autowired
     private ProductService productService;
@@ -37,7 +37,7 @@ public class ProductController {
      * @return
      */
     @GetMapping("/list")
-    @ApiOperation("根據分類 ID 查詢單品")
+    @Operation(summary = "根據分類 ID 查詢單品")
     public Result<List<ProductVO>> list(Long categoryId) {
 
         // 構建redis的key,規則：product_分類 ID
@@ -68,7 +68,7 @@ public class ProductController {
      * @return 商品詳情
      */
     @GetMapping("/{id}")
-    @ApiOperation("根據 ID 查詢商品詳情")
+    @Operation(summary = "根據 ID 查詢商品詳情")
     public Result<ProductVO> getById(@PathVariable Long id) {
         ProductVO productVO = productService.getByIdWithFlavor(id);
         return Result.success(productVO);

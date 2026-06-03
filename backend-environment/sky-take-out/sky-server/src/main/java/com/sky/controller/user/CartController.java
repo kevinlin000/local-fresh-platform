@@ -4,20 +4,20 @@ import com.sky.dto.CartDTO;
 import com.sky.entity.Cart;
 import com.sky.result.Result;
 import com.sky.service.CartService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.List;
 
 
 @RestController
 @RequestMapping("/user/cart")
 @Slf4j
-@Api(tags = "會員端購物車介面")
+@Tag(name = "會員端購物車介面")
 public class CartController {
 
     @Autowired
@@ -28,7 +28,7 @@ public class CartController {
      * @return
      */
     @PostMapping("/add")
-    @ApiOperation("加入購物車")
+    @Operation(summary = "加入購物車")
     public Result add(@Valid @RequestBody CartDTO shoppingCartDTO) {
         log.info("加入購物車, 商品資訊為: {}", shoppingCartDTO);
         cartService.addShoppingCart(shoppingCartDTO);
@@ -42,7 +42,7 @@ public class CartController {
      * @return success
      */
     @PostMapping("/sub")
-    @ApiOperation("減少購物車商品數量")
+    @Operation(summary = "減少購物車商品數量")
     public Result sub(@Valid @RequestBody CartDTO cartDTO) {
         log.info("減少購物車商品, 商品資訊為: {}", cartDTO);
         cartService.subShoppingCart(cartDTO);
@@ -54,7 +54,7 @@ public class CartController {
      * @return
      */
     @GetMapping("/list")
-    @ApiOperation("查詢購物車")
+    @Operation(summary = "查詢購物車")
     public Result<List<Cart>> list() {
         List<Cart> list = cartService.showShoppingCart();
         return Result.success(list);
@@ -66,7 +66,7 @@ public class CartController {
      * @return
      */
     @DeleteMapping("/clean")
-    @ApiOperation("清空購物車")
+    @Operation(summary = "清空購物車")
     public Result clean(){
         cartService.cleanShoppingCart();
         return  Result.success();

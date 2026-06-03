@@ -7,13 +7,13 @@ import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.ProductService;
 import com.sky.vo.ProductVO;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.List;
 
 /**
@@ -21,7 +21,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/admin/product")
-@Api(tags = "單品相關介面")
+@Tag(name = "單品相關介面")
 @Slf4j
 public class ProductController {
 
@@ -34,7 +34,7 @@ public class ProductController {
      * @return
      */
     @PostMapping
-    @ApiOperation("新增單品")
+    @Operation(summary = "新增單品")
     public Result save(@Valid @RequestBody ProductDTO dishDTO) {
         log.info("新增單品：{}", dishDTO);
         productService.saveWithFlavor(dishDTO);
@@ -48,7 +48,7 @@ public class ProductController {
      * @return
      */
     @GetMapping("/page")
-    @ApiOperation("單品分頁查詢")
+    @Operation(summary = "單品分頁查詢")
     public Result<PageResult> page(ProductPageQueryDTO  dishPageQueryDTO) {
         log.info("單品分頁查詢：{}", dishPageQueryDTO);
         PageResult pageResult = productService.pageQuery(dishPageQueryDTO);
@@ -61,7 +61,7 @@ public class ProductController {
      * @return
      */
     @DeleteMapping
-    @ApiOperation("批量刪除單品")
+    @Operation(summary = "批量刪除單品")
     public Result delete(@RequestParam List<Long> ids){
         log.info("單品批量刪除：{}", ids);
         productService.deleteBatch(ids);
@@ -74,7 +74,7 @@ public class ProductController {
      * @return
      */
     @GetMapping ("/{id}")
-    @ApiOperation("根據 ID 查詢單品")
+    @Operation(summary = "根據 ID 查詢單品")
     public Result<ProductVO> getById(@PathVariable Long id){
         log.info("根據 ID 查詢單品：{}", id);
         ProductVO dishVO = productService.getByIdWithFlavor(id);
@@ -87,7 +87,7 @@ public class ProductController {
      * @return
      */
     @PutMapping
-    @ApiOperation("修改單品")
+    @Operation(summary = "修改單品")
     public Result update(@Valid @RequestBody ProductDTO dishDTO){
         log.info("修改單品：{}", dishDTO);
         productService.updateWithFlavor(dishDTO);
@@ -102,7 +102,7 @@ public class ProductController {
      * @return
      */
     @PostMapping("/status/{status}")
-    @ApiOperation("單品上架下架")
+    @Operation(summary = "單品上架下架")
     public Result<String> startOrStop(@PathVariable Integer status, Long id){
         productService.startOrStop(status, id);
         return Result.success();
@@ -114,7 +114,7 @@ public class ProductController {
      * @return
      */
     @GetMapping("/list")
-    @ApiOperation("根據分類 ID 查詢單品")
+    @Operation(summary = "根據分類 ID 查詢單品")
     public Result<List<Product>> list(Long categoryId){
         List<Product> list = productService.list(categoryId);
         return Result.success(list);

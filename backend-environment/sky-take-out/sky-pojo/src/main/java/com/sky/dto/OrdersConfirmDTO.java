@@ -3,7 +3,7 @@ package com.sky.dto;
 import lombok.Data;
 
 import java.io.Serializable;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 @Data
 public class OrdersConfirmDTO implements Serializable {

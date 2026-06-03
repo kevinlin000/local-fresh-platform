@@ -1,7 +1,7 @@
 spring:
   autoconfigure:
     exclude:
-      - com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure
+      - com.alibaba.druid.spring.boot3.autoconfigure.DruidDataSourceAutoConfigure
       - org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration
       - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
   datasource:
@@ -13,10 +13,6 @@ spring:
     init:
       schema-locations: classpath:schema-test.sql
       mode: always
-
-springfox:
-  documentation:
-    enabled: false
 
 management:
   health:

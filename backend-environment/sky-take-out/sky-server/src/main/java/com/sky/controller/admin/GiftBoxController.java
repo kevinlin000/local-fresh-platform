@@ -6,15 +6,15 @@ import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.GiftBoxService;
 import com.sky.vo.GiftBoxVO;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
-import javax.validation.Valid;
+import jakarta.annotation.Resource;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Set;
 
@@ -23,7 +23,7 @@ import java.util.Set;
  */
 @RestController
 @RequestMapping("/admin/giftbox")
-@Api(tags = "直送箱相關介面")
+@Tag(name = "直送箱相關介面")
 @Slf4j
 public class GiftBoxController {
 
@@ -39,7 +39,7 @@ public class GiftBoxController {
      * @return
      */
     @PostMapping
-    @ApiOperation("新增直送箱")
+    @Operation(summary = "新增直送箱")
     public Result save(@Valid @RequestBody GiftBoxDTO setmealDTO) {
         giftBoxService.saveWithDish(setmealDTO);
         cleanCache("giftbox_*");
@@ -52,7 +52,7 @@ public class GiftBoxController {
      * @return
      */
     @GetMapping("/page")
-    @ApiOperation("直送箱分頁查詢")
+    @Operation(summary = "直送箱分頁查詢")
     public Result<PageResult> page(GiftBoxPageQueryDTO setmealPageQueryDTO) {
         PageResult pageResult = giftBoxService.pageQuery(setmealPageQueryDTO);
         return Result.success(pageResult);
@@ -64,7 +64,7 @@ public class GiftBoxController {
      * @return
      */
     @DeleteMapping
-    @ApiOperation("批量刪除直送箱")
+    @Operation(summary = "批量刪除直送箱")
     public Result delete(@RequestParam List<Long> ids){
         giftBoxService.deleteBatch(ids);
         cleanCache("giftbox_*");
@@ -78,7 +78,7 @@ public class GiftBoxController {
      * @return
      */
     @GetMapping("/{id}")
-    @ApiOperation("根據 ID 查詢直送箱")
+    @Operation(summary = "根據 ID 查詢直送箱")
     public Result<GiftBoxVO> getById(@PathVariable Long id) {
         GiftBoxVO setmealVO = giftBoxService.getByIdWithDish(id);
         return Result.success(setmealVO);
@@ -91,7 +91,7 @@ public class GiftBoxController {
      * @return
      */
     @PutMapping
-    @ApiOperation("修改直送箱")
+    @Operation(summary = "修改直送箱")
     public Result update(@Valid @RequestBody GiftBoxDTO setmealDTO) {
         giftBoxService.update(setmealDTO);
         cleanCache("giftbox_*");
@@ -105,7 +105,7 @@ public class GiftBoxController {
      * @return
      */
     @PostMapping("/status/{status}")
-    @ApiOperation("直送箱上架下架")
+    @Operation(summary = "直送箱上架下架")
     public Result startOrStop(@PathVariable Integer status, Long id) {
         giftBoxService.startOrStop(status, id);
         cleanCache("giftbox_*");

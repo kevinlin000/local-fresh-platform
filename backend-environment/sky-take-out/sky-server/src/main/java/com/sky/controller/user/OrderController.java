@@ -8,17 +8,17 @@ import com.sky.service.OrderService;
 import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 @RestController("userOrderController")
 @RequestMapping("/user/order")
-@Api(tags = "會員端訂單相關介面")
+@Tag(name = "會員端訂單相關介面")
 @Slf4j
 public class OrderController {
 
@@ -30,7 +30,7 @@ public class OrderController {
      * @return
      */
     @PostMapping("/submit")
-    @ApiOperation("會員下單")
+    @Operation(summary = "會員下單")
     public Result<OrderSubmitVO> submit(@Valid @RequestBody OrdersSubmitDTO ordersSubmitDTO) {
         log.info("會員下單, 參數為: {}", ordersSubmitDTO);
         OrderSubmitVO orderSubmitVO = orderService.submitOrder(ordersSubmitDTO);
@@ -44,7 +44,7 @@ public class OrderController {
      * @return
      */
     @PutMapping("/payment")
-    @ApiOperation("訂單支付")
+    @Operation(summary = "訂單支付")
     public Result<OrderPaymentVO> payment(@Valid @RequestBody OrdersPaymentDTO ordersPaymentDTO) throws Exception {
         log.info("訂單支付：{}", ordersPaymentDTO);
         OrderPaymentVO orderPaymentVO = orderService.payment(ordersPaymentDTO);
@@ -61,7 +61,7 @@ public class OrderController {
      * @return
      */
     @GetMapping("/historyOrders")
-    @ApiOperation("歷史訂單查詢")
+    @Operation(summary = "歷史訂單查詢")
     public Result<PageResult> page(int page, int pageSize, Integer status) {
         PageResult pageResult = orderService.pageQuery4User(page, pageSize, status);
         return Result.success(pageResult);
@@ -74,7 +74,7 @@ public class OrderController {
      * @return
      */
     @GetMapping("/orderDetail/{id}")
-    @ApiOperation("查詢訂單詳情")
+    @Operation(summary = "查詢訂單詳情")
     public Result<OrderVO> details(@PathVariable("id") Long id) {
         OrderVO orderVO = orderService.userDetails(id);
         return Result.success(orderVO);
@@ -86,7 +86,7 @@ public class OrderController {
      * @return
      */
     @PutMapping("/cancel/{id}")
-    @ApiOperation("取消訂單")
+    @Operation(summary = "取消訂單")
     public Result cancel(@PathVariable("id") Long id) throws Exception {
         orderService.userCancelById(id);
         return Result.success();
@@ -99,7 +99,7 @@ public class OrderController {
      * @return
      */
     @PostMapping("/repetition/{id}")
-    @ApiOperation("再來一單")
+    @Operation(summary = "再來一單")
     public Result repetition(@PathVariable Long id) {
         orderService.repetition(id);
         return Result.success();
@@ -111,7 +111,7 @@ public class OrderController {
      * @return
      */
     @GetMapping("/reminder/{id}")
-    @ApiOperation("顧客催單")
+    @Operation(summary = "顧客催單")
     public Result reminder( @PathVariable("id") Long id){
         orderService.reminder(id);
         return Result.success();

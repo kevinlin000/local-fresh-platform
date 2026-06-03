@@ -6,8 +6,8 @@ import com.sky.vo.BusinessDataVO;
 import com.sky.vo.ProductOverViewVO;
 import com.sky.vo.OrderOverViewVO;
 import com.sky.vo.GiftBoxOverViewVO;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,7 +22,7 @@ import java.time.LocalTime;
 @RestController
 @RequestMapping("/admin/workspace")
 @Slf4j
-@Api(tags = "工作台相關介面")
+@Tag(name = "工作台相關介面")
 public class WorkSpaceController {
 
     @Autowired
@@ -33,7 +33,7 @@ public class WorkSpaceController {
      * @return
      */
     @GetMapping("/businessData")
-    @ApiOperation("工作台今日資料查詢")
+    @Operation(summary = "工作台今日資料查詢")
     public Result<BusinessDataVO> businessData(){
         //获得当天的开始时间
         LocalDateTime begin = LocalDateTime.now().with(LocalTime.MIN);
@@ -49,7 +49,7 @@ public class WorkSpaceController {
      * @return
      */
     @GetMapping("/overviewOrders")
-    @ApiOperation("查詢訂單管理資料")
+    @Operation(summary = "查詢訂單管理資料")
     public Result<OrderOverViewVO> orderOverView(){
         return Result.success(workspaceService.getOrderOverView());
     }
@@ -59,7 +59,7 @@ public class WorkSpaceController {
      * @return
      */
     @GetMapping("/overviewDishes")
-    @ApiOperation("查詢單品總覽")
+    @Operation(summary = "查詢單品總覽")
     public Result<ProductOverViewVO> dishOverView(){
         return Result.success(workspaceService.getDishOverView());
     }
@@ -69,7 +69,7 @@ public class WorkSpaceController {
      * @return
      */
     @GetMapping("/overviewSetmeals")
-    @ApiOperation("查詢直送箱總覽")
+    @Operation(summary = "查詢直送箱總覽")
     public Result<GiftBoxOverViewVO> setmealOverView(){
         return Result.success(workspaceService.getSetmealOverView());
     }

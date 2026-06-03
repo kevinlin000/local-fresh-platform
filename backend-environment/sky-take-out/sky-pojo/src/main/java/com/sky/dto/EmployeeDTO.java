@@ -3,8 +3,8 @@ package com.sky.dto;
 import lombok.Data;
 
 import java.io.Serializable;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 @Data
 public class EmployeeDTO implements Serializable {

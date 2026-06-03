@@ -5,8 +5,8 @@ import com.sky.dto.MemberLoginDTO;
 import com.sky.result.Result;
 import com.sky.service.MemberService;
 import com.sky.vo.MemberLoginVO;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,12 +14,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 
 @RestController
 @RequestMapping("/user/member")
-@Api(tags = "會員相關介面")
+@Tag(name = "會員相關介面")
 @Slf4j
 public class MemberController {
 
@@ -31,7 +31,7 @@ public class MemberController {
      * @return
      */
     @PostMapping("/login")
-    @ApiOperation("會員登入")
+    @Operation(summary = "會員登入")
     public Result<MemberLoginVO> login(@Valid @RequestBody MemberLoginDTO userLoginDTO) {
         log.info("會員登入：{}", userLoginDTO.getCode());
         return Result.success(memberService.mockLogin(userLoginDTO));
@@ -39,7 +39,7 @@ public class MemberController {
     }
 
     @PostMapping("/oauth/google")
-    @ApiOperation("Google OAuth 會員登入")
+    @Operation(summary = "Google OAuth 會員登入")
     public Result<MemberLoginVO> googleOAuthLogin(@Valid @RequestBody GoogleOAuthLoginDTO googleOAuthLoginDTO) {
         log.info("Google OAuth 會員登入，redirectUri={}", googleOAuthLoginDTO.getRedirectUri());
         return Result.success(memberService.googleOAuthLogin(googleOAuthLoginDTO));

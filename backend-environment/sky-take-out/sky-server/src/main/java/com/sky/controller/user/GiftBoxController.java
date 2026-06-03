@@ -5,8 +5,8 @@ import com.sky.entity.GiftBox;
 import com.sky.result.Result;
 import com.sky.service.GiftBoxService;
 import com.sky.vo.ProductItemVO;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,13 +14,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @RestController("userGiftBoxController")
 @RequestMapping("/user/giftbox")
-@Api(tags = "會員端-直送箱瀏覽介面")
+@Tag(name = "會員端-直送箱瀏覽介面")
 public class GiftBoxController {
     @Autowired
     private GiftBoxService giftBoxService;
@@ -35,7 +35,7 @@ public class GiftBoxController {
      * @return
      */
     @GetMapping("/list")
-    @ApiOperation("根據分類 ID 查詢直送箱")
+    @Operation(summary = "根據分類 ID 查詢直送箱")
     public Result<List<GiftBox>> list(Long categoryId) {
         String key = "giftbox_" + categoryId;
 
@@ -60,7 +60,7 @@ public class GiftBoxController {
      * @return
      */
     @GetMapping("/product/{id}")
-    @ApiOperation("根據直送箱 ID 查詢包含的單品列表")
+    @Operation(summary = "根據直送箱 ID 查詢包含的單品列表")
     public Result<List<ProductItemVO>> dishList(@PathVariable("id") Long id) {
         List<ProductItemVO> list = giftBoxService.getDishItemById(id);
         return Result.success(list);

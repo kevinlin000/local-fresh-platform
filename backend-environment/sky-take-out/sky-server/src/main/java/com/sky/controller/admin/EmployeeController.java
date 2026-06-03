@@ -11,13 +11,13 @@ import com.sky.result.Result;
 import com.sky.service.EmployeeService;
 import com.sky.utils.JwtUtil;
 import com.sky.vo.EmployeeLoginVO;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,7 +27,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/admin/employee")
 @Slf4j
-@Api(tags = "員工管理相關介面")
+@Tag(name = "員工管理相關介面")
 public class EmployeeController {
 
     @Autowired
@@ -42,7 +42,7 @@ public class EmployeeController {
      * @return
      */
     @PostMapping("/login")
-    @ApiOperation("員工登入")
+    @Operation(summary = "員工登入")
     public Result<EmployeeLoginVO> login(@Valid @RequestBody EmployeeLoginDTO employeeLoginDTO) {
         log.info("員工登入：{}", employeeLoginDTO);
 
@@ -72,7 +72,7 @@ public class EmployeeController {
      * @return
      */
     @PostMapping("/logout")
-    @ApiOperation("員工登出")
+    @Operation(summary = "員工登出")
     public Result<String> logout() {
         return Result.success();
     }
@@ -83,7 +83,7 @@ public class EmployeeController {
      * @return
      */
     @PostMapping
-    @ApiOperation("新增員工")
+    @Operation(summary = "新增員工")
     public Result save(@Valid @RequestBody EmployeeDTO employeeDTO) {
         log.info("新增員工：{}", employeeDTO);
         employeeService.save(employeeDTO);
@@ -96,7 +96,7 @@ public class EmployeeController {
      * @return
      */
     @GetMapping("/page")
-    @ApiOperation("員工分頁查詢")
+    @Operation(summary = "員工分頁查詢")
     public Result<PageResult> page(EmployeePageQueryDTO employeePageQueryDTO){
         log.info("員工分頁查詢：{}", employeePageQueryDTO);
         PageResult pageResult = employeeService.pageQuery(employeePageQueryDTO);
@@ -109,7 +109,7 @@ public class EmployeeController {
      * @return
      */
     @PostMapping("/status/{status}")
-    @ApiOperation("啟用或停用員工帳號")
+    @Operation(summary = "啟用或停用員工帳號")
     public Result startOrStop(@PathVariable Integer status, Long id){
         log.info("啟用停用員工帳號：{},{}", status, id);
         employeeService.startOrStop(status, id);
@@ -121,7 +121,7 @@ public class EmployeeController {
      * @return
      */
     @GetMapping("/{id}")
-    @ApiOperation("根據 ID 查詢員工資訊")
+    @Operation(summary = "根據 ID 查詢員工資訊")
     public Result<Employee> getById(@PathVariable Long id){
         Employee employee = employeeService.getById(id);
         return Result.success(employee);
@@ -133,7 +133,7 @@ public class EmployeeController {
      * @return
      */
     @PutMapping
-    @ApiOperation("編輯員工資訊")
+    @Operation(summary = "編輯員工資訊")
     public Result update(@Valid @RequestBody EmployeeDTO employeeDTO){
         log.info("編輯員工資訊：{}", employeeDTO);
         employeeService.update(employeeDTO);

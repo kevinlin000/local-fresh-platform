@@ -4,6 +4,9 @@ import com.sky.interceptor.JwtTokenAdminInterceptor;
 import com.sky.interceptor.JwtTokenUserInterceptor;
 import com.sky.json.JacksonObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -14,12 +17,6 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
-import springfox.documentation.builders.ApiInfoBuilder;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.service.ApiInfo;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
 
 import java.util.List;
 
@@ -71,44 +68,33 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
     }
 
     /**
-     * 通过knife4j生成接口文档
+     * 通过 springdoc 生成接口文档
      * @return
      */
     @Bean
-    public Docket docket1() {
+    public OpenAPI openAPI() {
         log.info("準備生成接口文檔...");
-        ApiInfo apiInfo = new ApiInfoBuilder()
-                .title("苍穹外卖项目接口文档")
-                .version("2.0")
-                .description("苍穹外卖项目接口文档")
-                .build();
-
-        Docket docket = new Docket(DocumentationType.SWAGGER_2)
-                .groupName("管理端接口")
-                .apiInfo(apiInfo)
-                .select()
-                .apis(RequestHandlerSelectors.basePackage("com.sky.controller.admin"))
-                .paths(PathSelectors.any())
-                .build();
-        return docket;
+        return new OpenAPI()
+                .info(new Info()
+                        .title("蒼穹外賣項目接口文檔")
+                        .version("3.0")
+                        .description("蒼穹外賣項目接口文檔"));
     }
 
     @Bean
-    public Docket docket2() {
-        log.info("準備生成接口文檔...");
-        ApiInfo apiInfo = new ApiInfoBuilder()
-                .title("苍穹外卖项目接口文档")
-                .version("2.0")
-                .description("苍穹外卖项目接口文档")
+    public GroupedOpenApi adminApi() {
+        return GroupedOpenApi.builder()
+                .group("管理端接口")
+                .packagesToScan("com.sky.controller.admin")
                 .build();
-        Docket docket = new Docket(DocumentationType.SWAGGER_2)
-                .groupName("用户端接口")
-                .apiInfo(apiInfo)
-                .select()
-                .apis(RequestHandlerSelectors.basePackage("com.sky.controller.user"))
-                .paths(PathSelectors.any())
+    }
+
+    @Bean
+    public GroupedOpenApi userApi() {
+        return GroupedOpenApi.builder()
+                .group("用戶端接口")
+                .packagesToScan("com.sky.controller.user")
                 .build();
-        return docket;
     }
 
     /**
@@ -117,7 +103,7 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
      */
     protected void addResourceHandlers(ResourceHandlerRegistry registry) {
         log.info("开始设置静态资源映射...");
-        registry.addResourceHandler("/doc.html").addResourceLocations("classpath:/META-INF/resources/");
+        registry.addResourceHandler("/swagger-ui/**").addResourceLocations("classpath:/META-INF/resources/webjars/swagger-ui/");
         registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
     }
 

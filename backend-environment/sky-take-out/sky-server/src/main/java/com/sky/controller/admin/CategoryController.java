@@ -6,13 +6,13 @@ import com.sky.entity.Category;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.CategoryService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.List;
 
 /**
@@ -20,7 +20,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/admin/category")
-@Api(tags = "分類相關介面")
+@Tag(name = "分類相關介面")
 @Slf4j
 public class CategoryController {
 
@@ -33,7 +33,7 @@ public class CategoryController {
      * @return
      */
     @PostMapping
-    @ApiOperation("新增分類")
+    @Operation(summary = "新增分類")
     public Result<String> save(@Valid @RequestBody CategoryDTO categoryDTO){
         log.info("新增分類：{}", categoryDTO);
         categoryService.save(categoryDTO);
@@ -46,7 +46,7 @@ public class CategoryController {
      * @return
      */
     @GetMapping("/page")
-    @ApiOperation("分類分頁查詢")
+    @Operation(summary = "分類分頁查詢")
     public Result<PageResult> page(CategoryPageQueryDTO categoryPageQueryDTO){
         log.info("分頁查詢：{}", categoryPageQueryDTO);
         PageResult pageResult = categoryService.pageQuery(categoryPageQueryDTO);
@@ -59,7 +59,7 @@ public class CategoryController {
      * @return
      */
     @DeleteMapping
-    @ApiOperation("刪除分類")
+    @Operation(summary = "刪除分類")
     public Result<String> deleteById(Long id){
         log.info("刪除分類：{}", id);
         categoryService.deleteById(id);
@@ -72,7 +72,7 @@ public class CategoryController {
      * @return
      */
     @PutMapping
-    @ApiOperation("修改分類")
+    @Operation(summary = "修改分類")
     public Result<String> update(@Valid @RequestBody CategoryDTO categoryDTO){
         categoryService.update(categoryDTO);
         return Result.success();
@@ -85,7 +85,7 @@ public class CategoryController {
      * @return
      */
     @PostMapping("/status/{status}")
-    @ApiOperation("啟用停用分類")
+    @Operation(summary = "啟用停用分類")
     public Result<String> startOrStop(@PathVariable("status") Integer status, Long id){
         categoryService.startOrStop(status,id);
         return Result.success();
@@ -97,7 +97,7 @@ public class CategoryController {
      * @return
      */
     @GetMapping("/list")
-    @ApiOperation("根據類型查詢分類")
+    @Operation(summary = "根據類型查詢分類")
     public Result<List<Category>> list(Integer type){
         List<Category> list = categoryService.list(type);
         return Result.success(list);

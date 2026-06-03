@@ -48,7 +48,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 
-@SpringBootTest(properties = "springfox.documentation.enabled=false")
+@SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class GroupBuyRedisIntegrationTest extends RedisContainerTestBase {
