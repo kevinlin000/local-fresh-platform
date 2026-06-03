@@ -32,7 +32,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -317,28 +316,7 @@ public class OrderServiceImpl implements OrderService {
 
         OrderStatusTransitionPolicy.requireAllowed(ordersDB, Transition.USER_CANCEL);
 
-        Orders orders = new Orders();
-        orders.setId(ordersDB.getId());
-
-        // 订单处于待接单状态下取消，需要进行退款
-        if (ordersDB.getStatus().equals(Orders.TO_BE_CONFIRMED)) {
-            //调用微信支付退款接口
-            weChatPayUtil.refund(
-                    ordersDB.getNumber(), //商户订单号
-                    ordersDB.getNumber(), //商户退款单号
-                    ordersDB.getAmount(),//退款金额，单位 元
-                    ordersDB.getAmount());//原订单金额
-
-            //支付状态修改为 退款
-            orders.setPayStatus(Orders.REFUND);
-        }
-
-        // 更新订单状态、取消原因、取消时间
-        orders.setStatus(Orders.CANCELLED);
-        orders.setCancelReason("用户取消");
-        orders.setCancelTime(LocalDateTime.now());
-        orderMapper.update(orders);
-        restoreProductStock(ordersDB.getId(), INVENTORY_OPERATOR_MEMBER, BaseContext.getCurrentId());
+        cancelOrder(ordersDB, "用户取消", null, INVENTORY_OPERATOR_MEMBER, BaseContext.getCurrentId());
     }
 
     /**
@@ -466,7 +444,6 @@ public class OrderServiceImpl implements OrderService {
                 .build();
 
         orderMapper.update(orders);
-        restoreProductStock(ordersDB.getId(), INVENTORY_OPERATOR_ADMIN, BaseContext.getCurrentId());
     }
 
     /**
@@ -480,26 +457,8 @@ public class OrderServiceImpl implements OrderService {
 
         OrderStatusTransitionPolicy.requireAllowed(ordersDB, Transition.ADMIN_REJECT);
 
-        //支付状态
-        Integer payStatus = ordersDB.getPayStatus();
-        if (payStatus == Orders.PAID) {
-            //用户已支付，需要退款
-            String refund = weChatPayUtil.refund(
-                    ordersDB.getNumber(),
-                    ordersDB.getNumber(),
-                    new BigDecimal(0.01),
-                    new BigDecimal(0.01));
-            log.info("申请退款：{}", refund);
-        }
-
-        // 拒单需要退款，根据订单id更新订单状态、拒单原因、取消时间
-        Orders orders = new Orders();
-        orders.setId(ordersDB.getId());
-        orders.setStatus(Orders.CANCELLED);
-        orders.setRejectionReason(ordersRejectionDTO.getRejectionReason());
-        orders.setCancelTime(LocalDateTime.now());
-
-        orderMapper.update(orders);
+        cancelOrder(ordersDB, null, ordersRejectionDTO.getRejectionReason(),
+                INVENTORY_OPERATOR_ADMIN, BaseContext.getCurrentId());
     }
 
     /**
@@ -515,25 +474,31 @@ public class OrderServiceImpl implements OrderService {
         }
         OrderStatusTransitionPolicy.requireAllowed(ordersDB, Transition.ADMIN_CANCEL);
 
-        Integer payStatus = ordersDB.getPayStatus();
-        if (payStatus == 1) {
-            //用户已支付，需要退款
+        cancelOrder(ordersDB, ordersCancelDTO.getCancelReason(), null,
+                INVENTORY_OPERATOR_ADMIN, BaseContext.getCurrentId());
+    }
+
+    private void cancelOrder(Orders ordersDB, String cancelReason, String rejectionReason,
+                             String operatorType, Long operatorId) throws Exception {
+        Orders orders = new Orders();
+        orders.setId(ordersDB.getId());
+        orders.setStatus(Orders.CANCELLED);
+        orders.setCancelReason(cancelReason);
+        orders.setRejectionReason(rejectionReason);
+        orders.setCancelTime(LocalDateTime.now());
+
+        if (Orders.PAID.equals(ordersDB.getPayStatus())) {
             String refund = weChatPayUtil.refund(
                     ordersDB.getNumber(),
                     ordersDB.getNumber(),
-                    new BigDecimal(0.01),
-                    new BigDecimal(0.01));
+                    ordersDB.getAmount(),
+                    ordersDB.getAmount());
             log.info("申请退款：{}", refund);
+            orders.setPayStatus(Orders.REFUND);
         }
 
-        // 管理端取消订单需要退款，根据订单id更新订单状态、取消原因、取消时间
-        Orders orders = new Orders();
-        orders.setId(ordersCancelDTO.getId());
-        orders.setStatus(Orders.CANCELLED);
-        orders.setCancelReason(ordersCancelDTO.getCancelReason());
-        orders.setCancelTime(LocalDateTime.now());
         orderMapper.update(orders);
-        restoreProductStock(ordersDB.getId(), INVENTORY_OPERATOR_ADMIN, BaseContext.getCurrentId());
+        restoreProductStock(ordersDB.getId(), operatorType, operatorId);
     }
 
     private void reserveProductStock(List<Cart> shoppingCartList, Long orderId, Long userId) {

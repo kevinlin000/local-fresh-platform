@@ -5,10 +5,12 @@ import com.sky.context.BaseContext;
 import com.sky.dto.OrdersCancelDTO;
 import com.sky.dto.OrdersConfirmDTO;
 import com.sky.dto.OrdersPaymentDTO;
+import com.sky.dto.OrdersRejectionDTO;
 import com.sky.entity.Orders;
 import com.sky.exception.OrderBusinessException;
 import com.sky.mapper.OrderDetailMapper;
 import com.sky.mapper.OrderMapper;
+import com.sky.service.InventoryService;
 import com.sky.utils.WeChatPayUtil;
 import com.sky.websocket.WebSocketServer;
 import org.junit.jupiter.api.AfterEach;
@@ -47,6 +49,9 @@ class OrderServiceImplTest {
 
     @Mock
     private WebSocketServer webSocketServer;
+
+    @Mock
+    private InventoryService inventoryService;
 
     @InjectMocks
     private OrderServiceImpl orderService;
@@ -163,6 +168,8 @@ class OrderServiceImplTest {
         orderService.confirm(dto);
 
         verify(orderMapper).update(any(Orders.class));
+        verifyNoInteractions(orderDetailMapper);
+        verifyNoInteractions(inventoryService);
     }
 
     @Test
@@ -186,6 +193,7 @@ class OrderServiceImplTest {
         Orders order = orderWithStatus(21L, Orders.TO_BE_CONFIRMED);
         order.setUserId(100L);
         order.setNumber("ORDER-004");
+        order.setPayStatus(Orders.PAID);
         order.setAmount(new BigDecimal("128.00"));
         when(orderMapper.getById(21L)).thenReturn(order);
         when(weChatPayUtil.refund(anyString(), anyString(), any(BigDecimal.class), any(BigDecimal.class)))
@@ -199,6 +207,30 @@ class OrderServiceImplTest {
         assertEquals(Orders.CANCELLED, updated.getStatus());
         assertEquals(Orders.REFUND, updated.getPayStatus());
         assertEquals("用户取消", updated.getCancelReason());
+        assertNotNull(updated.getCancelTime());
+    }
+
+    @Test
+    void adminRejectShouldRefundActualAmountSetRefundStatusAndCancelOrder() throws Exception {
+        Orders order = orderWithStatus(22L, Orders.TO_BE_CONFIRMED);
+        order.setNumber("ORDER-005");
+        order.setPayStatus(Orders.PAID);
+        order.setAmount(new BigDecimal("256.00"));
+        when(orderMapper.getById(22L)).thenReturn(order);
+        when(weChatPayUtil.refund(anyString(), anyString(), any(BigDecimal.class), any(BigDecimal.class)))
+                .thenReturn("{}");
+
+        OrdersRejectionDTO dto = new OrdersRejectionDTO();
+        dto.setId(22L);
+        dto.setRejectionReason("商品售完");
+        orderService.rejection(dto);
+
+        verify(weChatPayUtil).refund(eq("ORDER-005"), eq("ORDER-005"),
+                eq(new BigDecimal("256.00")), eq(new BigDecimal("256.00")));
+        Orders updated = captureUpdatedOrder();
+        assertEquals(Orders.CANCELLED, updated.getStatus());
+        assertEquals(Orders.REFUND, updated.getPayStatus());
+        assertEquals("商品售完", updated.getRejectionReason());
         assertNotNull(updated.getCancelTime());
     }
 
@@ -228,6 +260,26 @@ class OrderServiceImplTest {
         assertEquals("stock unavailable", updated.getCancelReason());
         assertNotNull(updated.getCancelTime());
         verifyNoInteractions(weChatPayUtil);
+    }
+
+    @Test
+    void adminCancelShouldRefundActualAmountWhenPaid() throws Exception {
+        Orders order = orderWithStatus(32L, Orders.CONFIRMED);
+        order.setNumber("ORDER-006");
+        order.setPayStatus(Orders.PAID);
+        order.setAmount(new BigDecimal("99.00"));
+        when(orderMapper.getById(32L)).thenReturn(order);
+        when(weChatPayUtil.refund(anyString(), anyString(), any(BigDecimal.class), any(BigDecimal.class)))
+                .thenReturn("{}");
+
+        orderService.cancel(cancelDTO(32L, "merchant closed"));
+
+        verify(weChatPayUtil).refund(eq("ORDER-006"), eq("ORDER-006"),
+                eq(new BigDecimal("99.00")), eq(new BigDecimal("99.00")));
+        Orders updated = captureUpdatedOrder();
+        assertEquals(Orders.CANCELLED, updated.getStatus());
+        assertEquals(Orders.REFUND, updated.getPayStatus());
+        assertEquals("merchant closed", updated.getCancelReason());
     }
 
     @Test
