@@ -52,8 +52,8 @@ export const routes: RouteRecordRaw[] = [
       {
         path: 'reports',
         name: 'Reports',
-        component: () => import('@/views/vue3/PlaceholderView.vue'),
-        meta: { title: '資料統計', planned: true }
+        component: () => import('@/views/vue3/ReportsView.vue'),
+        meta: { title: '資料統計' }
       }
     ]
   },
