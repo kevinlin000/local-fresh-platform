@@ -1,0 +1,74 @@
+spring:
+  datasource:
+    druid:
+      url: jdbc:mysql://${DB_HOST}:${DB_PORT:3306}/${DB_NAME}?serverTimezone=Asia/Taipei&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true
+      username: ${DB_USERNAME}
+      password: ${DB_PASSWORD}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+logging:
+  level:
+    com:
+      sky:
+        mapper: info
+        service: info
+        controller: info
+
+sky:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    host: ${DB_HOST}
+    port: ${DB_PORT:3306}
+    database: ${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    use-ssl: true
+  redis:
+    host: ${REDIS_HOST}
+    port: ${REDIS_PORT:6379}
+    database: ${REDIS_DATABASE:0}
+  cors:
+    allowed-origin-patterns: ${CORS_ALLOWED_ORIGIN_PATTERNS}
+  auth:
+    mock-login-enabled: false
+  jwt:
+    admin-secret-key: ${JWT_ADMIN_SECRET}
+    admin-ttl: ${JWT_ADMIN_TTL_MS:28800000}
+    user-secret-key: ${JWT_USER_SECRET}
+    user-ttl: ${JWT_USER_TTL_MS:604800000}
+  aws:
+    s3:
+      region: ${AWS_REGION}
+      access-key-id: ${AWS_ACCESS_KEY_ID}
+      secret-access-key: ${AWS_SECRET_ACCESS_KEY}
+      bucket-name: ${S3_BUCKET_NAME}
+  google:
+    api-key: ${GOOGLE_MAPS_API_KEY}
+  shop:
+    address: ${SHOP_ADDRESS}
+  wechat:
+    appid: ${WECHAT_APPID:disabled}
+    secret: ${WECHAT_SECRET:disabled}
+  oauth:
+    google:
+      client-id: ${GOOGLE_OAUTH_CLIENT_ID}
+      client-secret: ${GOOGLE_OAUTH_CLIENT_SECRET}
+      redirect-uri: ${GOOGLE_OAUTH_REDIRECT_URI}
+  group-buy:
+    share-base-url: ${GROUP_BUY_SHARE_BASE_URL}

@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import org.springdoc.core.models.GroupedOpenApi;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -35,6 +36,9 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
 
     @Value("${sky.cors.allowed-origin-patterns:http://localhost:*,http://127.0.0.1:*}")
     private String[] allowedOriginPatterns;
+
+    @Value("${springdoc.swagger-ui.enabled:true}")
+    private boolean swaggerUiEnabled;
 
     /**
      * 注册自定义拦截器
@@ -72,6 +76,7 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
      * @return
      */
     @Bean
+    @ConditionalOnProperty(name = "springdoc.api-docs.enabled", havingValue = "true", matchIfMissing = true)
     public OpenAPI openAPI() {
         log.info("準備生成接口文檔...");
         return new OpenAPI()
@@ -82,6 +87,7 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
     }
 
     @Bean
+    @ConditionalOnProperty(name = "springdoc.api-docs.enabled", havingValue = "true", matchIfMissing = true)
     public GroupedOpenApi adminApi() {
         return GroupedOpenApi.builder()
                 .group("管理端接口")
@@ -90,6 +96,7 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
     }
 
     @Bean
+    @ConditionalOnProperty(name = "springdoc.api-docs.enabled", havingValue = "true", matchIfMissing = true)
     public GroupedOpenApi userApi() {
         return GroupedOpenApi.builder()
                 .group("用戶端接口")
@@ -103,8 +110,10 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
      */
     protected void addResourceHandlers(ResourceHandlerRegistry registry) {
         log.info("开始设置静态资源映射...");
-        registry.addResourceHandler("/swagger-ui/**").addResourceLocations("classpath:/META-INF/resources/webjars/swagger-ui/");
-        registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
+        if (swaggerUiEnabled) {
+            registry.addResourceHandler("/swagger-ui/**").addResourceLocations("classpath:/META-INF/resources/webjars/swagger-ui/");
+            registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
+        }
     }
 
     /**
