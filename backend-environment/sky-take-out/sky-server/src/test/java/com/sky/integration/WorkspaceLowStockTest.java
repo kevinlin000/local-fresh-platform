@@ -32,8 +32,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 class WorkspaceLowStockTest {
 
-    private static final Long CATEGORY_ID = 501L;
-
     @Autowired
     private MockMvc mockMvc;
 
@@ -49,12 +47,17 @@ class WorkspaceLowStockTest {
     @MockitoBean
     private ServerEndpointExporter serverEndpointExporter;
 
+    private Long categoryId;
+
     @BeforeEach
     void setUp() {
         jdbcTemplate.update("""
-                insert into category (id, type, name, sort, status, create_time, update_time)
-                values (?, 1, '低庫存測試分類', 1, 1, now(), now())
-                """, CATEGORY_ID);
+                insert into category (type, name, sort, status, create_time, update_time)
+                values (1, '低庫存測試分類', 1, 1, now(), now())
+                """);
+        categoryId = jdbcTemplate.queryForObject(
+                "select id from category where name = '低庫存測試分類' order by id desc limit 1",
+                Long.class);
 
         insertProduct("嚴重缺貨菠菜", 1, 5);
         insertProduct("低庫存玉米", 4, 5);
@@ -82,14 +85,14 @@ class WorkspaceLowStockTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(1))
                 .andExpect(jsonPath("$.data.total").value(2))
-                .andExpect(jsonPath("$.data.records[0].productName").value("低庫存玉米"))
-                .andExpect(jsonPath("$.data.records[1].productName").value("嚴重缺貨菠菜"));
+                .andExpect(jsonPath("$.data.records[0].productName").value("嚴重缺貨菠菜"))
+                .andExpect(jsonPath("$.data.records[1].productName").value("低庫存玉米"));
     }
 
     private void insertProduct(String name, int stock, int lowStockThreshold) {
         Product product = Product.builder()
                 .productName(name)
-                .categoryId(CATEGORY_ID)
+                .categoryId(categoryId)
                 .price(new BigDecimal("50.00"))
                 .description("低庫存測試")
                 .status(1)

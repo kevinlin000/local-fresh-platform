@@ -31,7 +31,14 @@
                 and d.stock &lt;= d.low_stock_threshold
             </if>
         </where>
-        order by d.create_time desc
+        <choose>
+            <when test="lowStock != null and lowStock">
+                order by (d.stock - d.low_stock_threshold) asc, d.stock asc, d.update_time desc
+            </when>
+            <otherwise>
+                order by d.create_time desc
+            </otherwise>
+        </choose>
     </select>
 
     <update id="update">
