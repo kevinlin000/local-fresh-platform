@@ -47,6 +47,15 @@ public interface OrderMapper {
             "where number = #{orderNumber}")
     void updateStatus(Integer orderStatus, Integer orderPaidStatus, LocalDateTime check_out_time, String orderNumber);
 
+    @Update("update orders set status = #{toStatus}, pay_status = #{toPayStatus}, checkout_time = #{checkoutTime} " +
+            "where number = #{orderNumber} and status = #{fromStatus} and pay_status = #{fromPayStatus}")
+    int markPaymentSucceededByNumber(@Param("orderNumber") String orderNumber,
+                                     @Param("fromStatus") Integer fromStatus,
+                                     @Param("fromPayStatus") Integer fromPayStatus,
+                                     @Param("toStatus") Integer toStatus,
+                                     @Param("toPayStatus") Integer toPayStatus,
+                                     @Param("checkoutTime") LocalDateTime checkoutTime);
+
     /**
      * 分页条件查询并按下单时间排序
      * @param ordersPageQueryDTO

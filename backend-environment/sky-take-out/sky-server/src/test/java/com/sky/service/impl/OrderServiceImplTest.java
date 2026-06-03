@@ -71,7 +71,7 @@ class OrderServiceImplTest {
                 () -> orderService.payment(dto));
 
         assertEquals(MessageConstant.ORDER_NOT_FOUND, exception.getMessage());
-        verify(orderMapper, never()).updateStatus(any(), any(), any(), any());
+        verify(orderMapper, never()).markPaymentSucceededByNumber(anyString(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -82,25 +82,58 @@ class OrderServiceImplTest {
         order.setNumber("ORDER-002");
         order.setPayStatus(Orders.UN_PAID);
         when(orderMapper.getByNumber("ORDER-002")).thenReturn(order);
+        when(orderMapper.markPaymentSucceededByNumber(eq("ORDER-002"), eq(Orders.PENDING_PAYMENT), eq(Orders.UN_PAID),
+                eq(Orders.TO_BE_CONFIRMED), eq(Orders.PAID), any(LocalDateTime.class))).thenReturn(1);
 
         orderService.payment(paymentDTO("ORDER-002"));
 
-        verify(orderMapper).updateStatus(eq(Orders.TO_BE_CONFIRMED), eq(Orders.PAID),
-                any(LocalDateTime.class), eq("ORDER-002"));
+        verify(orderMapper).markPaymentSucceededByNumber(eq("ORDER-002"), eq(Orders.PENDING_PAYMENT), eq(Orders.UN_PAID),
+                eq(Orders.TO_BE_CONFIRMED), eq(Orders.PAID), any(LocalDateTime.class));
     }
 
     @Test
-    void paySuccessShouldRejectAlreadyConfirmedOrder() {
+    void paySuccessShouldUpdatePendingOrderAndNotifyAdmin() {
+        Orders order = orderWithStatus(2L, Orders.PENDING_PAYMENT);
+        order.setNumber("ORDER-003");
+        order.setPayStatus(Orders.UN_PAID);
+        when(orderMapper.getByNumber("ORDER-003")).thenReturn(order);
+        when(orderMapper.markPaymentSucceededByNumber(eq("ORDER-003"), eq(Orders.PENDING_PAYMENT), eq(Orders.UN_PAID),
+                eq(Orders.TO_BE_CONFIRMED), eq(Orders.PAID), any(LocalDateTime.class))).thenReturn(1);
+
+        orderService.paySuccess("ORDER-003");
+
+        verify(orderMapper).markPaymentSucceededByNumber(eq("ORDER-003"), eq(Orders.PENDING_PAYMENT), eq(Orders.UN_PAID),
+                eq(Orders.TO_BE_CONFIRMED), eq(Orders.PAID), any(LocalDateTime.class));
+        verify(webSocketServer).sendToAllClient(anyString());
+    }
+
+    @Test
+    void paySuccessShouldIgnoreDuplicatePaidCallback() {
         Orders order = orderWithStatus(2L, Orders.CONFIRMED);
         order.setNumber("ORDER-003");
         order.setPayStatus(Orders.PAID);
         when(orderMapper.getByNumber("ORDER-003")).thenReturn(order);
 
+        orderService.paySuccess("ORDER-003");
+
+        verify(orderMapper, never()).markPaymentSucceededByNumber(anyString(), any(), any(), any(), any(), any());
+        verify(orderMapper, never()).update(any(Orders.class));
+        verifyNoInteractions(webSocketServer);
+    }
+
+    @Test
+    void paySuccessShouldRejectUnpaidOrderThatCannotTransitionToPaid() {
+        Orders order = orderWithStatus(2L, Orders.CONFIRMED);
+        order.setNumber("ORDER-003");
+        order.setPayStatus(Orders.UN_PAID);
+        when(orderMapper.getByNumber("ORDER-003")).thenReturn(order);
+        when(orderMapper.markPaymentSucceededByNumber(eq("ORDER-003"), eq(Orders.PENDING_PAYMENT), eq(Orders.UN_PAID),
+                eq(Orders.TO_BE_CONFIRMED), eq(Orders.PAID), any(LocalDateTime.class))).thenReturn(0);
+
         OrderBusinessException exception = assertThrows(OrderBusinessException.class,
                 () -> orderService.paySuccess("ORDER-003"));
 
         assertEquals(MessageConstant.ORDER_STATUS_ERROR, exception.getMessage());
-        verify(orderMapper, never()).update(any(Orders.class));
         verifyNoInteractions(webSocketServer);
     }
 

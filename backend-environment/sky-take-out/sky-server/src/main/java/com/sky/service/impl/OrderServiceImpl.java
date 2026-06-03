@@ -165,15 +165,7 @@ public class OrderServiceImpl implements OrderService {
         jsonObject.put("code", "ORDERPAID");
         OrderPaymentVO vo = jsonObject.toJavaObject(OrderPaymentVO.class);
         vo.setPackageStr(jsonObject.getString("package"));
-        //为替代微信支付成功后的数据库订单状态更新，多定义一个方法进行修改
-        Integer OrderPaidStatus = Orders.PAID; //支付状态，已支付
-        Integer OrderStatus = Orders.TO_BE_CONFIRMED;  //订单状态，待接单
-        //发现没有将支付时间 check_out属性赋值，所以在这里更新
-        LocalDateTime check_out_time = LocalDateTime.now();
-        //获取订单号码
-        String orderNumber = ordersDB.getNumber();
-        log.info("调用updateStatus，用于替换微信支付更新数据库状态的问题");
-        orderMapper.updateStatus(OrderStatus, OrderPaidStatus, check_out_time, orderNumber);
+        ensurePaymentSucceeded(ordersDB.getNumber());
 
         return vo;
     }
@@ -190,17 +182,12 @@ public class OrderServiceImpl implements OrderService {
         if (ordersDB == null) {
             throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
         }
-        OrderStatusTransitionPolicy.requireAllowed(ordersDB, Transition.PAY);
-
-        // 根据订单id更新订单的状态、支付方式、支付状态、结账时间
-        Orders orders = Orders.builder()
-                .id(ordersDB.getId())
-                .status(Orders.TO_BE_CONFIRMED)
-                .payStatus(Orders.PAID)
-                .checkoutTime(LocalDateTime.now())
-                .build();
-
-        orderMapper.update(orders);
+        if (Orders.PAID.equals(ordersDB.getPayStatus())) {
+            return;
+        }
+        if (!ensurePaymentSucceeded(outTradeNo)) {
+            return;
+        }
 
         // 通過websocket向客戶端推送訊息
         Map map = new HashMap();
@@ -212,6 +199,21 @@ public class OrderServiceImpl implements OrderService {
         webSocketServer.sendToAllClient(json);
 
 
+    }
+
+    private boolean ensurePaymentSucceeded(String orderNumber) {
+        int updatedRows = orderMapper.markPaymentSucceededByNumber(orderNumber, Orders.PENDING_PAYMENT, Orders.UN_PAID,
+                Orders.TO_BE_CONFIRMED, Orders.PAID, LocalDateTime.now());
+        if (updatedRows > 0) {
+            return true;
+        }
+
+        Orders latestOrder = orderMapper.getByNumber(orderNumber);
+        if (latestOrder != null && Orders.PAID.equals(latestOrder.getPayStatus())) {
+            return false;
+        }
+        OrderStatusTransitionPolicy.requireAllowed(latestOrder, Transition.PAY);
+        throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
     }
 
     /**
