@@ -15,6 +15,7 @@ import com.sky.exception.OrderBusinessException;
 import com.sky.mapper.*;
 import com.sky.result.PageResult;
 import com.sky.service.OrderService;
+import com.sky.service.support.OrderStatusTransitionPolicy;
 import com.sky.utils.HttpClientUtil;
 import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.OrderPaymentVO;
@@ -37,6 +38,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static com.sky.service.support.OrderStatusTransitionPolicy.Transition;
 
 @Slf4j
 @Service
@@ -141,9 +144,10 @@ public class OrderServiceImpl implements OrderService {
         if (ordersDB == null || !userId.equals(ordersDB.getUserId())) {
             throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
         }
-        if (!Orders.PENDING_PAYMENT.equals(ordersDB.getStatus()) || !Orders.UN_PAID.equals(ordersDB.getPayStatus())) {
+        if (!Orders.UN_PAID.equals(ordersDB.getPayStatus())) {
             throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
         }
+        OrderStatusTransitionPolicy.requireAllowed(ordersDB, Transition.PAY);
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("code", "ORDERPAID");
@@ -174,6 +178,7 @@ public class OrderServiceImpl implements OrderService {
         if (ordersDB == null) {
             throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
         }
+        OrderStatusTransitionPolicy.requireAllowed(ordersDB, Transition.PAY);
 
         // 根据订单id更新订单的状态、支付方式、支付状态、结账时间
         Orders orders = Orders.builder()
@@ -244,6 +249,9 @@ public class OrderServiceImpl implements OrderService {
      */
     public OrderVO details(Long id) {
         Orders orders = orderMapper.getById(id);
+        if (orders == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
 
         List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orders.getId());
 
@@ -293,10 +301,7 @@ public class OrderServiceImpl implements OrderService {
             throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
         }
 
-        //订单状态 1待付款 2待接单 3已接单 4派送中 5已完成 6已取消
-        if (ordersDB.getStatus() > 2) {
-            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
-        }
+        OrderStatusTransitionPolicy.requireAllowed(ordersDB, Transition.USER_CANCEL);
 
         Orders orders = new Orders();
         orders.setId(ordersDB.getId());
@@ -437,6 +442,9 @@ public class OrderServiceImpl implements OrderService {
      * @param ordersConfirmDTO
      */
     public void confirm(OrdersConfirmDTO ordersConfirmDTO) {
+        Orders ordersDB = orderMapper.getById(ordersConfirmDTO.getId());
+        OrderStatusTransitionPolicy.requireAllowed(ordersDB, Transition.ADMIN_CONFIRM);
+
         Orders orders = Orders.builder()
                 .id(ordersConfirmDTO.getId())
                 .status(Orders.CONFIRMED)
@@ -454,10 +462,7 @@ public class OrderServiceImpl implements OrderService {
         // 根据id查询订单
         Orders ordersDB = orderMapper.getById(ordersRejectionDTO.getId());
 
-        // 订单只有存在且状态为2（待接单）才可以拒单
-        if (ordersDB == null || !ordersDB.getStatus().equals(Orders.TO_BE_CONFIRMED)) {
-            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
-        }
+        OrderStatusTransitionPolicy.requireAllowed(ordersDB, Transition.ADMIN_REJECT);
 
         //支付状态
         Integer payStatus = ordersDB.getPayStatus();
@@ -492,6 +497,7 @@ public class OrderServiceImpl implements OrderService {
         if (ordersDB == null) {
             throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
         }
+        OrderStatusTransitionPolicy.requireAllowed(ordersDB, Transition.ADMIN_CANCEL);
 
         Integer payStatus = ordersDB.getPayStatus();
         if (payStatus == 1) {
@@ -522,10 +528,7 @@ public class OrderServiceImpl implements OrderService {
         // 根据id查询订单
         Orders ordersDB = orderMapper.getById(id);
 
-        // 校验订单是否存在，并且状态为3
-        if (ordersDB == null || !ordersDB.getStatus().equals(Orders.CONFIRMED)) {
-            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
-        }
+        OrderStatusTransitionPolicy.requireAllowed(ordersDB, Transition.START_DELIVERY);
 
         Orders orders = new Orders();
         orders.setId(ordersDB.getId());
@@ -544,10 +547,7 @@ public class OrderServiceImpl implements OrderService {
         // 根据id查询订单
         Orders ordersDB = orderMapper.getById(id);
 
-        // 校验订单是否存在，并且状态为4
-        if (ordersDB == null || !ordersDB.getStatus().equals(Orders.DELIVERY_IN_PROGRESS)) {
-            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
-        }
+        OrderStatusTransitionPolicy.requireAllowed(ordersDB, Transition.COMPLETE_DELIVERY);
 
         Orders orders = new Orders();
         orders.setId(ordersDB.getId());
