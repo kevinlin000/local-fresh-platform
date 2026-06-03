@@ -35,6 +35,12 @@ public class ProductDTO implements Serializable {
     @Min(value = 0, message = "商品狀態錯誤")
     @Max(value = 1, message = "商品狀態錯誤")
     private Integer status;
+    //可售庫存
+    @Min(value = 0, message = "商品庫存不能小於 0")
+    private Integer stock;
+    //低庫存警示門檻
+    @Min(value = 0, message = "低庫存門檻不能小於 0")
+    private Integer lowStockThreshold;
     //商品规格
     private List<ProductSpec> productSpecs = new ArrayList<>();
 

@@ -22,6 +22,11 @@
       <el-table-column prop="productName" label="單品名稱" min-width="180" />
       <el-table-column prop="categoryName" label="分類" min-width="120" />
       <el-table-column prop="price" label="價格" width="110" />
+      <el-table-column label="庫存" width="130">
+        <template #default="{ row }">
+          <span :class="{ 'stock-warning': isLowStock(row) }">{{ row.stock ?? 0 }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="狀態" width="120">
         <template #default="{ row }">
           <el-tag :type="row.status === 1 ? 'success' : 'info'">{{ row.status === 1 ? '起售' : '停售' }}</el-tag>
@@ -73,6 +78,12 @@
         </el-form-item>
         <el-form-item label="價格" prop="price">
           <el-input-number v-model="form.price" :min="0.01" :precision="2" />
+        </el-form-item>
+        <el-form-item label="庫存" prop="stock">
+          <el-input-number v-model="form.stock" :min="0" />
+        </el-form-item>
+        <el-form-item label="低庫存門檻" prop="lowStockThreshold">
+          <el-input-number v-model="form.lowStockThreshold" :min="0" />
         </el-form-item>
         <el-form-item label="狀態" prop="status">
           <el-radio-group v-model="form.status">
@@ -139,7 +150,9 @@ const form = reactive({
   price: 0.01,
   image: '',
   description: '',
-  status: 1
+  status: 1,
+  stock: 100,
+  lowStockThreshold: 10
 })
 const specs = ref<Array<{ name: string; value: string }>>([])
 
@@ -147,6 +160,8 @@ const rules: FormRules = {
   productName: [{ required: true, message: '請輸入單品名稱', trigger: 'blur' }],
   categoryId: [{ required: true, message: '請選擇分類', trigger: 'change' }],
   price: [{ required: true, message: '請輸入價格', trigger: 'blur' }],
+  stock: [{ required: true, message: '請輸入庫存', trigger: 'blur' }],
+  lowStockThreshold: [{ required: true, message: '請輸入低庫存門檻', trigger: 'blur' }],
   status: [{ required: true, message: '請選擇狀態', trigger: 'change' }]
 }
 
@@ -154,10 +169,11 @@ const summaryCards = computed(() => {
   const onSale = rows.value.filter((item) => item.status === 1).length
   const offSale = rows.value.filter((item) => item.status !== 1).length
   const needsWork = rows.value.filter((item) => productQuality(item).some((quality) => quality.type === 'warning')).length
+  const lowStock = rows.value.filter((item) => isLowStock(item)).length
 
   return [
     { label: '本頁起售', value: onSale, caption: '目前可被會員購買' },
-    { label: '本頁停售', value: offSale, caption: '需確認是否補貨或下架' },
+    { label: '低庫存', value: lowStock, caption: '低於警示門檻' },
     { label: '需補資料', value: needsWork, caption: '缺圖或缺描述' }
   ]
 })
@@ -196,6 +212,10 @@ function productQuality(row: any) {
   return tags
 }
 
+function isLowStock(row: any) {
+  return Number(row.stock ?? 0) <= Number(row.lowStockThreshold ?? 0)
+}
+
 async function toggleStatus(row: any) {
   await dishStatusByStatus({ id: row.id, status: row.status === 1 ? 0 : 1 })
   ElMessage.success('狀態已更新')
@@ -215,7 +235,9 @@ function resetForm() {
     price: 0.01,
     image: '',
     description: '',
-    status: 1
+    status: 1,
+    stock: 100,
+    lowStockThreshold: 10
   })
   specs.value = []
   formRef.value?.clearValidate()
@@ -238,7 +260,9 @@ async function openEdit(row: any) {
     price: data.price,
     image: data.image || '',
     description: data.description || '',
-    status: data.status
+    status: data.status,
+    stock: data.stock ?? 100,
+    lowStockThreshold: data.lowStockThreshold ?? 10
   })
   specs.value = (data.productSpecs || []).map((item: any) => ({
     name: item.name || '',
@@ -330,5 +354,10 @@ onMounted(async () => {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+}
+
+.stock-warning {
+  color: #b45309;
+  font-weight: 800;
 }
 </style>

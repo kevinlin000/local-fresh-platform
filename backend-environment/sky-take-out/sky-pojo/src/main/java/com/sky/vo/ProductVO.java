@@ -30,6 +30,10 @@ public class ProductVO implements Serializable {
     private String description;
     //0 停售 1 起售
     private Integer status;
+    //可售庫存
+    private Integer stock;
+    //低庫存警示門檻
+    private Integer lowStockThreshold;
     //更新时间
     private LocalDateTime updateTime;
     //分类名称

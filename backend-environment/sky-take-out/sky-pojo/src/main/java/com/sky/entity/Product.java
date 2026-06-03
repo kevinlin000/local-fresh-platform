@@ -39,6 +39,12 @@ public class Product implements Serializable {
     //0 停售 1 起售
     private Integer status;
 
+    //可售庫存
+    private Integer stock;
+
+    //低庫存警示門檻
+    private Integer lowStockThreshold;
+
     private LocalDateTime createTime;
 
     private LocalDateTime updateTime;

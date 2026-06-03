@@ -58,6 +58,9 @@ public class OrderServiceImpl implements OrderService {
     private CartMapper cartMapper;
 
     @Autowired
+    private ProductMapper productMapper;
+
+    @Autowired
     private WeChatPayUtil weChatPayUtil;
 
     @Autowired
@@ -89,6 +92,7 @@ public class OrderServiceImpl implements OrderService {
             //拋出業務異常
             throw new AddressBookBusinessException(MessageConstant.SHOPPING_CART_IS_NULL);
         }
+        reserveProductStock(shoppingCartlist);
 
         //2. 向訂單表插入1條數據
         Orders orders = new Orders();
@@ -324,6 +328,7 @@ public class OrderServiceImpl implements OrderService {
         orders.setCancelReason("用户取消");
         orders.setCancelTime(LocalDateTime.now());
         orderMapper.update(orders);
+        restoreProductStock(ordersDB.getId());
     }
 
     /**
@@ -451,6 +456,7 @@ public class OrderServiceImpl implements OrderService {
                 .build();
 
         orderMapper.update(orders);
+        restoreProductStock(ordersDB.getId());
     }
 
     /**
@@ -517,6 +523,28 @@ public class OrderServiceImpl implements OrderService {
         orders.setCancelReason(ordersCancelDTO.getCancelReason());
         orders.setCancelTime(LocalDateTime.now());
         orderMapper.update(orders);
+        restoreProductStock(ordersDB.getId());
+    }
+
+    private void reserveProductStock(List<Cart> shoppingCartList) {
+        for (Cart cart : shoppingCartList) {
+            if (cart.getProductId() == null) {
+                continue;
+            }
+            int updatedRows = productMapper.decreaseStock(cart.getProductId(), cart.getNumber());
+            if (updatedRows == 0) {
+                throw new OrderBusinessException(MessageConstant.PRODUCT_STOCK_NOT_ENOUGH);
+            }
+        }
+    }
+
+    private void restoreProductStock(Long orderId) {
+        List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orderId);
+        for (OrderDetail orderDetail : orderDetailList) {
+            if (orderDetail.getProductId() != null && orderDetail.getNumber() != null && orderDetail.getNumber() > 0) {
+                productMapper.increaseStock(orderDetail.getProductId(), orderDetail.getNumber());
+            }
+        }
     }
 
     /**
@@ -585,11 +613,18 @@ public class OrderServiceImpl implements OrderService {
     @Value("${sky.google.api-key}")
     private String apiKey;
 
+    @Value("${sky.delivery.range-check-enabled:true}")
+    private boolean deliveryRangeCheckEnabled;
+
     /**
      * 檢查客戶的收貨地址是否超出配送範圍 (使用 Google Maps API)
      * @param address 客戶收貨地址
      */
     private void checkOutOfRange(String address) {
+        if (!deliveryRangeCheckEnabled) {
+            return;
+        }
+
         // 1. 取得店家的經緯度 (Geocoding API)
         String shopLngLat = getCoordinate(shopAddress);
         if (shopLngLat == null) {

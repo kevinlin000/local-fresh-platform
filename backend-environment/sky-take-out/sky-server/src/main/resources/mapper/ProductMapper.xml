@@ -5,8 +5,8 @@
 
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-        insert into product (product_name, category_id, price, image, description, create_time, update_time, status)
-        values (#{productName}, #{categoryId}, #{price}, #{image}, #{description}, #{createTime}, #{updateTime}, #{status})
+        insert into product (product_name, category_id, price, image, description, create_time, update_time, status, stock, low_stock_threshold)
+        values (#{productName}, #{categoryId}, #{price}, #{image}, #{description}, #{createTime}, #{updateTime}, #{status}, COALESCE(#{stock}, 100), COALESCE(#{lowStockThreshold}, 10))
     </insert>
 
     <delete id="deleteByIds">
@@ -40,6 +40,8 @@
             <if test="image != null">image = #{image},</if>
             <if test="description != null">description = #{description},</if>
             <if test="status != null">status = #{status},</if>
+            <if test="stock != null">stock = #{stock},</if>
+            <if test="lowStockThreshold != null">low_stock_threshold = #{lowStockThreshold},</if>
             <if test="updateTime != null">update_time = #{updateTime},</if>
             <if test="updateUser != null">update_user = #{updateUser},</if>
        </set>

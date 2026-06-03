@@ -66,6 +66,8 @@ sky:
     secret: test-secret
   shop:
     address: "台北市信義區市府路1號"
+  delivery:
+    range-check-enabled: false
   google:
     api-key: test-google-api-key
   oauth:

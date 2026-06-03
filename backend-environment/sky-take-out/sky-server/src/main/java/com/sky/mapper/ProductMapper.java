@@ -9,7 +9,9 @@ import com.sky.enumeration.OperationType;
 import com.sky.vo.ProductVO;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 import java.util.Map;
@@ -82,6 +84,13 @@ public interface ProductMapper {
      */
     @Select("select a.* from product a left join gift_box_product b on a.id = b.product_id where b.gift_box_id = #{giftBoxId}")
     List<Product> getBySetmealId(Long giftBoxId);
+
+    @Update("update product set stock = stock - #{quantity}, update_time = now() " +
+            "where id = #{productId} and status = 1 and stock >= #{quantity}")
+    int decreaseStock(@Param("productId") Long productId, @Param("quantity") Integer quantity);
+
+    @Update("update product set stock = stock + #{quantity}, update_time = now() where id = #{productId}")
+    int increaseStock(@Param("productId") Long productId, @Param("quantity") Integer quantity);
 
     /**
      * 根据条件统计菜品数量

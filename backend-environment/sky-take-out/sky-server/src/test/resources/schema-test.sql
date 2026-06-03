@@ -65,6 +65,8 @@ CREATE TABLE product (
     image        VARCHAR(255),
     description  VARCHAR(255),
     status       INT,
+    stock        INT DEFAULT 100 NOT NULL,
+    low_stock_threshold INT DEFAULT 10 NOT NULL,
     create_time  DATETIME,
     update_time  DATETIME,
     create_user  BIGINT,

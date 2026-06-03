@@ -33,6 +33,9 @@ import java.util.Set;
 @Slf4j
 public class ProductServiceImpl implements ProductService {
 
+    private static final int DEFAULT_STOCK = 100;
+    private static final int DEFAULT_LOW_STOCK_THRESHOLD = 10;
+
     @Autowired
     private ProductMapper productMapper;
     @Autowired
@@ -53,6 +56,7 @@ public class ProductServiceImpl implements ProductService {
 
         Product dish = new Product();
         BeanUtils.copyProperties(dishDTO, dish);
+        applyInventoryDefaults(dish);
 
         //向菜品表插入一條資料
         productMapper.insert(dish);
@@ -147,6 +151,7 @@ public class ProductServiceImpl implements ProductService {
     public void updateWithFlavor(ProductDTO dishDTO) {
         Product dish = new Product();
         BeanUtils.copyProperties(dishDTO, dish);
+        applyInventoryDefaults(dish);
         //修改菜品表基本資訊
         productMapper.update(dish);
 
@@ -242,6 +247,15 @@ public class ProductServiceImpl implements ProductService {
         Set<String> keys = appRedisTemplate.keys(pattern);
         if (keys != null && !keys.isEmpty()) {
             appRedisTemplate.delete(keys);
+        }
+    }
+
+    private void applyInventoryDefaults(Product product) {
+        if (product.getStock() == null) {
+            product.setStock(DEFAULT_STOCK);
+        }
+        if (product.getLowStockThreshold() == null) {
+            product.setLowStockThreshold(DEFAULT_LOW_STOCK_THRESHOLD);
         }
     }
 
