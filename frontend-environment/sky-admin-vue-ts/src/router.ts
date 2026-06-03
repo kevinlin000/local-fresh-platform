@@ -22,32 +22,32 @@ export const routes: RouteRecordRaw[] = [
       {
         path: 'orders',
         name: 'Orders',
-        component: () => import('@/views/vue3/PlaceholderView.vue'),
-        meta: { title: '訂單管理', planned: true }
+        component: () => import('@/views/vue3/OrdersView.vue'),
+        meta: { title: '訂單管理' }
       },
       {
         path: 'products',
         name: 'Products',
-        component: () => import('@/views/vue3/PlaceholderView.vue'),
-        meta: { title: '單品管理', planned: true }
+        component: () => import('@/views/vue3/ProductsView.vue'),
+        meta: { title: '單品管理' }
       },
       {
         path: 'gift-boxes',
         name: 'GiftBoxes',
-        component: () => import('@/views/vue3/PlaceholderView.vue'),
-        meta: { title: '直送箱管理', planned: true }
+        component: () => import('@/views/vue3/GiftBoxesView.vue'),
+        meta: { title: '直送箱管理' }
       },
       {
         path: 'categories',
         name: 'Categories',
-        component: () => import('@/views/vue3/PlaceholderView.vue'),
-        meta: { title: '分類管理', planned: true }
+        component: () => import('@/views/vue3/CategoriesView.vue'),
+        meta: { title: '分類管理' }
       },
       {
         path: 'employees',
         name: 'Employees',
-        component: () => import('@/views/vue3/PlaceholderView.vue'),
-        meta: { title: '員工管理', planned: true }
+        component: () => import('@/views/vue3/EmployeesView.vue'),
+        meta: { title: '員工管理' }
       },
       {
         path: 'reports',

@@ -95,3 +95,20 @@ a {
 .admin-card-pad {
   padding: 24px;
 }
+
+.table-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.table-toolbar .el-input,
+.table-toolbar .el-select {
+  width: 220px;
+}
+
+.pager {
+  justify-content: flex-end;
+  margin-top: 20px;
+}
