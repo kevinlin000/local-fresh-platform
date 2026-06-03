@@ -56,6 +56,15 @@ export const queryDishInventoryLogs = (id: string | number) => {
   })
 }
 
+// 手動調整單品庫存
+export const adjustDishInventory = (id: string | number, data: any) => {
+  return request({
+    url: `/product/${id}/inventory`,
+    method: 'patch',
+    data
+  })
+}
+
 // 取得單品分類列表
 export const getCategoryList = (params: any) => {
   return request({

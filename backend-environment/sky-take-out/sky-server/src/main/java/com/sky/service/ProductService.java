@@ -1,6 +1,7 @@
 package com.sky.service;
 
 import com.sky.dto.ProductDTO;
+import com.sky.dto.ProductInventoryAdjustDTO;
 import com.sky.dto.ProductPageQueryDTO;
 import com.sky.entity.Product;
 import com.sky.result.PageResult;
@@ -70,4 +71,11 @@ public interface ProductService {
      * @return 庫存異動紀錄
      */
     List<ProductInventoryLogVO> listInventoryLogs(Long id);
+
+    /**
+     * 管理端手動調整商品庫存
+     * @param id 商品 ID
+     * @param productInventoryAdjustDTO 庫存異動資料
+     */
+    void adjustInventory(Long id, ProductInventoryAdjustDTO productInventoryAdjustDTO);
 }

@@ -46,12 +46,13 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="330">
+      <el-table-column label="操作" width="400">
         <template #default="{ row }">
           <el-button link type="primary" @click="openEdit(row)">編輯</el-button>
           <el-button link type="primary" @click="toggleStatus(row)">
             {{ row.status === 1 ? '停售' : '起售' }}
           </el-button>
+          <el-button link type="primary" @click="openInventoryAdjust(row)">調整庫存</el-button>
           <el-button link type="primary" @click="openInventoryLogs(row)">庫存紀錄</el-button>
           <el-button link type="danger" @click="remove(row)">刪除</el-button>
         </template>
@@ -117,6 +118,29 @@
       </template>
     </el-dialog>
 
+    <el-dialog v-model="inventoryAdjustVisible" :title="inventoryAdjustTitle" width="460px">
+      <el-form ref="inventoryAdjustFormRef" :model="inventoryAdjustForm" :rules="inventoryAdjustRules" label-width="96px">
+        <el-form-item label="異動量" prop="changeQuantity">
+          <el-input-number v-model="inventoryAdjustForm.changeQuantity" />
+          <span class="form-hint">正數代表補貨，負數代表扣減。</span>
+        </el-form-item>
+        <el-form-item label="原因" prop="reason">
+          <el-input
+            v-model="inventoryAdjustForm.reason"
+            maxlength="120"
+            show-word-limit
+            type="textarea"
+            :rows="3"
+            placeholder="例：進貨補貨、盤點耗損、商品報廢"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="inventoryAdjustVisible = false">取消</el-button>
+        <el-button type="primary" :loading="inventoryAdjustSaving" @click="submitInventoryAdjust">確認調整</el-button>
+      </template>
+    </el-dialog>
+
     <el-drawer
       v-model="inventoryDrawerVisible"
       :title="inventoryDrawerTitle"
@@ -140,6 +164,9 @@
         <el-table-column label="原因" min-width="150">
           <template #default="{ row }">{{ inventoryReasonLabel(row.reason) }}</template>
         </el-table-column>
+        <el-table-column label="說明" min-width="160">
+          <template #default="{ row }">{{ row.remark || '-' }}</template>
+        </el-table-column>
         <el-table-column label="關聯訂單" width="110">
           <template #default="{ row }">#{{ row.referenceId || '-' }}</template>
         </el-table-column>
@@ -158,6 +185,7 @@ import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRoute } from 'vue-router'
 import {
+  adjustDishInventory,
   addDish,
   deleteDish,
   dishStatusByStatus,
@@ -182,6 +210,16 @@ const inventoryDrawerVisible = ref(false)
 const inventoryLogsLoading = ref(false)
 const inventoryLogs = ref<any[]>([])
 const inventoryDrawerTitle = ref('庫存紀錄')
+const inventoryLogProductId = ref<number>()
+const inventoryAdjustFormRef = ref<FormInstance>()
+const inventoryAdjustVisible = ref(false)
+const inventoryAdjustSaving = ref(false)
+const inventoryAdjustTitle = ref('調整庫存')
+const inventoryAdjustProductId = ref<number>()
+const inventoryAdjustForm = reactive({
+  changeQuantity: 1,
+  reason: ''
+})
 const form = reactive({
   id: undefined as number | undefined,
   productName: '',
@@ -202,6 +240,11 @@ const rules: FormRules = {
   stock: [{ required: true, message: '請輸入庫存', trigger: 'blur' }],
   lowStockThreshold: [{ required: true, message: '請輸入低庫存門檻', trigger: 'blur' }],
   status: [{ required: true, message: '請選擇狀態', trigger: 'change' }]
+}
+
+const inventoryAdjustRules: FormRules = {
+  changeQuantity: [{ required: true, message: '請輸入庫存異動量', trigger: 'blur' }],
+  reason: [{ required: true, message: '請輸入庫存調整原因', trigger: 'blur' }]
 }
 
 const summaryCards = computed(() => {
@@ -312,13 +355,53 @@ async function openEdit(row: any) {
 
 async function openInventoryLogs(row: any) {
   inventoryDrawerTitle.value = `${row.productName}｜庫存紀錄`
+  inventoryLogProductId.value = row.id
   inventoryDrawerVisible.value = true
+  await loadInventoryLogs(row.id)
+}
+
+async function loadInventoryLogs(productId: number) {
   inventoryLogsLoading.value = true
   try {
-    const response = await queryDishInventoryLogs(row.id)
+    const response = await queryDishInventoryLogs(productId)
     inventoryLogs.value = response.data?.data || []
   } finally {
     inventoryLogsLoading.value = false
+  }
+}
+
+function openInventoryAdjust(row: any) {
+  inventoryAdjustProductId.value = row.id
+  inventoryAdjustTitle.value = `${row.productName}｜調整庫存（目前 ${row.stock ?? 0}）`
+  Object.assign(inventoryAdjustForm, {
+    changeQuantity: 1,
+    reason: ''
+  })
+  inventoryAdjustFormRef.value?.clearValidate()
+  inventoryAdjustVisible.value = true
+}
+
+async function submitInventoryAdjust() {
+  await inventoryAdjustFormRef.value?.validate()
+  if (!inventoryAdjustProductId.value) {
+    return
+  }
+  if (Number(inventoryAdjustForm.changeQuantity) === 0) {
+    ElMessage.error('庫存異動量不能為 0')
+    return
+  }
+
+  inventoryAdjustSaving.value = true
+  try {
+    await adjustDishInventory(inventoryAdjustProductId.value, { ...inventoryAdjustForm })
+    ElMessage.success('庫存已調整')
+    inventoryAdjustVisible.value = false
+    await loadData()
+    if (inventoryDrawerVisible.value && inventoryLogProductId.value === inventoryAdjustProductId.value) {
+      await loadInventoryLogs(inventoryAdjustProductId.value)
+    }
+  } finally {
+    inventoryAdjustSaving.value = false
   }
 }
 
@@ -377,7 +460,8 @@ function inventoryChangeClass(value: number) {
 function inventoryReasonLabel(reason: string) {
   const labels: Record<string, string> = {
     ORDER_RESERVE: '訂單預留庫存',
-    ORDER_CANCEL_RESTORE: '訂單取消回補'
+    ORDER_CANCEL_RESTORE: '訂單取消回補',
+    MANUAL_ADJUSTMENT: '人工調整'
   }
   return labels[reason] || reason || '-'
 }
@@ -453,5 +537,11 @@ onMounted(async () => {
 .stock-decrease {
   color: #b91c1c;
   font-weight: 800;
+}
+
+.form-hint {
+  margin-left: 10px;
+  color: var(--admin-muted);
+  font-size: 12px;
 }
 </style>

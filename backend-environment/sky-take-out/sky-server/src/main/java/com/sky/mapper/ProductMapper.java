@@ -92,6 +92,10 @@ public interface ProductMapper {
     @Update("update product set stock = stock + #{quantity}, update_time = now() where id = #{productId}")
     int increaseStock(@Param("productId") Long productId, @Param("quantity") Integer quantity);
 
+    @Update("update product set stock = stock + #{changeQuantity}, update_time = now() " +
+            "where id = #{productId} and stock + #{changeQuantity} >= 0")
+    int adjustStock(@Param("productId") Long productId, @Param("changeQuantity") Integer changeQuantity);
+
     /**
      * 根据条件统计菜品数量
      * @param map

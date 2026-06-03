@@ -88,6 +88,7 @@ CREATE TABLE product_inventory_log (
     stock_before    INT         NOT NULL,
     stock_after     INT         NOT NULL,
     reason          VARCHAR(64) NOT NULL,
+    remark          VARCHAR(255),
     reference_type  VARCHAR(32),
     reference_id    BIGINT,
     operator_type   VARCHAR(32) NOT NULL,

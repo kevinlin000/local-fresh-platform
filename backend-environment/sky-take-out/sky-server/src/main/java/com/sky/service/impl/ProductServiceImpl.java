@@ -4,7 +4,9 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.StatusConstant;
+import com.sky.context.BaseContext;
 import com.sky.dto.ProductDTO;
+import com.sky.dto.ProductInventoryAdjustDTO;
 import com.sky.dto.ProductPageQueryDTO;
 import com.sky.entity.Product;
 import com.sky.entity.ProductSpec;
@@ -29,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -39,6 +42,8 @@ public class ProductServiceImpl implements ProductService {
 
     private static final int DEFAULT_STOCK = 100;
     private static final int DEFAULT_LOW_STOCK_THRESHOLD = 10;
+    private static final String INVENTORY_REASON_MANUAL_ADJUSTMENT = "MANUAL_ADJUSTMENT";
+    private static final String INVENTORY_OPERATOR_ADMIN = "ADMIN";
 
     @Autowired
     private ProductMapper productMapper;
@@ -259,6 +264,41 @@ public class ProductServiceImpl implements ProductService {
         return productInventoryLogMapper.listByProductId(id).stream()
                 .map(this::toInventoryLogVO)
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public void adjustInventory(Long id, ProductInventoryAdjustDTO productInventoryAdjustDTO) {
+        Product product = productMapper.getById(id);
+        if (product == null) {
+            throw new BaseException(MessageConstant.PRODUCT_NOT_AVAILABLE);
+        }
+
+        Integer changeQuantity = productInventoryAdjustDTO.getChangeQuantity();
+        if (changeQuantity == null || changeQuantity == 0) {
+            throw new BaseException("庫存異動量不能為 0");
+        }
+
+        int updatedRows = productMapper.adjustStock(id, changeQuantity);
+        if (updatedRows == 0) {
+            throw new BaseException(MessageConstant.PRODUCT_STOCK_NOT_ENOUGH);
+        }
+
+        int stockAfter = productMapper.getById(id).getStock();
+        int stockBefore = stockAfter - changeQuantity;
+        productInventoryLogMapper.insert(ProductInventoryLog.builder()
+                .productId(id)
+                .changeQuantity(changeQuantity)
+                .stockBefore(stockBefore)
+                .stockAfter(stockAfter)
+                .reason(INVENTORY_REASON_MANUAL_ADJUSTMENT)
+                .remark(productInventoryAdjustDTO.getReason())
+                .operatorType(INVENTORY_OPERATOR_ADMIN)
+                .operatorId(BaseContext.getCurrentId())
+                .createdAt(LocalDateTime.now())
+                .build());
+
+        cleanCache("product_*");
     }
 
     private void cleanCache(String pattern) {

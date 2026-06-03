@@ -40,6 +40,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -179,6 +180,44 @@ class ProductInventoryOrderTest {
     }
 
     @Test
+    void adminShouldAdjustProductInventoryAndWriteAuditLog() throws Exception {
+        mockMvc.perform(patch("/admin/product/{id}/inventory", product.getId())
+                        .header("token", adminToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"changeQuantity\":5,\"reason\":\"進貨補貨\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(1));
+
+        assertEquals(8, productMapper.getById(product.getId()).getStock());
+        List<ProductInventoryLog> logsAfterIncrease = productInventoryLogMapper.listByProductId(product.getId());
+        assertEquals(1, logsAfterIncrease.size());
+        assertManualInventoryLog(logsAfterIncrease.get(0), 5, 3, 8, "進貨補貨");
+
+        mockMvc.perform(patch("/admin/product/{id}/inventory", product.getId())
+                        .header("token", adminToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"changeQuantity\":-2,\"reason\":\"盤點耗損\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(1));
+
+        assertEquals(6, productMapper.getById(product.getId()).getStock());
+        List<ProductInventoryLog> logsAfterDecrease = productInventoryLogMapper.listByProductId(product.getId());
+        assertEquals(2, logsAfterDecrease.size());
+        assertManualInventoryLog(logsAfterDecrease.get(1), -2, 8, 6, "盤點耗損");
+
+        mockMvc.perform(patch("/admin/product/{id}/inventory", product.getId())
+                        .header("token", adminToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"changeQuantity\":-99,\"reason\":\"錯誤扣減\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.msg").value("商品庫存不足"));
+
+        assertEquals(6, productMapper.getById(product.getId()).getStock());
+        assertEquals(2, productInventoryLogMapper.listByProductId(product.getId()).size());
+    }
+
+    @Test
     void submitGiftBoxOrderShouldReserveComponentProductStockAndCancelShouldRestoreIt() throws Exception {
         GiftBox giftBox = GiftBox.builder()
                 .boxName("庫存測試直送箱")
@@ -285,5 +324,16 @@ class ProductInventoryOrderTest {
         assertEquals(orderId, log.getReferenceId());
         assertEquals(operatorType, log.getOperatorType());
         assertEquals(loginResult.userId(), log.getOperatorId());
+    }
+
+    private void assertManualInventoryLog(ProductInventoryLog log, int changeQuantity, int stockBefore, int stockAfter,
+                                          String remark) {
+        assertEquals(changeQuantity, log.getChangeQuantity());
+        assertEquals(stockBefore, log.getStockBefore());
+        assertEquals(stockAfter, log.getStockAfter());
+        assertEquals("MANUAL_ADJUSTMENT", log.getReason());
+        assertEquals(remark, log.getRemark());
+        assertEquals("ADMIN", log.getOperatorType());
+        assertEquals(1L, log.getOperatorId());
     }
 }

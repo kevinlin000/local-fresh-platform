@@ -22,6 +22,7 @@ public class ProductInventoryLog implements Serializable {
     private Integer stockBefore;
     private Integer stockAfter;
     private String reason;
+    private String remark;
     private String referenceType;
     private Long referenceId;
     private String operatorType;

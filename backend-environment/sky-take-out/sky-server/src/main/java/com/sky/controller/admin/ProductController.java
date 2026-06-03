@@ -1,6 +1,7 @@
 package com.sky.controller.admin;
 
 import com.sky.dto.ProductDTO;
+import com.sky.dto.ProductInventoryAdjustDTO;
 import com.sky.dto.ProductPageQueryDTO;
 import com.sky.entity.Product;
 import com.sky.result.PageResult;
@@ -93,6 +94,21 @@ public class ProductController {
         log.info("查詢單品庫存異動紀錄：{}", id);
         List<ProductInventoryLogVO> logs = productService.listInventoryLogs(id);
         return Result.success(logs);
+    }
+
+    /**
+     * 手動調整單品庫存
+     * @param id
+     * @param productInventoryAdjustDTO
+     * @return
+     */
+    @PatchMapping("/{id}/inventory")
+    @Operation(summary = "手動調整單品庫存")
+    public Result adjustInventory(@PathVariable Long id,
+                                  @Valid @RequestBody ProductInventoryAdjustDTO productInventoryAdjustDTO) {
+        log.info("手動調整單品庫存：id={}, data={}", id, productInventoryAdjustDTO);
+        productService.adjustInventory(id, productInventoryAdjustDTO);
+        return Result.success();
     }
 
     /**
