@@ -56,6 +56,8 @@ public class GroupBuyServiceImpl implements GroupBuyService {
     private static final String INVENTORY_REASON_GROUP_BUY_CANCEL_RESTORE = "GROUP_BUY_CANCEL_RESTORE";
     private static final String INVENTORY_OPERATOR_MEMBER = "MEMBER";
     private static final String INVENTORY_OPERATOR_SYSTEM = "SYSTEM";
+    private static final String CANCEL_REASON_INITIATOR = "發起人取消揪團";
+    private static final String CANCEL_REASON_EXPIRED = "揪團逾期未成團";
 
     @Autowired
     private GroupBuyMapper groupBuyMapper;
@@ -315,13 +317,9 @@ public class GroupBuyServiceImpl implements GroupBuyService {
         groupBuyMapper.update(groupBuy);
 
         GroupBuyParticipant initiatorParticipant = participants.get(0);
-        Orders preOrder = new Orders();
-        preOrder.setId(initiatorParticipant.getPreOrderId());
-        preOrder.setStatus(Orders.CANCELLED);
-        preOrder.setCancelReason("發起人取消揪團");
-        preOrder.setCancelTime(now);
-        orderMapper.update(preOrder);
-        restoreGroupBuyStock(initiatorParticipant.getPreOrderId(), INVENTORY_OPERATOR_MEMBER, memberId);
+        if (cancelPendingGroupOrder(initiatorParticipant.getPreOrderId(), CANCEL_REASON_INITIATOR, now)) {
+            restoreGroupBuyStock(initiatorParticipant.getPreOrderId(), INVENTORY_OPERATOR_MEMBER, memberId);
+        }
 
         GroupBuy updatedGroupBuy = groupBuyMapper.getById(groupBuy.getId());
         return buildGroupBuyVO(updatedGroupBuy);
@@ -352,26 +350,27 @@ public class GroupBuyServiceImpl implements GroupBuyService {
         }
 
         List<GroupBuyParticipant> participants = groupBuyParticipantMapper.listByGroupBuyId(groupBuy.getId());
-        List<Long> preOrderIds = participants.stream()
-                .map(GroupBuyParticipant::getPreOrderId)
-                .collect(Collectors.toList());
 
+        LocalDateTime now = LocalDateTime.now();
         groupBuy.setStatus(GROUP_BUY_FAILED);
-        groupBuy.setUpdatedAt(LocalDateTime.now());
+        groupBuy.setUpdatedAt(now);
         groupBuyMapper.update(groupBuy);
 
-        if (!preOrderIds.isEmpty()) {
-            orderMapper.updateStatusBatch(preOrderIds, Orders.PENDING_GROUP, Orders.CANCELLED);
-        }
-
         for (GroupBuyParticipant participant : participants) {
-            restoreGroupBuyStock(participant.getPreOrderId(), INVENTORY_OPERATOR_SYSTEM, null);
-            Orders order = orderMapper.getById(participant.getPreOrderId());
-            if (order != null) {
-                log.info("揪團失敗退款: groupNo={}, memberId={}, orderId={}, amount={}",
-                        groupBuy.getGroupNo(), participant.getMemberId(), order.getId(), order.getAmount());
+            if (cancelPendingGroupOrder(participant.getPreOrderId(), CANCEL_REASON_EXPIRED, now)) {
+                restoreGroupBuyStock(participant.getPreOrderId(), INVENTORY_OPERATOR_SYSTEM, null);
+                Orders order = orderMapper.getById(participant.getPreOrderId());
+                if (order != null) {
+                    log.info("揪團失敗退款: groupNo={}, memberId={}, orderId={}, amount={}",
+                            groupBuy.getGroupNo(), participant.getMemberId(), order.getId(), order.getAmount());
+                }
             }
         }
+    }
+
+    private boolean cancelPendingGroupOrder(Long orderId, String cancelReason, LocalDateTime cancelTime) {
+        return orderMapper.cancelPendingGroupOrder(orderId, Orders.PENDING_GROUP, Orders.CANCELLED,
+                cancelReason, cancelTime) > 0;
     }
 
     private void sendGroupBuyCompletedNotification(String groupNo) {

@@ -342,6 +342,58 @@ class GroupBuyServiceTest {
         assertEquals("揪團不存在", exception.getMessage());
     }
 
+    @Test
+    void handleExpiredGroupBuys_whenPreOrderAlreadyCanceled_doesNotRestoreStockAgain() {
+        GroupBuyVO initiated = initiateGroupBuyFixture();
+        GroupBuy groupBuy = groupBuyMapper.getByGroupNo(initiated.getGroupNo());
+        GroupBuyParticipant participant = groupBuyParticipantMapper.listByGroupBuyId(groupBuy.getId()).get(0);
+
+        Orders preOrder = new Orders();
+        preOrder.setId(participant.getPreOrderId());
+        preOrder.setStatus(Orders.CANCELLED);
+        preOrder.setCancelReason("測試預先取消");
+        preOrder.setCancelTime(LocalDateTime.now());
+        orderMapper.update(preOrder);
+
+        groupBuy.setExpireAt(LocalDateTime.now().minusMinutes(1));
+        groupBuy.setUpdatedAt(LocalDateTime.now());
+        groupBuyMapper.update(groupBuy);
+
+        groupBuyService.handleExpiredGroupBuys();
+
+        GroupBuy expired = groupBuyMapper.getById(groupBuy.getId());
+        assertEquals(3, expired.getStatus());
+        assertEquals(4, productMapper.getById(productId).getStock());
+        List<ProductInventoryLog> logs = productInventoryLogMapper.listByProductId(productId);
+        assertEquals(1, logs.size());
+        assertInventoryLog(logs.get(0), -1, 5, 4, "GROUP_BUY_RESERVE", participant.getPreOrderId(), "MEMBER", memberId);
+    }
+
+    @Test
+    void handleExpiredGroupBuys_cancelsPendingOrdersAndRestoresStock() {
+        GroupBuyVO initiated = initiateGroupBuyFixture();
+        GroupBuy groupBuy = groupBuyMapper.getByGroupNo(initiated.getGroupNo());
+        GroupBuyParticipant participant = groupBuyParticipantMapper.listByGroupBuyId(groupBuy.getId()).get(0);
+
+        groupBuy.setExpireAt(LocalDateTime.now().minusMinutes(1));
+        groupBuy.setUpdatedAt(LocalDateTime.now());
+        groupBuyMapper.update(groupBuy);
+
+        groupBuyService.handleExpiredGroupBuys();
+
+        GroupBuy expired = groupBuyMapper.getById(groupBuy.getId());
+        assertEquals(3, expired.getStatus());
+        Orders preOrder = orderMapper.getById(participant.getPreOrderId());
+        assertEquals(Orders.CANCELLED, preOrder.getStatus());
+        assertEquals("揪團逾期未成團", preOrder.getCancelReason());
+        assertNotNull(preOrder.getCancelTime());
+        assertEquals(5, productMapper.getById(productId).getStock());
+        List<ProductInventoryLog> logs = productInventoryLogMapper.listByProductId(productId);
+        assertEquals(2, logs.size());
+        assertInventoryLog(logs.get(0), -1, 5, 4, "GROUP_BUY_RESERVE", participant.getPreOrderId(), "MEMBER", memberId);
+        assertInventoryLog(logs.get(1), 1, 4, 5, "GROUP_BUY_CANCEL_RESTORE", participant.getPreOrderId(), "SYSTEM", null);
+    }
+
     private GroupBuyVO initiateGroupBuyFixture() {
         InitiateGroupBuyDTO dto = new InitiateGroupBuyDTO();
         dto.setProductId(productId);

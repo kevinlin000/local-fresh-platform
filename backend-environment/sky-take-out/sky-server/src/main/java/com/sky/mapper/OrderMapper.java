@@ -101,4 +101,10 @@ public interface OrderMapper {
     void updateStatusBatch(@Param("ids") List<Long> ids,
                            @Param("fromStatus") Integer fromStatus,
                            @Param("toStatus") Integer toStatus);
+
+    int cancelPendingGroupOrder(@Param("id") Long id,
+                                @Param("fromStatus") Integer fromStatus,
+                                @Param("toStatus") Integer toStatus,
+                                @Param("cancelReason") String cancelReason,
+                                @Param("cancelTime") LocalDateTime cancelTime);
 }

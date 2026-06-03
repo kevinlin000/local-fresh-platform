@@ -122,4 +122,13 @@
         </foreach>
     </update>
 
+    <update id="cancelPendingGroupOrder">
+        update orders
+        set status = #{toStatus},
+            cancel_reason = #{cancelReason},
+            cancel_time = #{cancelTime}
+        where id = #{id}
+          and status = #{fromStatus}
+    </update>
+
 </mapper>
