@@ -6,6 +6,7 @@ import com.sky.vo.BusinessDataVO;
 import com.sky.vo.ProductOverViewVO;
 import com.sky.vo.OrderOverViewVO;
 import com.sky.vo.GiftBoxOverViewVO;
+import com.sky.vo.ProductVO;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 /**
  * 工作台
@@ -72,5 +74,15 @@ public class WorkSpaceController {
     @Operation(summary = "查詢直送箱總覽")
     public Result<GiftBoxOverViewVO> setmealOverView(){
         return Result.success(workspaceService.getSetmealOverView());
+    }
+
+    /**
+     * 查詢低庫存單品
+     * @return
+     */
+    @GetMapping("/lowStockProducts")
+    @Operation(summary = "查詢低庫存單品")
+    public Result<List<ProductVO>> lowStockProducts() {
+        return Result.success(workspaceService.listLowStockProducts());
     }
 }

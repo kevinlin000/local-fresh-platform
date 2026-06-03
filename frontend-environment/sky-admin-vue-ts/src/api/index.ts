@@ -37,6 +37,13 @@ request({
   'url': `/workspace/businessData`,
   'method': 'get'
 })
+
+// 低庫存單品
+export const getLowStockProducts = () =>
+request({
+  'url': `/workspace/lowStockProducts`,
+  'method': 'get'
+})
 /**
  *
  * 報表資料

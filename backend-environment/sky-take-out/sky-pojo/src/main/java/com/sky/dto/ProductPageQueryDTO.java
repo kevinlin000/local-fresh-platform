@@ -19,4 +19,7 @@ public class ProductPageQueryDTO implements Serializable {
     //状态 0表示禁用 1表示启用
     private Integer status;
 
+    // 是否只查低庫存商品
+    private Boolean lowStock;
+
 }

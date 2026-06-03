@@ -97,6 +97,19 @@ public interface ProductMapper {
     int adjustStock(@Param("productId") Long productId, @Param("changeQuantity") Integer changeQuantity);
 
     /**
+     * 查詢低庫存商品
+     * @return 低庫存商品
+     */
+    List<ProductVO> listLowStock();
+
+    /**
+     * 統計低庫存商品數
+     * @return 低庫存商品數
+     */
+    @Select("select count(id) from product where stock <= low_stock_threshold")
+    Integer countLowStock();
+
+    /**
      * 根据条件统计菜品数量
      * @param map
      * @return

@@ -27,6 +27,9 @@
             <if test="status != null">
                 and d.status = #{status}
             </if>
+            <if test="lowStock != null and lowStock">
+                and d.stock &lt;= d.low_stock_threshold
+            </if>
         </where>
         order by d.create_time desc
     </select>
@@ -74,6 +77,14 @@
                 and category_id = #{categoryId}
             </if>
         </where>
+    </select>
+
+    <select id="listLowStock" resultType="com.sky.vo.ProductVO">
+        select d.*, c.name as categoryName
+        from product d
+        left outer join category c on d.category_id = c.id
+        where d.stock &lt;= d.low_stock_threshold
+        order by (d.stock - d.low_stock_threshold) asc, d.stock asc, d.update_time desc
     </select>
 
 </mapper>

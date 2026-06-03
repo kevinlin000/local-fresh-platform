@@ -20,4 +20,7 @@ public class ProductOverViewVO implements Serializable {
 
     // 已停售数量
     private Integer discontinued;
+
+    // 低庫存數量
+    private Integer lowStock;
 }

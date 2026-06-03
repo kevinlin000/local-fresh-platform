@@ -11,12 +11,14 @@ import com.sky.vo.BusinessDataVO;
 import com.sky.vo.ProductOverViewVO;
 import com.sky.vo.OrderOverViewVO;
 import com.sky.vo.GiftBoxOverViewVO;
+import com.sky.vo.ProductVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -135,10 +137,12 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
         map.put("status", StatusConstant.DISABLE);
         Integer discontinued = productMapper.countByMap(map);
+        Integer lowStock = productMapper.countLowStock();
 
         return ProductOverViewVO.builder()
                 .sold(sold)
                 .discontinued(discontinued)
+                .lowStock(lowStock)
                 .build();
     }
 
@@ -159,5 +163,10 @@ public class WorkspaceServiceImpl implements WorkspaceService {
                 .sold(sold)
                 .discontinued(discontinued)
                 .build();
+    }
+
+    @Override
+    public List<ProductVO> listLowStockProducts() {
+        return productMapper.listLowStock();
     }
 }

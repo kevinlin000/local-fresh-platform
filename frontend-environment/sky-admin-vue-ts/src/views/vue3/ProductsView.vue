@@ -14,9 +14,19 @@
         <el-option label="起售" :value="1" />
         <el-option label="停售" :value="0" />
       </el-select>
+      <el-checkbox v-model="query.lowStock">只看低庫存</el-checkbox>
       <el-button type="primary" @click="loadData">查詢</el-button>
       <el-button type="success" @click="openCreate">新增單品</el-button>
     </div>
+
+    <el-alert
+      v-if="query.lowStock"
+      class="filter-alert"
+      type="warning"
+      show-icon
+      :closable="false"
+      title="目前只顯示低庫存單品，請優先補貨或調整庫存。"
+    />
 
     <el-table v-loading="loading" :data="rows" stripe>
       <el-table-column prop="productName" label="單品名稱" min-width="180" />
@@ -200,7 +210,7 @@ import { readPage, useLoading, usePage } from './composables'
 const route = useRoute()
 const rows = ref<any[]>([])
 const categories = ref<any[]>([])
-const query = reactive<{ name: string; status?: number }>({ name: '' })
+const query = reactive<{ name: string; status?: number; lowStock: boolean }>({ name: '', lowStock: false })
 const page = usePage()
 const { loading, withLoading } = useLoading()
 const formRef = ref<FormInstance>()
@@ -265,6 +275,7 @@ async function loadData() {
     const response = await getDishPage({
       name: query.name || undefined,
       status: query.status,
+      lowStock: query.lowStock || undefined,
       page: page.page,
       pageSize: page.pageSize
     })
@@ -277,6 +288,7 @@ async function loadData() {
 function applyRouteQuery() {
   const routeStatus = Number(route.query.status)
   query.status = Number.isFinite(routeStatus) && routeStatus >= 0 ? routeStatus : undefined
+  query.lowStock = route.query.lowStock === '1'
 }
 
 function productQuality(row: any) {
@@ -485,6 +497,15 @@ watch(
   }
 )
 
+watch(
+  () => route.query.lowStock,
+  async () => {
+    applyRouteQuery()
+    page.page = 1
+    await loadData()
+  }
+)
+
 onMounted(async () => {
   applyRouteQuery()
   await Promise.all([loadCategories(), loadData()])
@@ -527,6 +548,10 @@ onMounted(async () => {
 .stock-warning {
   color: #b45309;
   font-weight: 800;
+}
+
+.filter-alert {
+  margin-bottom: 14px;
 }
 
 .stock-increase {

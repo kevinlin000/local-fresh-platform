@@ -31,6 +31,7 @@
         </div>
         <div class="section-actions">
           <el-button @click="goToOrders(2)">待接單</el-button>
+          <el-button @click="goToProducts(undefined, true)">低庫存</el-button>
           <el-button @click="goToProducts(0)">停售商品</el-button>
         </div>
       </div>
@@ -58,6 +59,32 @@
                 <small>{{ order.consignee || '未填收件人' }} · {{ order.orderTime || '無下單時間' }}</small>
               </span>
               <b>{{ money(order.amount) }}</b>
+            </button>
+          </div>
+        </section>
+
+        <section class="ops-panel urgent">
+          <div class="ops-panel-title">
+            <div>
+              <span>庫存補貨</span>
+              <strong>{{ lowStockProducts.length }} 個低庫存單品</strong>
+            </div>
+            <el-tag type="danger" effect="plain">影響履約能力</el-tag>
+          </div>
+
+          <el-empty v-if="!lowStockProducts.length" description="目前沒有低庫存單品" />
+          <div v-else class="ops-list">
+            <button
+              v-for="product in lowStockProducts.slice(0, 5)"
+              :key="product.id"
+              class="ops-row"
+              @click="goToProducts(undefined, true)"
+            >
+              <span>
+                <strong>{{ product.productName }}</strong>
+                <small>{{ product.categoryName || '未分類' }} · 門檻 {{ product.lowStockThreshold ?? 0 }}</small>
+              </span>
+              <b class="stock-danger">{{ product.stock ?? 0 }} 件</b>
             </button>
           </div>
         </section>
@@ -93,7 +120,7 @@
     <article class="admin-card admin-card-pad half">
       <p class="eyebrow">Products</p>
       <h2>單品狀態</h2>
-      <div class="split-stat">
+      <div class="split-stat product-split-stat">
         <div>
           <span>起售</span>
           <strong>{{ productOverview.sold ?? 0 }}</strong>
@@ -101,6 +128,10 @@
         <div>
           <span>停售</span>
           <strong>{{ productOverview.discontinued ?? 0 }}</strong>
+        </div>
+        <div>
+          <span>低庫存</span>
+          <strong>{{ productOverview.lowStock ?? 0 }}</strong>
         </div>
       </div>
     </article>
@@ -125,7 +156,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getBusinessData, getOrderData, getOverviewDishes, getSetMealStatistics } from '@/api'
+import { getBusinessData, getLowStockProducts, getOrderData, getOverviewDishes, getSetMealStatistics } from '@/api'
 import { getDishPage } from '@/api/dish'
 import { getOrderDetailPage } from '@/api/order'
 
@@ -136,6 +167,7 @@ const productOverview = ref<any>({})
 const giftBoxOverview = ref<any>({})
 const pendingOrders = ref<any[]>([])
 const offlineProducts = ref<any[]>([])
+const lowStockProducts = ref<any[]>([])
 const router = useRouter()
 
 const metricCards = computed(() => [
@@ -144,7 +176,7 @@ const metricCards = computed(() => [
   { label: '客單價', value: money(businessData.value.unitPrice), caption: '平均每筆有效訂單' },
   { label: '完成率', value: percent(businessData.value.orderCompletionRate), caption: '有效訂單 / 全部訂單' },
   { label: '新增用戶', value: businessData.value.newUsers ?? 0, caption: '今日新增會員' },
-  { label: '全部訂單', value: orderOverview.value.allOrders ?? 0, caption: '平台累計訂單' }
+  { label: '低庫存', value: productOverview.value.lowStock ?? lowStockProducts.value.length, caption: '需補貨或調整庫存' }
 ])
 
 const orderCards = computed(() => [
@@ -166,20 +198,28 @@ function goToOrders(status?: number) {
   void router.push({ path: '/orders', query: status ? { status } : {} })
 }
 
-function goToProducts(status?: number) {
-  void router.push({ path: '/products', query: status !== undefined ? { status } : {} })
+function goToProducts(status?: number, lowStock = false) {
+  const query: Record<string, number> = {}
+  if (status !== undefined) {
+    query.status = status
+  }
+  if (lowStock) {
+    query.lowStock = 1
+  }
+  void router.push({ path: '/products', query })
 }
 
 async function loadDashboard() {
   loading.value = true
   try {
-    const [business, orders, products, giftBoxes, pending, offline] = await Promise.all([
+    const [business, orders, products, giftBoxes, pending, offline, lowStock] = await Promise.all([
       getBusinessData(),
       getOrderData(),
       getOverviewDishes(),
       getSetMealStatistics(),
       getOrderDetailPage({ status: 2, page: 1, pageSize: 5 }),
-      getDishPage({ status: 0, page: 1, pageSize: 5 })
+      getDishPage({ status: 0, page: 1, pageSize: 5 }),
+      getLowStockProducts()
     ])
     businessData.value = business.data?.data || {}
     orderOverview.value = orders.data?.data || {}
@@ -187,6 +227,7 @@ async function loadDashboard() {
     giftBoxOverview.value = giftBoxes.data?.data || {}
     pendingOrders.value = pending.data?.data?.records || []
     offlineProducts.value = offline.data?.data?.records || []
+    lowStockProducts.value = lowStock.data?.data || []
   } finally {
     loading.value = false
   }
@@ -283,6 +324,10 @@ h2 {
   margin-top: 18px;
 }
 
+.product-split-stat {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .ops-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -349,6 +394,10 @@ h2 {
 .ops-row b {
   color: var(--admin-green);
   white-space: nowrap;
+}
+
+.ops-row b.stock-danger {
+  color: #b91c1c;
 }
 
 @media (max-width: 980px) {
