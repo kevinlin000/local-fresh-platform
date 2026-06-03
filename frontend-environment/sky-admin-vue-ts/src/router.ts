@@ -1,138 +1,71 @@
-import Vue from "vue";
-import Router from "vue-router";
-import Layout from "@/layout/index.vue";
-// import {
-//   getToken,
-//   setToken,
-//   removeToken,
-//   getStoreId,
-//   setStoreId,
-//   removeStoreId,
-//   setUserInfo,
-//   getUserInfo,
-//   removeUserInfo
-// } from "@/utils/cookies";
-// import store from "@/store";
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import AdminLayout from '@/views/vue3/AdminLayout.vue'
 
-Vue.use(Router);
-
-const router = new Router({
-  scrollBehavior: (to, from, savedPosition) => {
-    if (savedPosition) {
-      return savedPosition;
-    }
-    return { x: 0, y: 0 };
+export const routes: RouteRecordRaw[] = [
+  {
+    path: '/login',
+    name: 'Login',
+    component: () => import('@/views/vue3/LoginView.vue'),
+    meta: { public: true, title: '登入' }
   },
-  base: process.env.BASE_URL,
-  routes: [
-    {
-      path: "/login",
-      component: () => import("@/views/login/index.vue"),
-      meta: { title: "菜籃日", hidden: true, notNeedAuth: true }
-    },
-    {
-      path: "/404",
-      component: () => import("@/views/404.vue"),
-      meta: { title: "菜籃日", hidden: true, notNeedAuth: true }
-    },
-    {
-      path: "/",
-      component: Layout,
-      redirect: "/dashboard",
-      children: [
-        {
-          path: "dashboard",
-          component: () =>  import("@/views/dashboard/index.vue"),
-          name: "Dashboard",
-          meta: {
-            title: "工作台",
-            icon: "dashboard",
-            affix: true
-          }
-        },
-		    {
-          path: "/statistics",
-          component: () => import("@/views/statistics/index.vue"),
-          meta: {
-            title: "資料統計",
-            icon: "icon-statistics"
-          }
-        },
-        {
-          path: "order",
-          component: () => import("@/views/orderDetails/index.vue"),
-          meta: {
-            title: "訂單管理",
-            icon: "icon-order"
-          }
-        },
-        {
-          path: "setmeal",
-          component: () => import("@/views/setmeal/index.vue"),
-          meta: {
-            title: "直送箱管理",
-            icon: "icon-combo"
-          }
-        },
-        {
-          path: "dish",
-          component: () => import("@/views/dish/index.vue"),
-          meta: {
-            title: "單品管理",
-            icon: "icon-dish"
-          }
-        },
-        {
-          path: "/dish/add",
-          component: () => import("@/views/dish/addDishtype.vue"),
-          meta: {
-            title: "新增單品",
-            hidden: true
-          }
-        },
-        
-        {
-          path: "category",
-          component: () => import("@/views/category/index.vue"),
-          meta: {
-            title: "分類管理",
-            icon: "icon-category"
-          }
-        },
-        {
-          path: "employee",
-          component: () => import("@/views/employee/index.vue"),
-          meta: {
-            title: "員工管理",
-            icon: "icon-employee"
-          }
-        },
-        
-        {
-          path: "/employee/add",
-          component: () => import("@/views/employee/addEmployee.vue"),
-          meta: {
-            title: "新增／修改員工",
-            hidden: true
-          }
-        },
-        
-        {
-          path: "/setmeal/add",
-          component: () => import("@/views/setmeal/addSetmeal.vue"),
-          meta: {
-            title: "新增直送箱",
-            hidden: true
-          }
-        }
-      ]
-    },
-    {
-      path: "*",
-      redirect: "/404",
-      meta: { hidden: true }
-    }
-  ]
-});
+  {
+    path: '/',
+    component: AdminLayout,
+    redirect: '/dashboard',
+    children: [
+      {
+        path: 'dashboard',
+        name: 'Dashboard',
+        component: () => import('@/views/vue3/DashboardView.vue'),
+        meta: { title: '工作台' }
+      },
+      {
+        path: 'orders',
+        name: 'Orders',
+        component: () => import('@/views/vue3/PlaceholderView.vue'),
+        meta: { title: '訂單管理', planned: true }
+      },
+      {
+        path: 'products',
+        name: 'Products',
+        component: () => import('@/views/vue3/PlaceholderView.vue'),
+        meta: { title: '單品管理', planned: true }
+      },
+      {
+        path: 'gift-boxes',
+        name: 'GiftBoxes',
+        component: () => import('@/views/vue3/PlaceholderView.vue'),
+        meta: { title: '直送箱管理', planned: true }
+      },
+      {
+        path: 'categories',
+        name: 'Categories',
+        component: () => import('@/views/vue3/PlaceholderView.vue'),
+        meta: { title: '分類管理', planned: true }
+      },
+      {
+        path: 'employees',
+        name: 'Employees',
+        component: () => import('@/views/vue3/PlaceholderView.vue'),
+        meta: { title: '員工管理', planned: true }
+      },
+      {
+        path: 'reports',
+        name: 'Reports',
+        component: () => import('@/views/vue3/PlaceholderView.vue'),
+        meta: { title: '資料統計', planned: true }
+      }
+    ]
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/dashboard'
+  }
+]
 
-export default router;
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes
+})
+
+export default router

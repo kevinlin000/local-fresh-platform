@@ -1,63 +1,35 @@
 import axios from 'axios'
-import { UserModule } from '@/store/modules/user'
-import {getRequestKey,removePending} from './requestOptimize'
+import { ElMessage } from 'element-plus'
 import router from '@/router'
+import { getToken, removeToken } from '@/utils/cookies'
 
 const service = axios.create({
-  baseURL: process.env.VUE_APP_BASE_API,
-  'timeout': 600000
+  baseURL: import.meta.env.VITE_BASE_API || '/api',
+  timeout: 600000
 })
 
-// Request interceptors
-service.interceptors.request.use(
-  (config: any) => {
-    // Add X-Access-Token header to every request, you can add other custom headers here
-    if (UserModule.token) {
-      config.headers['token'] = UserModule.token
-    } else if (UserModule.token && config.url != '/login') {
-      window.location.href = '/login'
-      return false
-    }
-    return config
-  },
-  (error: any) => {
-    Promise.reject(error)
+service.interceptors.request.use(config => {
+  const token = getToken()
+  if (token) {
+    config.headers.token = token
   }
-)
+  return config
+})
 
-// Response interceptors
 service.interceptors.response.use(
-  (response: any) => {
-    // console.log(response, 'response')
-    if (response.data.status === 401) {
-      router.push('/login')
-    }
-    //请求响应中的config的url会带上代理的api需要去掉
-    response.config.url = response.config.url.replace('/api', '')
-    // 请求完成，刪除请求中狀態
-    const key = getRequestKey(response.config);
-    removePending(key);
-    if (response.data.code === 1) {
-      return response
+  response => {
+    if (response.data?.code === 0) {
+      ElMessage.error(response.data?.msg || '請求失敗')
     }
     return response
   },
-  (error: any) => {
-    // console.log(error.config, pending, 'error')
-    if (error && error.response) {
-      switch (error.response.status) {
-        case 401:
-          router.push('/login')
-          break;
-        case 405:
-          error.message = '請求錯誤'
-      }
+  error => {
+    const status = error.response?.status
+    if (status === 401) {
+      removeToken()
+      router.push('/login')
     }
-    //请求响应中的config的url会带上代理的api需要去掉
-    error.config.url = error.config.url.replace('/api', '')
-    // 请求完成，刪除请求中狀態
-    const key = getRequestKey(error.config);
-    removePending(key);
+    ElMessage.error(error.response?.data?.msg || error.message || '系統錯誤')
     return Promise.reject(error)
   }
 )

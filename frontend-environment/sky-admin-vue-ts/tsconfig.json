@@ -1,43 +1,34 @@
 {
   "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
-    "strict": false,
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true,
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
     "jsx": "preserve",
-    "importHelpers": true,
-    "moduleResolution": "node",
-    "experimentalDecorators": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "sourceMap": true,
+    "strict": true,
     "baseUrl": ".",
-    "skipLibCheck":true,
-    "types": [
-      "node",
-      "jest",
-      "webpack-env"
-    ],
     "paths": {
-      "@/*": [
-        "src/*"
-      ]
+      "@/*": ["src/*"]
     },
-    "lib": [
-      "esnext",
-      "dom",
-      "dom.iterable",
-      "scripthost"
-    ]
+    "types": ["node"]
   },
   "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    
-    "tests/**/*.ts",
-    "tests/**/*.tsx"
+    "src/vite-env.d.ts",
+    "src/main.ts",
+    "src/router.ts",
+    "src/permission.ts",
+    "src/App.vue",
+    "src/store/**/*.ts",
+    "src/utils/request.ts",
+    "src/utils/cookies.ts",
+    "src/api/employee.ts",
+    "src/views/vue3/**/*.vue"
   ],
-  "exclude": [
-    "node_modules",
-    "src/**/*.vue"
-  ]
+  "references": []
 }
