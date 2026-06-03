@@ -1,7 +1,19 @@
 <template>
   <section class="admin-card admin-card-pad">
+    <div class="product-summary">
+      <div v-for="item in summaryCards" :key="item.label" class="summary-card">
+        <span>{{ item.label }}</span>
+        <strong>{{ item.value }}</strong>
+        <small>{{ item.caption }}</small>
+      </div>
+    </div>
+
     <div class="table-toolbar">
       <el-input v-model="query.name" clearable placeholder="搜尋單品名稱" @keyup.enter="loadData" />
+      <el-select v-model="query.status" clearable placeholder="上架狀態">
+        <el-option label="起售" :value="1" />
+        <el-option label="停售" :value="0" />
+      </el-select>
       <el-button type="primary" @click="loadData">查詢</el-button>
       <el-button type="success" @click="openCreate">新增單品</el-button>
     </div>
@@ -13,6 +25,20 @@
       <el-table-column label="狀態" width="120">
         <template #default="{ row }">
           <el-tag :type="row.status === 1 ? 'success' : 'info'">{{ row.status === 1 ? '起售' : '停售' }}</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="上架品質" min-width="220">
+        <template #default="{ row }">
+          <div class="quality-tags">
+            <el-tag
+              v-for="item in productQuality(row)"
+              :key="item.label"
+              :type="item.type"
+              effect="plain"
+            >
+              {{ item.label }}
+            </el-tag>
+          </div>
         </template>
       </el-table-column>
       <el-table-column label="操作" width="260">
@@ -82,9 +108,10 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useRoute } from 'vue-router'
 import {
   addDish,
   deleteDish,
@@ -96,9 +123,10 @@ import {
 } from '@/api/dish'
 import { readPage, useLoading, usePage } from './composables'
 
+const route = useRoute()
 const rows = ref<any[]>([])
 const categories = ref<any[]>([])
-const query = reactive({ name: '' })
+const query = reactive<{ name: string; status?: number }>({ name: '' })
 const page = usePage()
 const { loading, withLoading } = useLoading()
 const formRef = ref<FormInstance>()
@@ -122,13 +150,50 @@ const rules: FormRules = {
   status: [{ required: true, message: '請選擇狀態', trigger: 'change' }]
 }
 
+const summaryCards = computed(() => {
+  const onSale = rows.value.filter((item) => item.status === 1).length
+  const offSale = rows.value.filter((item) => item.status !== 1).length
+  const needsWork = rows.value.filter((item) => productQuality(item).some((quality) => quality.type === 'warning')).length
+
+  return [
+    { label: '本頁起售', value: onSale, caption: '目前可被會員購買' },
+    { label: '本頁停售', value: offSale, caption: '需確認是否補貨或下架' },
+    { label: '需補資料', value: needsWork, caption: '缺圖或缺描述' }
+  ]
+})
+
 async function loadData() {
   await withLoading(async () => {
-    const response = await getDishPage({ name: query.name || undefined, page: page.page, pageSize: page.pageSize })
+    const response = await getDishPage({
+      name: query.name || undefined,
+      status: query.status,
+      page: page.page,
+      pageSize: page.pageSize
+    })
     const result = readPage(response)
     rows.value = result.records
     page.total = result.total
   })
+}
+
+function applyRouteQuery() {
+  const routeStatus = Number(route.query.status)
+  query.status = Number.isFinite(routeStatus) && routeStatus >= 0 ? routeStatus : undefined
+}
+
+function productQuality(row: any) {
+  const tags: Array<{ label: string; type: 'success' | 'warning' | 'info' }> = []
+  if (row.image) {
+    tags.push({ label: '有圖片', type: 'success' })
+  } else {
+    tags.push({ label: '缺圖片', type: 'warning' })
+  }
+  if (row.description) {
+    tags.push({ label: '有描述', type: 'success' })
+  } else {
+    tags.push({ label: '缺描述', type: 'warning' })
+  }
+  return tags
 }
 
 async function toggleStatus(row: any) {
@@ -219,7 +284,51 @@ async function remove(row: any) {
   await loadData()
 }
 
+watch(
+  () => route.query.status,
+  async () => {
+    applyRouteQuery()
+    page.page = 1
+    await loadData()
+  }
+)
+
 onMounted(async () => {
+  applyRouteQuery()
   await Promise.all([loadCategories(), loadData()])
 })
 </script>
+
+<style scoped>
+.product-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.summary-card {
+  padding: 16px;
+  border: 1px solid rgba(32, 49, 38, 0.08);
+  border-radius: 18px;
+  background: #f8f2df;
+}
+
+.summary-card span,
+.summary-card small {
+  display: block;
+  color: var(--admin-muted);
+}
+
+.summary-card strong {
+  display: block;
+  margin: 8px 0 4px;
+  font-size: 26px;
+}
+
+.quality-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+</style>

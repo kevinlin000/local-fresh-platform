@@ -23,6 +23,73 @@
       </div>
     </article>
 
+    <article class="admin-card admin-card-pad wide">
+      <div class="section-title">
+        <div>
+          <p class="eyebrow">Operations</p>
+          <h2>今日優先處理</h2>
+        </div>
+        <div class="section-actions">
+          <el-button @click="goToOrders(2)">待接單</el-button>
+          <el-button @click="goToProducts(0)">停售商品</el-button>
+        </div>
+      </div>
+
+      <div class="ops-grid">
+        <section class="ops-panel urgent">
+          <div class="ops-panel-title">
+            <div>
+              <span>訂單履約</span>
+              <strong>{{ pendingOrders.length }} 筆待接單</strong>
+            </div>
+            <el-tag type="danger" effect="dark">需優先處理</el-tag>
+          </div>
+
+          <el-empty v-if="!pendingOrders.length" description="目前沒有待接單訂單" />
+          <div v-else class="ops-list">
+            <button
+              v-for="order in pendingOrders"
+              :key="order.id"
+              class="ops-row"
+              @click="goToOrders(2)"
+            >
+              <span>
+                <strong>{{ order.number }}</strong>
+                <small>{{ order.consignee || '未填收件人' }} · {{ order.orderTime || '無下單時間' }}</small>
+              </span>
+              <b>{{ money(order.amount) }}</b>
+            </button>
+          </div>
+        </section>
+
+        <section class="ops-panel">
+          <div class="ops-panel-title">
+            <div>
+              <span>商品上架</span>
+              <strong>{{ offlineProducts.length }} 個停售單品</strong>
+            </div>
+            <el-tag type="warning" effect="plain">影響可售品項</el-tag>
+          </div>
+
+          <el-empty v-if="!offlineProducts.length" description="目前沒有停售單品" />
+          <div v-else class="ops-list">
+            <button
+              v-for="product in offlineProducts"
+              :key="product.id"
+              class="ops-row"
+              @click="goToProducts(0)"
+            >
+              <span>
+                <strong>{{ product.productName }}</strong>
+                <small>{{ product.categoryName || '未分類' }} · {{ product.description ? '描述完整' : '缺描述' }}</small>
+              </span>
+              <b>{{ money(product.price) }}</b>
+            </button>
+          </div>
+        </section>
+      </div>
+    </article>
+
     <article class="admin-card admin-card-pad half">
       <p class="eyebrow">Products</p>
       <h2>單品狀態</h2>
@@ -57,13 +124,19 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { getBusinessData, getOrderData, getOverviewDishes, getSetMealStatistics } from '@/api'
+import { getDishPage } from '@/api/dish'
+import { getOrderDetailPage } from '@/api/order'
 
 const loading = ref(false)
 const businessData = ref<any>({})
 const orderOverview = ref<any>({})
 const productOverview = ref<any>({})
 const giftBoxOverview = ref<any>({})
+const pendingOrders = ref<any[]>([])
+const offlineProducts = ref<any[]>([])
+const router = useRouter()
 
 const metricCards = computed(() => [
   { label: '今日營業額', value: money(businessData.value.turnover), caption: '已完成訂單金額' },
@@ -89,19 +162,31 @@ function percent(value: number | undefined) {
   return `${(Number(value || 0) * 100).toFixed(2)}%`
 }
 
+function goToOrders(status?: number) {
+  void router.push({ path: '/orders', query: status ? { status } : {} })
+}
+
+function goToProducts(status?: number) {
+  void router.push({ path: '/products', query: status !== undefined ? { status } : {} })
+}
+
 async function loadDashboard() {
   loading.value = true
   try {
-    const [business, orders, products, giftBoxes] = await Promise.all([
+    const [business, orders, products, giftBoxes, pending, offline] = await Promise.all([
       getBusinessData(),
       getOrderData(),
       getOverviewDishes(),
-      getSetMealStatistics()
+      getSetMealStatistics(),
+      getOrderDetailPage({ status: 2, page: 1, pageSize: 5 }),
+      getDishPage({ status: 0, page: 1, pageSize: 5 })
     ])
     businessData.value = business.data?.data || {}
     orderOverview.value = orders.data?.data || {}
     productOverview.value = products.data?.data || {}
     giftBoxOverview.value = giftBoxes.data?.data || {}
+    pendingOrders.value = pending.data?.data?.records || []
+    offlineProducts.value = offline.data?.data?.records || []
   } finally {
     loading.value = false
   }
@@ -149,6 +234,11 @@ onMounted(loadDashboard)
   margin-bottom: 18px;
 }
 
+.section-actions {
+  display: flex;
+  gap: 10px;
+}
+
 .eyebrow {
   margin: 0 0 8px;
   color: var(--admin-gold);
@@ -193,6 +283,74 @@ h2 {
   margin-top: 18px;
 }
 
+.ops-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.ops-panel {
+  padding: 18px;
+  border: 1px solid rgba(32, 49, 38, 0.08);
+  border-radius: 22px;
+  background: #fffaf0;
+}
+
+.ops-panel.urgent {
+  background: linear-gradient(180deg, #fff8ec 0%, #fff1df 100%);
+}
+
+.ops-panel-title,
+.ops-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.ops-panel-title {
+  margin-bottom: 14px;
+}
+
+.ops-panel-title span,
+.ops-row small {
+  display: block;
+  color: var(--admin-muted);
+}
+
+.ops-panel-title strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 20px;
+}
+
+.ops-list {
+  display: grid;
+  gap: 10px;
+}
+
+.ops-row {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid rgba(32, 49, 38, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--admin-ink);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.18s ease, transform 0.18s ease;
+}
+
+.ops-row:hover {
+  border-color: rgba(47, 107, 66, 0.35);
+  transform: translateY(-1px);
+}
+
+.ops-row b {
+  color: var(--admin-green);
+  white-space: nowrap;
+}
+
 @media (max-width: 980px) {
   .metric-card,
   .half {
@@ -201,6 +359,10 @@ h2 {
 
   .overview-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ops-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>

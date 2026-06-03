@@ -76,8 +76,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useRoute } from 'vue-router'
 import {
   completeOrder,
   deliveryOrder,
@@ -89,6 +90,8 @@ import {
   queryOrderDetailById
 } from '@/api/order'
 import { readPage, useLoading, usePage } from './composables'
+
+const route = useRoute()
 
 const statuses = [
   { label: '待付款', value: 1 },
@@ -137,6 +140,11 @@ async function loadData() {
     page.total = result.total
   })
   await loadStats()
+}
+
+function applyRouteQuery() {
+  const routeStatus = Number(route.query.status)
+  query.status = Number.isFinite(routeStatus) && routeStatus > 0 ? routeStatus : undefined
 }
 
 async function loadStats() {
@@ -199,7 +207,19 @@ async function complete(row: any) {
   await loadData()
 }
 
-onMounted(loadData)
+watch(
+  () => route.query.status,
+  async () => {
+    applyRouteQuery()
+    page.page = 1
+    await loadData()
+  }
+)
+
+onMounted(async () => {
+  applyRouteQuery()
+  await loadData()
+})
 </script>
 
 <style scoped>
