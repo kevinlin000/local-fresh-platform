@@ -107,6 +107,16 @@ class GroupBuyControllerTest {
     }
 
     @Test
+    void initiate_shouldRejectInvalidQuantity() throws Exception {
+        mockMvc.perform(post("/user/groupBuy/initiate")
+                        .header("authentication", token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"productId\":1,\"quantity\":0,\"addressId\":3,\"requiredCount\":3}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(0));
+    }
+
+    @Test
     void join_returnsGroupBuyVo_withShareUrl() throws Exception {
         groupBuyVO.setShareUrl("http://localhost:5173/groupBuy/GB123456");
         when(groupBuyService.joinGroupBuy(any())).thenReturn(groupBuyVO);

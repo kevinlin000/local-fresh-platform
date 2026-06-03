@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,7 +43,7 @@ public class EmployeeController {
      */
     @PostMapping("/login")
     @ApiOperation("員工登入")
-    public Result<EmployeeLoginVO> login(@RequestBody EmployeeLoginDTO employeeLoginDTO) {
+    public Result<EmployeeLoginVO> login(@Valid @RequestBody EmployeeLoginDTO employeeLoginDTO) {
         log.info("員工登入：{}", employeeLoginDTO);
 
         Employee employee = employeeService.login(employeeLoginDTO);
@@ -83,7 +84,7 @@ public class EmployeeController {
      */
     @PostMapping
     @ApiOperation("新增員工")
-    public Result save(@RequestBody EmployeeDTO employeeDTO) {
+    public Result save(@Valid @RequestBody EmployeeDTO employeeDTO) {
         log.info("新增員工：{}", employeeDTO);
         employeeService.save(employeeDTO);
         return Result.success();
@@ -133,7 +134,7 @@ public class EmployeeController {
      */
     @PutMapping
     @ApiOperation("編輯員工資訊")
-    public Result update(@RequestBody EmployeeDTO employeeDTO){
+    public Result update(@Valid @RequestBody EmployeeDTO employeeDTO){
         log.info("編輯員工資訊：{}", employeeDTO);
         employeeService.update(employeeDTO);
         return Result.success();

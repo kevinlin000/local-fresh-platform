@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -34,7 +35,7 @@ public class ProductController {
      */
     @PostMapping
     @ApiOperation("新增單品")
-    public Result save(@RequestBody ProductDTO dishDTO) {
+    public Result save(@Valid @RequestBody ProductDTO dishDTO) {
         log.info("新增單品：{}", dishDTO);
         productService.saveWithFlavor(dishDTO);
         return Result.success();
@@ -87,7 +88,7 @@ public class ProductController {
      */
     @PutMapping
     @ApiOperation("修改單品")
-    public Result update(@RequestBody ProductDTO dishDTO){
+    public Result update(@Valid @RequestBody ProductDTO dishDTO){
         log.info("修改單品：{}", dishDTO);
         productService.updateWithFlavor(dishDTO);
         return Result.success();

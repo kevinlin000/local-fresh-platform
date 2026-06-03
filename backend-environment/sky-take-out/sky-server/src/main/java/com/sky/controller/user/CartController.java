@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 
@@ -28,7 +29,7 @@ public class CartController {
      */
     @PostMapping("/add")
     @ApiOperation("加入購物車")
-    public Result add(@RequestBody CartDTO shoppingCartDTO) {
+    public Result add(@Valid @RequestBody CartDTO shoppingCartDTO) {
         log.info("加入購物車, 商品資訊為: {}", shoppingCartDTO);
         cartService.addShoppingCart(shoppingCartDTO);
         return Result.success();
@@ -42,7 +43,7 @@ public class CartController {
      */
     @PostMapping("/sub")
     @ApiOperation("減少購物車商品數量")
-    public Result sub(@RequestBody CartDTO cartDTO) {
+    public Result sub(@Valid @RequestBody CartDTO cartDTO) {
         log.info("減少購物車商品, 商品資訊為: {}", cartDTO);
         cartService.subShoppingCart(cartDTO);
         return Result.success();

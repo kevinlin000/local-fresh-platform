@@ -135,6 +135,16 @@ class ProductCartApiTest {
         assertTrue(carts.isEmpty());
     }
 
+    @Test
+    void cartAddShouldRejectMissingProductAndGiftBox() throws Exception {
+        mockMvc.perform(post("/user/cart/add")
+                        .header("authentication", loginResult.token())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code", is(0)));
+    }
+
     private void addToCart() throws Exception {
         mockMvc.perform(post("/user/cart/add")
                         .header("authentication", loginResult.token())

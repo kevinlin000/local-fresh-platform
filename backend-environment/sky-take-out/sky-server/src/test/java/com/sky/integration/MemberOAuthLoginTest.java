@@ -147,6 +147,24 @@ class MemberOAuthLoginTest {
     }
 
     @Test
+    void mockLoginShouldRejectBlankCode() throws Exception {
+        mockMvc.perform(post("/user/member/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"code\":\"\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code", is(0)));
+    }
+
+    @Test
+    void googleOAuthShouldRejectBlankCode() throws Exception {
+        mockMvc.perform(post("/user/member/oauth/google")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new OAuthLoginRequest("", "http://localhost:5173/oauth/callback"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code", is(0)));
+    }
+
+    @Test
     void googleOAuthShouldReturnErrorWhenTokenInvalid() throws Exception {
         when(googleOAuthClient.fetchProfile(anyString(), anyString()))
                 .thenThrow(new LoginFailedException(MessageConstant.GOOGLE_OAUTH_TOKEN_INVALID));

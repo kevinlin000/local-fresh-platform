@@ -6,6 +6,11 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Data
 public class GiftBoxDTO implements Serializable {
@@ -13,15 +18,22 @@ public class GiftBoxDTO implements Serializable {
     private Long id;
 
     //分类id
+    @NotNull(message = "直送箱分類不能為空")
     private Long categoryId;
 
     //直送箱名称
+    @NotBlank(message = "直送箱名稱不能為空")
     private String boxName;
 
     //直送箱价格
+    @NotNull(message = "直送箱價格不能為空")
+    @DecimalMin(value = "0.01", message = "直送箱價格必須大於 0")
     private BigDecimal price;
 
     //状态 0:停用 1:启用
+    @NotNull(message = "直送箱狀態不能為空")
+    @Min(value = 0, message = "直送箱狀態錯誤")
+    @Max(value = 1, message = "直送箱狀態錯誤")
     private Integer status;
 
     //描述信息

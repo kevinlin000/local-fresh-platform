@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -29,14 +30,14 @@ public class GroupBuyController {
 
     @PostMapping("/initiate")
     @ApiOperation("發起揪團")
-    public Result<GroupBuyVO> initiate(@RequestBody InitiateGroupBuyDTO initiateGroupBuyDTO) {
+    public Result<GroupBuyVO> initiate(@Valid @RequestBody InitiateGroupBuyDTO initiateGroupBuyDTO) {
         log.info("發起揪團: {}", initiateGroupBuyDTO);
         return Result.success(groupBuyService.initiate(initiateGroupBuyDTO));
     }
 
     @PostMapping("/join")
     @ApiOperation("加入揪團")
-    public Result<GroupBuyVO> join(@RequestBody JoinGroupBuyDTO joinGroupBuyDTO) {
+    public Result<GroupBuyVO> join(@Valid @RequestBody JoinGroupBuyDTO joinGroupBuyDTO) {
         log.info("加入揪團: {}", joinGroupBuyDTO);
         return Result.success(groupBuyService.joinGroupBuy(joinGroupBuyDTO));
     }

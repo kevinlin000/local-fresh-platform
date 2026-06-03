@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 @RestController("userOrderController")
 @RequestMapping("/user/order")
 @Api(tags = "會員端訂單相關介面")
@@ -29,7 +31,7 @@ public class OrderController {
      */
     @PostMapping("/submit")
     @ApiOperation("會員下單")
-    public Result<OrderSubmitVO> submit(@RequestBody OrdersSubmitDTO ordersSubmitDTO) {
+    public Result<OrderSubmitVO> submit(@Valid @RequestBody OrdersSubmitDTO ordersSubmitDTO) {
         log.info("會員下單, 參數為: {}", ordersSubmitDTO);
         OrderSubmitVO orderSubmitVO = orderService.submitOrder(ordersSubmitDTO);
         return Result.success(orderSubmitVO);
@@ -43,7 +45,7 @@ public class OrderController {
      */
     @PutMapping("/payment")
     @ApiOperation("訂單支付")
-    public Result<OrderPaymentVO> payment(@RequestBody OrdersPaymentDTO ordersPaymentDTO) throws Exception {
+    public Result<OrderPaymentVO> payment(@Valid @RequestBody OrdersPaymentDTO ordersPaymentDTO) throws Exception {
         log.info("訂單支付：{}", ordersPaymentDTO);
         OrderPaymentVO orderPaymentVO = orderService.payment(ordersPaymentDTO);
         log.info("生成预支付交易单：{}", orderPaymentVO);

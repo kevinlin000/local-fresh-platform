@@ -14,6 +14,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Set;
 
@@ -39,7 +40,7 @@ public class GiftBoxController {
      */
     @PostMapping
     @ApiOperation("新增直送箱")
-    public Result save(@RequestBody GiftBoxDTO setmealDTO) {
+    public Result save(@Valid @RequestBody GiftBoxDTO setmealDTO) {
         giftBoxService.saveWithDish(setmealDTO);
         cleanCache("giftbox_*");
         return Result.success();
@@ -91,7 +92,7 @@ public class GiftBoxController {
      */
     @PutMapping
     @ApiOperation("修改直送箱")
-    public Result update(@RequestBody GiftBoxDTO setmealDTO) {
+    public Result update(@Valid @RequestBody GiftBoxDTO setmealDTO) {
         giftBoxService.update(setmealDTO);
         cleanCache("giftbox_*");
         return Result.success();

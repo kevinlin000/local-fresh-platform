@@ -3,6 +3,7 @@ package com.sky.dto;
 import lombok.Data;
 
 import java.io.Serializable;
+import javax.validation.constraints.NotBlank;
 
 /**
  * C端用户登录
@@ -10,6 +11,7 @@ import java.io.Serializable;
 @Data
 public class MemberLoginDTO implements Serializable {
 
+    @NotBlank(message = "登入 code 不能為空")
     private String code;
 
 }

@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 
 @RestController
 @RequestMapping("/user/member")
@@ -30,7 +32,7 @@ public class MemberController {
      */
     @PostMapping("/login")
     @ApiOperation("會員登入")
-    public Result<MemberLoginVO> login(@RequestBody MemberLoginDTO userLoginDTO) {
+    public Result<MemberLoginVO> login(@Valid @RequestBody MemberLoginDTO userLoginDTO) {
         log.info("會員登入：{}", userLoginDTO.getCode());
         return Result.success(memberService.mockLogin(userLoginDTO));
 
@@ -38,7 +40,7 @@ public class MemberController {
 
     @PostMapping("/oauth/google")
     @ApiOperation("Google OAuth 會員登入")
-    public Result<MemberLoginVO> googleOAuthLogin(@RequestBody GoogleOAuthLoginDTO googleOAuthLoginDTO) {
+    public Result<MemberLoginVO> googleOAuthLogin(@Valid @RequestBody GoogleOAuthLoginDTO googleOAuthLoginDTO) {
         log.info("Google OAuth 會員登入，redirectUri={}", googleOAuthLoginDTO.getRedirectUri());
         return Result.success(memberService.googleOAuthLogin(googleOAuthLoginDTO));
     }
