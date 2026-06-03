@@ -14,6 +14,7 @@ import com.sky.exception.AddressBookBusinessException;
 import com.sky.exception.OrderBusinessException;
 import com.sky.mapper.*;
 import com.sky.service.InventoryService;
+import com.sky.service.OrderCancellationService;
 import com.sky.result.PageResult;
 import com.sky.service.OrderService;
 import com.sky.service.support.OrderStatusTransitionPolicy;
@@ -46,7 +47,6 @@ import static com.sky.service.support.OrderStatusTransitionPolicy.Transition;
 public class OrderServiceImpl implements OrderService {
 
     private static final String INVENTORY_REASON_ORDER_RESERVE = "ORDER_RESERVE";
-    private static final String INVENTORY_REASON_ORDER_CANCEL_RESTORE = "ORDER_CANCEL_RESTORE";
     private static final String INVENTORY_OPERATOR_MEMBER = "MEMBER";
     private static final String INVENTORY_OPERATOR_ADMIN = "ADMIN";
 
@@ -67,6 +67,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private InventoryService inventoryService;
+
+    @Autowired
+    private OrderCancellationService orderCancellationService;
 
     @Autowired
     private WeChatPayUtil weChatPayUtil;
@@ -316,7 +319,8 @@ public class OrderServiceImpl implements OrderService {
 
         OrderStatusTransitionPolicy.requireAllowed(ordersDB, Transition.USER_CANCEL);
 
-        cancelOrder(ordersDB, "用户取消", null, INVENTORY_OPERATOR_MEMBER, BaseContext.getCurrentId());
+        orderCancellationService.cancelOrder(ordersDB, "用户取消", null,
+                INVENTORY_OPERATOR_MEMBER, BaseContext.getCurrentId());
     }
 
     /**
@@ -457,7 +461,7 @@ public class OrderServiceImpl implements OrderService {
 
         OrderStatusTransitionPolicy.requireAllowed(ordersDB, Transition.ADMIN_REJECT);
 
-        cancelOrder(ordersDB, null, ordersRejectionDTO.getRejectionReason(),
+        orderCancellationService.cancelOrder(ordersDB, null, ordersRejectionDTO.getRejectionReason(),
                 INVENTORY_OPERATOR_ADMIN, BaseContext.getCurrentId());
     }
 
@@ -474,31 +478,8 @@ public class OrderServiceImpl implements OrderService {
         }
         OrderStatusTransitionPolicy.requireAllowed(ordersDB, Transition.ADMIN_CANCEL);
 
-        cancelOrder(ordersDB, ordersCancelDTO.getCancelReason(), null,
+        orderCancellationService.cancelOrder(ordersDB, ordersCancelDTO.getCancelReason(), null,
                 INVENTORY_OPERATOR_ADMIN, BaseContext.getCurrentId());
-    }
-
-    private void cancelOrder(Orders ordersDB, String cancelReason, String rejectionReason,
-                             String operatorType, Long operatorId) throws Exception {
-        Orders orders = new Orders();
-        orders.setId(ordersDB.getId());
-        orders.setStatus(Orders.CANCELLED);
-        orders.setCancelReason(cancelReason);
-        orders.setRejectionReason(rejectionReason);
-        orders.setCancelTime(LocalDateTime.now());
-
-        if (Orders.PAID.equals(ordersDB.getPayStatus())) {
-            String refund = weChatPayUtil.refund(
-                    ordersDB.getNumber(),
-                    ordersDB.getNumber(),
-                    ordersDB.getAmount(),
-                    ordersDB.getAmount());
-            log.info("申请退款：{}", refund);
-            orders.setPayStatus(Orders.REFUND);
-        }
-
-        orderMapper.update(orders);
-        restoreProductStock(ordersDB.getId(), operatorType, operatorId);
     }
 
     private void reserveProductStock(List<Cart> shoppingCartList, Long orderId, Long userId) {
@@ -514,19 +495,6 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-    private void restoreProductStock(Long orderId, String operatorType, Long operatorId) {
-        List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orderId);
-        for (OrderDetail orderDetail : orderDetailList) {
-            if (orderDetail.getProductId() != null && orderDetail.getNumber() != null && orderDetail.getNumber() > 0) {
-                inventoryService.restoreProduct(orderDetail.getProductId(), orderDetail.getNumber(),
-                        INVENTORY_REASON_ORDER_CANCEL_RESTORE, orderId, operatorType, operatorId);
-            }
-            if (orderDetail.getGiftBoxId() != null && orderDetail.getNumber() != null && orderDetail.getNumber() > 0) {
-                restoreGiftBoxStock(orderDetail.getGiftBoxId(), orderDetail.getNumber(), orderId, operatorType, operatorId);
-            }
-        }
-    }
-
     private void reserveGiftBoxStock(Long giftBoxId, Integer giftBoxQuantity, Long orderId, Long userId) {
         List<GiftBoxProduct> giftBoxProducts = giftBoxProductMapper.getBySetmealId(giftBoxId);
         if (CollectionUtils.isEmpty(giftBoxProducts)) {
@@ -537,15 +505,6 @@ public class OrderServiceImpl implements OrderService {
             int requiredQuantity = giftBoxQuantity * giftBoxProduct.getCopies();
             inventoryService.reserveProduct(giftBoxProduct.getProductId(), requiredQuantity,
                     INVENTORY_REASON_ORDER_RESERVE, orderId, INVENTORY_OPERATOR_MEMBER, userId);
-        }
-    }
-
-    private void restoreGiftBoxStock(Long giftBoxId, Integer giftBoxQuantity, Long orderId, String operatorType, Long operatorId) {
-        List<GiftBoxProduct> giftBoxProducts = giftBoxProductMapper.getBySetmealId(giftBoxId);
-        for (GiftBoxProduct giftBoxProduct : giftBoxProducts) {
-            int restoredQuantity = giftBoxQuantity * giftBoxProduct.getCopies();
-            inventoryService.restoreProduct(giftBoxProduct.getProductId(), restoredQuantity,
-                    INVENTORY_REASON_ORDER_CANCEL_RESTORE, orderId, operatorType, operatorId);
         }
     }
 

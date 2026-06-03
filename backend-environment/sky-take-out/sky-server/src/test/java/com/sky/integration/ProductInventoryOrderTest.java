@@ -10,9 +10,11 @@ import com.sky.entity.GiftBoxProduct;
 import com.sky.entity.Product;
 import com.sky.entity.ProductInventoryLog;
 import com.sky.entity.ShippingAddress;
+import com.sky.entity.Orders;
 import com.sky.mapper.CartMapper;
 import com.sky.mapper.GiftBoxMapper;
 import com.sky.mapper.GiftBoxProductMapper;
+import com.sky.mapper.OrderMapper;
 import com.sky.mapper.ProductMapper;
 import com.sky.mapper.ProductInventoryLogMapper;
 import com.sky.mapper.ShippingAddressMapper;
@@ -20,6 +22,7 @@ import com.sky.properties.JwtProperties;
 import com.sky.service.CacheService;
 import com.sky.test.support.LoginResult;
 import com.sky.utils.JwtUtil;
+import com.sky.utils.WeChatPayUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +43,11 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -80,11 +88,17 @@ class ProductInventoryOrderTest {
     @Autowired
     private ShippingAddressMapper shippingAddressMapper;
 
+    @Autowired
+    private OrderMapper orderMapper;
+
     @MockitoBean
     private ServerEndpointExporter serverEndpointExporter;
 
     @MockitoBean
     private CacheService cacheService;
+
+    @MockitoBean
+    private WeChatPayUtil weChatPayUtil;
 
     private LoginResult loginResult;
     private Product product;
@@ -273,6 +287,57 @@ class ProductInventoryOrderTest {
         List<ProductInventoryLog> logsAfterCancel = productInventoryLogMapper.listByProductId(product.getId());
         assertEquals(2, logsAfterCancel.size());
         assertInventoryLog(logsAfterCancel.get(1), 2, 1, 3, "ORDER_CANCEL_RESTORE", orderId, "MEMBER");
+    }
+
+    @Test
+    void adminRejectionShouldRefundRestoreStockAndWriteAdminAuditLog() throws Exception {
+        when(weChatPayUtil.refund(any(), any(), any(), any())).thenReturn("{}");
+        addCart(2);
+
+        MvcResult submitResult = mockMvc.perform(post("/user/order/submit")
+                        .header("authentication", loginResult.token())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(orderSubmitRequest(new BigDecimal("120.00")))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(1))
+                .andReturn();
+
+        Long orderId = JSON.parseObject(submitResult.getResponse().getContentAsString())
+                .getJSONObject("data")
+                .getLong("id");
+        Orders paidOrder = new Orders();
+        paidOrder.setId(orderId);
+        paidOrder.setStatus(Orders.TO_BE_CONFIRMED);
+        paidOrder.setPayStatus(Orders.PAID);
+        orderMapper.update(paidOrder);
+
+        mockMvc.perform(put("/admin/order/rejection")
+                        .header("token", adminToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"id\":" + orderId + ",\"rejectionReason\":\"商品售完\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(1));
+
+        Orders canceled = orderMapper.getById(orderId);
+        assertEquals(Orders.CANCELLED, canceled.getStatus());
+        assertEquals(Orders.REFUND, canceled.getPayStatus());
+        assertEquals("商品售完", canceled.getRejectionReason());
+        assertNotNull(canceled.getCancelTime());
+        verify(weChatPayUtil).refund(eq(canceled.getNumber()), eq(canceled.getNumber()),
+                eq(new BigDecimal("120.00")), eq(new BigDecimal("120.00")));
+        assertEquals(3, productMapper.getById(product.getId()).getStock());
+
+        List<ProductInventoryLog> logs = productInventoryLogMapper.listByProductId(product.getId());
+        assertEquals(2, logs.size());
+        ProductInventoryLog restoreLog = logs.get(1);
+        assertEquals(2, restoreLog.getChangeQuantity());
+        assertEquals(1, restoreLog.getStockBefore());
+        assertEquals(3, restoreLog.getStockAfter());
+        assertEquals("ORDER_CANCEL_RESTORE", restoreLog.getReason());
+        assertEquals("ORDER", restoreLog.getReferenceType());
+        assertEquals(orderId, restoreLog.getReferenceId());
+        assertEquals("ADMIN", restoreLog.getOperatorType());
+        assertEquals(1L, restoreLog.getOperatorId());
     }
 
     private void addCart(int quantity) {
