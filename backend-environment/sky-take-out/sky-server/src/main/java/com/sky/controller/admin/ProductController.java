@@ -6,6 +6,7 @@ import com.sky.entity.Product;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.ProductService;
+import com.sky.vo.ProductInventoryLogVO;
 import com.sky.vo.ProductVO;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
@@ -79,6 +80,19 @@ public class ProductController {
         log.info("根據 ID 查詢單品：{}", id);
         ProductVO dishVO = productService.getByIdWithFlavor(id);
         return Result.success(dishVO);
+    }
+
+    /**
+     * 查詢單品庫存異動紀錄
+     * @param id
+     * @return
+     */
+    @GetMapping("/{id}/inventory-logs")
+    @Operation(summary = "查詢單品庫存異動紀錄")
+    public Result<List<ProductInventoryLogVO>> listInventoryLogs(@PathVariable Long id) {
+        log.info("查詢單品庫存異動紀錄：{}", id);
+        List<ProductInventoryLogVO> logs = productService.listInventoryLogs(id);
+        return Result.success(logs);
     }
 
     /**

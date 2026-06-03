@@ -9,13 +9,17 @@ import com.sky.dto.ProductPageQueryDTO;
 import com.sky.entity.Product;
 import com.sky.entity.ProductSpec;
 import com.sky.entity.GiftBox;
+import com.sky.entity.ProductInventoryLog;
 import com.sky.exception.DeletionNotAllowedException;
+import com.sky.exception.BaseException;
+import com.sky.mapper.ProductInventoryLogMapper;
 import com.sky.mapper.ProductSpecMapper;
 import com.sky.mapper.ProductMapper;
 import com.sky.mapper.GiftBoxProductMapper;
 import com.sky.mapper.GiftBoxMapper;
 import com.sky.result.PageResult;
 import com.sky.service.ProductService;
+import com.sky.vo.ProductInventoryLogVO;
 import com.sky.vo.ProductVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -44,6 +48,8 @@ public class ProductServiceImpl implements ProductService {
     private ProductSpecMapper productSpecMapper;
     @Autowired
     private GiftBoxProductMapper giftBoxProductMapper;
+    @Autowired
+    private ProductInventoryLogMapper productInventoryLogMapper;
     @Resource(name = "appRedisTemplate")
     private RedisTemplate<String, Object> appRedisTemplate;
     /**
@@ -243,6 +249,18 @@ public class ProductServiceImpl implements ProductService {
         cleanCache("product_*");
     }
 
+    @Override
+    public List<ProductInventoryLogVO> listInventoryLogs(Long id) {
+        Product product = productMapper.getById(id);
+        if (product == null) {
+            throw new BaseException(MessageConstant.PRODUCT_NOT_AVAILABLE);
+        }
+
+        return productInventoryLogMapper.listByProductId(id).stream()
+                .map(this::toInventoryLogVO)
+                .toList();
+    }
+
     private void cleanCache(String pattern) {
         Set<String> keys = appRedisTemplate.keys(pattern);
         if (keys != null && !keys.isEmpty()) {
@@ -257,6 +275,12 @@ public class ProductServiceImpl implements ProductService {
         if (product.getLowStockThreshold() == null) {
             product.setLowStockThreshold(DEFAULT_LOW_STOCK_THRESHOLD);
         }
+    }
+
+    private ProductInventoryLogVO toInventoryLogVO(ProductInventoryLog log) {
+        ProductInventoryLogVO vo = new ProductInventoryLogVO();
+        BeanUtils.copyProperties(log, vo);
+        return vo;
     }
 
 }

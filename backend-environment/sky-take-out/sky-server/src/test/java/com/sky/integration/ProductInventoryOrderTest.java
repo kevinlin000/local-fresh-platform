@@ -3,6 +3,7 @@ package com.sky.integration;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sky.constant.JwtClaimsConstant;
 import com.sky.entity.Cart;
 import com.sky.entity.GiftBox;
 import com.sky.entity.GiftBoxProduct;
@@ -15,7 +16,9 @@ import com.sky.mapper.GiftBoxProductMapper;
 import com.sky.mapper.ProductMapper;
 import com.sky.mapper.ProductInventoryLogMapper;
 import com.sky.mapper.ShippingAddressMapper;
+import com.sky.properties.JwtProperties;
 import com.sky.test.support.LoginResult;
+import com.sky.utils.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,10 +34,12 @@ import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -57,6 +62,9 @@ class ProductInventoryOrderTest {
 
     @Autowired
     private ProductInventoryLogMapper productInventoryLogMapper;
+
+    @Autowired
+    private JwtProperties jwtProperties;
 
     @Autowired
     private GiftBoxMapper giftBoxMapper;
@@ -134,6 +142,24 @@ class ProductInventoryOrderTest {
         List<ProductInventoryLog> logsAfterCancel = productInventoryLogMapper.listByProductId(product.getId());
         assertEquals(2, logsAfterCancel.size());
         assertInventoryLog(logsAfterCancel.get(1), 2, 1, 3, "ORDER_CANCEL_RESTORE", orderId, "MEMBER");
+
+        mockMvc.perform(get("/admin/product/{id}/inventory-logs", product.getId())
+                        .header("token", adminToken()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(1))
+                .andExpect(jsonPath("$.data.length()").value(2))
+                .andExpect(jsonPath("$.data[0].changeQuantity").value(-2))
+                .andExpect(jsonPath("$.data[0].stockBefore").value(3))
+                .andExpect(jsonPath("$.data[0].stockAfter").value(1))
+                .andExpect(jsonPath("$.data[0].reason").value("ORDER_RESERVE"))
+                .andExpect(jsonPath("$.data[0].referenceType").value("ORDER"))
+                .andExpect(jsonPath("$.data[0].referenceId").value(orderId))
+                .andExpect(jsonPath("$.data[0].operatorType").value("MEMBER"))
+                .andExpect(jsonPath("$.data[0].operatorId").value(loginResult.userId()))
+                .andExpect(jsonPath("$.data[1].changeQuantity").value(2))
+                .andExpect(jsonPath("$.data[1].stockBefore").value(1))
+                .andExpect(jsonPath("$.data[1].stockAfter").value(3))
+                .andExpect(jsonPath("$.data[1].reason").value("ORDER_CANCEL_RESTORE"));
     }
 
     @Test
@@ -241,6 +267,12 @@ class ProductInventoryOrderTest {
         JSONObject data = JSON.parseObject(loginResult.getResponse().getContentAsString())
                 .getJSONObject("data");
         return new LoginResult(data.getLong("id"), data.getString("token"));
+    }
+
+    private String adminToken() {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put(JwtClaimsConstant.EMP_ID, 1L);
+        return JwtUtil.createJWT(jwtProperties.getAdminSecretKey(), jwtProperties.getAdminTtl(), claims);
     }
 
     private void assertInventoryLog(ProductInventoryLog log, int changeQuantity, int stockBefore, int stockAfter,

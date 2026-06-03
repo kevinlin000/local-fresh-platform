@@ -48,6 +48,14 @@ export const queryDishById = (id: string | (string | null)[]) => {
   })
 }
 
+// 查詢單品庫存異動紀錄
+export const queryDishInventoryLogs = (id: string | number) => {
+  return request({
+    url: `/product/${id}/inventory-logs`,
+    method: 'get'
+  })
+}
+
 // 取得單品分類列表
 export const getCategoryList = (params: any) => {
   return request({

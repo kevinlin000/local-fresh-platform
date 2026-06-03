@@ -46,12 +46,13 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="260">
+      <el-table-column label="操作" width="330">
         <template #default="{ row }">
           <el-button link type="primary" @click="openEdit(row)">編輯</el-button>
           <el-button link type="primary" @click="toggleStatus(row)">
             {{ row.status === 1 ? '停售' : '起售' }}
           </el-button>
+          <el-button link type="primary" @click="openInventoryLogs(row)">庫存紀錄</el-button>
           <el-button link type="danger" @click="remove(row)">刪除</el-button>
         </template>
       </el-table-column>
@@ -115,6 +116,39 @@
         <el-button type="primary" :loading="saving" @click="submit">儲存</el-button>
       </template>
     </el-dialog>
+
+    <el-drawer
+      v-model="inventoryDrawerVisible"
+      :title="inventoryDrawerTitle"
+      size="720px"
+      destroy-on-close
+    >
+      <el-table v-loading="inventoryLogsLoading" :data="inventoryLogs" stripe>
+        <el-table-column prop="createdAt" label="時間" min-width="170">
+          <template #default="{ row }">{{ formatDateTime(row.createdAt) }}</template>
+        </el-table-column>
+        <el-table-column label="異動" width="100">
+          <template #default="{ row }">
+            <span :class="inventoryChangeClass(row.changeQuantity)">
+              {{ formatQuantity(row.changeQuantity) }}
+            </span>
+          </template>
+        </el-table-column>
+        <el-table-column label="庫存前後" width="130">
+          <template #default="{ row }">{{ row.stockBefore }} → {{ row.stockAfter }}</template>
+        </el-table-column>
+        <el-table-column label="原因" min-width="150">
+          <template #default="{ row }">{{ inventoryReasonLabel(row.reason) }}</template>
+        </el-table-column>
+        <el-table-column label="關聯訂單" width="110">
+          <template #default="{ row }">#{{ row.referenceId || '-' }}</template>
+        </el-table-column>
+        <el-table-column label="操作者" width="130">
+          <template #default="{ row }">{{ operatorLabel(row) }}</template>
+        </el-table-column>
+      </el-table>
+      <el-empty v-if="!inventoryLogsLoading && inventoryLogs.length === 0" description="尚無庫存異動紀錄" />
+    </el-drawer>
   </section>
 </template>
 
@@ -129,6 +163,7 @@ import {
   dishStatusByStatus,
   getCategoryList,
   getDishPage,
+  queryDishInventoryLogs,
   queryDishById,
   editDish
 } from '@/api/dish'
@@ -143,6 +178,10 @@ const { loading, withLoading } = useLoading()
 const formRef = ref<FormInstance>()
 const dialogVisible = ref(false)
 const saving = ref(false)
+const inventoryDrawerVisible = ref(false)
+const inventoryLogsLoading = ref(false)
+const inventoryLogs = ref<any[]>([])
+const inventoryDrawerTitle = ref('庫存紀錄')
 const form = reactive({
   id: undefined as number | undefined,
   productName: '',
@@ -271,6 +310,18 @@ async function openEdit(row: any) {
   dialogVisible.value = true
 }
 
+async function openInventoryLogs(row: any) {
+  inventoryDrawerTitle.value = `${row.productName}｜庫存紀錄`
+  inventoryDrawerVisible.value = true
+  inventoryLogsLoading.value = true
+  try {
+    const response = await queryDishInventoryLogs(row.id)
+    inventoryLogs.value = response.data?.data || []
+  } finally {
+    inventoryLogsLoading.value = false
+  }
+}
+
 function addSpec() {
   specs.value.push({ name: '', value: '' })
 }
@@ -306,6 +357,39 @@ async function remove(row: any) {
   await deleteDish(String(row.id))
   ElMessage.success('單品已刪除')
   await loadData()
+}
+
+function formatDateTime(value?: string) {
+  if (!value) {
+    return '-'
+  }
+  return value.replace('T', ' ').slice(0, 19)
+}
+
+function formatQuantity(value: number) {
+  return value > 0 ? `+${value}` : String(value)
+}
+
+function inventoryChangeClass(value: number) {
+  return value > 0 ? 'stock-increase' : 'stock-decrease'
+}
+
+function inventoryReasonLabel(reason: string) {
+  const labels: Record<string, string> = {
+    ORDER_RESERVE: '訂單預留庫存',
+    ORDER_CANCEL_RESTORE: '訂單取消回補'
+  }
+  return labels[reason] || reason || '-'
+}
+
+function operatorLabel(row: any) {
+  const labels: Record<string, string> = {
+    MEMBER: '會員',
+    ADMIN: '管理員',
+    SYSTEM: '系統'
+  }
+  const type = labels[row.operatorType] || row.operatorType || '-'
+  return row.operatorId ? `${type} #${row.operatorId}` : type
 }
 
 watch(
@@ -358,6 +442,16 @@ onMounted(async () => {
 
 .stock-warning {
   color: #b45309;
+  font-weight: 800;
+}
+
+.stock-increase {
+  color: #15803d;
+  font-weight: 800;
+}
+
+.stock-decrease {
+  color: #b91c1c;
   font-weight: 800;
 }
 </style>

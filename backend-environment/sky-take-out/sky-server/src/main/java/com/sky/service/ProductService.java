@@ -4,6 +4,7 @@ import com.sky.dto.ProductDTO;
 import com.sky.dto.ProductPageQueryDTO;
 import com.sky.entity.Product;
 import com.sky.result.PageResult;
+import com.sky.vo.ProductInventoryLogVO;
 import com.sky.vo.ProductVO;
 
 import java.util.List;
@@ -62,4 +63,11 @@ public interface ProductService {
      * @param id
      */
     void startOrStop(Integer status, Long id);
+
+    /**
+     * 查詢商品庫存異動紀錄
+     * @param id 商品 ID
+     * @return 庫存異動紀錄
+     */
+    List<ProductInventoryLogVO> listInventoryLogs(Long id);
 }
