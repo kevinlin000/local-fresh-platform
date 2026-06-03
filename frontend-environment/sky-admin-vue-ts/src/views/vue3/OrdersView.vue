@@ -1,5 +1,12 @@
 <template>
   <section class="admin-card admin-card-pad">
+    <div class="order-stats">
+      <div v-for="item in statCards" :key="item.label" class="order-stat">
+        <span>{{ item.label }}</span>
+        <strong>{{ item.value }}</strong>
+      </div>
+    </div>
+
     <div class="table-toolbar">
       <el-input v-model="query.number" clearable placeholder="搜尋訂單號" @keyup.enter="loadData" />
       <el-select v-model="query.status" clearable placeholder="訂單狀態">
@@ -19,6 +26,16 @@
         </template>
       </el-table-column>
       <el-table-column prop="orderTime" label="下單時間" min-width="180" />
+      <el-table-column label="操作" fixed="right" width="280">
+        <template #default="{ row }">
+          <el-button link type="primary" @click="openDetail(row)">詳情</el-button>
+          <el-button v-if="row.status === 2" link type="success" @click="accept(row)">接單</el-button>
+          <el-button v-if="row.status === 2" link type="danger" @click="openReason(row, 'reject')">拒單</el-button>
+          <el-button v-if="[2, 3].includes(row.status)" link type="warning" @click="openReason(row, 'cancel')">取消</el-button>
+          <el-button v-if="row.status === 3" link type="primary" @click="delivery(row)">派送</el-button>
+          <el-button v-if="row.status === 4" link type="success" @click="complete(row)">完成</el-button>
+        </template>
+      </el-table-column>
     </el-table>
 
     <el-pagination
@@ -29,12 +46,48 @@
       :total="page.total"
       @current-change="loadData"
     />
+
+    <el-dialog v-model="detailVisible" title="訂單詳情" width="720px">
+      <el-descriptions v-if="detail" :column="2" border>
+        <el-descriptions-item label="訂單號">{{ detail.number }}</el-descriptions-item>
+        <el-descriptions-item label="狀態">{{ statusText(detail.status) }}</el-descriptions-item>
+        <el-descriptions-item label="收件人">{{ detail.consignee }}</el-descriptions-item>
+        <el-descriptions-item label="電話">{{ detail.phone }}</el-descriptions-item>
+        <el-descriptions-item label="地址" :span="2">{{ detail.address }}</el-descriptions-item>
+        <el-descriptions-item label="金額">{{ detail.amount }}</el-descriptions-item>
+        <el-descriptions-item label="下單時間">{{ detail.orderTime }}</el-descriptions-item>
+        <el-descriptions-item v-if="detail.remark" label="備註" :span="2">{{ detail.remark }}</el-descriptions-item>
+      </el-descriptions>
+      <el-table v-if="detail?.orderDetailList?.length" :data="detail.orderDetailList" class="detail-table">
+        <el-table-column prop="name" label="品項" />
+        <el-table-column prop="number" label="數量" width="90" />
+        <el-table-column prop="amount" label="金額" width="120" />
+      </el-table>
+    </el-dialog>
+
+    <el-dialog v-model="reasonVisible" :title="reasonMode === 'reject' ? '拒單原因' : '取消原因'" width="460px">
+      <el-input v-model="reason" type="textarea" :rows="4" placeholder="請輸入原因" />
+      <template #footer>
+        <el-button @click="reasonVisible = false">取消</el-button>
+        <el-button type="primary" :loading="saving" @click="submitReason">送出</el-button>
+      </template>
+    </el-dialog>
   </section>
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
-import { getOrderDetailPage } from '@/api/order'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import {
+  completeOrder,
+  deliveryOrder,
+  getOrderDetailPage,
+  getOrderListBy,
+  orderAccept,
+  orderCancel,
+  orderReject,
+  queryOrderDetailById
+} from '@/api/order'
 import { readPage, useLoading, usePage } from './composables'
 
 const statuses = [
@@ -52,6 +105,20 @@ const rows = ref<any[]>([])
 const query = reactive<{ number: string; status?: number }>({ number: '' })
 const page = usePage()
 const { loading, withLoading } = useLoading()
+const saving = ref(false)
+const statistics = ref<any>({})
+const detailVisible = ref(false)
+const detail = ref<any>(null)
+const reasonVisible = ref(false)
+const reasonMode = ref<'reject' | 'cancel'>('reject')
+const reason = ref('')
+const activeOrder = ref<any>(null)
+
+const statCards = computed(() => [
+  { label: '待接單', value: statistics.value.toBeConfirmed ?? 0 },
+  { label: '待派送', value: statistics.value.confirmed ?? 0 },
+  { label: '派送中', value: statistics.value.deliveryInProgress ?? 0 }
+])
 
 function statusText(status: number) {
   return statuses.find(item => item.value === status)?.label || '未知'
@@ -69,7 +136,98 @@ async function loadData() {
     rows.value = result.records
     page.total = result.total
   })
+  await loadStats()
+}
+
+async function loadStats() {
+  const response = await getOrderListBy({})
+  statistics.value = response.data?.data || {}
+}
+
+async function openDetail(row: any) {
+  const response = await queryOrderDetailById({ orderId: row.id })
+  detail.value = response.data?.data
+  detailVisible.value = true
+}
+
+async function accept(row: any) {
+  await ElMessageBox.confirm(`確定接單「${row.number}」？`, '接單確認', { type: 'warning' })
+  await orderAccept({ id: row.id, status: 3 })
+  ElMessage.success('已接單')
+  await loadData()
+}
+
+function openReason(row: any, mode: 'reject' | 'cancel') {
+  activeOrder.value = row
+  reasonMode.value = mode
+  reason.value = ''
+  reasonVisible.value = true
+}
+
+async function submitReason() {
+  if (!reason.value.trim()) {
+    ElMessage.warning('請輸入原因')
+    return
+  }
+  saving.value = true
+  try {
+    if (reasonMode.value === 'reject') {
+      await orderReject({ id: activeOrder.value.id, rejectionReason: reason.value.trim() })
+      ElMessage.success('已拒單')
+    } else {
+      await orderCancel({ id: activeOrder.value.id, cancelReason: reason.value.trim() })
+      ElMessage.success('訂單已取消')
+    }
+    reasonVisible.value = false
+    await loadData()
+  } finally {
+    saving.value = false
+  }
+}
+
+async function delivery(row: any) {
+  await ElMessageBox.confirm(`確定開始派送「${row.number}」？`, '派送確認', { type: 'warning' })
+  await deliveryOrder({ id: row.id })
+  ElMessage.success('已進入派送')
+  await loadData()
+}
+
+async function complete(row: any) {
+  await ElMessageBox.confirm(`確定完成「${row.number}」？`, '完成確認', { type: 'warning' })
+  await completeOrder({ id: row.id })
+  ElMessage.success('訂單已完成')
+  await loadData()
 }
 
 onMounted(loadData)
 </script>
+
+<style scoped>
+.order-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.order-stat {
+  padding: 18px;
+  border-radius: 18px;
+  background: #f6f1df;
+}
+
+.order-stat span {
+  display: block;
+  color: var(--admin-muted);
+}
+
+.order-stat strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 26px;
+}
+
+.detail-table {
+  margin-top: 18px;
+}
+</style>
