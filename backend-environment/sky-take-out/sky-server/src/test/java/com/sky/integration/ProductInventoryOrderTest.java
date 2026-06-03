@@ -7,11 +7,13 @@ import com.sky.entity.Cart;
 import com.sky.entity.GiftBox;
 import com.sky.entity.GiftBoxProduct;
 import com.sky.entity.Product;
+import com.sky.entity.ProductInventoryLog;
 import com.sky.entity.ShippingAddress;
 import com.sky.mapper.CartMapper;
 import com.sky.mapper.GiftBoxMapper;
 import com.sky.mapper.GiftBoxProductMapper;
 import com.sky.mapper.ProductMapper;
+import com.sky.mapper.ProductInventoryLogMapper;
 import com.sky.mapper.ShippingAddressMapper;
 import com.sky.test.support.LoginResult;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,6 +54,9 @@ class ProductInventoryOrderTest {
 
     @Autowired
     private ProductMapper productMapper;
+
+    @Autowired
+    private ProductInventoryLogMapper productInventoryLogMapper;
 
     @Autowired
     private GiftBoxMapper giftBoxMapper;
@@ -112,17 +117,23 @@ class ProductInventoryOrderTest {
                 .andExpect(jsonPath("$.code").value(1))
                 .andReturn();
 
-        assertEquals(1, productMapper.getById(product.getId()).getStock());
-
         Long orderId = JSON.parseObject(submitResult.getResponse().getContentAsString())
                 .getJSONObject("data")
                 .getLong("id");
+        assertEquals(1, productMapper.getById(product.getId()).getStock());
+        List<ProductInventoryLog> logsAfterSubmit = productInventoryLogMapper.listByProductId(product.getId());
+        assertEquals(1, logsAfterSubmit.size());
+        assertInventoryLog(logsAfterSubmit.get(0), -2, 3, 1, "ORDER_RESERVE", orderId, "MEMBER");
+
         mockMvc.perform(put("/user/order/cancel/{id}", orderId)
                         .header("authentication", loginResult.token()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(1));
 
         assertEquals(3, productMapper.getById(product.getId()).getStock());
+        List<ProductInventoryLog> logsAfterCancel = productInventoryLogMapper.listByProductId(product.getId());
+        assertEquals(2, logsAfterCancel.size());
+        assertInventoryLog(logsAfterCancel.get(1), 2, 1, 3, "ORDER_CANCEL_RESTORE", orderId, "MEMBER");
     }
 
     @Test
@@ -138,6 +149,7 @@ class ProductInventoryOrderTest {
                 .andExpect(jsonPath("$.msg").value("商品庫存不足"));
 
         assertEquals(3, productMapper.getById(product.getId()).getStock());
+        assertEquals(0, productInventoryLogMapper.listByProductId(product.getId()).size());
     }
 
     @Test
@@ -175,17 +187,23 @@ class ProductInventoryOrderTest {
                 .andExpect(jsonPath("$.code").value(1))
                 .andReturn();
 
-        assertEquals(1, productMapper.getById(product.getId()).getStock());
-
         Long orderId = JSON.parseObject(submitResult.getResponse().getContentAsString())
                 .getJSONObject("data")
                 .getLong("id");
+        assertEquals(1, productMapper.getById(product.getId()).getStock());
+        List<ProductInventoryLog> logsAfterSubmit = productInventoryLogMapper.listByProductId(product.getId());
+        assertEquals(1, logsAfterSubmit.size());
+        assertInventoryLog(logsAfterSubmit.get(0), -2, 3, 1, "ORDER_RESERVE", orderId, "MEMBER");
+
         mockMvc.perform(put("/user/order/cancel/{id}", orderId)
                         .header("authentication", loginResult.token()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(1));
 
         assertEquals(3, productMapper.getById(product.getId()).getStock());
+        List<ProductInventoryLog> logsAfterCancel = productInventoryLogMapper.listByProductId(product.getId());
+        assertEquals(2, logsAfterCancel.size());
+        assertInventoryLog(logsAfterCancel.get(1), 2, 1, 3, "ORDER_CANCEL_RESTORE", orderId, "MEMBER");
     }
 
     private void addCart(int quantity) {
@@ -223,5 +241,17 @@ class ProductInventoryOrderTest {
         JSONObject data = JSON.parseObject(loginResult.getResponse().getContentAsString())
                 .getJSONObject("data");
         return new LoginResult(data.getLong("id"), data.getString("token"));
+    }
+
+    private void assertInventoryLog(ProductInventoryLog log, int changeQuantity, int stockBefore, int stockAfter,
+                                    String reason, Long orderId, String operatorType) {
+        assertEquals(changeQuantity, log.getChangeQuantity());
+        assertEquals(stockBefore, log.getStockBefore());
+        assertEquals(stockAfter, log.getStockAfter());
+        assertEquals(reason, log.getReason());
+        assertEquals("ORDER", log.getReferenceType());
+        assertEquals(orderId, log.getReferenceId());
+        assertEquals(operatorType, log.getOperatorType());
+        assertEquals(loginResult.userId(), log.getOperatorId());
     }
 }
