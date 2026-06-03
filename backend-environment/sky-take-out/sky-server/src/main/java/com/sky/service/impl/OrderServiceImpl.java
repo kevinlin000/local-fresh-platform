@@ -1,24 +1,19 @@
 package com.sky.service.impl;
 
-import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
 import com.sky.dto.*;
 import com.sky.entity.*;
-import com.sky.exception.AddressBookBusinessException;
 import com.sky.exception.OrderBusinessException;
 import com.sky.mapper.*;
-import com.sky.service.InventoryService;
 import com.sky.service.OrderCancellationService;
 import com.sky.service.OrderPaymentService;
 import com.sky.service.OrderQueryService;
 import com.sky.result.PageResult;
 import com.sky.service.OrderService;
+import com.sky.service.OrderSubmissionService;
 import com.sky.service.support.OrderStatusTransitionPolicy;
-import com.sky.utils.HttpClientUtil;
 import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
@@ -27,13 +22,9 @@ import com.sky.websocket.WebSocketServer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +36,6 @@ import static com.sky.service.support.OrderStatusTransitionPolicy.Transition;
 @Service
 public class OrderServiceImpl implements OrderService {
 
-    private static final String INVENTORY_REASON_ORDER_RESERVE = "ORDER_RESERVE";
     private static final String INVENTORY_OPERATOR_MEMBER = "MEMBER";
     private static final String INVENTORY_OPERATOR_ADMIN = "ADMIN";
 
@@ -56,16 +46,7 @@ public class OrderServiceImpl implements OrderService {
     private OrderDetailMapper orderDetailMapper;
 
     @Autowired
-    private ShippingAddressMapper  shippingAddressMapper;
-
-    @Autowired
     private CartMapper cartMapper;
-
-    @Autowired
-    private GiftBoxProductMapper giftBoxProductMapper;
-
-    @Autowired
-    private InventoryService inventoryService;
 
     @Autowired
     private OrderCancellationService orderCancellationService;
@@ -77,6 +58,9 @@ public class OrderServiceImpl implements OrderService {
     private OrderQueryService orderQueryService;
 
     @Autowired
+    private OrderSubmissionService orderSubmissionService;
+
+    @Autowired
     private WebSocketServer webSocketServer;
 
     /**
@@ -84,67 +68,8 @@ public class OrderServiceImpl implements OrderService {
      * @param ordersSubmitDTO
      * @return
      */
-    @Transactional
     public OrderSubmitVO submitOrder(OrdersSubmitDTO ordersSubmitDTO) {
-        Long userId = BaseContext.getCurrentId();
-
-        //1. 處理各種業務異常（地址簿為空，購物車數據為空）
-        ShippingAddress addressBook = shippingAddressMapper.getById(ordersSubmitDTO.getAddressBookId());
-        if (addressBook == null || !userId.equals(addressBook.getMemberId())) {
-            //拋出業務異常
-            throw new AddressBookBusinessException(MessageConstant.ADDRESS_BOOK_IS_NULL);
-        }
-
-        // 檢查使用者的收貨地址是否超出配送範圍
-        checkOutOfRange(addressBook.getCityName() + addressBook.getDistrictName() + addressBook.getDetail());
-
-        Cart shoppingCart = new Cart();
-        shoppingCart.setUserId(userId);
-        List<Cart> shoppingCartlist = cartMapper.list(shoppingCart);
-        if (shoppingCartlist == null || shoppingCartlist.size() == 0) {
-            //拋出業務異常
-            throw new AddressBookBusinessException(MessageConstant.SHOPPING_CART_IS_NULL);
-        }
-        //2. 向訂單表插入1條數據
-        Orders orders = new Orders();
-        BeanUtils.copyProperties(ordersSubmitDTO, orders);
-        orders.setOrderTime(LocalDateTime.now());
-        orders.setPayStatus(Orders.UN_PAID);
-        orders.setStatus(Orders.PENDING_PAYMENT);
-        orders.setNumber(String.valueOf(IdUtil.getSnowflakeNextId()));
-        orders.setPhone(addressBook.getPhone());
-        orders.setConsignee(addressBook.getConsignee());
-        orders.setAddress(addressBook.getCityName() + addressBook.getDistrictName() + addressBook.getDetail());
-        orders.setUserId(userId);
-
-        orderMapper.insert(orders);
-        reserveProductStock(shoppingCartlist, orders.getId(), userId);
-
-        List<OrderDetail> orderDetailList = new ArrayList<>();
-        //3. 向訂單明細插入n條數據
-        for (Cart cart : shoppingCartlist) {
-            OrderDetail orderDetail = new OrderDetail(); //訂單明細
-            BeanUtils.copyProperties(cart, orderDetail);
-            orderDetail.setOrderId(orders.getId()); //設置當前訂單明細關聯的訂單id
-            orderDetailList.add(orderDetail);
-
-        }
-
-        orderDetailMapper.insertBatch(orderDetailList);
-        
-        //4. 清空當前用戶的購物車數據
-        cartMapper.deleteByUserId(userId);
-
-        //5. 封裝VO並且返回結果
-
-        OrderSubmitVO orderSubmitVO= OrderSubmitVO.builder()
-                .id(orders.getId())
-                .orderTime(orders.getOrderTime())
-                .orderNumber(orders.getNumber())
-                .orderAmount(orders.getAmount())
-                .build();
-
-        return orderSubmitVO;
+        return orderSubmissionService.submitOrder(ordersSubmitDTO);
     }
 
     /**
@@ -335,32 +260,6 @@ public class OrderServiceImpl implements OrderService {
                 INVENTORY_OPERATOR_ADMIN, BaseContext.getCurrentId());
     }
 
-    private void reserveProductStock(List<Cart> shoppingCartList, Long orderId, Long userId) {
-        for (Cart cart : shoppingCartList) {
-            if (cart.getProductId() != null) {
-                inventoryService.reserveProduct(cart.getProductId(), cart.getNumber(),
-                        INVENTORY_REASON_ORDER_RESERVE, orderId, INVENTORY_OPERATOR_MEMBER, userId);
-                continue;
-            }
-            if (cart.getGiftBoxId() != null) {
-                reserveGiftBoxStock(cart.getGiftBoxId(), cart.getNumber(), orderId, userId);
-            }
-        }
-    }
-
-    private void reserveGiftBoxStock(Long giftBoxId, Integer giftBoxQuantity, Long orderId, Long userId) {
-        List<GiftBoxProduct> giftBoxProducts = giftBoxProductMapper.getBySetmealId(giftBoxId);
-        if (CollectionUtils.isEmpty(giftBoxProducts)) {
-            throw new OrderBusinessException(MessageConstant.PRODUCT_STOCK_NOT_ENOUGH);
-        }
-
-        for (GiftBoxProduct giftBoxProduct : giftBoxProducts) {
-            int requiredQuantity = giftBoxQuantity * giftBoxProduct.getCopies();
-            inventoryService.reserveProduct(giftBoxProduct.getProductId(), requiredQuantity,
-                    INVENTORY_REASON_ORDER_RESERVE, orderId, INVENTORY_OPERATOR_MEMBER, userId);
-        }
-    }
-
     /**
      * 派送订单
      *
@@ -420,97 +319,5 @@ public class OrderServiceImpl implements OrderService {
 
         webSocketServer.sendToAllClient(JSON.toJSONString(map));
     }
-
-    @Value("${sky.shop.address}")
-    private String shopAddress;
-
-    @Value("${sky.google.api-key}")
-    private String apiKey;
-
-    @Value("${sky.delivery.range-check-enabled:true}")
-    private boolean deliveryRangeCheckEnabled;
-
-    /**
-     * 檢查客戶的收貨地址是否超出配送範圍 (使用 Google Maps API)
-     * @param address 客戶收貨地址
-     */
-    private void checkOutOfRange(String address) {
-        if (!deliveryRangeCheckEnabled) {
-            return;
-        }
-
-        // 1. 取得店家的經緯度 (Geocoding API)
-        String shopLngLat = getCoordinate(shopAddress);
-        if (shopLngLat == null) {
-            throw new OrderBusinessException("店家地址解析失敗");
-        }
-
-        // 2. 取得用戶收貨地址的經緯度 (Geocoding API)
-        String userLngLat = getCoordinate(address);
-        if (userLngLat == null) {
-            throw new OrderBusinessException("收貨地址解析失敗");
-        }
-
-        // 3. 路線規劃與距離計算 (Distance Matrix API)
-        Map<String, String> map = new HashMap<>();
-        map.put("origins", shopLngLat);
-        map.put("destinations", userLngLat);
-        map.put("key", apiKey);
-
-        // 台灣外送通常算機車或開車距離
-        String json = HttpClientUtil.doGet("https://maps.googleapis.com/maps/api/distancematrix/json", map);
-        JSONObject jsonObject = JSON.parseObject(json);
-
-        // 檢查 Google API 狀態
-        if (!"OK".equals(jsonObject.getString("status"))) {
-            throw new OrderBusinessException("配送路線規劃失敗");
-        }
-
-        // 數據解析
-        JSONArray rows = jsonObject.getJSONArray("rows");
-        if (rows.isEmpty()) {
-            throw new OrderBusinessException("無法計算配送距離");
-        }
-
-        JSONArray elements = rows.getJSONObject(0).getJSONArray("elements");
-        JSONObject element = elements.getJSONObject(0);
-
-        if (!"OK".equals(element.getString("status"))) {
-            throw new OrderBusinessException("該地址無法送達（可能跨海或無道路）");
-        }
-
-        // 取得距離 (單位：公尺)
-        Integer distance = element.getJSONObject("distance").getInteger("value");
-
-        // 判斷是否超過 5000 公尺
-        if(distance > 5000){
-            throw new OrderBusinessException("超出配送範圍");
-        }
-    }
-
-    /**
-     * 輔助方法：呼叫 Google Geocoding API 將地址轉為 "lat,lng" 格式字串
-     */
-    private String getCoordinate(String address) {
-        Map<String, String> map = new HashMap<>();
-        map.put("address", address);
-        map.put("key", apiKey);
-
-        String json = HttpClientUtil.doGet("https://maps.googleapis.com/maps/api/geocode/json", map);
-        JSONObject jsonObject = JSON.parseObject(json);
-
-        if ("OK".equals(jsonObject.getString("status"))) {
-            JSONObject location = jsonObject.getJSONArray("results")
-                    .getJSONObject(0)
-                    .getJSONObject("geometry")
-                    .getJSONObject("location");
-            String lat = location.getString("lat");
-            String lng = location.getString("lng");
-            return lat + "," + lng;
-        }
-        return null;
-    }
-
-
 
 }

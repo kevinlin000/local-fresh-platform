@@ -6,14 +6,15 @@ import com.sky.dto.OrdersCancelDTO;
 import com.sky.dto.OrdersConfirmDTO;
 import com.sky.dto.OrdersPaymentDTO;
 import com.sky.dto.OrdersRejectionDTO;
+import com.sky.dto.OrdersSubmitDTO;
 import com.sky.entity.Orders;
 import com.sky.exception.OrderBusinessException;
 import com.sky.mapper.OrderDetailMapper;
 import com.sky.mapper.OrderMapper;
-import com.sky.service.InventoryService;
 import com.sky.service.OrderCancellationService;
 import com.sky.service.OrderPaymentService;
 import com.sky.service.OrderQueryService;
+import com.sky.service.OrderSubmissionService;
 import com.sky.websocket.WebSocketServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -48,9 +49,6 @@ class OrderServiceImplTest {
     private WebSocketServer webSocketServer;
 
     @Mock
-    private InventoryService inventoryService;
-
-    @Mock
     private OrderCancellationService orderCancellationService;
 
     @Mock
@@ -58,6 +56,9 @@ class OrderServiceImplTest {
 
     @Mock
     private OrderQueryService orderQueryService;
+
+    @Mock
+    private OrderSubmissionService orderSubmissionService;
 
     @InjectMocks
     private OrderServiceImpl orderService;
@@ -132,7 +133,6 @@ class OrderServiceImplTest {
 
         verify(orderMapper).update(any(Orders.class));
         verifyNoInteractions(orderDetailMapper);
-        verifyNoInteractions(inventoryService);
     }
 
     @Test
@@ -268,6 +268,15 @@ class OrderServiceImplTest {
         orderService.details(99L);
 
         verify(orderQueryService).details(99L);
+    }
+
+    @Test
+    void submitShouldDelegateToSubmissionService() {
+        OrdersSubmitDTO dto = new OrdersSubmitDTO();
+
+        orderService.submitOrder(dto);
+
+        verify(orderSubmissionService).submitOrder(dto);
     }
 
     private Orders captureUpdatedOrder() {
