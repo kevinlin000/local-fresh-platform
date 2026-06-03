@@ -13,6 +13,8 @@ spring:
     init:
       schema-locations: classpath:schema-test.sql
       mode: always
+  flyway:
+    enabled: false
 
 management:
   health:

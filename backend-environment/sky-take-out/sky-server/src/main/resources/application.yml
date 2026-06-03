@@ -4,15 +4,15 @@ server:
 spring:
   profiles:
     active: dev
-  mvc:
-    pathmatch:
-      matching-strategy: ant_path_matcher
   datasource:
     druid:
       driver-class-name: ${sky.datasource.driver-class-name}
-      url: jdbc:mysql://${sky.datasource.host}:${sky.datasource.port}/${sky.datasource.database}?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+      url: jdbc:mysql://${sky.datasource.host}:${sky.datasource.port}/${sky.datasource.database}?serverTimezone=Asia/Taipei&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=${sky.datasource.use-ssl:false}&allowPublicKeyRetrieval=true
       username: ${sky.datasource.username}
       password: ${sky.datasource.password}
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
 
   redis:
     host: ${sky.redis.host}
@@ -74,4 +74,4 @@ sky:
     mock-login-enabled: ${sky.auth.mock-login-enabled:true}
   group-buy:
     expire-hours: 24
-    share-base-url: http://localhost:5173/groupBuy
+    share-base-url: ${sky.group-buy.share-base-url:http://localhost:5173/groupBuy}
