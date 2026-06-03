@@ -33,6 +33,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ReportServiceImpl implements ReportService {
 
+    private static final String BUSINESS_DATA_REPORT_TEMPLATE = "template/營運資料報表模板.xlsx";
+
     @Autowired
     private OrderMapper orderMapper;
 
@@ -244,7 +246,7 @@ public class ReportServiceImpl implements ReportService {
         BusinessDataVO businessDataVO = workspaceService.getBusinessData(LocalDateTime.of(dateBegin, LocalTime.MIN), LocalDateTime.of(dateEnd, LocalTime.MAX));
 
         //2.通過POI將資料寫入EXCEL中
-        InputStream in = this.getClass().getClassLoader().getResourceAsStream("template/运营数据报表模板.xlsx");
+        InputStream in = this.getClass().getClassLoader().getResourceAsStream(BUSINESS_DATA_REPORT_TEMPLATE);
 
 
         try {
