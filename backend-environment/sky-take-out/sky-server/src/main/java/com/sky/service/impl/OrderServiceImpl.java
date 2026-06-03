@@ -15,11 +15,11 @@ import com.sky.exception.OrderBusinessException;
 import com.sky.mapper.*;
 import com.sky.service.InventoryService;
 import com.sky.service.OrderCancellationService;
+import com.sky.service.OrderPaymentService;
 import com.sky.result.PageResult;
 import com.sky.service.OrderService;
 import com.sky.service.support.OrderStatusTransitionPolicy;
 import com.sky.utils.HttpClientUtil;
-import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
@@ -72,7 +72,7 @@ public class OrderServiceImpl implements OrderService {
     private OrderCancellationService orderCancellationService;
 
     @Autowired
-    private WeChatPayUtil weChatPayUtil;
+    private OrderPaymentService orderPaymentService;
 
     @Autowired
     private WebSocketServer webSocketServer;
@@ -163,13 +163,7 @@ public class OrderServiceImpl implements OrderService {
         }
         OrderStatusTransitionPolicy.requireAllowed(ordersDB, Transition.PAY);
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("code", "ORDERPAID");
-        OrderPaymentVO vo = jsonObject.toJavaObject(OrderPaymentVO.class);
-        vo.setPackageStr(jsonObject.getString("package"));
-        ensurePaymentSucceeded(ordersDB.getNumber());
-
-        return vo;
+        return orderPaymentService.requestPayment(ordersDB);
     }
 
     /**
@@ -179,43 +173,7 @@ public class OrderServiceImpl implements OrderService {
      */
     public void paySuccess(String outTradeNo) {
 
-        // 根据订单号查询订单
-        Orders ordersDB = orderMapper.getByNumber(outTradeNo);
-        if (ordersDB == null) {
-            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
-        }
-        if (Orders.PAID.equals(ordersDB.getPayStatus())) {
-            return;
-        }
-        if (!ensurePaymentSucceeded(outTradeNo)) {
-            return;
-        }
-
-        // 通過websocket向客戶端推送訊息
-        Map map = new HashMap();
-        map.put("type",1);  // 1表示來單提醒，2表示客戶催單
-        map.put("orderId", ordersDB.getId());
-        map.put("content","訂單號：" + outTradeNo);
-
-        String json = JSON.toJSONString(map);
-        webSocketServer.sendToAllClient(json);
-
-
-    }
-
-    private boolean ensurePaymentSucceeded(String orderNumber) {
-        int updatedRows = orderMapper.markPaymentSucceededByNumber(orderNumber, Orders.PENDING_PAYMENT, Orders.UN_PAID,
-                Orders.TO_BE_CONFIRMED, Orders.PAID, LocalDateTime.now());
-        if (updatedRows > 0) {
-            return true;
-        }
-
-        Orders latestOrder = orderMapper.getByNumber(orderNumber);
-        if (latestOrder != null && Orders.PAID.equals(latestOrder.getPayStatus())) {
-            return false;
-        }
-        OrderStatusTransitionPolicy.requireAllowed(latestOrder, Transition.PAY);
-        throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        orderPaymentService.handlePaymentSuccess(outTradeNo);
     }
 
     /**

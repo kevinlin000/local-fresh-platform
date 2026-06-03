@@ -12,7 +12,7 @@ import com.sky.mapper.OrderDetailMapper;
 import com.sky.mapper.OrderMapper;
 import com.sky.service.InventoryService;
 import com.sky.service.OrderCancellationService;
-import com.sky.utils.WeChatPayUtil;
+import com.sky.service.OrderPaymentService;
 import com.sky.websocket.WebSocketServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -23,12 +23,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -46,9 +44,6 @@ class OrderServiceImplTest {
     private OrderDetailMapper orderDetailMapper;
 
     @Mock
-    private WeChatPayUtil weChatPayUtil;
-
-    @Mock
     private WebSocketServer webSocketServer;
 
     @Mock
@@ -56,6 +51,9 @@ class OrderServiceImplTest {
 
     @Mock
     private OrderCancellationService orderCancellationService;
+
+    @Mock
+    private OrderPaymentService orderPaymentService;
 
     @InjectMocks
     private OrderServiceImpl orderService;
@@ -80,7 +78,7 @@ class OrderServiceImplTest {
                 () -> orderService.payment(dto));
 
         assertEquals(MessageConstant.ORDER_NOT_FOUND, exception.getMessage());
-        verify(orderMapper, never()).markPaymentSucceededByNumber(anyString(), any(), any(), any(), any(), any());
+        verifyNoInteractions(orderPaymentService);
     }
 
     @Test
@@ -91,59 +89,16 @@ class OrderServiceImplTest {
         order.setNumber("ORDER-002");
         order.setPayStatus(Orders.UN_PAID);
         when(orderMapper.getByNumber("ORDER-002")).thenReturn(order);
-        when(orderMapper.markPaymentSucceededByNumber(eq("ORDER-002"), eq(Orders.PENDING_PAYMENT), eq(Orders.UN_PAID),
-                eq(Orders.TO_BE_CONFIRMED), eq(Orders.PAID), any(LocalDateTime.class))).thenReturn(1);
-
         orderService.payment(paymentDTO("ORDER-002"));
 
-        verify(orderMapper).markPaymentSucceededByNumber(eq("ORDER-002"), eq(Orders.PENDING_PAYMENT), eq(Orders.UN_PAID),
-                eq(Orders.TO_BE_CONFIRMED), eq(Orders.PAID), any(LocalDateTime.class));
+        verify(orderPaymentService).requestPayment(order);
     }
 
     @Test
-    void paySuccessShouldUpdatePendingOrderAndNotifyAdmin() {
-        Orders order = orderWithStatus(2L, Orders.PENDING_PAYMENT);
-        order.setNumber("ORDER-003");
-        order.setPayStatus(Orders.UN_PAID);
-        when(orderMapper.getByNumber("ORDER-003")).thenReturn(order);
-        when(orderMapper.markPaymentSucceededByNumber(eq("ORDER-003"), eq(Orders.PENDING_PAYMENT), eq(Orders.UN_PAID),
-                eq(Orders.TO_BE_CONFIRMED), eq(Orders.PAID), any(LocalDateTime.class))).thenReturn(1);
-
+    void paySuccessShouldDelegatePaymentCallback() {
         orderService.paySuccess("ORDER-003");
 
-        verify(orderMapper).markPaymentSucceededByNumber(eq("ORDER-003"), eq(Orders.PENDING_PAYMENT), eq(Orders.UN_PAID),
-                eq(Orders.TO_BE_CONFIRMED), eq(Orders.PAID), any(LocalDateTime.class));
-        verify(webSocketServer).sendToAllClient(anyString());
-    }
-
-    @Test
-    void paySuccessShouldIgnoreDuplicatePaidCallback() {
-        Orders order = orderWithStatus(2L, Orders.CONFIRMED);
-        order.setNumber("ORDER-003");
-        order.setPayStatus(Orders.PAID);
-        when(orderMapper.getByNumber("ORDER-003")).thenReturn(order);
-
-        orderService.paySuccess("ORDER-003");
-
-        verify(orderMapper, never()).markPaymentSucceededByNumber(anyString(), any(), any(), any(), any(), any());
-        verify(orderMapper, never()).update(any(Orders.class));
-        verifyNoInteractions(webSocketServer);
-    }
-
-    @Test
-    void paySuccessShouldRejectUnpaidOrderThatCannotTransitionToPaid() {
-        Orders order = orderWithStatus(2L, Orders.CONFIRMED);
-        order.setNumber("ORDER-003");
-        order.setPayStatus(Orders.UN_PAID);
-        when(orderMapper.getByNumber("ORDER-003")).thenReturn(order);
-        when(orderMapper.markPaymentSucceededByNumber(eq("ORDER-003"), eq(Orders.PENDING_PAYMENT), eq(Orders.UN_PAID),
-                eq(Orders.TO_BE_CONFIRMED), eq(Orders.PAID), any(LocalDateTime.class))).thenReturn(0);
-
-        OrderBusinessException exception = assertThrows(OrderBusinessException.class,
-                () -> orderService.paySuccess("ORDER-003"));
-
-        assertEquals(MessageConstant.ORDER_STATUS_ERROR, exception.getMessage());
-        verifyNoInteractions(webSocketServer);
+        verify(orderPaymentService).handlePaymentSuccess("ORDER-003");
     }
 
     @Test
@@ -188,7 +143,7 @@ class OrderServiceImplTest {
 
         assertEquals(MessageConstant.ORDER_NOT_FOUND, exception.getMessage());
         verify(orderMapper, never()).update(any(Orders.class));
-        verifyNoInteractions(weChatPayUtil);
+        verifyNoInteractions(orderCancellationService);
     }
 
     @Test
@@ -231,7 +186,7 @@ class OrderServiceImplTest {
 
         assertEquals(MessageConstant.ORDER_STATUS_ERROR, exception.getMessage());
         verify(orderMapper, never()).update(any(Orders.class));
-        verifyNoInteractions(weChatPayUtil);
+        verifyNoInteractions(orderCancellationService);
     }
 
     @Test
@@ -243,7 +198,6 @@ class OrderServiceImplTest {
         orderService.cancel(cancelDTO(31L, "stock unavailable"));
 
         verify(orderCancellationService).cancelOrder(eq(order), eq("stock unavailable"), eq(null), eq("ADMIN"), eq(null));
-        verifyNoInteractions(weChatPayUtil);
     }
 
     @Test
