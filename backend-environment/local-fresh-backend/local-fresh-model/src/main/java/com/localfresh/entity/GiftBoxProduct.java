@@ -9,7 +9,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
- * 直送箱单品关系
+ * 直送箱单品關係
  */
 @Data
 @Builder

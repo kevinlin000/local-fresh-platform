@@ -143,7 +143,7 @@ class OrderServiceImplTest {
         when(orderMapper.getById(21L)).thenReturn(order);
         orderService.userCancelById(21L);
 
-        verify(orderCancellationService).cancelOrder(eq(order), eq("用户取消"), eq(null), eq("MEMBER"), eq(100L));
+        verify(orderCancellationService).cancelOrder(eq(order), eq("會員取消"), eq(null), eq("MEMBER"), eq(100L));
     }
 
     @Test

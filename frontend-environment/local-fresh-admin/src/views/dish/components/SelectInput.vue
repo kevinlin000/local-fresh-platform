@@ -4,7 +4,7 @@
       v-model="value"
       type="text"
       style="width: 100%"
-      placeholder="請選擇口味"
+      placeholder="請選擇規格"
       clearable
       readonly
       @focus="selectFlavor(true)"

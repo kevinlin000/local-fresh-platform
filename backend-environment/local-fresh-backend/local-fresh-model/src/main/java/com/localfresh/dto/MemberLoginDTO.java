@@ -6,7 +6,7 @@ import java.io.Serializable;
 import jakarta.validation.constraints.NotBlank;
 
 /**
- * C端用户登录
+ * C端會員登入
  */
 @Data
 public class MemberLoginDTO implements Serializable {

@@ -6,7 +6,7 @@
       <div class="groupbuy-layout">
         <div class="media-panel">
           <img v-if="groupBuy.productImage" :src="groupBuy.productImage" :alt="groupBuy.productName || '揪團商品'" />
-          <div v-else class="image-placeholder">團</div>
+          <div v-else class="image-placeholder">暫無圖片</div>
         </div>
 
         <div class="content-panel">
@@ -23,7 +23,7 @@
             揪團未成立，訂單已取消。
           </div>
           <div v-else-if="groupBuy.status === 2" class="status-alert success">
-            揪團已成團，三位成員的訂單已轉為待接單。
+            揪團已成團，三位成員的訂單已轉為待確認。
           </div>
           <div v-else-if="groupBuy.status === 4" class="status-alert info">
             揪團已取消，預訂單已同步取消。
@@ -105,7 +105,7 @@
         <div class="dialog-summary">
           <div class="summary-image">
             <img v-if="groupBuy?.productImage" :src="groupBuy.productImage" :alt="groupBuy.productName || '揪團商品'" />
-            <div v-else class="image-placeholder small">團</div>
+            <div v-else class="image-placeholder small">暫無圖片</div>
           </div>
           <div>
             <strong>{{ groupBuy?.productName || '揪團商品' }}</strong>
@@ -116,7 +116,7 @@
 
         <div class="dialog-section">
           <div class="section-line">
-            <h3>收貨地址</h3>
+            <h3>配送地址</h3>
             <el-button text type="success" @click="addressDialogVisible = true">
               新增地址
             </el-button>
@@ -133,7 +133,7 @@
 
           <el-skeleton v-if="addressLoading" :rows="4" animated />
 
-          <el-empty v-else-if="!addressList.length" description="請先新增至少一筆收貨地址" />
+          <el-empty v-else-if="!addressList.length" description="請先新增至少一筆配送地址" />
 
           <el-radio-group v-else v-model="selectedAddressId" class="address-group">
             <label
@@ -181,9 +181,9 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="addressDialogVisible" title="新增收貨地址" width="520px">
+    <el-dialog v-model="addressDialogVisible" title="新增配送地址" width="520px">
       <el-form label-position="top" :model="addressForm">
-        <el-form-item label="收貨人">
+        <el-form-item label="收件人">
           <el-input v-model="addressForm.consignee" placeholder="例如：Kevin Lin" />
         </el-form-item>
         <el-form-item label="手機號碼">
@@ -393,7 +393,7 @@ function handleStatusTransition(newStatus: number) {
   }
 
   if (previousStatus === 1 && newStatus === 2) {
-    ElMessage.success('揪團已成團，訂單已更新為待接單')
+    ElMessage.success('揪團已成團，訂單已更新為待確認')
     window.setTimeout(() => {
       void router.push('/orders?tab=group-buy')
     }, 1200)
@@ -459,7 +459,7 @@ async function setAsDefaultAddress(id: number) {
 
 async function createNewAddress() {
   if (!addressForm.consignee || !addressForm.phone || !addressForm.cityName || !addressForm.districtName || !addressForm.detail) {
-    ElMessage.warning('請先填完收貨地址必要欄位')
+    ElMessage.warning('請先填完配送地址必要欄位')
     return
   }
 
@@ -559,7 +559,7 @@ async function handleCancelGroupBuy() {
       '取消揪團',
       {
         confirmButtonText: '確認取消',
-        cancelButtonText: '返回',
+        cancelButtonText: '回傳',
         type: 'warning'
       }
     )
@@ -607,35 +607,36 @@ onBeforeUnmount(() => {
 .page-shell {
   max-width: 1180px;
   margin: 0 auto;
-  padding: 32px 40px 52px;
+  padding: 24px 0 48px;
 }
 
 .card,
 .participants-card {
-  border-radius: 28px;
-  background: rgba(255, 255, 255, 0.93);
-  box-shadow: 0 24px 60px rgba(61, 111, 39, 0.12);
+  border: 1px solid var(--farm-line);
+  border-radius: 8px;
+  background: var(--farm-surface);
+  box-shadow: var(--farm-shadow);
 }
 
 .card {
-  padding: 28px;
+  padding: 20px;
 }
 
 .groupbuy-layout {
   display: grid;
-  grid-template-columns: 360px 1fr;
-  gap: 28px;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 22px;
 }
 
 .media-panel,
 .summary-image {
   overflow: hidden;
-  border-radius: 24px;
-  background: linear-gradient(145deg, #edf6e8 0%, #d9ead1 100%);
+  border-radius: 8px;
+  background: #edf1e9;
 }
 
 .media-panel {
-  height: 360px;
+  height: 320px;
 }
 
 .media-panel img,
@@ -650,13 +651,13 @@ onBeforeUnmount(() => {
   place-items: center;
   width: 100%;
   height: 100%;
-  color: #4d7150;
-  font-size: 48px;
+  color: var(--farm-muted);
+  font-size: 14px;
   font-weight: 800;
 }
 
 .image-placeholder.small {
-  font-size: 18px;
+  font-size: 13px;
 }
 
 .content-panel {
@@ -665,10 +666,10 @@ onBeforeUnmount(() => {
 
 .eyebrow {
   margin: 0 0 10px;
-  color: #62864e;
-  font-size: 13px;
+  color: var(--farm-accent);
+  font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -676,7 +677,7 @@ h1,
 h2,
 h3 {
   margin: 0;
-  color: #24351e;
+  color: var(--farm-text);
 }
 
 .status-row {
@@ -684,23 +685,24 @@ h3 {
   align-items: center;
   gap: 16px;
   margin-top: 18px;
+  flex-wrap: wrap;
 }
 
 .countdown {
-  color: #4b6251;
+  color: var(--farm-muted);
   font-weight: 700;
 }
 
 .status-alert {
   margin-top: 16px;
   padding: 14px 16px;
-  border-radius: 16px;
+  border-radius: 8px;
   font-weight: 700;
 }
 
 .status-alert.success {
-  background: #edf7e8;
-  color: #2f6b1f;
+  background: var(--farm-primary-soft);
+  color: var(--farm-primary-deep);
 }
 
 .status-alert.danger {
@@ -711,26 +713,27 @@ h3 {
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: 12px;
   margin-top: 24px;
 }
 
 .summary-item {
   padding: 14px 16px;
-  border-radius: 18px;
-  background: #f7fbf4;
+  border: 1px solid var(--farm-line);
+  border-radius: 8px;
+  background: #fbfaf6;
 }
 
 .summary-item span {
   display: block;
-  color: #6a7866;
+  color: var(--farm-muted);
   font-size: 13px;
 }
 
 .summary-item strong {
   display: block;
   margin-top: 8px;
-  color: #25361f;
+  color: var(--farm-text);
   font-size: 18px;
 }
 
@@ -739,11 +742,12 @@ h3 {
   gap: 14px;
   align-items: center;
   margin-top: 28px;
+  flex-wrap: wrap;
 }
 
 .participants-card {
-  margin-top: 24px;
-  padding: 28px;
+  margin-top: 18px;
+  padding: 20px;
 }
 
 .participants-header {
@@ -754,29 +758,29 @@ h3 {
 }
 
 .refresh-note {
-  color: #6f7c6a;
+  color: var(--farm-muted);
   font-size: 13px;
 }
 
 .participant-list {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  gap: 12px;
   margin-top: 18px;
 }
 
 .participant-card {
-  padding: 18px;
-  border-radius: 18px;
-  border: 1px solid rgba(83, 126, 62, 0.14);
-  background: #fcfefb;
+  padding: 14px;
+  border-radius: 8px;
+  border: 1px solid var(--farm-line);
+  background: var(--farm-surface-strong);
 }
 
 .participant-card span,
 .participant-card time {
   display: block;
   margin-top: 8px;
-  color: #60705b;
+  color: var(--farm-muted);
 }
 
 .dialog-body {
@@ -790,14 +794,15 @@ h3 {
   grid-template-columns: 88px 1fr;
   gap: 14px;
   padding: 14px;
-  border-radius: 18px;
-  background: #f7fbf4;
+  border: 1px solid var(--farm-line);
+  border-radius: 8px;
+  background: #fbfaf6;
 }
 
 .dialog-summary p,
 .dialog-summary span {
   margin: 8px 0 0;
-  color: #66765f;
+  color: var(--farm-muted);
 }
 
 .summary-image {
@@ -828,15 +833,15 @@ h3 {
   grid-template-columns: auto 1fr;
   gap: 12px;
   padding: 14px;
-  border: 1px solid rgba(83, 126, 62, 0.16);
-  border-radius: 18px;
-  background: #fcfefb;
+  border: 1px solid var(--farm-line);
+  border-radius: 8px;
+  background: var(--farm-surface-strong);
   cursor: pointer;
 }
 
 .address-card.active {
-  border-color: rgba(58, 116, 35, 0.42);
-  box-shadow: 0 16px 32px rgba(88, 126, 65, 0.12);
+  border-color: rgba(47, 111, 78, 0.38);
+  box-shadow: 0 8px 20px rgba(28, 39, 32, 0.08);
 }
 
 .address-topline,
@@ -849,12 +854,49 @@ h3 {
 
 .address-card-body p {
   margin: 8px 0 0;
-  color: #5a6756;
+  color: var(--farm-muted);
 }
 
 .default-tag {
-  color: #2f6b1f;
+  color: var(--farm-primary-deep);
   font-size: 13px;
   font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .page-shell {
+    padding: 16px 0 36px;
+  }
+
+  .groupbuy-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .media-panel {
+    height: auto;
+    aspect-ratio: 4 / 3;
+  }
+
+  .participant-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .card,
+  .participants-card {
+    padding: 14px;
+  }
+
+  .summary-grid,
+  .dialog-summary,
+  .address-card {
+    grid-template-columns: 1fr;
+  }
+
+  .actions .el-button {
+    width: 100%;
+    margin-left: 0;
+  }
 }
 </style>

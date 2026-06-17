@@ -1,7 +1,7 @@
 package com.localfresh.exception;
 
 /**
- * 密码错误异常
+ * 密碼错误例外
  */
 public class PasswordErrorException extends BaseException {
 

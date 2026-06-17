@@ -21,7 +21,7 @@ public class GiftBox implements Serializable {
 
     private Long id;
 
-    //分类id
+    //分類id
     private Long categoryId;
 
     //直送箱名称
@@ -30,7 +30,7 @@ public class GiftBox implements Serializable {
     //直送箱价格
     private BigDecimal price;
 
-    //状态 0:停用 1:启用
+    //狀態 0:停用 1:啟用
     private Integer status;
 
     //描述信息

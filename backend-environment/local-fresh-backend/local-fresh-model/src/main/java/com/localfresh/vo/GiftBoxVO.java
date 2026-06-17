@@ -19,7 +19,7 @@ public class GiftBoxVO implements Serializable {
 
     private Long id;
 
-    //分类id
+    //分類id
     private Long categoryId;
 
     //直送箱名称
@@ -28,7 +28,7 @@ public class GiftBoxVO implements Serializable {
     //直送箱价格
     private BigDecimal price;
 
-    //状态 0:停用 1:启用
+    //狀態 0:停用 1:啟用
     private Integer status;
 
     //描述信息
@@ -37,12 +37,12 @@ public class GiftBoxVO implements Serializable {
     //图片
     private String image;
 
-    //更新时间
+    //更新時间
     private LocalDateTime updateTime;
 
-    //分类名称
+    //分類名称
     private String categoryName;
 
-    //直送箱和商品的关联关系
+    //直送箱和商品的關聯關係
     private List<GiftBoxProduct> giftBoxProducts = new ArrayList<>();
 }

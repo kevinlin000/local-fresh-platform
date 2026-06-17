@@ -120,7 +120,7 @@ export default class extends Vue {
     })
   }
 
-  // 通过直送箱ID取得單品列表分類
+  // 透過直送箱ID取得單品列表分類
   private getDishList(id: number) {
     queryDishList({ categoryId: id }).then(res => {
       if (res && res.data && res.data.code === 1) {

@@ -119,7 +119,7 @@
                       orderAccept(row, $event), (isTableOperateBtn = true)
                     "
                   >
-                    接單
+                    確認
                   </el-button>
                   <el-button
                     v-if="row.status === 3"
@@ -127,7 +127,7 @@
                     class="blueBug"
                     @click="cancelOrDeliveryOrComplete(3, row.id, $event)"
                   >
-                    派送
+                    配送
                   </el-button>
                 </div>
                 <div class="middle">
@@ -176,7 +176,7 @@
         />
       </div>
     </div>
-    <!-- 查看弹框部分 -->
+    <!-- 查看彈窗部分 -->
     <el-dialog
       title="訂單資訊"
       :visible.sync="dialogVisible"
@@ -290,7 +290,7 @@
                 >
               </div>
               <div class="send-amount">
-                <span class="amount-name">派送費：</span>
+                <span class="amount-name">配送費：</span>
                 <span class="amount-price">NT$ {{ 6 }}</span>
               </div>
               <div class="package-amount">
@@ -459,15 +459,15 @@ export default class extends Vue {
   private cancelOrderReasonList = [
     {
       value: 1,
-      label: '訂單量較多，暫時無法接單',
+      label: '訂單量較多，暫時無法受理訂單',
     },
     {
       value: 2,
-      label: '單品已售完，暫時無法接單',
+      label: '單品已售完，暫時無法受理訂單',
     },
     {
       value: 3,
-      label: '店休中，暫時無法接單',
+      label: '店休中，暫時無法受理訂單',
     },
     {
       value: 0,
@@ -478,11 +478,11 @@ export default class extends Vue {
   private cancelrReasonList = [
     {
       value: 1,
-      label: '訂單量較多，暫時無法接單',
+      label: '訂單量較多，暫時無法受理訂單',
     },
     {
       value: 2,
-      label: '單品已售完，暫時無法接單',
+      label: '單品已售完，暫時無法受理訂單',
     },
     {
       value: 3,
@@ -507,15 +507,15 @@ export default class extends Vue {
       value: 1,
     },
     {
-      label: '待接單',
+      label: '待確認',
       value: 2,
     },
     {
-      label: '待派送',
+      label: '待配送',
       value: 3,
     },
     {
-      label: '派送中',
+      label: '配送中',
       value: 4,
     },
     {
@@ -530,12 +530,12 @@ export default class extends Vue {
   get tabList() {
     return [
       {
-        label: '待接單',
+        label: '待確認',
         value: 2,
         num: this.orderStatics.toBeConfirmed,
       },
       {
-        label: '待派送',
+        label: '待配送',
         value: 3,
         num: this.orderStatics.confirmed,
       },
@@ -569,7 +569,7 @@ export default class extends Vue {
     }
   }
 
-  //接單
+  // 確認訂單
   orderAccept(row: any, event) {
     event.stopPropagation()
     this.orderId = row.id
@@ -640,7 +640,7 @@ export default class extends Vue {
       })
   }
 
-  // 派送，完成
+  // 配送，完成
   cancelOrDeliveryOrComplete(status: number, id: string, event) {
     event.stopPropagation()
     const params = {
@@ -689,7 +689,7 @@ export default class extends Vue {
       this.getOrderListData(3)
     }
   }
-  // 触发table某一行
+  // 觸發table某一行
   handleTable(row, column, event) {
     event.stopPropagation()
     this.goDetail(row.id, row.status, row, event)

@@ -17,7 +17,7 @@ export const queryOrderDetailById = (params: any) => {
   })
 }
 
-// 派送介面
+// 配送介面
 export const deliveryOrder = (params: any) => {
   return request({
     url: `/order/delivery/${params.id}`,
@@ -41,7 +41,7 @@ export const orderCancel = (params: any) => {
   })
 }
 
-//接單
+// 確認訂單
 export const orderAccept = (params: any) => {
   return request({
     url: '/order/confirm',
@@ -59,7 +59,7 @@ export const orderReject = (params: any) => {
   })
 }
 
-//取得待處理，待派送，派送中数量
+//取得待處理，待配送，配送中數量
 export const getOrderListBy = (params: any) => {
   return request({
     url: '/order/statistics',

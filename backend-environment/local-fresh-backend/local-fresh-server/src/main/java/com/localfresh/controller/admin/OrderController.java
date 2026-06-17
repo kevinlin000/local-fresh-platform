@@ -68,12 +68,12 @@ public class OrderController {
     }
 
     /**
-     * 接單
+     * 確認訂單
      *
      * @return
      */
     @PutMapping("/confirm")
-    @Operation(summary = "接單")
+    @Operation(summary = "確認訂單")
     public Result confirm(@Valid @RequestBody OrdersConfirmDTO ordersConfirmDTO) {
         orderService.confirm(ordersConfirmDTO);
         return Result.success();
@@ -104,12 +104,12 @@ public class OrderController {
     }
 
     /**
-     * 派送訂單
+     * 配送訂單
      *
      * @return
      */
     @PutMapping("/delivery/{id}")
-    @Operation(summary = "派送訂單")
+    @Operation(summary = "配送訂單")
     public Result delivery(@PathVariable("id") Long id) {
         orderService.delivery(id);
         return Result.success();

@@ -30,7 +30,7 @@
           <h2>今日優先處理</h2>
         </div>
         <div class="section-actions">
-          <el-button @click="goToOrders(2)">待接單</el-button>
+          <el-button @click="goToOrders(2)">待確認</el-button>
           <el-button @click="goToProducts(undefined, true)">低庫存</el-button>
           <el-button @click="goToProducts(0)">停售商品</el-button>
         </div>
@@ -41,12 +41,12 @@
           <div class="ops-panel-title">
             <div>
               <span>訂單履約</span>
-              <strong>{{ pendingOrders.length }} 筆待接單</strong>
+              <strong>{{ pendingOrders.length }} 筆待確認</strong>
             </div>
             <el-tag type="danger" effect="dark">需優先處理</el-tag>
           </div>
 
-          <el-empty v-if="!pendingOrders.length" description="目前沒有待接單訂單" />
+          <el-empty v-if="!pendingOrders.length" description="目前沒有待確認訂單" />
           <div v-else class="ops-list">
             <button
               v-for="order in pendingOrders"
@@ -180,8 +180,8 @@ const metricCards = computed(() => [
 ])
 
 const orderCards = computed(() => [
-  { label: '待接單', value: orderOverview.value.waitingOrders ?? 0 },
-  { label: '待派送', value: orderOverview.value.deliveredOrders ?? 0 },
+  { label: '待確認', value: orderOverview.value.waitingOrders ?? 0 },
+  { label: '待配送', value: orderOverview.value.deliveredOrders ?? 0 },
   { label: '已完成', value: orderOverview.value.completedOrders ?? 0 },
   { label: '已取消', value: orderOverview.value.cancelledOrders ?? 0 }
 ])

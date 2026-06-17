@@ -40,17 +40,17 @@ export default class extends Vue {
         value: 0
       },
       {
-        label: '待接單',
+        label: '待確認',
         value: 2,
         num: this.orderStatics.toBeConfirmed
       },
       {
-        label: '待派送',
+        label: '待配送',
         value: 3,
         num: this.orderStatics.confirmed
       },
       {
-        label: '派送中',
+        label: '配送中',
         value: 4,
         num: this.orderStatics.deliveryInProgress
       },

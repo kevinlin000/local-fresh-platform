@@ -23,7 +23,7 @@ public class WebSocketServer {
     private static Map<String, Session> sessionMap = new ConcurrentHashMap<>();
 
     /**
-     * 连接建立成功调用的方法
+     * 连接建立成功呼叫的方法
      */
     @OnOpen
     public void onOpen(Session session, @PathParam("sid") String sid) {
@@ -32,9 +32,9 @@ public class WebSocketServer {
     }
 
     /**
-     * 收到客户端消息后调用的方法
+     * 收到客戶端訊息後呼叫的方法
      *
-     * @param message 客户端发送过来的消息
+     * @param message 客戶端傳送過來的訊息
      */
     @OnMessage
     public void onMessage(String message, @PathParam("sid") String sid) {
@@ -42,7 +42,7 @@ public class WebSocketServer {
     }
 
     /**
-     * 连接关闭调用的方法
+     * 连接关闭呼叫的方法
      *
      * @param sid
      */
@@ -61,7 +61,7 @@ public class WebSocketServer {
         Collection<Session> sessions = sessionMap.values();
         for (Session session : sessions) {
             try {
-                //服务器向客户端发送消息
+                //伺服器向客戶端傳送訊息
                 session.getBasicRemote().sendText(message);
             } catch (Exception e) {
                 log.error("WebSocket 發送訊息失敗", e);

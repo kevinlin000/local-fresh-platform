@@ -171,7 +171,7 @@
                 class="blueBug"
                 @click="orderAccept(row), (isTableOperateBtn = true)"
               >
-                接單
+                確認
               </el-button>
               <el-button
                 v-if="row.status === 3"
@@ -179,7 +179,7 @@
                 class="blueBug"
                 @click="cancelOrDeliveryOrComplete(3, row.id)"
               >
-                派送
+                配送
               </el-button>
               <el-button
                 v-if="row.status === 4"
@@ -233,7 +233,7 @@
       />
     </div>
 
-    <!-- 查看弹框部分 -->
+    <!-- 查看彈窗部分 -->
     <el-dialog
       title="訂單資訊"
       :visible.sync="dialogVisible"
@@ -349,7 +349,7 @@
                 >
               </div>
               <div class="send-amount">
-                <span class="amount-name">派送費：</span>
+                <span class="amount-name">配送費：</span>
                 <span class="amount-price">NT$ {{ 6 }}</span>
               </div>
               <div class="package-amount">
@@ -524,15 +524,15 @@ export default class extends Vue {
   private cancelOrderReasonList = [
     {
       value: 1,
-      label: '訂單量較多，暫時無法接單',
+      label: '訂單量較多，暫時無法受理訂單',
     },
     {
       value: 2,
-      label: '單品已售完，暫時無法接單',
+      label: '單品已售完，暫時無法受理訂單',
     },
     {
       value: 3,
-      label: '店休中，暫時無法接單',
+      label: '店休中，暫時無法受理訂單',
     },
     {
       value: 0,
@@ -543,11 +543,11 @@ export default class extends Vue {
   private cancelrReasonList = [
     {
       value: 1,
-      label: '訂單量較多，暫時無法接單',
+      label: '訂單量較多，暫時無法受理訂單',
     },
     {
       value: 2,
-      label: '單品已售完，暫時無法接單',
+      label: '單品已售完，暫時無法受理訂單',
     },
     {
       value: 3,
@@ -572,15 +572,15 @@ export default class extends Vue {
       value: 1,
     },
     {
-      label: '待接單',
+      label: '待確認',
       value: 2,
     },
     {
-      label: '待派送',
+      label: '待配送',
       value: 3,
     },
     {
-      label: '派送中',
+      label: '配送中',
       value: 4,
     },
     {
@@ -624,10 +624,10 @@ export default class extends Vue {
     this.valueTime = []
     this.dialogOrderStatus = 0
     this.$router.push('/order')
-    console.log(activeIndex, '接收到了子组件的index')
+    console.log(activeIndex, '接收到了子元件的index')
   }
 
-  // 取得待處理、待派送、派送中數量
+  // 取得待處理、待配送、配送中數量
   getOrderListBy3Status() {
     getOrderListBy({})
       .then((res) => {
@@ -691,11 +691,11 @@ export default class extends Vue {
     if (row.status === 1) {
       return '待付款'
     } else if (row.status === 2) {
-      return '待接單'
+      return '待確認'
     } else if (row.status === 3) {
-      return '待派送'
+      return '待配送'
     } else if (row.status === 4) {
-      return '派送中'
+      return '配送中'
     } else if (row.status === 5) {
       return '已完成'
     } else if (row.status === 6) {
@@ -730,7 +730,7 @@ export default class extends Vue {
     this.cancelReason = ''
   }
 
-  //接單
+  // 確認訂單
   orderAccept(row: any) {
     this.orderId = row.id
     this.dialogOrderStatus = row.status
@@ -791,7 +791,7 @@ export default class extends Vue {
       })
   }
 
-  // 派送，完成
+  // 配送，完成
   cancelOrDeliveryOrComplete(status: number, id: string) {
     const params = {
       status,
@@ -872,7 +872,7 @@ export default class extends Vue {
         text-align: center;
         margin-top: 30px;
       }
-      //查詢黑色按钮样式
+      //查詢黑色按鈕樣式
       .normal-btn {
         background: #333333;
         color: white;

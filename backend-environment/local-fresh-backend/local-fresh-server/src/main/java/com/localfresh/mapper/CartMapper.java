@@ -50,7 +50,7 @@ public interface CartMapper {
     void deleteById(Long id);
 
     /**
-     * 批量插入购物车数据
+     * 批次插入购物车資料
      *
      * @param shoppingCartList
      */

@@ -13,53 +13,53 @@ import java.util.List;
 public interface ProductService {
 
     /**
-     * 新增菜品和對應的口味
+     * 新增商品和對應的規格
      * @param dishDTO
      */
     public void saveWithFlavor(ProductDTO dishDTO);
 
     /**
-     * 菜品分頁查詢
+     * 商品分頁查詢
      * @param dishPageQueryDTO
      * @return
      */
     PageResult pageQuery(ProductPageQueryDTO dishPageQueryDTO);
 
     /**
-     * 菜品的批量刪除
+     * 商品的批次刪除
      * @param ids
      */
     void deleteBatch(List<Long> ids);
 
     /**
-     *  根據id查詢菜品和對應的口味
+     *  根據id查詢商品和對應的規格
      * @param id
      * @return
      */
     ProductVO getByIdWithFlavor(Long id);
 
     /**
-     * 根據id修改菜品基本資訊和對應的口味資訊
+     * 根據id修改商品基本資訊和對應的規格資訊
      * @param dishDTO
      */
     void updateWithFlavor(ProductDTO dishDTO);
 
     /**
-     * 根据分类id查询菜品
+     * 根據分類id查詢商品
      * @param categoryId
      * @return
      */
     List<Product> list(Long categoryId);
 
     /**
-     * 条件查询菜品和口味
+     * 條件查詢商品和規格
      * @param dish
      * @return
      */
     List<ProductVO> listWithFlavor(Product dish);
 
     /**
-     * 菜品起售停售
+     * 商品起售停售
      * @param status
      * @param id
      */

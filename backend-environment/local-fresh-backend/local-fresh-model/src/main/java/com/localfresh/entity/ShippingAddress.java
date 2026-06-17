@@ -26,7 +26,7 @@ public class ShippingAddress implements Serializable {
     //收货人
     private String consignee;
 
-    //手机号
+    //手機號碼
     private String phone;
 
     //性别 0 女 1 男
@@ -53,9 +53,9 @@ public class ShippingAddress implements Serializable {
     //详细地址
     private String detail;
 
-    //标签
+    //標籤
     private String label;
 
-    //是否默认 0否 1是
+    //是否預設 0否 1是
     private Integer isDefault;
 }

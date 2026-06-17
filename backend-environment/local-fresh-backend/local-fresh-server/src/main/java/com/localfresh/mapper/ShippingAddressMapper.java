@@ -8,7 +8,7 @@ import java.util.List;
 public interface ShippingAddressMapper {
 
     /**
-     * 条件查询
+     * 條件查詢
      * @param addressBook
      * @return
      */
@@ -27,7 +27,7 @@ public interface ShippingAddressMapper {
     void insert(ShippingAddress addressBook);
 
     /**
-     * 根据id查询
+     * 根據id查詢
      * @param id
      * @return
      */
@@ -35,20 +35,20 @@ public interface ShippingAddressMapper {
     ShippingAddress getById(Long id);
 
     /**
-     * 根据id修改
+     * 根據id修改
      * @param addressBook
      */
     void update(ShippingAddress addressBook);
 
     /**
-     * 根据 用户id修改 是否默认地址
+     * 根據 會員id修改 是否預設地址
      * @param addressBook
      */
     @Update("update shipping_address set is_default = #{isDefault} where member_id = #{memberId}")
     void updateIsDefaultByUserId(ShippingAddress addressBook);
 
     /**
-     * 根据id删除地址
+     * 根據id刪除地址
      * @param id
      */
     @Delete("delete from shipping_address where id = #{id}")

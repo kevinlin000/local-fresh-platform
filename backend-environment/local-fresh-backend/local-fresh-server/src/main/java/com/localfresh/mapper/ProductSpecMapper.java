@@ -10,26 +10,26 @@ import java.util.List;
 @Mapper
 public interface ProductSpecMapper {
     /**
-     * 批量插入口味資料
+     * 批次插入規格資料
      * @param productSpecs
      */
     void insertBatch(List<ProductSpec> productSpecs);
 
     /**
-     * 根據菜品id刪除對應的口味資料
+     * 根據商品id刪除對應的規格資料
      * @param productId
      */
     @Delete("delete from product_spec where product_id = #{productId}")
     void deleteByDishId(Long productId);
 
     /**
-     * 根據菜品id集合批量刪除對應的口味資料
+     * 根據商品id集合批次刪除對應的規格資料
      * @param dishIds
      */
     void deleteByDishIds(List<Long> dishIds);
 
     /**
-     * 根據菜品id查詢對應的口味資料
+     * 根據商品id查詢對應的規格資料
      * @param productId
      * @return
      */

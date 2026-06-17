@@ -1,9 +1,9 @@
 import md5 from 'md5';
 
-//根據请求的地址，方式，参数，统一计算出目前请求的md5值作为key
+//根據請求的地址，方式，参数，统一计算出目前請求的md5值作为key
 const getRequestKey = (config) => {
     if (!config) {
-        // 如果沒有取得到请求的相关配置資訊，根據时间戳生成
+        // 如果沒有取得到請求的相關配置資訊，根據時间戳產生
         return md5(+new Date());
     }
 

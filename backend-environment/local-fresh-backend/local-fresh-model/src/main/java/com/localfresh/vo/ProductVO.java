@@ -20,7 +20,7 @@ public class ProductVO implements Serializable {
     private Long id;
     //商品名称
     private String productName;
-    //商品分类id
+    //商品分類id
     private Long categoryId;
     //商品价格
     private BigDecimal price;
@@ -34,11 +34,11 @@ public class ProductVO implements Serializable {
     private Integer stock;
     //低庫存警示門檻
     private Integer lowStockThreshold;
-    //更新时间
+    //更新時间
     private LocalDateTime updateTime;
-    //分类名称
+    //分類名称
     private String categoryName;
-    //商品关联的规格
+    //商品關聯的規格
     private List<ProductSpec> productSpecs = new ArrayList<>();
 
     //private Integer copies;

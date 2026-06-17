@@ -12,7 +12,7 @@ export const editPassword = (data: any) =>
     'url': `/shop/status`,
     'method': 'get'
   })
-    // 设置營業狀態
+    // 設定營業狀態
     export const setStatus = (data:any) =>
     request({
       'url': `/shop/`+data,

@@ -8,10 +8,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication
-@EnableTransactionManagement //开启注解方式的事务管理
-@EnableScheduling //开启定时任务功能
+@EnableTransactionManagement //啟用注解方式的事务管理
+@EnableScheduling //啟用定時任務功能
 @Slf4j
-@EnableCaching //开启Spring Cache缓存註解功能
+@EnableCaching //啟用Spring Cache缓存註解功能
 public class LocalFreshApplication {
     public static void main(String[] args) {
         SpringApplication.run(LocalFreshApplication.class, args);

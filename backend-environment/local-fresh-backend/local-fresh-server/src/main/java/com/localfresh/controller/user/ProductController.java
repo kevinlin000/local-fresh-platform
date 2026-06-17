@@ -59,7 +59,7 @@ public class ProductController {
         Product dish = new Product();
         dish.setCategoryId(categoryId);
         dish.setProductName(normalizedProductName);
-        dish.setStatus(StatusConstant.ENABLE);//查詢起售中的菜品
+        dish.setStatus(StatusConstant.ENABLE);//查詢起售中的商品
 
         List<ProductVO> list = productService.listWithFlavor(dish);
         if (cacheable) {

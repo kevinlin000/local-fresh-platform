@@ -12,13 +12,13 @@ public class OrdersDTO implements Serializable {
 
     private Long id;
 
-    //订单号
+    //訂單号
     private String number;
 
-    //订单状态 1待付款，2待派送，3已派送，4已完成，5已取消
+    //訂單狀態 1待付款，2待配送，3已配送，4已完成，5已取消
     private Integer status;
 
-    //下单用户id
+    //下單會員id
     private Long userId;
 
     //地址id
@@ -39,10 +39,10 @@ public class OrdersDTO implements Serializable {
     // 備註
     private String remark;
 
-    //用户名
+    //會員名
     private String userName;
 
-    //手机号
+    //手機號碼
     private String phone;
 
     //地址

@@ -18,7 +18,7 @@ import jakarta.validation.ConstraintViolationException;
 import java.sql.SQLIntegrityConstraintViolationException;
 
 /**
- * 全局异常处理器，处理项目中抛出的业务异常
+ * 全域例外處理器，處理專案中拋出的業務例外
  */
 @RestControllerAdvice
 @Slf4j
@@ -27,25 +27,25 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.FORBIDDEN)
     @ExceptionHandler
     public Result exceptionHandler(ForbiddenOperationException ex){
-        log.error("异常信息：{}", ex.getMessage());
+        log.error("例外信息：{}", ex.getMessage());
         return Result.error(ex.getMessage());
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler
     public Result exceptionHandler(ShoppingCartBusinessException ex){
-        log.error("异常信息：{}", ex.getMessage());
+        log.error("例外信息：{}", ex.getMessage());
         return Result.error(ex.getMessage());
     }
 
     /**
-     * 捕获业务异常
+     * 捕获業務例外
      * @param ex
      * @return
      */
     @ExceptionHandler
     public Result exceptionHandler(BaseException ex){
-        log.error("异常信息：{}", ex.getMessage());
+        log.error("例外信息：{}", ex.getMessage());
         return Result.error(ex.getMessage());
     }
 

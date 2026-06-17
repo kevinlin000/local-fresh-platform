@@ -35,18 +35,18 @@
           </el-form-item>
         </div>
         <el-form-item v-if="false"
-                      label="口味做法配置:">
+                      label="規格做法配置:">
           <el-form-item>
             <div class="flavorBox">
               <span v-if="dishFlavors.length == 0"
                     class="addBut"
                     @click="addFlavore">
-                + 新增口味</span>
+                + 新增規格</span>
               <div v-if="dishFlavors.length != 0"
                    class="flavor">
                 <div class="title">
-                  <span>口味名稱（3 個字內）</span>
-                  <!-- <span class="des-box">口味标签（输入标签回车添加）</span> -->
+                  <span>規格名稱（3 個字內）</span>
+                  <!-- <span class="des-box">規格標籤（輸入標籤回车添加）</span> -->
                 </div>
                 <div class="cont">
                   <div v-for="(item, index) in dishFlavors"
@@ -77,7 +77,7 @@
                      "
                      class="addBut"
                      @click="addFlavore">
-                  新增口味
+                  新增規格
                 </div>
               </div>
             </div>
@@ -127,7 +127,7 @@ import { Component, Vue, Watch } from 'vue-property-decorator'
 import HeadLable from '@/components/HeadLable/index.vue'
 import SelectInput from './components/SelectInput.vue'
 import ImageUpload from '@/components/ImgUpload/index.vue'
-// getFlavorList口味列表暫時不做 getDishTypeList
+// getFlavorList規格列表暫時不做 getDishTypeList
 import {
   queryDishById,
   addDish,
@@ -152,9 +152,9 @@ export default class extends Vue {
   private imageUrl: string = ''
   private actionType: string = ''
   private dishList: string[] = []
-  private dishFlavorsData: any[] = [] //原始口味資料
-  private dishFlavors: any[] = [] //待上傳口味的資料
-  private leftDishFlavors: any[] = [] //下拉框剩余可选择的口味資料
+  private dishFlavorsData: any[] = [] //原始規格資料
+  private dishFlavors: any[] = [] //待上傳規格的資料
+  private leftDishFlavors: any[] = [] //下拉框剩餘可選擇的規格資料
   private vueRest = '1'
   private index = 0
   private inputStyle = { flex: 1 }
@@ -225,7 +225,7 @@ export default class extends Vue {
 
   created() {
     this.getDishList()
-    // 口味临时資料
+    // 規格暫時資料
     this.getFlavorListHand()
     this.actionType = this.$route.query.id ? 'edit' : 'add'
     if (this.$route.query.id) {
@@ -274,7 +274,7 @@ export default class extends Vue {
     })
   }
 
-  //过滤已选择的口味下拉框無法再次选择
+  //過濾已選擇的規格下拉框無法再次選擇
   getLeftDishFlavors() {
     let arr = []
     this.dishFlavorsData.map(item => {
@@ -315,28 +315,28 @@ export default class extends Vue {
     })
   }
 
-  // 按鈕 - 新增口味
+  // 按鈕 - 新增規格
   private addFlavore() {
     this.dishFlavors.push({ name: '', value: [] }) // JSON.parse(JSON.stringify(this.dishFlavorsData))
   }
 
-  // 按鈕 - 刪除口味
+  // 按鈕 - 刪除規格
   private delFlavor(name: string) {
     let ind = this.dishFlavors.findIndex(item => item.name === name)
     this.dishFlavors.splice(ind, 1)
   }
 
-  // 按鈕 - 刪除口味標籤
+  // 按鈕 - 刪除規格標籤
   private delFlavorLabel(index: number, ind: number) {
     this.dishFlavors[index].value.splice(ind, 1)
   }
 
-  //口味位置记录
+  //規格位置紀錄
   private flavorPosition(index: number) {
     this.index = index
   }
 
-  // 新增口味標籤
+  // 新增規格標籤
   private keyDownHandle(val: any) {
     if (event) {
       event.cancelBubble = true
@@ -367,7 +367,7 @@ export default class extends Vue {
     })
   }
 
-  // 取得口味列表
+  // 取得規格列表
   private getFlavorListHand() {
     // flavor flavorData
     this.dishFlavorsData = [

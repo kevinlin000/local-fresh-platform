@@ -3,7 +3,7 @@ export const checkProcessEnv =() => {
 }
 export const debounce=(fn, time)=> {
   time = time || 200
-  // 定时器
+  // 定時器
   let timer = null
   return function(...args) {
     var _this = this

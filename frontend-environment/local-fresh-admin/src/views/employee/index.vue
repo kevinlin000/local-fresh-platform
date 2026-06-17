@@ -69,7 +69,7 @@ export default {
   methods: {
     // 分頁查詢
     pageQuery(){
-      // 准备请求参数
+      // 准备請求参数
       const params = {name: this.name, page: this.page, pageSize: this.pageSize}
       getEmployeeList(params).then(res => {
           if(res.data.code === 1){
@@ -81,13 +81,13 @@ export default {
       })
     },
 
-    // 每页数量发生变化时调用
+    // 每页數量發生變化時呼叫
     handleSizeChange(pageSize){
       this.pageSize = pageSize
       this.pageQuery()
     },
 
-    // 页码发生变化时调用
+    // 頁碼發生變化時呼叫
     handleCurrentChange(page){
       this.page = page
       this.pageQuery()

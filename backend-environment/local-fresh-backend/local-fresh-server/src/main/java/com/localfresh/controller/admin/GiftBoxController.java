@@ -57,12 +57,12 @@ public class GiftBoxController {
     }
 
     /**
-     * 批量刪除直送箱
+     * 批次刪除直送箱
      * @param ids
      * @return
      */
     @DeleteMapping
-    @Operation(summary = "批量刪除直送箱")
+    @Operation(summary = "批次刪除直送箱")
     public Result delete(@RequestParam List<Long> ids){
         giftBoxService.deleteBatch(ids);
         cleanCache("giftbox_*");

@@ -592,23 +592,23 @@ sequenceDiagram
 ```mermaid
 stateDiagram-v2
     [*] --> 待付款
-    待付款 --> 待接單
-    待接單 --> 已接單
-    已接單 --> 派送中
-    派送中 --> 已完成
+    待付款 --> 待確認
+    待確認 --> 已確認
+    已確認 --> 配送中
+    配送中 --> 已完成
 
     待付款 --> 已取消
-    待接單 --> 已取消
-    已接單 --> 已取消
-    派送中 --> 退款
+    待確認 --> 已取消
+    已確認 --> 已取消
+    配送中 --> 退款
 
-    揪團中 --> 待接單: 成團
+    揪團中 --> 待確認: 成團
     揪團中 --> 已取消: 揪團失敗
 
     state "待付款(1)" as 待付款
-    state "待接單(2)" as 待接單
-    state "已接單(3)" as 已接單
-    state "派送中(4)" as 派送中
+    state "待確認(2)" as 待確認
+    state "已確認(3)" as 已確認
+    state "配送中(4)" as 配送中
     state "已完成(5)" as 已完成
     state "已取消(6)" as 已取消
     state "退款(7)" as 退款
@@ -686,7 +686,7 @@ stateDiagram-v2
 | `IssueS3SalesTop10Test` | 報表與統計查詢邏輯 |
 | `IssueS4ThreadLocalTest` | ThreadLocal 清理與請求隔離 |
 | `IssueS5CancelNpeTest` | 取消訂單相關空指標與狀態流程 |
-| `IssueM4SnowflakeTest` | Snowflake 訂單號生成 |
+| `IssueM4SnowflakeTest` | Snowflake 訂單號產生 |
 | `GroupBuyServiceTest` | 揪團 service 基礎流程與 VO 組裝 |
 | `GroupBuyControllerTest` | 揪團 API 回應與欄位完整性 |
 | `GroupBuyRedisIntegrationTest` | Redisson 真實鎖 + 100-thread 併發驗證 |
@@ -747,7 +747,7 @@ stateDiagram-v2
 
 #### 2. Snowflake 訂單號
 
-訂單編號不使用 `currentTimeMillis()`，而是使用 Snowflake 生成。  
+訂單編號不使用 `currentTimeMillis()`，而是使用 Snowflake 產生。
 好處是：
 
 - 分散式環境可避免碰撞
@@ -796,7 +796,7 @@ stateDiagram-v2
 
 ### 1. IDOR 防護
 
-訂單與會員資料查詢不可只依據 ID 直接返回，必須同時驗證當前登入會員是否為資源擁有者。  
+訂單與會員資料查詢不可只依據 ID 直接回傳，必須同時驗證當前登入會員是否為資源擁有者。
 專案中已針對訂單越權場景補上回歸測試，防止使用者透過修改 orderId 讀取他人訂單。
 
 ### 2. ThreadLocal 跨請求清理

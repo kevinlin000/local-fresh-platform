@@ -35,7 +35,7 @@ public interface ReportService {
     OrderReportVO getOrderStatistics(LocalDate begin, LocalDate end);
 
     /**
-     * 統計指定時間區間內的銷量排名前10的菜品數據
+     * 統計指定時間區間內的銷量排名前10的商品數據
      * @param begin
      * @param end
      * @return

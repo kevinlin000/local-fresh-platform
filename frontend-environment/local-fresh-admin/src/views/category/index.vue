@@ -447,7 +447,7 @@ export default class extends Vue {
         text-align: center;
         margin-top: 30px;
       }
-      //查詢黑色按钮样式
+      //查詢黑色按鈕樣式
       .normal-btn {
         background: #333333;
         color: white;

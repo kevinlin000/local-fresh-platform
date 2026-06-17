@@ -54,7 +54,7 @@
       <el-radio-group v-model="setStatus">
         <el-radio :label="1">
           營業中
-          <span>目前店舖處於營業狀態，會自動接收任何訂單，可點擊店休中進入暫停接單狀態。</span>
+          <span>目前店舖處於營業狀態，會自動接收任何訂單，可點擊店休中進入暫停受理訂單狀態。</span>
         </el-radio>
         <el-radio :label="0">
           店休中
@@ -152,7 +152,7 @@ export default class extends Vue {
     // const msg = {
     //   data: {
     //     type: 2,
-    //     content: '訂單1653904906519顧客催單，已下單23分钟，仍未接單。',
+    //     content: '訂單1653904906519顧客催單，已下單23 分鐘，仍未確認。',
     //     details: '434'
     //   }
     // }
@@ -206,7 +206,7 @@ export default class extends Vue {
           that.$refs.audioVo2.play()
         }
         that.$notify({
-          title: jsonMsg.type === 1 ? '待接單' : '催單',
+          title: jsonMsg.type === 1 ? '待確認' : '催單',
           duration: 0,
           dangerouslyUseHTMLString: true,
           onClick: () => {
@@ -222,7 +222,7 @@ export default class extends Vue {
           // 這裡也可以把回傳資訊加入 message 顯示
           message: `${
             jsonMsg.type === 1
-              ? `<span>您有1筆<span style=color:#419EFF>訂單待處理</span>,${jsonMsg.content},請盡快接單</span>`
+              ? `<span>您有1筆<span style=color:#419EFF>訂單待處理</span>,${jsonMsg.content},請盡快確認訂單</span>`
               : `${jsonMsg.content}<span style='color:#419EFF;cursor: pointer'>前往處理</span>`
           }`,
         })

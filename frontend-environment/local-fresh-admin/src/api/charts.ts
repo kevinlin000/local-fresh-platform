@@ -19,20 +19,20 @@ export const getChartsDataes = (params: any) =>
     'method': 'get'
   })
 
-// 取得當日銷售趋势資料（24小时）-> 銷售趋势
+// 取得當日銷售趨勢資料（24小時）-> 銷售趨勢
 export const getDayDataes= (params: any) =>
   request({
     'url': `/report/hourCollect/${params.type}/${params.date}`,
     'method': 'get'
   })
 
-// 支付類型資料汇总 -> 店内收款构成 - 當日
+// 支付類型資料汇總 -> 店內收款構成 - 當日
 export const getDayPayType = (params: any) =>
   request({
     'url': `/report/payTypeCollect/${params.date}`,
     'method': 'get'
   })
-// 取得當日各种優惠類型資料汇总 -> 優惠指标
+// 取得當日各种優惠類型資料汇總 -> 優惠指标
 export const getprivilege = (params: any) =>
   request({
     'url': `/report/privilegeCollect/${params.date}`,
@@ -53,21 +53,21 @@ export const getDayRanking = (params: any) =>
     'method': 'get'
   })
 
-// 取得一定日期之内的銷售趋势 - 銷售趋势 图
+// 取得一定日期之内的銷售趨勢 - 銷售趨勢 图
 export const getTimeQuantumDataes = (params: any) =>
   request({
     'url': `/report/dayAmountCollect/${params.type}/${params.start}/${params.end}`,
     'method': 'get'
   })
 
-// 取得時間範圍內的各种支付類型資料汇总 - 店内收款构成 - 时间段
+// 取得時間範圍內的各种支付類型資料汇總 - 店內收款構成 - 時间段
 export const getTimeQuantumReceivables = (params: any) =>
   request({
     'url': `/report/datePayTypeCollect/${params.start}/${params.end}`,
     'method': 'get'
   })
 
-// 取得時間範圍內的單品类别銷售汇总 -  單品分類占比 - 时间段
+// 取得時間範圍內的單品類別銷售汇總 -  單品分類占比 - 時间段
 export const getTimeQuantumType = (params: any) =>
   request({
     'url': `/report/dateCategoryCollect/${params.type}/${params.start}/${params.end}`,
@@ -81,7 +81,7 @@ export const getTimeQuantumDishes = (params: any) =>
     'method': 'get'
   })
 
-// 取得時間範圍內的優惠指标汇总資料 - 頂部資訊
+// 取得時間範圍內的優惠指标汇總資料 - 頂部資訊
 export const getTimeQuantumDiscount = (params: any) =>
   request({
     'url': `/report/privilegeByDate/${params.start}/${params.end}`,

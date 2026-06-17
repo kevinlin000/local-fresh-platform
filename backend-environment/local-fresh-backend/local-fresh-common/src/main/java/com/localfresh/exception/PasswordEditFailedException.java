@@ -1,7 +1,7 @@
 package com.localfresh.exception;
 
 /**
- * 密码修改失败异常
+ * 密碼修改失敗例外
  */
 public class PasswordEditFailedException extends BaseException{
 

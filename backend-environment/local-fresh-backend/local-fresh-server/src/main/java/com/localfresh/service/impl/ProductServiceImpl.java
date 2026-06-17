@@ -58,7 +58,7 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private CacheService cacheService;
     /**
-     * 新增菜品
+     * 新增商品
      * @param dishDTO
      * @return
      */
@@ -69,19 +69,19 @@ public class ProductServiceImpl implements ProductService {
         BeanUtils.copyProperties(dishDTO, dish);
         applyInventoryDefaults(dish);
 
-        //向菜品表插入一條資料
+        //向商品表插入一條資料
         productMapper.insert(dish);
 
-        //獲取inset語句所生成的主按鍵值
+        //獲取inset語句所產生的主鍵值
         Long productId = dish.getId();
 
-        //向口味表插入n條資料
+        //向規格表插入n條資料
         List<ProductSpec> productSpecs = dishDTO.getProductSpecs();
         if(productSpecs!=null&&productSpecs.size()>0){
             productSpecs.forEach(productSpec->{
                 productSpec.setProductId(productId);
             });
-            //向口味表插入n條資料
+            //向規格表插入n條資料
             productSpecMapper.insertBatch(productSpecs);
         }
 
@@ -89,7 +89,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     /**
-     * 菜品分頁查詢
+     * 商品分頁查詢
      * @param dishPageQueryDTO
      * @return
      */
@@ -102,32 +102,32 @@ public class ProductServiceImpl implements ProductService {
         }
 
     /**
-     * 菜品的批量刪除
+     * 商品的批次刪除
      * @param ids
      */
     @Transactional
     public void deleteBatch(List<Long> ids) {
-        //判斷當前菜品是否能夠刪除 - 是否存在啟售中的菜品？
+        //判斷當前商品是否能夠刪除 - 是否存在啟售中的商品？
         for (Long id : ids) {
             Product dish = productMapper.getById(id);
             if (dish.getStatus() == StatusConstant.ENABLE) {
-                //當前菜品正在啟售中，無法刪除
+                //當前商品正在啟售中，無法刪除
                 throw new DeletionNotAllowedException(MessageConstant.DISH_ON_SALE);
             }
         }
 
-        //判斷當前菜品是否能夠刪除 -是否被套餐關聯了？
+        //判斷當前商品是否能夠刪除 -是否被直送箱關聯了？
         List<Long> setmealIds = giftBoxProductMapper.getSetmealIdsByDishIds(ids);
         if(setmealIds!=null&&setmealIds.size()>0){
-            // 當前菜品被套餐關聯了，不能刪除
+            // 當前商品被直送箱關聯了，不能刪除
             throw new DeletionNotAllowedException(MessageConstant.DISH_BE_RELATED_BY_SETMEAL);
         }
 
 
-        //根據菜品id集合批量刪除菜品資料
+        //根據商品id集合批次刪除商品資料
         //sql: delete from dish where id in (?,?,?)
         productMapper.deleteByIds(ids);
-        //根據菜品id集合批量刪除關聯的口味資料
+        //根據商品id集合批次刪除關聯的規格資料
         // 刪除單品既有規格資料
         productSpecMapper.deleteByDishIds(ids);
 
@@ -135,15 +135,15 @@ public class ProductServiceImpl implements ProductService {
     }
 
     /**
-     *  根據id查詢菜品和對應的口味
+     *  根據id查詢商品和對應的規格
      * @param id
      * @return
      */
 
     public ProductVO getByIdWithFlavor(Long id) {
-        //根據id查詢菜品資料
+        //根據id查詢商品資料
         Product dish = productMapper.getById(id);
-        //根據菜品id查詢口味資料
+        //根據商品id查詢規格資料
         List<ProductSpec> dishFlavors = productSpecMapper.getByDishId(id);
 
         //講查詢到的資料封裝到ProductVO
@@ -155,7 +155,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     /**
-     * 根據id修改菜品基本資訊和對應的口味資訊
+     * 根據id修改商品基本資訊和對應的規格資訊
      * @param dishDTO
      */
 
@@ -163,19 +163,19 @@ public class ProductServiceImpl implements ProductService {
         Product dish = new Product();
         BeanUtils.copyProperties(dishDTO, dish);
         applyInventoryDefaults(dish);
-        //修改菜品表基本資訊
+        //修改商品表基本資訊
         productMapper.update(dish);
 
-        //刪除原有的口味資訊
+        //刪除原有的規格資訊
         productSpecMapper.deleteByDishId(dishDTO.getId());
 
-        //重新插入口味資訊
+        //重新插入規格資訊
         List<ProductSpec> productSpecs = dishDTO.getProductSpecs();
         if(productSpecs!=null && productSpecs.size()>0){
             productSpecs.forEach(productSpec->{
                 productSpec.setProductId(dishDTO.getId());
             });
-            //向口味表插入n條資料
+            //向規格表插入n條資料
             productSpecMapper.insertBatch(productSpecs);
         }
 
@@ -184,7 +184,7 @@ public class ProductServiceImpl implements ProductService {
 
 
     /**
-     * 根据分类id查询菜品
+     * 根據分類id查詢商品
      * @param categoryId
      * @return
      */
@@ -197,7 +197,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     /**
-     * 条件查询菜品和口味
+     * 條件查詢商品和規格
      * @param dish
      * @return
      */
@@ -210,7 +210,7 @@ public class ProductServiceImpl implements ProductService {
             ProductVO dishVO = new ProductVO();
             BeanUtils.copyProperties(d,dishVO);
 
-            //根据菜品id查询对应的口味
+            //根據商品id查詢對應的規格
             List<ProductSpec> productSpecs = productSpecMapper.getByDishId(d.getId());
 
             dishVO.setProductSpecs(productSpecs);
@@ -221,7 +221,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     /**
-     * 菜品起售停售
+     * 商品起售停售
      *
      * @param status
      * @param id
@@ -235,7 +235,7 @@ public class ProductServiceImpl implements ProductService {
         productMapper.update(dish);
 
         if (status == StatusConstant.DISABLE) {
-            // 如果是停售操作，还需要将包含当前菜品的套餐也停售
+            // 如果是停售操作，還需要將包含目前商品的直送箱也停售
             List<Long> dishIds = new ArrayList<>();
             dishIds.add(id);
             // 查詢包含該單品的直送箱，停售時一併下架

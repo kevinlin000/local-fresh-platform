@@ -19,7 +19,7 @@ public class ShippingAddressServiceImpl implements ShippingAddressService {
     private ShippingAddressMapper shippingAddressMapper;
 
     /**
-     * 条件查询
+     * 條件查詢
      *
      * @param addressBook
      * @return
@@ -40,7 +40,7 @@ public class ShippingAddressServiceImpl implements ShippingAddressService {
     }
 
     /**
-     * 根据id查询
+     * 根據id查詢
      *
      * @param id
      * @return
@@ -52,7 +52,7 @@ public class ShippingAddressServiceImpl implements ShippingAddressService {
     }
 
     /**
-     * 根据id修改地址
+     * 根據id修改地址
      *
      * @param addressBook
      */
@@ -63,7 +63,7 @@ public class ShippingAddressServiceImpl implements ShippingAddressService {
     }
 
     /**
-     * 设置默认地址
+     * 設定預設地址
      *
      * @param addressBook
      */
@@ -72,18 +72,18 @@ public class ShippingAddressServiceImpl implements ShippingAddressService {
         ShippingAddress addressBookDB = shippingAddressMapper.getById(addressBook.getId());
         checkAddressOwner(addressBookDB);
 
-        //1、将当前会员的所有地址修改为非默认地址
+        //1、将目前会员的所有地址修改为非預設地址
         addressBook.setIsDefault(0);
         addressBook.setMemberId(BaseContext.getCurrentId());
         shippingAddressMapper.updateIsDefaultByUserId(addressBook);
 
-        //2、将当前地址改为默认地址 update address_book set is_default = ? where id = ?
+        //2、将目前地址改为預設地址 update address_book set is_default = ? where id = ?
         addressBook.setIsDefault(1);
         shippingAddressMapper.update(addressBook);
     }
 
     /**
-     * 根据id删除地址
+     * 根據id刪除地址
      *
      * @param id
      */

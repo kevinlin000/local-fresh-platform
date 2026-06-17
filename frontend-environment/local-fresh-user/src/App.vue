@@ -2,7 +2,13 @@
   <div class="app-shell">
     <header v-if="showNavbar" class="navbar">
       <div class="brand">
-        <RouterLink to="/">菜籃日</RouterLink>
+        <RouterLink to="/" class="brand-link">
+          <span class="brand-mark">菜</span>
+          <span>
+            <strong>菜籃日</strong>
+            <small>Cailán Day</small>
+          </span>
+        </RouterLink>
       </div>
 
       <nav class="nav-links">
@@ -44,16 +50,19 @@ async function logout() {
 
 <style>
 :root {
-  --farm-bg: #f4f8f1;
-  --farm-surface: rgba(255, 255, 255, 0.9);
-  --farm-surface-strong: #fcfefb;
-  --farm-line: rgba(95, 132, 82, 0.16);
-  --farm-shadow: 0 24px 60px rgba(61, 111, 39, 0.12);
-  --farm-primary: #4f8a37;
-  --farm-primary-deep: #2e5f1f;
-  --farm-primary-soft: #edf6e8;
-  --farm-text: #1f2937;
-  --farm-muted: #5d6c58;
+  --farm-bg: #f7f5ef;
+  --farm-surface: #ffffff;
+  --farm-surface-strong: #fffdf8;
+  --farm-line: rgba(35, 49, 39, 0.12);
+  --farm-shadow: 0 10px 28px rgba(28, 39, 32, 0.08);
+  --farm-primary: #2f6f4e;
+  --farm-primary-deep: #1f4c35;
+  --farm-primary-soft: #eaf3ec;
+  --farm-accent: #c56f45;
+  --farm-accent-soft: #faeee7;
+  --farm-text: #1f2a24;
+  --farm-muted: #647268;
+  --farm-radius: 8px;
   color: var(--farm-text);
   background: var(--farm-bg);
   font-family: "PingFang TC", "Noto Sans TC", sans-serif;
@@ -66,13 +75,14 @@ async function logout() {
   --el-color-success-light-8: #ddebdb;
   --el-color-success-light-9: #eef6e8;
   --el-color-success-dark-2: var(--farm-primary-deep);
-  --el-border-radius-base: 14px;
+  --el-border-radius-base: 8px;
   --el-border-radius-round: 999px;
   --el-mask-color: rgba(29, 47, 20, 0.45);
 }
 
 * {
   box-sizing: border-box;
+  letter-spacing: 0;
 }
 
 html {
@@ -81,10 +91,8 @@ html {
 
 body {
   margin: 0;
-  min-width: 1280px;
-  background:
-    radial-gradient(circle at top left, rgba(127, 176, 105, 0.18), transparent 32%),
-    linear-gradient(180deg, #f7fbf4 0%, #eef6e8 100%);
+  min-width: 0;
+  background: var(--farm-bg);
   color: var(--farm-text);
 }
 
@@ -102,60 +110,95 @@ a {
   top: 0;
   z-index: 10;
   display: grid;
-  grid-template-columns: 180px 1fr auto;
+  grid-template-columns: minmax(150px, auto) 1fr auto;
   align-items: center;
-  gap: 24px;
-  padding: 18px 48px;
-  background: rgba(248, 252, 245, 0.94);
-  backdrop-filter: blur(14px);
+  gap: 20px;
+  padding: 12px clamp(16px, 4vw, 48px);
+  background: rgba(255, 253, 248, 0.96);
+  backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--farm-line);
-  box-shadow: 0 10px 28px rgba(65, 103, 48, 0.08);
+  box-shadow: 0 6px 18px rgba(28, 39, 32, 0.06);
 }
 
 .brand {
-  color: #23421c;
-  font-size: 24px;
+  color: var(--farm-primary-deep);
+}
+
+.brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--farm-primary-deep);
+  color: #fffdf8;
   font-weight: 800;
+}
+
+.brand strong {
+  display: block;
+  font-size: 17px;
+  line-height: 1.1;
+}
+
+.brand small {
+  display: block;
+  margin-top: 2px;
+  color: var(--farm-muted);
+  font-size: 11px;
+  line-height: 1;
 }
 
 .nav-links {
   display: flex;
-  gap: 28px;
-  color: #4a6340;
+  gap: 6px;
+  color: #415148;
   font-weight: 600;
+  justify-content: center;
 }
 
 .nav-links a {
-  padding: 8px 14px;
-  border-radius: 999px;
+  padding: 9px 12px;
+  border-radius: 8px;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .nav-links a.router-link-active {
   color: var(--farm-primary-deep);
-  background: rgba(79, 138, 55, 0.12);
+  background: var(--farm-primary-soft);
 }
 
 .member-bar {
   display: flex;
   align-items: center;
-  gap: 14px;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
 .member-name {
-  color: #2e4127;
+  max-width: 128px;
+  overflow: hidden;
+  color: #2f3c34;
   font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .view-shell.with-navbar {
-  padding-top: 8px;
+  padding-top: 0;
 }
 
 .home-shell,
 .cart-shell,
 .orders-shell,
 .page-shell {
-  width: min(1280px, calc(100vw - 64px));
+  width: min(1180px, calc(100% - 32px));
   margin: 0 auto;
 }
 
@@ -176,8 +219,8 @@ a {
 .el-empty {
   padding: 32px 20px;
   border: 1px dashed rgba(95, 132, 82, 0.24);
-  border-radius: 24px;
-  background: linear-gradient(180deg, rgba(250, 252, 247, 0.96) 0%, rgba(241, 248, 235, 0.96) 100%);
+  border-radius: 8px;
+  background: #fffdf8;
 }
 
 .el-empty__description p {
@@ -186,12 +229,12 @@ a {
 
 .el-skeleton {
   padding: 20px;
-  border-radius: 22px;
-  background: rgba(248, 252, 245, 0.74);
+  border-radius: 8px;
+  background: #fffdf8;
 }
 
 .el-alert {
-  border-radius: 16px;
+  border-radius: 8px;
 }
 
 .el-button--success,
@@ -201,6 +244,65 @@ a {
 
 .el-drawer,
 .el-dialog {
-  --el-dialog-border-radius: 24px;
+  --el-dialog-border-radius: 8px;
+}
+
+@media (max-width: 860px) {
+  .navbar {
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    padding: 10px 14px;
+  }
+
+  .nav-links {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  .nav-links::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-links a {
+    flex: 0 0 auto;
+    padding: 8px 10px;
+    font-size: 14px;
+  }
+
+  .member-name {
+    display: none;
+  }
+
+  .home-shell,
+  .cart-shell,
+  .orders-shell,
+  .page-shell {
+    width: min(100% - 24px, 1180px);
+  }
+}
+
+@media (max-width: 640px) {
+  .brand small {
+    display: none;
+  }
+
+  .brand strong {
+    font-size: 16px;
+  }
+
+  .member-bar .el-button {
+    padding-inline: 10px;
+  }
+
+  .el-dialog {
+    width: calc(100vw - 24px) !important;
+  }
+
+  .el-drawer.rtl {
+    width: min(100vw, 420px) !important;
+  }
 }
 </style>

@@ -88,7 +88,7 @@
           >
             <div class="groupbuy-image">
               <img v-if="groupBuy.productImage" :src="groupBuy.productImage" :alt="groupBuy.productName || '揪團商品'" />
-              <div v-else class="image-placeholder">團</div>
+              <div v-else class="image-placeholder">暫無圖片</div>
             </div>
 
             <div class="groupbuy-body">
@@ -168,7 +168,7 @@
       </div>
 
       <div class="detail-section">
-        <h3>收貨資訊</h3>
+        <h3>配送資訊</h3>
         <p>{{ selectedOrder.consignee }} {{ selectedOrder.phone }}</p>
         <p>{{ selectedOrder.address }}</p>
       </div>
@@ -229,9 +229,9 @@ function orderStatusText(status: number) {
     case 1:
       return '待付款'
     case 2:
-      return '待接單'
+      return '待確認'
     case 3:
-      return '已接單'
+      return '已確認'
     case 4:
       return '配送中'
     case 5:
@@ -374,14 +374,15 @@ onMounted(async () => {
 .orders-shell {
   max-width: 1180px;
   margin: 0 auto;
-  padding: 32px 40px 52px;
+  padding: 24px 0 48px;
 }
 
 .orders-card {
-  padding: 28px;
-  border-radius: 28px;
-  background: rgba(255, 255, 255, 0.93);
-  box-shadow: 0 24px 60px rgba(61, 111, 39, 0.12);
+  padding: 20px;
+  border: 1px solid var(--farm-line);
+  border-radius: 8px;
+  background: var(--farm-surface);
+  box-shadow: var(--farm-shadow);
 }
 
 .section-header {
@@ -398,32 +399,32 @@ onMounted(async () => {
 
 .eyebrow {
   margin: 0 0 8px;
-  color: #62864e;
-  font-size: 13px;
+  color: var(--farm-accent);
+  font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
 h1,
 h2 {
   margin: 0;
-  color: #25361f;
+  color: var(--farm-text);
 }
 
 .order-list,
 .groupbuy-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .order-card,
 .groupbuy-card {
-  padding: 20px;
-  border: 1px solid rgba(83, 126, 62, 0.14);
-  border-radius: 22px;
-  background: #fcfefb;
+  padding: 16px;
+  border: 1px solid var(--farm-line);
+  border-radius: 8px;
+  background: var(--farm-surface-strong);
 }
 
 .clickable-card {
@@ -433,22 +434,21 @@ h2 {
 
 .clickable-card:hover {
   border-color: rgba(83, 126, 62, 0.28);
-  box-shadow: 0 14px 28px rgba(61, 111, 39, 0.08);
-  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(28, 39, 32, 0.08);
 }
 
 .groupbuy-card {
   display: grid;
-  grid-template-columns: 120px 1fr;
-  gap: 18px;
+  grid-template-columns: 112px 1fr;
+  gap: 14px;
   cursor: pointer;
 }
 
 .groupbuy-image {
   overflow: hidden;
-  height: 120px;
-  border-radius: 18px;
-  background: linear-gradient(145deg, #edf6e8 0%, #d9ead1 100%);
+  height: 112px;
+  border-radius: 8px;
+  background: #edf1e9;
 }
 
 .groupbuy-image img {
@@ -462,8 +462,8 @@ h2 {
   place-items: center;
   width: 100%;
   height: 100%;
-  color: #4d7150;
-  font-size: 28px;
+  color: var(--farm-muted);
+  font-size: 13px;
   font-weight: 800;
 }
 
@@ -487,7 +487,7 @@ h2 {
 }
 
 .order-number {
-  color: #25361f;
+  color: var(--farm-text);
   font-weight: 800;
 }
 
@@ -496,14 +496,14 @@ h2 {
   display: flex;
   gap: 12px;
   margin-top: 8px;
-  color: #6a7866;
+  color: var(--farm-muted);
   font-size: 14px;
   flex-wrap: wrap;
 }
 
 .order-address {
   margin-top: 12px;
-  color: #566651;
+  color: var(--farm-muted);
 }
 
 .order-items {
@@ -512,7 +512,7 @@ h2 {
   gap: 10px;
   margin-top: 16px;
   padding-top: 14px;
-  border-top: 1px dashed rgba(89, 127, 69, 0.18);
+  border-top: 1px dashed var(--farm-line);
 }
 
 .order-item-row {
@@ -529,21 +529,21 @@ h2 {
 .participant-chip {
   padding: 6px 10px;
   border-radius: 999px;
-  background: #edf6e8;
-  color: #456138;
+  background: var(--farm-primary-soft);
+  color: var(--farm-primary-deep);
   font-size: 13px;
   font-weight: 700;
 }
 
 .spec {
   margin-left: 10px;
-  color: #7a8576;
+  color: var(--farm-muted);
   font-size: 13px;
 }
 
 .order-remark {
   margin: 14px 0 0;
-  color: #52604d;
+  color: var(--farm-muted);
 }
 
 .order-actions {
@@ -567,22 +567,22 @@ h2 {
 .detail-item,
 .detail-section {
   padding: 16px 18px;
-  border-radius: 18px;
-  background: #f6faf3;
+  border-radius: 8px;
+  background: #fbfaf6;
 }
 
 .detail-item span,
 .detail-section h3 {
   display: block;
   margin: 0 0 8px;
-  color: #62864e;
+  color: var(--farm-accent);
   font-size: 13px;
   font-weight: 800;
 }
 
 .detail-item strong,
 .detail-section p {
-  color: #25361f;
+  color: var(--farm-text);
 }
 
 .detail-section p {
@@ -600,5 +600,40 @@ h2 {
   display: flex;
   justify-content: space-between;
   gap: 12px;
+}
+
+@media (max-width: 760px) {
+  .orders-shell {
+    padding: 16px 0 36px;
+  }
+
+  .orders-card {
+    padding: 14px;
+  }
+
+  .section-header,
+  .order-head,
+  .groupbuy-head,
+  .order-item-row,
+  .detail-list-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .order-status-block {
+    align-items: flex-start;
+  }
+
+  .groupbuy-card {
+    grid-template-columns: 88px 1fr;
+  }
+
+  .groupbuy-image {
+    height: 88px;
+  }
+
+  .order-detail-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

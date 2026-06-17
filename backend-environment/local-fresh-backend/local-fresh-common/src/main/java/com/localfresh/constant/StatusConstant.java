@@ -1,13 +1,13 @@
 package com.localfresh.constant;
 
 /**
- * 状态常量，启用或者禁用
+ * 狀態常量，啟用或者停用
  */
 public class StatusConstant {
 
-    //启用
+    //啟用
     public static final Integer ENABLE = 1;
 
-    //禁用
+    //停用
     public static final Integer DISABLE = 0;
 }

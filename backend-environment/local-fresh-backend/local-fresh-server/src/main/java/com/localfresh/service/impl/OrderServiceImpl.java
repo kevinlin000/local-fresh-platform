@@ -71,13 +71,13 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 订单支付
+     * 訂單支付
      *
      * @param ordersPaymentDTO
      * @return
      */
     public OrderPaymentVO payment(OrdersPaymentDTO ordersPaymentDTO) throws Exception {
-        // 当前登录用户id
+        // 目前登入會員id
         Long userId = BaseContext.getCurrentId();
         Orders ordersDB = orderMapper.getByNumber(ordersPaymentDTO.getOrderNumber());
         if (ordersDB == null || !userId.equals(ordersDB.getUserId())) {
@@ -92,7 +92,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 支付成功，修改订单状态
+     * 付款成功，修改訂單狀態
      *
      * @param outTradeNo
      */
@@ -102,7 +102,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 用户端订单分页查询
+     * 會員端訂單分頁查詢
      *
      * @param pageNum
      * @param pageSize
@@ -114,7 +114,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 查询订单详情（管理端，不驗證所有權）
+     * 查詢訂單详情（管理端，不驗證所有權）
      *
      * @param id
      * @return
@@ -134,15 +134,15 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 用户取消订单
+     * 會員取消訂單
      *
      * @param id
      */
     public void userCancelById(Long id) throws Exception {
-        // 根据id查询订单
+        // 根據id查詢訂單
         Orders ordersDB = orderMapper.getById(id);
 
-        // 校验订单是否存在
+        // 校验訂單是否存在
         if (ordersDB == null) {
             throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
         }
@@ -152,7 +152,7 @@ public class OrderServiceImpl implements OrderService {
 
         OrderStatusTransitionPolicy.requireAllowed(ordersDB, Transition.USER_CANCEL);
 
-        orderCancellationService.cancelOrder(ordersDB, "用户取消", null,
+        orderCancellationService.cancelOrder(ordersDB, "會員取消", null,
                 INVENTORY_OPERATOR_MEMBER, BaseContext.getCurrentId());
     }
 
@@ -170,14 +170,14 @@ public class OrderServiceImpl implements OrderService {
             throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
         }
 
-        // 根据订单id查询当前订单详情
+        // 根據訂單id查詢目前訂單详情
         List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(id);
 
-        // 将订单详情对象转换为购物车对象
+        // 将訂單详情物件轉換为購物車物件
         List<Cart> shoppingCartList = orderDetailList.stream().map(x -> {
             Cart shoppingCart = new Cart();
 
-            // 将原订单详情里面的菜品信息重新复制到购物车对象中
+            // 将原訂單详情里面的商品信息重新复制到購物車物件中
             BeanUtils.copyProperties(x, shoppingCart, "id");
             shoppingCart.setUserId(userId);
             shoppingCart.setCreateTime(LocalDateTime.now());
@@ -185,12 +185,12 @@ public class OrderServiceImpl implements OrderService {
             return shoppingCart;
         }).collect(Collectors.toList());
 
-        // 将购物车对象批量添加到数据库
+        // 将購物車物件批次添加到資料库
         cartMapper.insertBatch(shoppingCartList);
     }
 
     /**
-     * 订单搜索
+     * 訂單搜索
      *
      * @param ordersPageQueryDTO
      * @return
@@ -200,7 +200,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 各个状态的订单数量统计
+     * 各個狀態的訂單數量统计
      *
      * @return
      */
@@ -224,7 +224,7 @@ public class OrderServiceImpl implements OrderService {
      * @param ordersRejectionDTO
      */
     public void rejection(OrdersRejectionDTO ordersRejectionDTO) throws Exception {
-        // 根据id查询订单
+        // 根據id查詢訂單
         Orders ordersDB = orderMapper.getById(ordersRejectionDTO.getId());
 
         OrderStatusTransitionPolicy.requireAllowed(ordersDB, Transition.ADMIN_REJECT);
@@ -234,7 +234,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 取消订单
+     * 取消訂單
      *
      * @param ordersCancelDTO
      */
@@ -251,7 +251,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 派送订单
+     * 配送訂單
      *
      * @param id
      */
@@ -260,7 +260,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 完成订单
+     * 完成訂單
      *
      * @param id
      */

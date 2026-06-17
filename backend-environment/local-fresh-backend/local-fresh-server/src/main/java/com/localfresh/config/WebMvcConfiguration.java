@@ -22,7 +22,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupp
 import java.util.List;
 
 /**
- * 配置类，注册web层相关组件
+ * 設定類，註冊web层相關元件
  */
 @Configuration
 @Slf4j
@@ -41,13 +41,13 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
     private boolean swaggerUiEnabled;
 
     /**
-     * 注册自定义拦截器
+     * 註冊自定义拦截器
      *
      * @param registry
      */
 
     protected void addInterceptors(InterceptorRegistry registry) {
-        log.info("开始注册自定义拦截器...");
+        log.info("开始註冊自定义拦截器...");
         registry.addInterceptor(jwtTokenAdminInterceptor)
                 .addPathPatterns("/admin/**")
                 .excludePathPatterns("/admin/employee/login");
@@ -105,11 +105,11 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
     }
 
     /**
-     * 设置静态资源映射
+     * 設定靜態資源映射
      * @param registry
      */
     protected void addResourceHandlers(ResourceHandlerRegistry registry) {
-        log.info("开始设置静态资源映射...");
+        log.info("開始設定靜態資源映射...");
         if (swaggerUiEnabled) {
             registry.addResourceHandler("/swagger-ui/**").addResourceLocations("classpath:/META-INF/resources/webjars/swagger-ui/");
             registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
@@ -117,17 +117,17 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
     }
 
     /**
-     * 扩展Spring MVC消息转换器
+     * 擴展 Spring MVC 訊息轉換器
      * @param converters
      */
     @Override
     protected void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
-        log.info("擴展消息轉換器...");
-        //創建一個消息轉換器對象
+        log.info("擴展訊息轉換器...");
+        // 建立一個訊息轉換器物件
         MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
-        //需要為消息轉換器設置一個對象轉換器，底層使用Jackson將Java對象轉換為JSON
+        // 需要為訊息轉換器設定一個物件轉換器，底層使用 Jackson 將 Java 物件轉換為 JSON
         converter.setObjectMapper(new JacksonObjectMapper());
-        //將上面的消息轉換器追加到Spring MVC的消息轉換器集合中
+        // 將上面的訊息轉換器追加到 Spring MVC 的訊息轉換器集合中
         converters.add(0,converter);
     }
 }

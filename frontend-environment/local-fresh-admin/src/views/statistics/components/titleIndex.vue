@@ -54,7 +54,7 @@ export default class extends Vue {
     this.$emit('sendTitleInd', index + 1)
   }
   //  資料匯出
-  /** 匯出按钮操作 */
+  /** 匯出按鈕操作 */
   handleExport() {
     this.$confirm('是否確認匯出最近30天營運資料?', '提示', {
       confirmButtonText: '確定',

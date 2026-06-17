@@ -22,7 +22,7 @@
           <article v-for="item in cartItems" :key="item.id" class="cart-item">
             <div class="cart-item-image">
               <img v-if="item.image" :src="item.image" :alt="item.name" />
-              <div v-else class="image-placeholder">Fresh</div>
+              <div v-else class="image-placeholder">暫無圖片</div>
             </div>
 
             <div class="cart-item-body">
@@ -87,7 +87,7 @@
       <div class="checkout-panel">
         <div class="checkout-section">
           <div class="section-header">
-            <h3>收貨地址</h3>
+            <h3>配送地址</h3>
             <div class="address-toolbar">
               <el-button text @click="goAddresses">管理地址</el-button>
               <el-button text type="success" @click="addressDialogVisible = true">
@@ -107,7 +107,7 @@
 
           <el-skeleton v-if="addressLoading" :rows="4" animated />
 
-          <el-empty v-else-if="!addressList.length" description="請先新增至少一筆收貨地址" />
+          <el-empty v-else-if="!addressList.length" description="請先新增至少一筆配送地址" />
 
           <el-radio-group v-else v-model="selectedAddressId" class="address-group">
             <label
@@ -171,9 +171,9 @@
       </div>
     </el-drawer>
 
-    <el-dialog v-model="addressDialogVisible" title="新增收貨地址" width="520px">
+    <el-dialog v-model="addressDialogVisible" title="新增配送地址" width="520px">
       <el-form label-position="top" :model="addressForm">
-        <el-form-item label="收貨人">
+        <el-form-item label="收件人">
           <el-input v-model="addressForm.consignee" placeholder="例如：Kevin Lin" />
         </el-form-item>
         <el-form-item label="手機號碼">
@@ -372,7 +372,7 @@ async function setAsDefault(id: number) {
 
 async function createNewAddress() {
   if (!addressForm.consignee || !addressForm.phone || !addressForm.cityName || !addressForm.districtName || !addressForm.detail) {
-    ElMessage.warning('請先填完收貨地址必要欄位')
+    ElMessage.warning('請先填完配送地址必要欄位')
     return
   }
 
@@ -424,7 +424,7 @@ async function createNewAddress() {
 
 async function submitCurrentOrder() {
   if (!selectedAddressId.value) {
-    checkoutError.value = '請先選擇收貨地址'
+    checkoutError.value = '請先選擇配送地址'
     return
   }
 
@@ -468,25 +468,26 @@ onMounted(() => {
 
 <style scoped>
 .cart-shell {
-  max-width: 1280px;
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 32px 40px 52px;
+  padding: 24px 0 48px;
 }
 
 .cart-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 340px;
-  gap: 24px;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 18px;
 }
 
 .card {
-  border-radius: 28px;
-  background: rgba(255, 255, 255, 0.93);
-  box-shadow: 0 24px 60px rgba(61, 111, 39, 0.12);
+  border: 1px solid var(--farm-line);
+  border-radius: 8px;
+  background: var(--farm-surface);
+  box-shadow: var(--farm-shadow);
 }
 
 .cart-main {
-  padding: 28px;
+  padding: 20px;
 }
 
 .section-header {
@@ -499,10 +500,10 @@ onMounted(() => {
 
 .eyebrow {
   margin: 0 0 8px;
-  color: #62864e;
-  font-size: 13px;
+  color: var(--farm-accent);
+  font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -510,30 +511,30 @@ h1,
 h2,
 h3 {
   margin: 0;
-  color: #24351e;
+  color: var(--farm-text);
 }
 
 .cart-list {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 12px;
 }
 
 .cart-item {
   display: grid;
-  grid-template-columns: 160px 1fr;
-  gap: 18px;
-  padding: 18px;
-  border-radius: 22px;
-  border: 1px solid rgba(83, 126, 62, 0.14);
-  background: #fcfefb;
+  grid-template-columns: 128px 1fr;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 8px;
+  border: 1px solid var(--farm-line);
+  background: var(--farm-surface-strong);
 }
 
 .cart-item-image {
   overflow: hidden;
-  height: 132px;
-  border-radius: 18px;
-  background: linear-gradient(145deg, #eef7e8 0%, #d8ead1 100%);
+  height: 112px;
+  border-radius: 8px;
+  background: #edf1e9;
 }
 
 .cart-item-image img {
@@ -547,8 +548,8 @@ h3 {
   place-items: center;
   width: 100%;
   height: 100%;
-  color: #4f7351;
-  font-size: 24px;
+  color: var(--farm-muted);
+  font-size: 13px;
   font-weight: 800;
 }
 
@@ -566,16 +567,17 @@ h3 {
 }
 
 .cart-item-header h2 {
-  font-size: 20px;
+  font-size: 18px;
+  line-height: 1.4;
 }
 
 .spec {
   margin: 8px 0 0;
-  color: #6f7e69;
+  color: var(--farm-muted);
 }
 
 .cart-item-actions {
-  margin-top: 20px;
+  margin-top: 18px;
 }
 
 .quantity-box {
@@ -591,22 +593,22 @@ h3 {
 }
 
 .cart-summary {
-  padding: 28px;
+  padding: 20px;
   height: fit-content;
   position: sticky;
-  top: 92px;
+  top: 88px;
 }
 
 .summary-row {
   margin-top: 16px;
-  color: #5d6d57;
+  color: var(--farm-muted);
 }
 
 .summary-total {
   margin: 24px 0 28px;
   padding-top: 20px;
-  border-top: 1px solid rgba(93, 125, 79, 0.18);
-  color: #2b3d24;
+  border-top: 1px solid var(--farm-line);
+  color: var(--farm-text);
   font-size: 18px;
 }
 
@@ -637,17 +639,17 @@ h3 {
   grid-template-columns: 28px 1fr;
   gap: 12px;
   padding: 16px 18px;
-  border: 1px solid #cfd8cd;
-  border-radius: 18px;
-  background: #fbfef9;
+  border: 1px solid var(--farm-line);
+  border-radius: 8px;
+  background: var(--farm-surface-strong);
   cursor: pointer;
   transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .address-card.active {
-  border-color: #63a34f;
-  background: #eef8e7;
-  box-shadow: 0 0 0 1px rgba(99, 163, 79, 0.12);
+  border-color: rgba(47, 111, 78, 0.38);
+  background: var(--farm-primary-soft);
+  box-shadow: 0 0 0 1px rgba(47, 111, 78, 0.08);
 }
 
 .address-card :deep(.el-radio__label) {
@@ -673,7 +675,7 @@ h3 {
 
 .address-detail {
   margin: 10px 0 0;
-  color: #5b6854;
+  color: var(--farm-muted);
   line-height: 1.6;
   word-break: break-word;
 }
@@ -681,16 +683,62 @@ h3 {
 .default-tag {
   padding: 4px 10px;
   border-radius: 999px;
-  background: #e4f2db;
-  color: #366e25;
+  background: var(--farm-primary-soft);
+  color: var(--farm-primary-deep);
   font-size: 12px;
   font-weight: 700;
 }
 
 .checkout-summary {
   padding: 18px 20px;
-  border-radius: 18px;
-  background: #f4f8f1;
-  color: #36512b;
+  border-radius: 8px;
+  background: #fbfaf6;
+  color: var(--farm-primary-deep);
+}
+
+@media (max-width: 900px) {
+  .cart-shell {
+    padding: 16px 0 36px;
+  }
+
+  .cart-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .cart-summary {
+    position: static;
+    order: -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .cart-main,
+  .cart-summary {
+    padding: 14px;
+  }
+
+  .section-header,
+  .cart-item-header,
+  .cart-item-actions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .cart-item {
+    grid-template-columns: 92px 1fr;
+  }
+
+  .cart-item-image {
+    height: 92px;
+  }
+
+  .cart-item-header h2 {
+    font-size: 16px;
+  }
+
+  .address-card,
+  .address-card-header {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

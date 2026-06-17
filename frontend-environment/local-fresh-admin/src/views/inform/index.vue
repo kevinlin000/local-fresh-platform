@@ -38,10 +38,10 @@
     <div class="container newBox" :class="{ hContainer: baseData.length }">
       <div class="informList" v-if="baseData.length > 0">
         <div v-for="(item, index) in baseData" :key="index">
-          <!-- 待接單 -->
+          <!-- 待確認 -->
           <div class="item" v-if="item.type === 1">
             <div class="tit">
-              <span>【待接單】</span>{{ item.arrNew[0]
+              <span>【待確認】</span>{{ item.arrNew[0]
               }}<span class="fontOrderTip" @click="handleSetStatus(item.id)">
                 <router-link :to="'/order?status=' + 2">{{
                   item.arrNew[1]
@@ -52,7 +52,7 @@
           </div>
           <div class="item" v-if="item.type === 2">
             <div class="tit">
-              <i>急</i><span>【待接單】</span>{{ item.arrNew[0]
+              <i>急</i><span>【待確認】</span>{{ item.arrNew[0]
               }}<span class="fontOrderTip" @click="handleSetStatus(item.id)"
                 ><router-link :to="'/order?status=' + 2">{{
                   item.arrNew[1]
@@ -62,10 +62,10 @@
             </div>
           </div>
           <!-- end -->
-          <!-- 待派送 -->
+          <!-- 待配送 -->
           <div class="item" v-if="item.type === 3">
             <div class="tit">
-              <span>【待派送】</span>{{ item.arrNew[0]
+              <span>【待配送】</span>{{ item.arrNew[0]
               }}<span class="fontOrderTip" @click="handleSetStatus(item.id)"
                 ><router-link :to="'/order?status=' + 2">{{
                   item.arrNew[1]
@@ -295,7 +295,7 @@ export default class extends Vue {
       this.$message.error(data.msg)
     }
   }
-  // 设置单筆訂單已读
+  // 設定单筆訂單已读
   async handleSetStatus(id) {
     const { data } = await setStatus(id)
     if (data.code === 1) {
@@ -322,7 +322,7 @@ export default class extends Vue {
       this.$message.error(data.msg)
     }
   }
-  // 触发已读未读按钮
+  // 觸發已读未读按鈕
   handleClass(index) {
     this.activeIndex = index
     if (index === 0) {

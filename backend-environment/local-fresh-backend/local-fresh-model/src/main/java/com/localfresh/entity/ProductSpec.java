@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 
 /**
- * 商品规格
+ * 商品規格
  */
 @Data
 @Builder
@@ -22,10 +22,10 @@ public class ProductSpec implements Serializable {
     //商品id
     private Long productId;
 
-    //规格名称
+    //規格名称
     private String name;
 
-    //规格数据list
+    //規格資料list
     private String value;
 
 }

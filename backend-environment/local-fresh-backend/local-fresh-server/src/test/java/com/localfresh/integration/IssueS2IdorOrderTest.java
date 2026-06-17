@@ -81,7 +81,7 @@ class IssueS2IdorOrderTest {
         userBId = userB.userId();
 
         orderA = insertOrder(userAId, Orders.COMPLETED, LocalDateTime.now());
-        insertOrderDetail(orderA.getId(), "測試菜品A", 1);
+        insertOrderDetail(orderA.getId(), "測試商品A", 1);
     }
 
     @Test

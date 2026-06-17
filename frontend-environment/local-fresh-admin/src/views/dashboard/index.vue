@@ -33,7 +33,7 @@ import {
   getSetMealStatistics, //直送箱總覽
 } from '@/api/index'
 import { getOrderListBy } from '@/api/order'
-// 组件
+// 元件
 // 營業資料
 import Overview from './components/overview.vue'
 // 訂單管理
@@ -99,7 +99,7 @@ export default class extends Vue {
     const data = await getSetMealStatistics()
     this.setMealData = data.data.data
   }
-  //取得待處理，待派送，派送中数量
+  //取得待處理，待配送，配送中數量
   getOrderListBy3Status() {
     getOrderListBy({})
       .then((res) => {

@@ -87,7 +87,7 @@ request({
     'method': 'get',
     params
   })
-  // 資料概览
+  // 資料概覽
   export const getDataOverView= (params: any) =>
   request({
     'url': `/report/dataOverView`,

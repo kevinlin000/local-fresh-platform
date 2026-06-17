@@ -32,13 +32,13 @@ import {
   pastMonth,
 } from '@/utils/formValidate'
 import {
-  getDataOverView, //資料概览
+  getDataOverView, //資料概覽
   getTurnoverStatistics,
   getUserStatistics,
   getOrderStatistics,
   getTop,
 } from '@/api/index'
-// 组件
+// 元件
 // 标题
 import TitleIndex from './components/titleIndex.vue'
 // 營業额统计
@@ -136,7 +136,7 @@ export default class extends Vue {
     }
     console.log(this.top10Data)
   }
-  // 取得目前选中的tab时间
+  // 取得目前选中的tab時间
   getTitleNum(data) {
     switch (data) {
       case 1:

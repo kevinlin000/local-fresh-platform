@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotNull;
 
 @Data
 public class OrdersPaymentDTO implements Serializable {
-    //订单号
+    //訂單号
     @NotBlank(message = "訂單號不能為空")
     private String orderNumber;
 

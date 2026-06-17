@@ -95,7 +95,7 @@ export const commonDownload = (params: any) => {
   })
 }
 
-// 起售停售---批量起售停售介面
+// 起售停售---批次起售停售介面
 export const dishStatusByStatus = (params: any) => {
   return request({
     url: `/product/status/${params.status}`,

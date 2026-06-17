@@ -40,13 +40,13 @@
 
         <div class="tableLab">
           <span class="delBut non"
-                @click="deleteHandle('批量', null)">批量刪除</span>
-          <!-- <span class="blueBug non" @click="statusHandle('1')">批量啟售</span>
+                @click="deleteHandle('批次', null)">批次刪除</span>
+          <!-- <span class="blueBug non" @click="statusHandle('1')">批次啟售</span>
           <span
             style="border: none"
             class="delBut non"
             @click="statusHandle('0')"
-            >批量停售</span
+            >批次停售</span
           > -->
           <el-button type="primary"
                      style="margin-left: 15px"
@@ -228,9 +228,9 @@ export default class extends Vue {
 
   // 刪除
   private deleteHandle(type: string, id: any) {
-    if (type === '批量' && id === null) {
+    if (type === '批次' && id === null) {
       if (this.checkList.length === 0) {
-        return this.$message.error('請選擇刪除对象')
+        return this.$message.error('請選擇刪除物件')
       }
     }
     this.$confirm('確認刪除該單品，是否繼續？', '確定刪除', {
@@ -238,7 +238,7 @@ export default class extends Vue {
       cancelButtonText: '取消',
       type: 'warning'
     }).then(() => {
-      deleteDish(type === '批量' ? this.checkList.join(',') : id)
+      deleteDish(type === '批次' ? this.checkList.join(',') : id)
         .then(res => {
           if (res && res.data && res.data.code === 1) {
             this.$message.success('刪除成功！')
@@ -276,7 +276,7 @@ export default class extends Vue {
     let params: any = {}
     if (typeof row === 'string') {
       if (this.checkList.length === 0) {
-        this.$message.error('批量操作前，請先勾選單品！')
+        this.$message.error('批次操作前，請先勾選單品！')
         return false
       }
       params.id = this.checkList.join(',')
@@ -291,7 +291,7 @@ export default class extends Vue {
       cancelButtonText: '取消',
       type: 'warning'
     }).then(() => {
-      // 起售停售---批量起售停售介面
+      // 起售停售---批次起售停售介面
       dishStatusByStatus(this.dishState)
         .then(res => {
           if (res && res.data && res.data.code === 1) {
@@ -342,7 +342,7 @@ export default class extends Vue {
       z-index: 1;
       padding: 30px 28px;
       border-radius: 4px;
-      //查詢黑色按钮样式
+      //查詢黑色按鈕樣式
       .normal-btn {
         background: #333333;
         color: white;

@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 订单
+ * 訂單
  */
 @Data
 @Builder
@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 public class Orders implements Serializable {
 
     /**
-     * 订单状态 1待付款 2待接单 3已接单 4派送中 5已完成 6已取消 8揪團中
+     * 訂單狀態 1待付款 2待確認 3已確認 4配送中 5已完成 6已取消 8揪團中
      */
     public static final Integer PENDING_PAYMENT = 1;
     public static final Integer TO_BE_CONFIRMED = 2;
@@ -30,7 +30,7 @@ public class Orders implements Serializable {
     public static final Integer PENDING_GROUP = 8;
 
     /**
-     * 支付状态 0未支付 1已支付 2退款
+     * 支付狀態 0未支付 1已支付 2退款
      */
     public static final Integer UN_PAID = 0;
     public static final Integer PAID = 1;
@@ -40,13 +40,13 @@ public class Orders implements Serializable {
 
     private Long id;
 
-    //订单号
+    //訂單号
     private String number;
 
-    //订单状态 1待付款 2待接单 3已接单 4派送中 5已完成 6已取消 7退款 8揪團中
+    //訂單狀態 1待付款 2待確認 3已確認 4配送中 5已完成 6已取消 7退款 8揪團中
     private Integer status;
 
-    //下单用户id
+    //下單會員id
     private Long userId;
 
     // 地址 id
@@ -70,10 +70,10 @@ public class Orders implements Serializable {
     // 備註
     private String remark;
 
-    //用户名
+    //會員名
     private String userName;
 
-    //手机号
+    //手機號碼
     private String phone;
 
     //地址
@@ -82,30 +82,30 @@ public class Orders implements Serializable {
     //收货人
     private String consignee;
 
-    //订单取消原因
+    //訂單取消原因
     private String cancelReason;
 
-    //订单拒绝原因
+    //訂單拒绝原因
     private String rejectionReason;
 
-    //订单取消时间
+    //訂單取消時间
     private LocalDateTime cancelTime;
 
-    //预计送达时间
+    //预计送达時间
     private LocalDateTime estimatedDeliveryTime;
 
-    //配送状态  1立即送出  0选择具体时间
+    //配送狀態  1立即送出  0選擇具体時间
     private Integer deliveryStatus;
 
-    //送达时间
+    //送达時间
     private LocalDateTime deliveryTime;
 
     //打包费
     private int packAmount;
 
-    //餐具数量
+    //餐具數量
     private int tablewareNumber;
 
-    //餐具数量状态  1按餐量提供  0选择具体数量
+    //餐具數量狀態  1按餐量提供  0選擇具体數量
     private Integer tablewareStatus;
 }

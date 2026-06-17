@@ -10,7 +10,7 @@ import java.util.List;
 @Mapper
 public interface GiftBoxProductMapper {
     /**
-     * 根據菜品id查詢對應的套餐id
+     * 根據商品id查詢對應的直送箱id
      * @param dishIds
      * @return
      */
@@ -18,20 +18,20 @@ public interface GiftBoxProductMapper {
     List<Long> getSetmealIdsByDishIds(List<Long> dishIds);
 
     /**
-     * 批量保存套餐和菜品的关联关系
+     * 批次保存直送箱和商品的關聯關係
      * @param giftBoxProducts
      */
     void insertBatch(List<GiftBoxProduct> giftBoxProducts);
 
     /**
-     * 根据套餐id删除套餐和菜品的关联关系
+     * 根據直送箱id刪除直送箱和商品的關聯關係
      * @param giftBoxId
      */
     @Delete("delete from gift_box_product where gift_box_id = #{giftBoxId}")
     void deleteBySetmealId(Long giftBoxId);
 
     /**
-     * 根据套餐id查询套餐和菜品的关联关系
+     * 根據直送箱id查詢直送箱和商品的關聯關係
      * @param giftBoxId
      * @return
      */

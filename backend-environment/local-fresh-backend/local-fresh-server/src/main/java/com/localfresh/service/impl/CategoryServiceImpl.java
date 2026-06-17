@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * 分类业务层
+ * 分類業務层
  */
 @Service
 @Slf4j
@@ -36,57 +36,57 @@ public class CategoryServiceImpl implements CategoryService {
     private GiftBoxMapper giftBoxMapper;
 
     /**
-     * 新增分类
+     * 新增分類
      * @param categoryDTO
      */
     public void save(CategoryDTO categoryDTO) {
         Category category = new Category();
-        //属性拷贝
+        //屬性拷貝
         BeanUtils.copyProperties(categoryDTO, category);
 
-        //分类状态默认为禁用状态0
+        //分類狀態預設為停用狀態 0
         category.setStatus(StatusConstant.DISABLE);
 
         categoryMapper.insert(category);
     }
 
     /**
-     * 分页查询
+     * 分頁查詢
      * @param categoryPageQueryDTO
      * @return
      */
     public PageResult pageQuery(CategoryPageQueryDTO categoryPageQueryDTO) {
         PageHelper.startPage(categoryPageQueryDTO.getPage(),categoryPageQueryDTO.getPageSize());
-        //下一条sql进行分页，自动加入limit关键字分页
+        //下一条sql进行分頁，自动加入limit关键字分頁
         Page<Category> page = categoryMapper.pageQuery(categoryPageQueryDTO);
         return new PageResult(page.getTotal(), page.getResult());
     }
 
     /**
-     * 根据id删除分类
+     * 根據id刪除分類
      * @param id
      */
     public void deleteById(Long id) {
-        //查询当前分类是否关联了菜品，如果关联了就抛出业务异常
+        //查詢目前分類是否關聯了商品，如果關聯了就拋出業務例外
         Integer count = productMapper.countByCategoryId(id);
         if(count > 0){
-            //当前分类下有菜品，不能删除
+            //目前分類下有商品，不能刪除
             throw new DeletionNotAllowedException(MessageConstant.CATEGORY_BE_RELATED_BY_DISH);
         }
 
-        //查询当前分类是否关联了套餐，如果关联了就抛出业务异常
+        //查詢目前分類是否關聯了直送箱，如果關聯了就拋出業務例外
         count = giftBoxMapper.countByCategoryId(id);
         if(count > 0){
-            //当前分类下有菜品，不能删除
+            //目前分類下有商品，不能刪除
             throw new DeletionNotAllowedException(MessageConstant.CATEGORY_BE_RELATED_BY_SETMEAL);
         }
 
-        //删除分类数据
+        //刪除分類資料
         categoryMapper.deleteById(id);
     }
 
     /**
-     * 修改分类
+     * 修改分類
      * @param categoryDTO
      */
     public void update(CategoryDTO categoryDTO) {
@@ -97,7 +97,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     /**
-     * 启用、禁用分类
+     * 啟用、停用分類
      * @param status
      * @param id
      */
@@ -112,7 +112,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     /**
-     * 根据类型查询分类
+     * 根據類型查詢分類
      * @param type
      * @return
      */

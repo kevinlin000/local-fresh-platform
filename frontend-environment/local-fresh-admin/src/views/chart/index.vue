@@ -120,7 +120,7 @@
           <span
             :class="{ butAct: typeA == 1 }"
             @click="topActiveHandle('typeA')"
-            >按金额</span
+            >按金額</span
           >
           <span
             :class="{ butAct: typeA == 2 }"
@@ -132,7 +132,7 @@
           v-if="chartDataA"
           id="line"
           :chart-data="chartDataA"
-          title="时段銷售趋势"
+          title="時段銷售趨勢"
         />
       </div>
     </div>
@@ -143,7 +143,7 @@
             <span
               :class="{ butAct: typeB == 1 }"
               @click="topActiveHandle('typeB')"
-              >按金额</span
+              >按金額</span
             >
             <span
               :class="{ butAct: typeB == 2 }"
@@ -161,7 +161,7 @@
     <div class="container">
       <div class="chartBox">
         <div>
-          <BarChart id="bar" :chart-data="chartDataD" title="店内收款构成" />
+          <BarChart id="bar" :chart-data="chartDataD" title="店內收款構成" />
         </div>
         <div class="itemList">
           <div class="title">優惠指标</div>
@@ -230,14 +230,14 @@ export default class extends Vue {
   private stateTime = moment().format('YYYY-MM-DD')
   private endTime = moment().format('YYYY-MM-DD')
   private act = 'day'
-  private dataType = 1 //類型(1:金额;2:数量)
+  private dataType = 1 //類型(1:金額;2:數量)
   private typeA = 1
   private typeB = 1
-  private chartDataA = {} // 銷售趋势
+  private chartDataA = {} // 銷售趨勢
   private chartDataB = {} // 銷售排行
 
   private chartDataC = {} //分類占比
-  private chartDataD = {} // 收款构成
+  private chartDataD = {} // 收款構成
   private discount = [] // 優惠指标
   private discountTotal = 0
   private discountPercentTotal = 0
@@ -304,7 +304,7 @@ export default class extends Vue {
     }
   }
 
-  // 日期选择
+  // 日期選擇
   private changeDate(val: string) {
     if (this.stateTime == '' || this.endTime == '' || this.dataTime == null) {
       this.$message.error('检索日期不能为空！')
@@ -398,7 +398,7 @@ export default class extends Vue {
     this.getprivilegeData()
   }
 
-  // 取得當日銷售趋势資訊 - 銷售趋势图
+  // 取得當日銷售趨勢資訊 - 銷售趨勢图
   private getDayData() {
     getDayDataes({ type: this.typeA, date: this.dataTime })
       .then((res) => {
@@ -458,7 +458,7 @@ export default class extends Vue {
         this.$message.error('請求發生錯誤：' + err.message)
       })
   }
-  // 支付類型資料汇总 - 店内收款构成 - 當日
+  // 支付類型資料汇總 - 店內收款構成 - 當日
   private getDayPayTypeData() {
     getDayPayType({ date: this.dataTime })
       .then((res) => {
@@ -509,7 +509,7 @@ export default class extends Vue {
         this.$message.error('請求發生錯誤：' + err.message)
       })
   }
-  // 取得一天的銷售数量 - 頂部資料
+  // 取得一天的銷售數量 - 頂部資料
   private getDaySalesVolumeData() {
     // 取得當日銷售資料
     getChartsDataes({ start: this.dataTime, end: this.dataTime })
@@ -525,7 +525,7 @@ export default class extends Vue {
         this.$message.error('請求發生錯誤：' + err.message)
       })
   }
-  // 取得當日各种優惠類型資料汇总
+  // 取得當日各種優惠類型資料汇總
   private getprivilegeData() {
     getprivilege({ date: this.dataTime })
       .then((res) => {
@@ -549,7 +549,7 @@ export default class extends Vue {
       })
   }
 
-  // 查看时间段介面调用
+  // 查看時间段介面呼叫
   private getTimeWuantumData() {
     this.getTimeQuantumData()
     this.getReceivables()
@@ -559,8 +559,8 @@ export default class extends Vue {
     this.getDiscount()
   }
 
-  // 时间段資料取得
-  // 取得時間範圍內的優惠指标汇总資料 - 優惠指标
+  // 時间段資料取得
+  // 取得時間範圍內的優惠指标汇總資料 - 優惠指标
   private getDiscount() {
     getTimeQuantumDiscount({ start: this.stateTime, end: this.endTime })
       .then((res) => {
@@ -583,7 +583,7 @@ export default class extends Vue {
         this.$message.error('請求發生錯誤：' + err.message)
       })
   }
-  // 取得一定日期之内的銷售趋势
+  // 取得一定日期之内的銷售趨勢
   private getTimeQuantumData() {
     getTimeQuantumDataes({
       type: this.typeA,
@@ -608,7 +608,7 @@ export default class extends Vue {
       }
     })
   }
-  // 取得時間範圍內的各种支付類型資料汇总 - 店内收款构成 - 时间段
+  // 取得時間範圍內的各種支付類型資料汇總 - 店內收款構成 - 時间段
   private getReceivables() {
     getTimeQuantumReceivables({ start: this.stateTime, end: this.endTime })
       .then((res) => {
@@ -644,7 +644,7 @@ export default class extends Vue {
       })
   }
 
-  // 取得時間範圍內的單品类别銷售汇总 -  單品分類占比 - 时间段
+  // 取得時間範圍內的單品類別銷售汇總 -  單品分類占比 - 時间段
   private getTimeQuantumTypeData() {
     getTimeQuantumType({
       type: this.typeB,

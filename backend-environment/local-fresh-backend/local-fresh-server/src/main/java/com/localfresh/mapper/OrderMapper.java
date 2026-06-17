@@ -24,14 +24,14 @@ public interface OrderMapper {
     void insert(Orders orders);
 
     /**
-     * 根据订单号查询订单
+     * 根據訂單号查詢訂單
      * @param orderNumber
      */
     @Select("select * from orders where number = #{orderNumber}")
     Orders getByNumber(String orderNumber);
 
     /**
-     * 修改订单信息
+     * 修改訂單信息
      * @param orders
      */
     void update(Orders orders);
@@ -53,20 +53,20 @@ public interface OrderMapper {
                                      @Param("checkoutTime") LocalDateTime checkoutTime);
 
     /**
-     * 分页条件查询并按下单时间排序
+     * 分頁條件查詢并按下單時间排序
      * @param ordersPageQueryDTO
      */
     Page<Orders> pageQuery(OrdersPageQueryDTO ordersPageQueryDTO);
 
     /**
-     * 根据id查询订单
+     * 根據id查詢訂單
      * @param id
      */
     @Select("select * from orders where id=#{id}")
     Orders getById(Long id);
 
     /**
-     * 根据状态统计订单数量
+     * 根據狀態统计訂單數量
      * @param status
      */
     @Select("select count(id) from orders where status = #{status}")

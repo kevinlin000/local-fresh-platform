@@ -14,13 +14,13 @@ public class CategoryDTO implements Serializable {
     //主键
     private Long id;
 
-    //类型 1 菜品分类 2 套餐分类
+    //類型 1 商品分類 2 直送箱分類
     @NotNull(message = "分類類型不能為空")
     @Min(value = 1, message = "分類類型錯誤")
     @Max(value = 2, message = "分類類型錯誤")
     private Integer type;
 
-    //分类名称
+    //分類名称
     @NotBlank(message = "分類名稱不能為空")
     private String name;
 

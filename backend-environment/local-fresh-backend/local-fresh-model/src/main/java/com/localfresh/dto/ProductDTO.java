@@ -19,7 +19,7 @@ public class ProductDTO implements Serializable {
     //商品名称
     @NotBlank(message = "商品名稱不能為空")
     private String productName;
-    //商品分类id
+    //商品分類id
     @NotNull(message = "商品分類不能為空")
     private Long categoryId;
     //商品价格
@@ -41,7 +41,7 @@ public class ProductDTO implements Serializable {
     //低庫存警示門檻
     @Min(value = 0, message = "低庫存門檻不能小於 0")
     private Integer lowStockThreshold;
-    //商品规格
+    //商品規格
     private List<ProductSpec> productSpecs = new ArrayList<>();
 
 }

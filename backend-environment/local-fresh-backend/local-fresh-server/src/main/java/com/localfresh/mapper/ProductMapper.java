@@ -20,7 +20,7 @@ import java.util.Map;
 public interface ProductMapper {
 
     /**
-     * 根据分类id查询菜品数量
+     * 根據分類id查詢商品數量
      * @param categoryId
      * @return
      */
@@ -28,21 +28,21 @@ public interface ProductMapper {
     Integer countByCategoryId(Long categoryId);
 
     /**
-     * 插入菜品資料
+     * 插入商品資料
      * @param dish
      */
     @AutoFill(value = OperationType.INSERT)
     void insert(Product dish);
 
     /**
-     * 菜品的分頁查詢
+     * 商品的分頁查詢
      * @param dishPageQueryDTO
      * @return
      */
     Page<ProductVO> pageQuery(ProductPageQueryDTO dishPageQueryDTO);
 
     /**
-     * 根據主鍵查詢菜品
+     * 根據主鍵查詢商品
      * @param id
      * @return
      */
@@ -50,27 +50,27 @@ public interface ProductMapper {
     Product getById(Long id);
 
     /**
-     * 根據主鍵刪除菜品資料
+     * 根據主鍵刪除商品資料
      * @param id
      */
     @Delete("delete from product where id = #{id}")
     void deleteById(Long id);
 
     /**
-     * 根據菜品id集合批量刪除菜品
+     * 根據商品id集合批次刪除商品
      * @param ids
      */
     void deleteByIds(List<Long> ids);
 
     /**
-     * 根據id動態修改菜品資料
+     * 根據id動態修改商品資料
      * @param dish
      */
     @AutoFill(value = OperationType.UPDATE)
     void update(Product dish);
 
     /**
-     * 动态条件查询菜品
+     * 动态條件查詢商品
      * @param dish
      * @return
      */
@@ -78,7 +78,7 @@ public interface ProductMapper {
 
 
     /**
-     * 根据套餐id查询菜品
+     * 根據直送箱id查詢商品
      * @param giftBoxId
      * @return
      */
@@ -110,7 +110,7 @@ public interface ProductMapper {
     Integer countLowStock();
 
     /**
-     * 根据条件统计菜品数量
+     * 根據條件统计商品數量
      * @param map
      * @return
      */

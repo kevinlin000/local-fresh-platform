@@ -1,7 +1,7 @@
 package com.localfresh.exception;
 
 /**
- * 账号不存在异常
+ * 账号不存在例外
  */
 public class AccountNotFoundException extends BaseException {
 

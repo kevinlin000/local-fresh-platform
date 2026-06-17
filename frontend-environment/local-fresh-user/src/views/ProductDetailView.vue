@@ -6,7 +6,7 @@
       <div class="detail-card">
         <div class="media-panel">
           <img v-if="product.image" :src="product.image" :alt="product.productName" />
-          <div v-else class="media-placeholder">Fresh</div>
+          <div v-else class="media-placeholder">暫無圖片</div>
         </div>
 
         <div class="content-panel">
@@ -52,7 +52,7 @@
         <div class="dialog-summary">
           <div class="summary-image">
             <img v-if="product?.image" :src="product.image" :alt="product.productName" />
-            <div v-else class="media-placeholder small">Fresh</div>
+            <div v-else class="media-placeholder small">暫無圖片</div>
           </div>
           <div>
             <strong>{{ product?.productName }}</strong>
@@ -63,7 +63,7 @@
 
         <div class="dialog-section">
           <div class="section-line">
-            <h3>收貨地址</h3>
+            <h3>配送地址</h3>
             <el-button text type="success" @click="addressDialogVisible = true">
               新增地址
             </el-button>
@@ -80,7 +80,7 @@
 
           <el-skeleton v-if="addressLoading" :rows="4" animated />
 
-          <el-empty v-else-if="!addressList.length" description="請先新增至少一筆收貨地址" />
+          <el-empty v-else-if="!addressList.length" description="請先新增至少一筆配送地址" />
 
           <el-radio-group v-else v-model="selectedAddressId" class="address-group">
             <label
@@ -149,9 +149,9 @@
       </div>
     </el-dialog>
 
-    <el-dialog v-model="addressDialogVisible" title="新增收貨地址" width="520px">
+    <el-dialog v-model="addressDialogVisible" title="新增配送地址" width="520px">
       <el-form label-position="top" :model="addressForm">
-        <el-form-item label="收貨人">
+        <el-form-item label="收件人">
           <el-input v-model="addressForm.consignee" placeholder="例如：Kevin Lin" />
         </el-form-item>
         <el-form-item label="手機號碼">
@@ -336,7 +336,7 @@ async function setAsDefaultAddress(id: number) {
 
 async function createNewAddress() {
   if (!addressForm.consignee || !addressForm.phone || !addressForm.cityName || !addressForm.districtName || !addressForm.detail) {
-    ElMessage.warning('請先填完收貨地址必要欄位')
+    ElMessage.warning('請先填完配送地址必要欄位')
     return
   }
 
@@ -388,7 +388,7 @@ async function createNewAddress() {
 
 async function handleInitiateGroupBuy() {
   if (!product.value || !selectedAddressId.value) {
-    groupBuyError.value = '請先選擇收貨地址'
+    groupBuyError.value = '請先選擇配送地址'
     return
   }
 
@@ -437,26 +437,27 @@ onMounted(() => {
 
 <style scoped>
 .detail-shell {
-  max-width: 1280px;
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 32px 40px 52px;
+  padding: 24px 0 48px;
 }
 
 .detail-card {
   display: grid;
-  grid-template-columns: 520px 1fr;
-  gap: 28px;
-  padding: 28px;
-  border-radius: 30px;
-  background: rgba(255, 255, 255, 0.93);
-  box-shadow: 0 24px 60px rgba(61, 111, 39, 0.12);
+  grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1fr);
+  gap: 24px;
+  padding: 20px;
+  border: 1px solid var(--farm-line);
+  border-radius: 8px;
+  background: var(--farm-surface);
+  box-shadow: var(--farm-shadow);
 }
 
 .media-panel {
   overflow: hidden;
-  height: 480px;
-  border-radius: 24px;
-  background: linear-gradient(145deg, #edf6e8 0%, #d9ead1 100%);
+  min-height: 420px;
+  border-radius: 8px;
+  background: #edf1e9;
 }
 
 .media-panel img,
@@ -471,65 +472,67 @@ onMounted(() => {
   place-items: center;
   width: 100%;
   height: 100%;
-  color: #4d7150;
-  font-size: 42px;
+  color: var(--farm-muted);
+  font-size: 15px;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
 }
 
 .media-placeholder.small {
-  font-size: 18px;
+  font-size: 13px;
 }
 
 .content-panel {
-  padding: 12px 8px;
+  padding: 8px 4px;
 }
 
 .eyebrow {
   margin: 0 0 12px;
-  color: #62864e;
-  font-size: 13px;
+  color: var(--farm-accent);
+  font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
 h1 {
   margin: 0;
-  color: #25361f;
-  font-size: 36px;
+  color: var(--farm-text);
+  font-size: 34px;
+  line-height: 1.25;
 }
 
 .price {
-  margin: 20px 0 0;
-  color: #2f6b1f;
-  font-size: 30px;
+  margin: 18px 0 0;
+  color: var(--farm-primary-deep);
+  font-size: 28px;
   font-weight: 800;
 }
 
 .description {
-  margin: 20px 0 0;
-  color: #596757;
-  line-height: 1.85;
+  margin: 18px 0 0;
+  color: var(--farm-muted);
+  line-height: 1.75;
 }
 
 .specs-panel,
 .quantity-panel {
-  margin-top: 28px;
+  margin-top: 24px;
 }
 
 .specs-panel h2,
 .quantity-panel h2,
 .dialog-section h3 {
   margin: 0 0 14px;
-  color: #2b3c24;
-  font-size: 18px;
+  color: var(--farm-text);
+  font-size: 16px;
 }
 
 .actions {
   display: flex;
   gap: 14px;
-  margin-top: 36px;
+  margin-top: 32px;
+  flex-wrap: wrap;
 }
 
 .dialog-body {
@@ -543,22 +546,23 @@ h1 {
   grid-template-columns: 88px 1fr;
   gap: 14px;
   padding: 14px;
-  border-radius: 18px;
-  background: #f7fbf4;
+  border: 1px solid var(--farm-line);
+  border-radius: 8px;
+  background: #fbfaf6;
 }
 
 .dialog-summary p,
 .dialog-summary span {
   margin: 8px 0 0;
-  color: #66765f;
+  color: var(--farm-muted);
 }
 
 .summary-image {
   overflow: hidden;
   width: 88px;
   height: 88px;
-  border-radius: 18px;
-  background: linear-gradient(145deg, #edf6e8 0%, #d9ead1 100%);
+  border-radius: 8px;
+  background: #edf1e9;
 }
 
 .section-line {
@@ -584,15 +588,15 @@ h1 {
   grid-template-columns: auto 1fr;
   gap: 12px;
   padding: 14px;
-  border: 1px solid rgba(83, 126, 62, 0.16);
-  border-radius: 18px;
-  background: #fcfefb;
+  border: 1px solid var(--farm-line);
+  border-radius: 8px;
+  background: var(--farm-surface-strong);
   cursor: pointer;
 }
 
 .address-card.active {
-  border-color: rgba(58, 116, 35, 0.42);
-  box-shadow: 0 16px 32px rgba(88, 126, 65, 0.12);
+  border-color: rgba(47, 111, 78, 0.38);
+  box-shadow: 0 8px 20px rgba(28, 39, 32, 0.08);
 }
 
 .address-topline,
@@ -606,11 +610,11 @@ h1 {
 
 .address-card-body p {
   margin: 8px 0 0;
-  color: #5a6756;
+  color: var(--farm-muted);
 }
 
 .default-tag {
-  color: #2f6b1f;
+  color: var(--farm-primary-deep);
   font-size: 13px;
   font-weight: 700;
 }
@@ -626,7 +630,43 @@ h1 {
 
 .share-label {
   margin: 0 0 10px;
-  color: #52604d;
+  color: var(--farm-muted);
   font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .detail-shell {
+    padding: 16px 0 36px;
+  }
+
+  .detail-card {
+    grid-template-columns: 1fr;
+    padding: 14px;
+  }
+
+  .media-panel {
+    min-height: 320px;
+    aspect-ratio: 4 / 3;
+  }
+
+  h1 {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 560px) {
+  .media-panel {
+    min-height: 240px;
+  }
+
+  .actions .el-button {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .dialog-summary,
+  .address-card {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

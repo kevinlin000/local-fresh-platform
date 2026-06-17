@@ -169,7 +169,7 @@ public class OrderSubmissionServiceImpl implements OrderSubmissionService {
 
         String userLngLat = getCoordinate(address);
         if (userLngLat == null) {
-            throw new OrderBusinessException("收貨地址解析失敗");
+            throw new OrderBusinessException("配送地址解析失敗");
         }
 
         Map<String, String> map = new HashMap<>();

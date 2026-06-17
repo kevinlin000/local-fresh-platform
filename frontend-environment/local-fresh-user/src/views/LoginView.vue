@@ -7,7 +7,7 @@
           每一天<br />
           都是菜籃日
         </h2>
-        <p class="visual-tagline">3 人成團免運,把產地搬回家</p>
+        <p class="visual-tagline">3 人成團免運，把產地搬回家</p>
       </div>
     </div>
 
@@ -15,7 +15,7 @@
       <div class="login-card">
         <p class="eyebrow">菜籃日 · Cailán Day</p>
         <h1>會員登入</h1>
-        <p class="description">使用 Google 帳號登入，或在開發模式下使用假登入快捷入口。</p>
+        <p class="description">使用 Google 帳號登入，或使用試用帳號快速體驗購物流程。</p>
 
         <el-alert
           v-if="errorMessage"
@@ -39,7 +39,7 @@
         <p class="divider">或</p>
 
         <section v-if="isDev" class="mock-panel">
-          <p class="mock-title">開發模式快捷登入（僅 dev）</p>
+          <p class="mock-title">試用帳號快速登入</p>
           <div class="quick-actions">
             <el-button
               v-for="preset in presets"
@@ -169,14 +169,14 @@ function startGoogleLogin() {
 .login-shell {
   min-height: 100vh;
   display: flex;
-  background: #f5f0e6;
+  background: #f7f5ef;
 }
 
 .login-visual {
-  flex: 0 0 60%;
+  flex: 0 0 56%;
   display: flex;
   align-items: flex-end;
-  padding: 80px;
+  padding: clamp(32px, 6vw, 72px);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -184,29 +184,32 @@ function startGoogleLogin() {
 
 .visual-content {
   max-width: 480px;
+  padding: 18px 20px;
+  border-radius: 8px;
+  background: rgba(255, 253, 248, 0.82);
+  backdrop-filter: blur(8px);
 }
 
 .visual-eyebrow {
   margin: 0 0 16px;
-  color: #4a7c3a;
+  color: var(--farm-accent);
   font-size: 14px;
   font-weight: 700;
-  letter-spacing: 0.15em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
 .visual-headline {
   margin: 0 0 24px;
-  color: #2c2c2c;
-  font-family: 'Noto Serif TC', serif;
-  font-size: 48px;
-  line-height: 1.3;
-  font-weight: 700;
+  color: var(--farm-text);
+  font-size: 42px;
+  line-height: 1.25;
+  font-weight: 800;
 }
 
 .visual-tagline {
   margin: 0;
-  color: rgba(44, 44, 44, 0.72);
+  color: var(--farm-muted);
   font-size: 18px;
   line-height: 1.8;
 }
@@ -216,37 +219,38 @@ function startGoogleLogin() {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 48px;
-  background: #ffffff;
+  padding: clamp(24px, 5vw, 48px);
+  background: var(--farm-surface);
 }
 
 .login-card {
   width: 100%;
   max-width: 420px;
-  padding: 44px;
-  border-radius: 28px;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 24px 56px rgba(74, 124, 58, 0.12);
+  padding: 32px;
+  border: 1px solid var(--farm-line);
+  border-radius: 8px;
+  background: var(--farm-surface);
+  box-shadow: var(--farm-shadow);
 }
 
 .eyebrow {
   margin: 0 0 8px;
-  color: #5f8452;
-  font-size: 13px;
+  color: var(--farm-accent);
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
 h1 {
   margin: 0;
-  color: #24321f;
-  font-size: 34px;
+  color: var(--farm-text);
+  font-size: 32px;
 }
 
 .description {
   margin: 12px 0 0;
-  color: #5d6c58;
+  color: var(--farm-muted);
   line-height: 1.7;
 }
 
@@ -264,20 +268,20 @@ h1 {
 
 .divider {
   margin: 28px 0 20px;
-  color: #7a8874;
+  color: var(--farm-muted);
   text-align: center;
 }
 
 .mock-panel {
   padding: 22px;
-  border: 1px dashed rgba(95, 132, 82, 0.3);
-  border-radius: 20px;
-  background: rgba(243, 249, 237, 0.8);
+  border: 1px dashed rgba(47, 111, 78, 0.28);
+  border-radius: 8px;
+  background: var(--farm-primary-soft);
 }
 
 .mock-title {
   margin: 0 0 14px;
-  color: #36502b;
+  color: var(--farm-primary-deep);
   font-weight: 700;
 }
 
@@ -300,8 +304,8 @@ h1 {
   }
 
   .login-visual {
-    flex: 0 0 240px;
-    padding: 32px;
+    flex: 0 0 220px;
+    padding: 20px;
   }
 
   .visual-headline {
@@ -313,11 +317,11 @@ h1 {
   }
 
   .login-panel {
-    padding: 32px 24px;
+    padding: 24px 16px;
   }
 
   .login-card {
-    padding: 32px 24px;
+    padding: 24px;
   }
 
   .manual-login {

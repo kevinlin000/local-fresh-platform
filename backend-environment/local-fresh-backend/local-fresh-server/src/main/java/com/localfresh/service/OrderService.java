@@ -17,20 +17,20 @@ public interface OrderService {
     OrderSubmitVO submitOrder(OrdersSubmitDTO ordersSubmitDTO);
 
     /**
-     * 订单支付
+     * 訂單支付
      * @param ordersPaymentDTO
      * @return
      */
     OrderPaymentVO payment(OrdersPaymentDTO ordersPaymentDTO) throws Exception;
 
     /**
-     * 支付成功，修改订单状态
+     * 付款成功，修改訂單狀態
      * @param outTradeNo
      */
     void paySuccess(String outTradeNo);
 
     /**
-     * 用户端订单分页查询
+     * 會員端訂單分頁查詢
      * @param page
      * @param pageSize
      * @param status
@@ -39,7 +39,7 @@ public interface OrderService {
     PageResult pageQuery4User(int page, int pageSize, Integer status);
 
     /**
-     * 查询订单详情（管理端，不做所有權驗證）
+     * 查詢訂單详情（管理端，不做所有權驗證）
      * @param id
      * @return
      */
@@ -53,7 +53,7 @@ public interface OrderService {
     OrderVO userDetails(Long id);
 
     /**
-     * 用户取消订单
+     * 會員取消訂單
      * @param id
      */
     void userCancelById(Long id) throws Exception;
@@ -66,14 +66,14 @@ public interface OrderService {
     void repetition(Long id);
 
     /**
-     * 条件搜索订单
+     * 條件搜索訂單
      * @param ordersPageQueryDTO
      * @return
      */
     PageResult conditionSearch(OrdersPageQueryDTO ordersPageQueryDTO);
 
     /**
-     * 各个状态的订单数量统计
+     * 各個狀態的訂單數量统计
      * @return
      */
     OrderStatisticsVO statistics();
@@ -93,21 +93,21 @@ public interface OrderService {
     void rejection(OrdersRejectionDTO ordersRejectionDTO) throws Exception;
 
     /**
-     * 商家取消订单
+     * 商家取消訂單
      *
      * @param ordersCancelDTO
      */
     void cancel(OrdersCancelDTO ordersCancelDTO) throws Exception;
 
     /**
-     * 派送订单
+     * 配送訂單
      *
      * @param id
      */
     void delivery(Long id);
 
     /**
-     * 完成订单
+     * 完成訂單
      *
      * @param id
      */

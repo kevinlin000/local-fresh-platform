@@ -1,7 +1,7 @@
 package com.localfresh.exception;
 
 /**
- * 套餐启用失败异常
+ * 直送箱啟用失敗例外
  */
 public class SetmealEnableFailedException extends BaseException {
 

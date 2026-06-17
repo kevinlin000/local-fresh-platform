@@ -18,7 +18,7 @@ import java.util.Map;
 public interface GiftBoxMapper {
 
     /**
-     * 根据分类id查询套餐的数量
+     * 根據分類id查詢直送箱的數量
      * @param id
      * @return
      */
@@ -26,21 +26,21 @@ public interface GiftBoxMapper {
     Integer countByCategoryId(Long id);
 
     /**
-     * 新增套餐
+     * 新增直送箱
      * @param setmeal
      */
     @AutoFill(OperationType.INSERT)
     void insert(GiftBox setmeal);
 
     /**
-     * 分页查询
+     * 分頁查詢
      * @param setmealPageQueryDTO
      * @return
      */
     Page<GiftBoxVO> pageQuery(GiftBoxPageQueryDTO setmealPageQueryDTO);
 
     /**
-     * 根据id查询套餐
+     * 根據id查詢直送箱
      * @param id
      * @return
      */
@@ -48,21 +48,21 @@ public interface GiftBoxMapper {
     GiftBox getById(Long id);
 
     /**
-     * 根据id删除套餐
+     * 根據id刪除直送箱
      * @param giftBoxId
      */
     @Delete("delete from gift_box where id = #{id}")
     void deleteById(Long giftBoxId);
 
     /**
-     * 动态条件查询套餐
+     * 动态條件查詢直送箱
      * @param setmeal
      * @return
      */
     List<GiftBox> list(GiftBox setmeal);
 
     /**
-     * 根据套餐id查询菜品选项
+     * 根據直送箱id查詢商品选项
      * @param giftBoxId
      * @return
      */
@@ -72,7 +72,7 @@ public interface GiftBoxMapper {
     List<ProductItemVO> getDishItemBySetmealId(Long giftBoxId);
 
     /**
-     * 根据id修改套餐
+     * 根據id修改直送箱
      *
      * @param setmeal
      */
@@ -80,7 +80,7 @@ public interface GiftBoxMapper {
     void update(GiftBox setmeal);
 
     /**
-     * 根据条件统计套餐数量
+     * 根據條件统计直送箱數量
      * @param map
      * @return
      */

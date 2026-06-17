@@ -10,7 +10,7 @@ import java.util.List;
 @Mapper
 public interface OrderDetailMapper {
     /**
-     * 批量插入訂單明細
+     * 批次插入訂單明細
      * @param orderDetailList
      */
     void insertBatch(List<OrderDetail> orderDetailList);
@@ -20,7 +20,7 @@ public interface OrderDetailMapper {
     void insert(OrderDetail orderDetail);
 
     /**
-     * 根据订单id查询订单明细
+     * 根據訂單id查詢訂單明細
      * @param orderId
      * @return
      */

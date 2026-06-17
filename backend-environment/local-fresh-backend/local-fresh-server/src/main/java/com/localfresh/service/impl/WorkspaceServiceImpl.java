@@ -35,46 +35,46 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     private GiftBoxMapper giftBoxMapper;
 
     /**
-     * 根据时间段统计营业数据
+     * 根據時间段统计营业資料
      * @param begin
      * @param end
      * @return
      */
     public BusinessDataVO getBusinessData(LocalDateTime begin, LocalDateTime end) {
         /**
-         * 营业额：当日已完成订单的总金额
-         * 有效订单：当日已完成订单的数量
-         * 订单完成率：有效订单数 / 总订单数
-         * 平均客单价：营业额 / 有效订单数
-         * 新增用户：当日新增用户的数量
+         * 營業額：当日已完成訂單的總金額
+         * 有效訂單：当日已完成訂單的數量
+         * 訂單完成率：有效訂單數 / 總訂單数
+         * 平均客單價：營業額 / 有效訂單數
+         * 新增會員：当日新增會員的數量
          */
 
         Map map = new HashMap();
         map.put("begin",begin);
         map.put("end",end);
 
-        //查询总订单数
+        //查詢總訂單数
         Integer totalOrderCount = orderMapper.countByMap(map);
 
         map.put("status", Orders.COMPLETED);
-        //营业额
+        //營業額
         Double turnover = orderMapper.sumByMap(map);
         turnover = turnover == null? 0.0 : turnover;
 
-        //有效订单数
+        //有效訂單數
         Integer validOrderCount = orderMapper.countByMap(map);
 
         Double unitPrice = 0.0;
 
         Double orderCompletionRate = 0.0;
         if(totalOrderCount != 0 && validOrderCount != 0){
-            //订单完成率
+            //訂單完成率
             orderCompletionRate = validOrderCount.doubleValue() / totalOrderCount;
-            //平均客单价
+            //平均客單價
             unitPrice = turnover / validOrderCount;
         }
 
-        //新增用户数
+        //新增會員數
         Integer newUsers = memberMapper.countByMap(map);
 
         return BusinessDataVO.builder()
@@ -88,7 +88,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
 
     /**
-     * 查询订单管理数据
+     * 查詢訂單管理資料
      *
      * @return
      */
@@ -97,10 +97,10 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         map.put("begin", LocalDateTime.now().with(LocalTime.MIN));
         map.put("status", Orders.TO_BE_CONFIRMED);
 
-        //待接单
+        //待確認
         Integer waitingOrders = orderMapper.countByMap(map);
 
-        //待派送
+        //待配送
         map.put("status", Orders.CONFIRMED);
         Integer deliveredOrders = orderMapper.countByMap(map);
 
@@ -112,7 +112,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         map.put("status", Orders.CANCELLED);
         Integer cancelledOrders = orderMapper.countByMap(map);
 
-        //全部订单
+        //全部訂單
         map.put("status", null);
         Integer allOrders = orderMapper.countByMap(map);
 
@@ -126,7 +126,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     }
 
     /**
-     * 查询菜品总览
+     * 查詢商品總览
      *
      * @return
      */
@@ -147,7 +147,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     }
 
     /**
-     * 查询套餐总览
+     * 查詢直送箱總览
      *
      * @return
      */

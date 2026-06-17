@@ -37,14 +37,14 @@ export default class extends Vue {
       //   icon: 'rect', //图例
       //   show: true,
       //   top: 'bottom',
-      //   data: ['會員总量', '新增會員'],
+      //   data: ['會員總量', '新增會員'],
       // },
       tooltip: {
         trigger: 'axis',
-        backgroundColor: '#fff', //背景颜色（此时为預設色）
+        backgroundColor: '#fff', //背景顏色（此時为預設色）
         borderRadius: 2, //边框圆角
         textStyle: {
-          color: '#333', //字型颜色
+          color: '#333', //字型顏色
           fontSize: 12, //字型大小
           fontWeight: 300,
         },
@@ -60,14 +60,14 @@ export default class extends Vue {
         type: 'category',
         boundaryGap: false,
         axisLabel: {
-          //X轴字型颜色
+          //X轴字型顏色
           textStyle: {
             color: '#666',
             fontSize: '12px',
           },
         },
         axisLine: {
-          //X轴线颜色
+          //X轴线顏色
           lineStyle: {
             color: '#E5E4E4',
             width: 1, //x轴线的宽度
@@ -98,7 +98,7 @@ export default class extends Vue {
           smooth: false, //否平滑曲线
           showSymbol: false, //未显示鼠标上移的圆点
           symbolSize: 10,
-          // symbol:"circle", //设置折线点定位实心点
+          // symbol:"circle", //設定折线点定位實心點
           itemStyle: {
             normal: {
               color: '#FFD000',
@@ -122,7 +122,7 @@ export default class extends Vue {
           smooth: false, //否平滑曲线
           showSymbol: false, //未显示鼠标上移的圆点
           symbolSize: 10, //圆点大小
-          // symbol:"circle", //设置折线点定位实心点
+          // symbol:"circle", //設定折线点定位實心點
           itemStyle: {
             normal: {
               color: '#FD7F7F',
@@ -132,7 +132,7 @@ export default class extends Vue {
               },
             },
             emphasis: {
-              // 圆点颜色
+              // 圆点顏色
               color: '#fff',
               borderWidth: 5,
               borderColor: '#FD7F7F',

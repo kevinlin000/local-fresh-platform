@@ -24,7 +24,7 @@ public class Product implements Serializable {
     //商品名称
     private String productName;
 
-    //商品分类id
+    //商品分類id
     private Long categoryId;
 
     //商品价格

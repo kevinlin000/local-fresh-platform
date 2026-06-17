@@ -59,7 +59,7 @@ export default class extends Vue {
   handleError(err, file, fileList) {
     console.log(err, file, fileList, 'handleError')
     this.$message({
-      message: '圖片上傳失败',
+      message: '圖片上傳失敗',
       type: 'error'
     })
   }
@@ -81,7 +81,7 @@ export default class extends Vue {
     const isLt2M = file.size / 1024 / 1024 < this.size
     if (!isLt2M) {
       this.$message({
-        message: `上傳檔案大小不能超过${this.size}M!`,
+        message: `上傳檔案大小不能超過${this.size}M!`,
         type: 'error'
       })
       return false

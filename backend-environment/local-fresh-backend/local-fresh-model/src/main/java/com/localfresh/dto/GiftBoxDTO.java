@@ -17,7 +17,7 @@ public class GiftBoxDTO implements Serializable {
 
     private Long id;
 
-    //分类id
+    //分類id
     @NotNull(message = "直送箱分類不能為空")
     private Long categoryId;
 
@@ -30,7 +30,7 @@ public class GiftBoxDTO implements Serializable {
     @DecimalMin(value = "0.01", message = "直送箱價格必須大於 0")
     private BigDecimal price;
 
-    //状态 0:停用 1:启用
+    //狀態 0:停用 1:啟用
     @NotNull(message = "直送箱狀態不能為空")
     @Min(value = 0, message = "直送箱狀態錯誤")
     @Max(value = 1, message = "直送箱狀態錯誤")
@@ -42,7 +42,7 @@ public class GiftBoxDTO implements Serializable {
     //图片
     private String image;
 
-    //直送箱单品关系
+    //直送箱单品關係
     private List<GiftBoxProduct> giftBoxProducts = new ArrayList<>();
 
 }

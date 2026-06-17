@@ -47,11 +47,11 @@ public class OrderTask {
     }
 
     /**
-     * 處理一直處於派送狀態中的訂單
+     * 處理一直處於配送狀態中的訂單
      */
     @Scheduled(cron = "0 0 1 * * ? ") // 每天凌晨1點觸發一次
     public void processDeliveryOrder(){
-        log.info("定時處理派送中訂單:{}", LocalDateTime.now());
+        log.info("定時處理配送中訂單:{}", LocalDateTime.now());
 
         LocalDateTime time = LocalDateTime.now().plusMinutes(-60);
 

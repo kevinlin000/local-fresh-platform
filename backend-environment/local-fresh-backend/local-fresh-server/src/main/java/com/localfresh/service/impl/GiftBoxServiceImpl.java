@@ -27,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * 套餐业务实现
+ * 直送箱業務实现
  */
 @Service
 @Slf4j
@@ -41,7 +41,7 @@ public class GiftBoxServiceImpl implements GiftBoxService {
     private ProductMapper productMapper;
 
     /**
-     * 新增套餐，同时需要保存套餐和菜品的关联关系
+     * 新增直送箱，同時需要保存直送箱和商品的關聯關係
      * @param setmealDTO
      */
     @Transactional
@@ -49,10 +49,10 @@ public class GiftBoxServiceImpl implements GiftBoxService {
         GiftBox setmeal = new GiftBox();
         BeanUtils.copyProperties(setmealDTO, setmeal);
 
-        //向套餐表插入数据
+        //向直送箱表插入資料
         giftBoxMapper.insert(setmeal);
 
-        //获取生成的套餐id
+        //取得產生的直送箱id
         Long giftBoxId = setmeal.getId();
 
         List<GiftBoxProduct> giftBoxProducts = setmealDTO.getGiftBoxProducts();
@@ -60,12 +60,12 @@ public class GiftBoxServiceImpl implements GiftBoxService {
             setmealDish.setGiftBoxId(giftBoxId);
         });
 
-        //保存套餐和菜品的关联关系
+        //保存直送箱和商品的關聯關係
         giftBoxProductMapper.insertBatch(giftBoxProducts);
     }
 
     /**
-     * 分页查询
+     * 分頁查詢
      * @param setmealPageQueryDTO
      * @return
      */
@@ -79,7 +79,7 @@ public class GiftBoxServiceImpl implements GiftBoxService {
     }
 
     /**
-     * 批量删除套餐
+     * 批次刪除直送箱
      * @param ids
      */
     @Transactional
@@ -87,21 +87,21 @@ public class GiftBoxServiceImpl implements GiftBoxService {
         ids.forEach(id -> {
             GiftBox setmeal = giftBoxMapper.getById(id);
             if(StatusConstant.ENABLE == setmeal.getStatus()){
-                //起售中的套餐不能删除
+                //起售中的直送箱不能刪除
                 throw new DeletionNotAllowedException(MessageConstant.SETMEAL_ON_SALE);
             }
         });
 
         ids.forEach(giftBoxId -> {
-            //删除套餐表中的数据
+            //刪除直送箱表中的資料
             giftBoxMapper.deleteById(giftBoxId);
-            //删除套餐菜品关系表中的数据
+            //刪除直送箱商品關係表中的資料
             giftBoxProductMapper.deleteBySetmealId(giftBoxId);
         });
     }
 
     /**
-     * 根据id查询套餐和套餐菜品关系
+     * 根據id查詢直送箱和直送箱商品關係
      *
      * @param id
      * @return
@@ -118,7 +118,7 @@ public class GiftBoxServiceImpl implements GiftBoxService {
     }
 
     /**
-     * 修改套餐
+     * 修改直送箱
      *
      * @param setmealDTO
      */
@@ -127,30 +127,30 @@ public class GiftBoxServiceImpl implements GiftBoxService {
         GiftBox setmeal = new GiftBox();
         BeanUtils.copyProperties(setmealDTO, setmeal);
 
-        //1、修改套餐表，执行update
+        //1、修改直送箱表，执行update
         giftBoxMapper.update(setmeal);
 
-        //套餐id
+        //直送箱id
         Long giftBoxId = setmealDTO.getId();
 
-        //2、删除套餐和菜品的关联关系，操作setmeal_dish表，执行delete
+        //2、刪除直送箱和商品的關聯關係，操作setmeal_dish表，执行delete
         giftBoxProductMapper.deleteBySetmealId(giftBoxId);
 
         List<GiftBoxProduct> giftBoxProducts = setmealDTO.getGiftBoxProducts();
         giftBoxProducts.forEach(setmealDish -> {
             setmealDish.setGiftBoxId(giftBoxId);
         });
-        //3、重新插入套餐和菜品的关联关系，操作setmeal_dish表，执行insert
+        //3、重新插入直送箱和商品的關聯關係，操作setmeal_dish表，执行insert
         giftBoxProductMapper.insertBatch(giftBoxProducts);
     }
 
     /**
-     * 套餐起售、停售
+     * 直送箱起售、停售
      * @param status
      * @param id
      */
     public void startOrStop(Integer status, Long id) {
-        //起售套餐时，判断套餐内是否有停售菜品，有停售菜品提示"套餐内包含未启售菜品，无法启售"
+        //起售直送箱時，判断直送箱内是否有停售商品，有停售商品提示"直送箱内包含未啟售商品，無法啟售"
         if(status == StatusConstant.ENABLE){
             // select a.* from product a left join gift_box_product b on a.id = b.product_id where b.gift_box_id = ?
             List<Product> dishList = productMapper.getBySetmealId(id);
@@ -171,7 +171,7 @@ public class GiftBoxServiceImpl implements GiftBoxService {
     }
 
     /**
-     * 条件查询
+     * 條件查詢
      * @param setmeal
      * @return
      */
@@ -181,7 +181,7 @@ public class GiftBoxServiceImpl implements GiftBoxService {
     }
 
     /**
-     * 根据id查询菜品选项
+     * 根據id查詢商品选项
      * @param id
      * @return
      */

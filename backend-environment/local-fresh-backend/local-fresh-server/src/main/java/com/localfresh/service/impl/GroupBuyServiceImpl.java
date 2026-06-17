@@ -376,7 +376,7 @@ public class GroupBuyServiceImpl implements GroupBuyService {
     private void sendGroupBuyCompletedNotification(String groupNo) {
         Map<String, Object> payload = new HashMap<>();
         payload.put("type", 1);
-        payload.put("content", "揪團已成團，請商家接單");
+        payload.put("content", "揪團已成團，請商家確認");
         payload.put("groupNo", groupNo);
         webSocketServer.sendToAllClient(JSON.toJSONString(payload));
     }

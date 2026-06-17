@@ -1,4 +1,4 @@
-// 登入页面-定制样式
+// 登入页面-定制樣式
 .login-ruiji {
   .el-form-item {
     // border: none;
@@ -24,12 +24,12 @@
   }
 }
 
-//统一修改单选按钮样式
+//统一修改单选按鈕樣式
 .el-radio__inner::after {
   background-color: #333;
 }
 
-//统一修改表单label的样式
+//统一修改表单label的樣式
 .el-form-item__label {
   color: #333;
 }
@@ -38,14 +38,14 @@
   border-color: #E5E4E4;
 }
 
-//统一修改输入框提示文字的样式
+//统一修改輸入框提示文字的樣式
 .el-input__inner::-webkit-input-placeholder,
 .el-input__inner::-moz-placeholder,
 .el-input__inner::-ms-input-placeholder {
   color: #BDBDBD;
 }
 
-//el-image相关样式设置
+//el-image相關樣式設定
 .dashboard-container {
   margin: 0 !important;
   padding: 20px !important;
@@ -58,7 +58,7 @@
   }
 }
 
-//分頁样式设置
+//分頁樣式設定
 .el-pagination {
   .el-pagination__total {
     font-size: 14px;
@@ -94,12 +94,12 @@
   }
 }
 
-//弹框关闭按钮颜色
+//彈窗关闭按鈕顏色
 .el-icon-circle-close {
   color: white;
 }
 
-//表格编辑列內容样式修正
+//表格编辑列內容樣式修正
 .dashboard-container .container .el-table tbody tr td .cell button span {
   padding: 0 10px;
 }
@@ -108,7 +108,7 @@
   padding-left: 10px;
 }
 
-//按钮的背景色设置
+//按鈕的背景色設定
 .el-button--primary {
   color: #333333;
   background: #4A7C3A;

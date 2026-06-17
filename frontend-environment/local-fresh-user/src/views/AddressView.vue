@@ -3,7 +3,7 @@
     <div class="address-page-header">
       <div>
         <p class="eyebrow">我的地址</p>
-        <h1>管理常用收貨地址</h1>
+        <h1>管理常用配送地址</h1>
         <p class="address-page-intro">在這裡維護結算與揪團流程會用到的收件資訊。</p>
       </div>
       <el-button type="success" @click="openCreateDialog">新增地址</el-button>
@@ -11,7 +11,7 @@
 
     <el-skeleton v-if="loading" :rows="6" animated />
 
-    <el-empty v-else-if="!addressList.length" description="目前還沒有收貨地址">
+    <el-empty v-else-if="!addressList.length" description="目前還沒有配送地址">
       <el-button type="success" @click="openCreateDialog">新增第一筆地址</el-button>
     </el-empty>
 
@@ -49,13 +49,13 @@
 
     <el-dialog
       v-model="dialogVisible"
-      :title="dialogMode === 'create' ? '新增收貨地址' : '編輯收貨地址'"
+      :title="dialogMode === 'create' ? '新增配送地址' : '編輯配送地址'"
       width="520px"
       destroy-on-close
       @closed="resetForm"
     >
       <el-form label-position="top" :model="addressForm">
-        <el-form-item label="收貨人">
+        <el-form-item label="收件人">
           <el-input v-model="addressForm.consignee" placeholder="例如：Kevin Lin" />
         </el-form-item>
         <el-form-item label="手機號碼">
@@ -201,7 +201,7 @@ async function handleDelete(address: ShippingAddress) {
 
 async function submitAddress() {
   if (!addressForm.consignee || !addressForm.phone || !addressForm.cityName || !addressForm.districtName || !addressForm.detail) {
-    ElMessage.warning('請先填完收貨地址必要欄位')
+    ElMessage.warning('請先填完配送地址必要欄位')
     return
   }
 
@@ -245,7 +245,7 @@ onMounted(() => {
 
 <style scoped>
 .address-shell {
-  padding: 32px 40px 52px;
+  padding: 24px 0 48px;
 }
 
 .address-page-header,
@@ -264,20 +264,21 @@ onMounted(() => {
 
 .address-page-intro {
   margin: 10px 0 0;
-  color: #5b6854;
+  color: var(--farm-muted);
 }
 
 .address-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
+  gap: 14px;
 }
 
 .address-card {
-  padding: 22px 24px;
-  border-radius: 24px;
-  border: 1px solid rgba(84, 125, 65, 0.16);
-  background: rgba(255, 255, 255, 0.92);
+  padding: 18px;
+  border-radius: 8px;
+  border: 1px solid var(--farm-line);
+  background: var(--farm-surface);
+  box-shadow: var(--farm-shadow);
 }
 
 .address-card-header {
@@ -296,12 +297,12 @@ onMounted(() => {
 
 .address-topline h2 {
   margin: 0;
-  color: #24351e;
+  color: var(--farm-text);
   font-size: 20px;
 }
 
 .address-topline span {
-  color: #5d6d57;
+  color: var(--farm-muted);
   font-weight: 600;
   white-space: nowrap;
 }
@@ -321,13 +322,13 @@ onMounted(() => {
 }
 
 .default-tag {
-  background: #e4f2db;
-  color: #366e25;
+  background: var(--farm-primary-soft);
+  color: var(--farm-primary-deep);
 }
 
 .label-tag {
-  background: #f0f5ec;
-  color: #5b6854;
+  background: var(--farm-accent-soft);
+  color: #8b4b2f;
 }
 
 .address-actions {
@@ -339,14 +340,14 @@ onMounted(() => {
 
 .address-text {
   margin: 18px 0 0;
-  color: #40503a;
+  color: #405047;
   line-height: 1.7;
   word-break: break-word;
 }
 
 @media (max-width: 768px) {
   .address-shell {
-    padding: 24px 20px 40px;
+    padding: 16px 0 36px;
   }
 
   .address-page-header {

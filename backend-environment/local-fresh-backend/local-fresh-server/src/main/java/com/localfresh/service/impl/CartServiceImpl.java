@@ -56,10 +56,10 @@ public class CartServiceImpl implements CartService {
         }else{
             //如果不存在，需要插入一條購物車數據
 
-            //判斷本次添加到購物車的是菜品還是套餐
+            //判斷本次添加到購物車的是商品還是直送箱
             Long productId = shoppingCartDTO.getProductId();
             if (productId != null) {
-                //本次添加到購物車的是菜品
+                //本次添加到購物車的是商品
                 Product dish = productMapper.getById(productId);
                 if (dish == null || !StatusConstant.ENABLE.equals(dish.getStatus())) {
                     throw new ShoppingCartBusinessException(MessageConstant.PRODUCT_NOT_AVAILABLE);
@@ -69,7 +69,7 @@ public class CartServiceImpl implements CartService {
                 shoppingCart.setAmount(dish.getPrice());
 
             }else{
-                //本次添加到購物車的是套餐
+                //本次添加到購物車的是直送箱
                 Long giftBoxId = shoppingCart.getGiftBoxId();
 
                 GiftBox setmeal = giftBoxMapper.getById(giftBoxId);

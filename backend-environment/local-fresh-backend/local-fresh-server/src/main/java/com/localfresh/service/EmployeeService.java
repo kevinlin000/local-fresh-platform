@@ -9,7 +9,7 @@ import com.localfresh.result.PageResult;
 public interface EmployeeService {
 
     /**
-     * 员工登录
+     * 员工登入
      * @param employeeLoginDTO
      * @return
      */
@@ -28,7 +28,7 @@ public interface EmployeeService {
      */
     PageResult pageQuery(EmployeePageQueryDTO employeePageQueryDTO);
     /**
-     * 啟用或禁用员工账号
+     * 啟用或停用员工账号
      * @param status
      * @param id
      */

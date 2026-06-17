@@ -58,14 +58,14 @@ public class ProductController {
     }
 
     /**
-     * 單品的批量刪除
+     * 單品的批次刪除
      * @param ids
      * @return
      */
     @DeleteMapping
-    @Operation(summary = "批量刪除單品")
+    @Operation(summary = "批次刪除單品")
     public Result delete(@RequestParam List<Long> ids){
-        log.info("單品批量刪除：{}", ids);
+        log.info("單品批次刪除：{}", ids);
         productService.deleteBatch(ids);
         return Result.success();
     }

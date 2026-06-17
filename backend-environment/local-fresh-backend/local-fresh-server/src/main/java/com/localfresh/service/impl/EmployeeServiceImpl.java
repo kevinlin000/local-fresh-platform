@@ -29,7 +29,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private EmployeeMapper employeeMapper;
 
     /**
-     * 员工登录
+     * 员工登入
      *
      * @param employeeLoginDTO
      * @return
@@ -38,29 +38,29 @@ public class EmployeeServiceImpl implements EmployeeService {
         String username = employeeLoginDTO.getUsername();
         String password = employeeLoginDTO.getPassword();
 
-        //1、根据用户名查询数据库中的数据
+        //1、根據會員名查詢資料库中的資料
         Employee employee = employeeMapper.getByUsername(username);
 
-        //2、处理各种异常情况（用户名不存在、密码不对、账号被锁定）
+        //2、處理各種例外情况（會員名不存在、密碼不对、帳號被鎖定）
         if (employee == null) {
-            //账号不存在
+            //帳號不存在
             throw new AccountNotFoundException(MessageConstant.ACCOUNT_NOT_FOUND);
         }
 
-        //密码比对
+        //密碼比对
         // 對前端傳過來的密碼進行MD5加密，然後和數據庫中存儲的密碼進行比對
         password = DigestUtils.md5DigestAsHex(password.getBytes());
         if (!password.equals(employee.getPassword())) {
-            //密码错误
+            //密碼错误
             throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR);
         }
 
         if (employee.getStatus() == StatusConstant.DISABLE) {
-            //账号被锁定
+            //帳號被鎖定
             throw new AccountLockedException(MessageConstant.ACCOUNT_LOCKED);
         }
 
-        //3、返回实体对象
+        //3、回傳实体物件
         return employee;
     }
 
@@ -99,7 +99,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         return new PageResult(total, records);
     }
     /**
-     * 啟用或禁用员工帳號
+     * 啟用或停用员工帳號
      * @param status
      * @param id
      */

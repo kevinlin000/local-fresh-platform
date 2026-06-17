@@ -55,14 +55,14 @@ export default class extends Vue {
         type: 'category',
         boundaryGap: false,
         axisLabel: {
-          //X轴字型颜色
+          //X轴字型顏色
           textStyle: {
             color: '#666',
             fontSize: '12px',
           },
         },
         axisLine: {
-          //X轴线颜色
+          //X轴线顏色
           lineStyle: {
             color: '#E5E4E4',
             width: 1, //x轴线的宽度
@@ -93,7 +93,7 @@ export default class extends Vue {
           smooth: false, //否平滑曲线
           showSymbol: false, //未显示鼠标上移的圆点
           symbolSize: 10,
-          // symbol:"circle", //设置折线点定位实心点
+          // symbol:"circle", //設定折线点定位實心點
           itemStyle: {
             normal: {
               color: '#F29C1B',

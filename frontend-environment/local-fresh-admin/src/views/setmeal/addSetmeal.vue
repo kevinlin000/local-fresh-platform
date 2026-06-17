@@ -343,7 +343,7 @@ export default class extends Vue {
     })
   }
 
-  // 通过直送箱ID取得單品列表分類
+  // 透過直送箱ID取得單品列表分類
   // private getDishList (id:number) {
   //   getDishListType({id}).then(res => {
   //     if (res.data.code == 200) {

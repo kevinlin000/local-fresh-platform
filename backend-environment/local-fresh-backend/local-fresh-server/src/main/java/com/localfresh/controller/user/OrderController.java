@@ -48,7 +48,7 @@ public class OrderController {
     public Result<OrderPaymentVO> payment(@Valid @RequestBody OrdersPaymentDTO ordersPaymentDTO) throws Exception {
         log.info("訂單支付：{}", ordersPaymentDTO);
         OrderPaymentVO orderPaymentVO = orderService.payment(ordersPaymentDTO);
-        log.info("生成预支付交易单：{}", orderPaymentVO);
+        log.info("產生预支付交易单：{}", orderPaymentVO);
         return Result.success(orderPaymentVO);
     }
 
@@ -57,7 +57,7 @@ public class OrderController {
      *
      * @param page
      * @param pageSize
-     * @param status   訂單狀態 1待付款 2待接單 3已接單 4派送中 5已完成 6已取消
+     * @param status   訂單狀態 1待付款 2待確認 3已確認 4配送中 5已完成 6已取消
      * @return
      */
     @GetMapping("/historyOrders")

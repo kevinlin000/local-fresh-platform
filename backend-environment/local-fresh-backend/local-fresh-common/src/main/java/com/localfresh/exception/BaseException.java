@@ -1,7 +1,7 @@
 package com.localfresh.exception;
 
 /**
- * 业务异常
+ * 業務例外
  */
 public class BaseException extends RuntimeException {
 

@@ -8,7 +8,7 @@
       <ul>
         <li>
           <span class="status"
-            ><i class="iconfont icon-waiting"></i>待接單</span
+            ><i class="iconfont icon-waiting"></i>待確認</span
           >
           <span class="num tip"
             ><router-link to="/order?status=2">{{
@@ -18,7 +18,7 @@
         </li>
         <li>
           <span class="status"
-            ><i class="iconfont icon-staySway"></i>待派送</span
+            ><i class="iconfont icon-staySway"></i>待配送</span
           >
           <span class="num tip"
             ><router-link to="/order?status=3">{{

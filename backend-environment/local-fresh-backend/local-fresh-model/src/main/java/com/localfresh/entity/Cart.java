@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 购物车
+ * 購物車
  */
 @Data
 @Builder
@@ -34,13 +34,13 @@ public class Cart implements Serializable {
     //直送箱id
     private Long giftBoxId;
 
-    //商品规格
+    //商品規格
     private String productSpec;
 
-    //数量
+    //數量
     private Integer number;
 
-    //金额
+    //金額
     private BigDecimal amount;
 
     //图片

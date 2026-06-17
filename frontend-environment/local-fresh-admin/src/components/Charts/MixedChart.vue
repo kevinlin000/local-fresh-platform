@@ -117,7 +117,7 @@ export default class extends mixins(ResizeMixin) {
                     }
                 }],
                 'series': [{
-                    'name': '店内',
+                    'name': '店內',
                     'type': 'bar',
                     'stack': 'total',
                     'barMaxWidth': 15,

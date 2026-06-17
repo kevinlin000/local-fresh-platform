@@ -27,7 +27,7 @@
         </el-button>
         <div style="float: right">
           <el-button type="danger" @click="handleDeleteSetmeal('B')">
-            批量刪除
+            批次刪除
           </el-button>
           <el-button type="info" @click="handleAddSetmeal()">
             +新建直送箱
@@ -102,7 +102,7 @@ export default {
         status: '', // 販售狀態
         total: 0,
         records: [],
-        multipleSelection: [] // 表格选择的元素
+        multipleSelection: [] // 表格選擇的元素
       }
     },
     created() {
@@ -139,12 +139,12 @@ export default {
           this.$message.error('請求發生錯誤：' + err.message)
         })
       },
-      // 每页条数发生改变时触发
+      // 每页筆數發生改变時觸發
       handleSizeChange(pageSize) {
         this.pageSize = pageSize
         this.pageQuery()
       },
-      // 页码发生改变时触发
+      // 頁碼發生改变時觸發
       handleCurrentChange(page) {
         this.page = page
         this.pageQuery()
@@ -169,7 +169,7 @@ export default {
           })
         })
       },
-      // 全选/取消选择
+      // 全選/取消選擇
       handleSelectionChange(val) {
         this.multipleSelection = val
       },
@@ -188,7 +188,7 @@ export default {
           type: 'warning'
         }).then(() => {
           let param = ''
-          // 若是批量刪除
+          // 若是批次刪除
           if (type === 'B') {
             const arr = []
             this.multipleSelection.forEach(element => {
@@ -265,7 +265,7 @@ export default {
         text-align: center;
         margin-top: 30px;
       }
-      //查詢黑色按钮样式
+      //查詢黑色按鈕樣式
       .normal-btn {
         background: #333333;
         color: white;

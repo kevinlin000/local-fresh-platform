@@ -1,7 +1,7 @@
 package com.localfresh.enumeration;
 
 /**
- * 数据库操作类型
+ * 資料库操作類型
  */
 public enum OperationType {
 

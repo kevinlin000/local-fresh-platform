@@ -17,7 +17,7 @@ module.exports = {
       ]
     }
   },
-  // 开启代理
+  // 啟用代理
   devServer: {
     port: 8888,
     open: true,
@@ -49,12 +49,12 @@ module.exports = {
   css: {
     // 是否使用css分离插件 ExtractTextPlugin
     extract: IS_PROD,
-    // 开启 CSS source maps?
+    // 啟用 CSS source maps?
     sourceMap: false,
     // css预设器配置项
     loaderOptions: {
     },
-    // 启用 CSS modules for all css / pre-processor files.
+    // 啟用 CSS modules for all css / pre-processor files.
     modules: false,
 },
 };

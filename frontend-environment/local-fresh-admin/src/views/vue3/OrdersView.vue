@@ -29,10 +29,10 @@
       <el-table-column label="操作" fixed="right" width="280">
         <template #default="{ row }">
           <el-button link type="primary" @click="openDetail(row)">詳情</el-button>
-          <el-button v-if="row.status === 2" link type="success" @click="accept(row)">接單</el-button>
+          <el-button v-if="row.status === 2" link type="success" @click="accept(row)">確認</el-button>
           <el-button v-if="row.status === 2" link type="danger" @click="openReason(row, 'reject')">拒單</el-button>
           <el-button v-if="[2, 3].includes(row.status)" link type="warning" @click="openReason(row, 'cancel')">取消</el-button>
-          <el-button v-if="row.status === 3" link type="primary" @click="delivery(row)">派送</el-button>
+          <el-button v-if="row.status === 3" link type="primary" @click="delivery(row)">配送</el-button>
           <el-button v-if="row.status === 4" link type="success" @click="complete(row)">完成</el-button>
         </template>
       </el-table-column>
@@ -95,9 +95,9 @@ const route = useRoute()
 
 const statuses = [
   { label: '待付款', value: 1 },
-  { label: '待接單', value: 2 },
-  { label: '已接單', value: 3 },
-  { label: '派送中', value: 4 },
+  { label: '待確認', value: 2 },
+  { label: '已確認', value: 3 },
+  { label: '配送中', value: 4 },
   { label: '已完成', value: 5 },
   { label: '已取消', value: 6 },
   { label: '退款', value: 7 },
@@ -118,9 +118,9 @@ const reason = ref('')
 const activeOrder = ref<any>(null)
 
 const statCards = computed(() => [
-  { label: '待接單', value: statistics.value.toBeConfirmed ?? 0 },
-  { label: '待派送', value: statistics.value.confirmed ?? 0 },
-  { label: '派送中', value: statistics.value.deliveryInProgress ?? 0 }
+  { label: '待確認', value: statistics.value.toBeConfirmed ?? 0 },
+  { label: '待配送', value: statistics.value.confirmed ?? 0 },
+  { label: '配送中', value: statistics.value.deliveryInProgress ?? 0 }
 ])
 
 function statusText(status: number) {
@@ -159,9 +159,9 @@ async function openDetail(row: any) {
 }
 
 async function accept(row: any) {
-  await ElMessageBox.confirm(`確定接單「${row.number}」？`, '接單確認', { type: 'warning' })
+  await ElMessageBox.confirm(`確定將訂單「${row.number}」標記為已確認？`, '訂單確認', { type: 'warning' })
   await orderAccept({ id: row.id, status: 3 })
-  ElMessage.success('已接單')
+  ElMessage.success('已確認')
   await loadData()
 }
 
@@ -194,9 +194,9 @@ async function submitReason() {
 }
 
 async function delivery(row: any) {
-  await ElMessageBox.confirm(`確定開始派送「${row.number}」？`, '派送確認', { type: 'warning' })
+  await ElMessageBox.confirm(`確定開始配送「${row.number}」？`, '配送確認', { type: 'warning' })
   await deliveryOrder({ id: row.id })
-  ElMessage.success('已進入派送')
+  ElMessage.success('已進入配送')
   await loadData()
 }
 

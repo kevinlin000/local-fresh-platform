@@ -29,7 +29,7 @@ public class GiftBoxController {
     private RedisTemplate<String, Object> appRedisTemplate;
 
     /**
-     * 条件查詢
+     * 條件查詢
      *
      * @param categoryId
      * @return
