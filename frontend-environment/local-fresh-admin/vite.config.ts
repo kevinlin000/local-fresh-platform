@@ -21,6 +21,17 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       rolldownOptions: {
+        onLog(level, log, defaultHandler) {
+          if (
+            level === 'warn' &&
+            log.code === 'INVALID_ANNOTATION' &&
+            typeof log.id === 'string' &&
+            log.id.includes('node_modules/@vueuse/core')
+          ) {
+            return
+          }
+          defaultHandler(level, log)
+        },
         output: {
           codeSplitting: {
             groups: [

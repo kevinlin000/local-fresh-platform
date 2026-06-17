@@ -20,7 +20,8 @@ Raise `local-fresh-platform` to an interview-ready Java backend/fullstack portfo
 | 2. Admin surface polish | completed | Make admin order/product dashboard copy and visible UI consistent with the polished member side. |
 | 3. Frontend bundle hygiene | completed | Split obvious vendor chunks and verify build warnings are reduced or documented. |
 | 4. Evidence pass | completed | Run tests/builds/scans, update README/docs with accurate verification notes. |
-| 5. Commit checkpoint | in_progress | Commit a clean, reviewable slice with summary and residual risks. |
+| 5. Commit checkpoint | completed | Commit a clean, reviewable slice with summary and residual risks. |
+| 6. Browser acceptance pass | completed | Run backend/user/admin locally, inspect real desktop/mobile flows, fix high-impact UI/UX or flow blockers, and record evidence. |
 
 ## Constraints
 

@@ -127,6 +127,32 @@ function statusText(status: number) {
   return statuses.find(item => item.value === status)?.label || '未知'
 }
 
+function getErrorMessage(error: unknown) {
+  if (error instanceof Error && error.message) {
+    return error.message
+  }
+  if (typeof error === 'string') {
+    return error
+  }
+  return '操作失敗，請稍後再試'
+}
+
+async function confirmAction(message: string, title: string) {
+  try {
+    await ElMessageBox.confirm(message, title, {
+      type: 'warning',
+      confirmButtonText: '確定',
+      cancelButtonText: '取消'
+    })
+    return true
+  } catch (error) {
+    if (error === 'cancel' || error === 'close') {
+      return false
+    }
+    throw error
+  }
+}
+
 async function loadData() {
   await withLoading(async () => {
     const response = await getOrderDetailPage({
@@ -159,10 +185,16 @@ async function openDetail(row: any) {
 }
 
 async function accept(row: any) {
-  await ElMessageBox.confirm(`確定將訂單「${row.number}」標記為已確認？`, '訂單確認', { type: 'warning' })
-  await orderAccept({ id: row.id, status: 3 })
-  ElMessage.success('已確認')
-  await loadData()
+  if (!(await confirmAction(`確定將訂單「${row.number}」標記為已確認？`, '訂單確認'))) {
+    return
+  }
+  try {
+    await orderAccept({ id: row.id, status: 3 })
+    ElMessage.success('已確認')
+    await loadData()
+  } catch (error) {
+    ElMessage.error(getErrorMessage(error))
+  }
 }
 
 function openReason(row: any, mode: 'reject' | 'cancel') {
@@ -188,23 +220,37 @@ async function submitReason() {
     }
     reasonVisible.value = false
     await loadData()
+  } catch (error) {
+    ElMessage.error(getErrorMessage(error))
   } finally {
     saving.value = false
   }
 }
 
 async function delivery(row: any) {
-  await ElMessageBox.confirm(`確定開始配送「${row.number}」？`, '配送確認', { type: 'warning' })
-  await deliveryOrder({ id: row.id })
-  ElMessage.success('已進入配送')
-  await loadData()
+  if (!(await confirmAction(`確定開始配送「${row.number}」？`, '配送確認'))) {
+    return
+  }
+  try {
+    await deliveryOrder({ id: row.id })
+    ElMessage.success('已進入配送')
+    await loadData()
+  } catch (error) {
+    ElMessage.error(getErrorMessage(error))
+  }
 }
 
 async function complete(row: any) {
-  await ElMessageBox.confirm(`確定完成「${row.number}」？`, '完成確認', { type: 'warning' })
-  await completeOrder({ id: row.id })
-  ElMessage.success('訂單已完成')
-  await loadData()
+  if (!(await confirmAction(`確定完成「${row.number}」？`, '完成確認'))) {
+    return
+  }
+  try {
+    await completeOrder({ id: row.id })
+    ElMessage.success('訂單已完成')
+    await loadData()
+  } catch (error) {
+    ElMessage.error(getErrorMessage(error))
+  }
 }
 
 watch(

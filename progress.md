@@ -48,3 +48,51 @@
 - Verified backend with `mvn test`: 100 tests, 0 failures/errors, 5 skipped external/manual tests.
 - Verified Spring Boot startup with HikariCP and Flyway V1-V10 on local Docker MySQL/Redis.
 - Ran hard legacy-term scans with no matches for old project names, old login provider names, old cloud-provider names, legacy JSON/pool dependencies, or old icon CDN residue.
+
+## 2026-06-17 18:52 +0800
+
+- Started Phase 6 browser acceptance pass after commit `617ea65`.
+- Goal: run the backend, user frontend, and admin frontend locally; inspect real flows with Playwright; fix only high-impact UI/UX or flow blockers found during the walkthrough.
+- Docker MySQL and Redis are already healthy.
+- Started local services:
+  - Backend on port 8080 with Flyway V1-V10 validated.
+  - User frontend at `http://127.0.0.1:5173/`.
+  - Admin frontend at `http://127.0.0.1:5176/` because 5174/5175 were already occupied.
+
+## 2026-06-17 18:59 +0800
+
+- Fixed the user homepage initial catalog load so the valid `全部商品` state (`categoryId = null`) still loads products.
+- Rechecked the browser with Playwright:
+  - User homepage calls `/api/user/product/list`.
+  - Product grid renders `29 / 29` available products.
+  - Browser console reports 0 errors.
+- Added `.playwright-cli/` to `.gitignore` because Playwright acceptance snapshots are local test output.
+
+## 2026-06-17 19:13 +0800
+
+- Continued Phase 6 browser acceptance through the full member and admin order lifecycle.
+- Verified member flow in Playwright:
+  - Product detail page loads from `/api/user/product/{id}`.
+  - Cart add/list works and checkout dialog loads saved addresses.
+  - Order submission succeeds in dev after disabling delivery range checks by default.
+  - Simulated payment moves the new order to `待確認`.
+  - Member order history shows the submitted order and final admin-confirmed `已確認` status.
+- Fixed checkout/dev blockers:
+  - Added `delivery.range-check-enabled: ${DELIVERY_RANGE_CHECK_ENABLED:false}` to dev config and example config.
+  - Updated README/perf docs to require `mvn install -DskipTests` before running `local-fresh-server` directly, avoiding stale sibling-module artifacts.
+  - Made user API error handling surface backend `msg`/`message` payloads.
+  - Replaced deprecated Element Plus cart radio `label` value binding with `value`.
+- Verified admin flow:
+  - Admin login with seeded local credentials works.
+  - Dashboard, orders, products, and reports pages load real seeded data with clean console output.
+  - Admin order confirmation sends `PUT /api/order/confirm`, updates statistics, and changes the member order to `已確認`.
+- Fixed admin order action handling so Element Plus confirm cancel/close does not leave unhandled Vue console errors, and API failures are shown through `ElMessage`.
+- Fixed admin mobile layout by replacing the fixed desktop sidebar grid with a top horizontal nav under 900px and removing the global body min-width at mobile sizes.
+- Verified responsive screenshots:
+  - User mobile home and orders are readable at 390x844.
+  - Admin mobile dashboard and products are readable at 390x844 after the layout fix.
+- Verification:
+  - `npm run build` passes for user frontend.
+  - `npm run build` passes cleanly for admin frontend after filtering only the known `@vueuse/core` Rolldown `INVALID_ANNOTATION` dependency warning through `onLog`.
+  - `mvn test` passes for backend: 100 tests, 0 failures, 0 errors, 5 skipped.
+  - Legacy-term scan reports no matches for old project/login/map/cloud provider terms outside generated build artifacts.

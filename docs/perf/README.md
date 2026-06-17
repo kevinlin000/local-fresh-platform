@@ -4,7 +4,7 @@
 
 ### 環境
 
-- 後端：`mvn spring-boot:run -pl local-fresh-server -Dspring-boot.run.profiles=dev`
+- 後端：先於 `backend-environment/local-fresh-backend` 執行 `mvn install -DskipTests`，再執行 `mvn -pl local-fresh-server spring-boot:run -Dspring-boot.run.profiles=dev`
 - MySQL：本機 `mysqld`，資料已套用 `V5__taiwan_localization.sql` 與 `V6__add_product_images.sql`
 - Redis：`docker compose up -d redis`
 - JMeter：`/usr/local/bin/jmeter`

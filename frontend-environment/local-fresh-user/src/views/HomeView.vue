@@ -351,8 +351,14 @@ function openProduct(id: number) {
   void router.push(`/product/${id}`)
 }
 
-watch(activeTab, () => {
-  activeCategoryId.value = activeTab.value === 'product' ? null : activeCategories.value[0]?.id ?? null
+watch(activeTab, async () => {
+  const nextCategoryId = activeTab.value === 'product' ? null : activeCategories.value[0]?.id ?? null
+  const categoryChanged = activeCategoryId.value !== nextCategoryId
+  activeCategoryId.value = nextCategoryId
+
+  if (!categoryChanged) {
+    await refreshCurrentTab()
+  }
 })
 
 watch(activeCategoryId, async (categoryId) => {
@@ -387,9 +393,7 @@ watch(productSearchTerm, async () => {
 onMounted(async () => {
   try {
     await loadCategories()
-    if (activeCategoryId.value) {
-      await refreshCurrentTab()
-    }
+    await refreshCurrentTab()
   } catch (error) {
     ElMessage.error(error instanceof Error ? error.message : '載入首頁資料失敗')
   }

@@ -290,6 +290,10 @@ localfresh:
   google:
     api-key: your-google-maps-api-key
 
+  delivery:
+    # 本機 demo 預設不依賴 Google Maps；正式環境可改為 true。
+    range-check-enabled: false
+
   oauth:
     google:
       client-id: your-google-oauth-client-id
@@ -338,10 +342,12 @@ mvn install -DskipTests
 mvn -pl local-fresh-server spring-boot:run
 ```
 
+第一行會先把 `local-fresh-common` 與 `local-fresh-model` 更新到本機 Maven repository，避免 server 啟動時跑到舊的 shared module artifact。
+
 舊資料庫第一次導入 Flyway 時：
 
 ```bash
-FLYWAY_BASELINE_ON_MIGRATE=true mvn install -DskipTests
+mvn install -DskipTests
 FLYWAY_BASELINE_ON_MIGRATE=true mvn -pl local-fresh-server spring-boot:run
 ```
 

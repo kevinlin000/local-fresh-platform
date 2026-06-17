@@ -116,7 +116,7 @@
               class="address-card"
               :class="{ active: selectedAddressId === address.id }"
             >
-              <el-radio :label="address.id">
+              <el-radio :value="address.id">
                 <span />
               </el-radio>
               <div class="address-card-body">
