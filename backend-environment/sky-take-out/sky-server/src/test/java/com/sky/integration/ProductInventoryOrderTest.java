@@ -20,9 +20,9 @@ import com.sky.mapper.ProductInventoryLogMapper;
 import com.sky.mapper.ShippingAddressMapper;
 import com.sky.properties.JwtProperties;
 import com.sky.service.CacheService;
+import com.sky.service.payment.PaymentGateway;
 import com.sky.test.support.LoginResult;
 import com.sky.utils.JwtUtil;
-import com.sky.utils.WeChatPayUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +47,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -98,7 +97,7 @@ class ProductInventoryOrderTest {
     private CacheService cacheService;
 
     @MockitoBean
-    private WeChatPayUtil weChatPayUtil;
+    private PaymentGateway paymentGateway;
 
     private LoginResult loginResult;
     private Product product;
@@ -291,7 +290,6 @@ class ProductInventoryOrderTest {
 
     @Test
     void adminRejectionShouldRefundRestoreStockAndWriteAdminAuditLog() throws Exception {
-        when(weChatPayUtil.refund(any(), any(), any(), any())).thenReturn("{}");
         addCart(2);
 
         MvcResult submitResult = mockMvc.perform(post("/user/order/submit")
@@ -323,8 +321,7 @@ class ProductInventoryOrderTest {
         assertEquals(Orders.REFUND, canceled.getPayStatus());
         assertEquals("商品售完", canceled.getRejectionReason());
         assertNotNull(canceled.getCancelTime());
-        verify(weChatPayUtil).refund(eq(canceled.getNumber()), eq(canceled.getNumber()),
-                eq(new BigDecimal("120.00")), eq(new BigDecimal("120.00")));
+        verify(paymentGateway).refund(any(Orders.class), eq("商品售完"));
         assertEquals(3, productMapper.getById(product.getId()).getStock());
 
         List<ProductInventoryLog> logs = productInventoryLogMapper.listByProductId(product.getId());

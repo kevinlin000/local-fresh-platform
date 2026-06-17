@@ -1,12 +1,12 @@
 package com.sky.service.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.sky.constant.MessageConstant;
 import com.sky.entity.Orders;
 import com.sky.exception.OrderBusinessException;
 import com.sky.mapper.OrderMapper;
 import com.sky.service.OrderPaymentService;
+import com.sky.service.payment.PaymentGateway;
 import com.sky.service.support.OrderStatusTransitionPolicy;
 import com.sky.vo.OrderPaymentVO;
 import com.sky.websocket.WebSocketServer;
@@ -28,14 +28,13 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
     @Autowired
     private WebSocketServer webSocketServer;
 
+    @Autowired
+    private PaymentGateway paymentGateway;
+
     @Override
     public OrderPaymentVO requestPayment(Orders order) {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("code", "ORDERPAID");
-        OrderPaymentVO vo = jsonObject.toJavaObject(OrderPaymentVO.class);
-        vo.setPackageStr(jsonObject.getString("package"));
         ensurePaymentSucceeded(order.getNumber());
-        return vo;
+        return paymentGateway.createPaymentRequest(order);
     }
 
     @Override

@@ -8,7 +8,7 @@ import com.sky.mapper.OrderDetailMapper;
 import com.sky.mapper.OrderMapper;
 import com.sky.service.InventoryService;
 import com.sky.service.OrderCancellationService;
-import com.sky.utils.WeChatPayUtil;
+import com.sky.service.payment.PaymentGateway;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,7 +35,7 @@ public class OrderCancellationServiceImpl implements OrderCancellationService {
     private InventoryService inventoryService;
 
     @Autowired
-    private WeChatPayUtil weChatPayUtil;
+    private PaymentGateway paymentGateway;
 
     @Override
     public void cancelOrder(Orders ordersDB, String cancelReason, String rejectionReason,
@@ -48,12 +48,7 @@ public class OrderCancellationServiceImpl implements OrderCancellationService {
         orders.setCancelTime(LocalDateTime.now());
 
         if (Orders.PAID.equals(ordersDB.getPayStatus())) {
-            String refund = weChatPayUtil.refund(
-                    ordersDB.getNumber(),
-                    ordersDB.getNumber(),
-                    ordersDB.getAmount(),
-                    ordersDB.getAmount());
-            log.info("申请退款：{}", refund);
+            paymentGateway.refund(ordersDB, cancelReason != null ? cancelReason : rejectionReason);
             orders.setPayStatus(Orders.REFUND);
         }
 

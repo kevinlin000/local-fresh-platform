@@ -49,25 +49,25 @@ public class Orders implements Serializable {
     //下单用户id
     private Long userId;
 
-    //地址id
+    // 地址 id
     private Long addressBookId;
 
-    //下单时间
+    // 下單時間
     private LocalDateTime orderTime;
 
-    //结账时间
+    // 結帳時間
     private LocalDateTime checkoutTime;
 
-    //支付方式 1微信，2支付宝
+    // 支付方式 1 Demo payment
     private Integer payMethod;
 
-    //支付状态 0未支付 1已支付 2退款
+    // 支付狀態 0 未支付 1 已支付 2 退款
     private Integer payStatus;
 
-    //实收金额
+    // 實收金額
     private BigDecimal amount;
 
-    //备注
+    // 備註
     private String remark;
 
     //用户名

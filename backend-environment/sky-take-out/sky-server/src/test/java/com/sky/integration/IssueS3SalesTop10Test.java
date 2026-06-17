@@ -7,7 +7,6 @@ import com.sky.mapper.OrderDetailMapper;
 import com.sky.mapper.OrderMapper;
 import com.sky.properties.JwtProperties;
 import com.sky.utils.JwtUtil;
-import com.sky.utils.WeChatPayUtil;
 import com.sky.websocket.WebSocketServer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -68,9 +67,6 @@ class IssueS3SalesTop10Test {
 
     @MockitoBean
     private WebSocketServer webSocketServer;
-
-    @MockitoBean
-    private WeChatPayUtil weChatPayUtil;
 
     private LocalDate beginDate;
     private LocalDate endDate;

@@ -21,7 +21,6 @@ import com.sky.mapper.ProductMapper;
 import com.sky.mapper.ShippingAddressMapper;
 import com.sky.service.GroupBuyService;
 import com.sky.service.impl.GroupBuyServiceImpl;
-import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.GroupBuyVO;
 import com.sky.websocket.WebSocketServer;
 import org.junit.jupiter.api.AfterEach;
@@ -80,9 +79,6 @@ class GroupBuyExpirationServiceTest extends RedisContainerTestBase {
 
     @MockitoBean
     private WebSocketServer webSocketServer;
-
-    @MockitoBean
-    private WeChatPayUtil weChatPayUtil;
 
     @AfterEach
     void tearDown() {

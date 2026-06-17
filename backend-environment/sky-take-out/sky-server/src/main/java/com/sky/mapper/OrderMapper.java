@@ -37,11 +37,7 @@ public interface OrderMapper {
     void update(Orders orders);
 
     /**
-     * 用於替換微信支付更新數據庫狀態的問題
-     * @param orderStatus
-     * @param orderPaidStatus
-     * @param check_out_time
-     * @param orderNumber
+     * 依訂單號更新付款後的訂單狀態。
      */
     @Update("update orders set status = #{orderStatus},pay_status = #{orderPaidStatus} ,checkout_time = #{check_out_time} " +
             "where number = #{orderNumber}")

@@ -58,10 +58,6 @@ sky:
       secret-access-key: ${sky.aws.s3.secret-access-key}
       bucket-name: ${sky.aws.s3.bucket-name}
 
-  wechat:
-    appid: ${sky.wechat.appid}
-    secret: ${sky.wechat.secret}
-
   shop:
     address: ${sky.shop.address} # 換成想要的台灣店家地址
   google:

@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.sky.exception.ForbiddenOperationException;
 import com.sky.service.GroupBuyService;
 import com.sky.test.support.LoginResult;
-import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.GroupBuyParticipantVO;
 import com.sky.vo.GroupBuyVO;
 import com.sky.websocket.WebSocketServer;
@@ -61,9 +60,6 @@ class GroupBuyControllerTest {
 
     @MockitoBean
     private WebSocketServer webSocketServer;
-
-    @MockitoBean
-    private WeChatPayUtil weChatPayUtil;
 
     private String token;
     private GroupBuyVO groupBuyVO;

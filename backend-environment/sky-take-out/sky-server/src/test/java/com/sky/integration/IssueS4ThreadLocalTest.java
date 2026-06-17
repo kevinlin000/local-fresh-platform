@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.sky.entity.Orders;
 import com.sky.test.support.LoginResult;
 import com.sky.mapper.OrderMapper;
-import com.sky.utils.WeChatPayUtil;
 import com.sky.websocket.WebSocketServer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,9 +53,6 @@ class IssueS4ThreadLocalTest {
 
     @MockitoBean
     private WebSocketServer webSocketServer;
-
-    @MockitoBean
-    private WeChatPayUtil weChatPayUtil;
 
     private String tokenA;
     private String tokenB;

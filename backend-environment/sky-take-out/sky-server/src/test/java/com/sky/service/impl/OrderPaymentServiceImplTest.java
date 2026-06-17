@@ -4,6 +4,7 @@ import com.sky.constant.MessageConstant;
 import com.sky.entity.Orders;
 import com.sky.exception.OrderBusinessException;
 import com.sky.mapper.OrderMapper;
+import com.sky.service.payment.PaymentGateway;
 import com.sky.vo.OrderPaymentVO;
 import com.sky.websocket.WebSocketServer;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,9 @@ class OrderPaymentServiceImplTest {
     @Mock
     private WebSocketServer webSocketServer;
 
+    @Mock
+    private PaymentGateway paymentGateway;
+
     @InjectMocks
     private OrderPaymentServiceImpl orderPaymentService;
 
@@ -41,14 +45,20 @@ class OrderPaymentServiceImplTest {
     void requestPaymentShouldMarkOrderPaidAndReturnPaymentVO() {
         Orders order = orderWithStatus(1L, Orders.PENDING_PAYMENT);
         order.setNumber("ORDER-001");
+        OrderPaymentVO expectedVO = OrderPaymentVO.builder()
+                .packageStr("demo-paid:ORDER-001")
+                .build();
         when(orderMapper.markPaymentSucceededByNumber(eq("ORDER-001"), eq(Orders.PENDING_PAYMENT), eq(Orders.UN_PAID),
                 eq(Orders.TO_BE_CONFIRMED), eq(Orders.PAID), any(LocalDateTime.class))).thenReturn(1);
+        when(paymentGateway.createPaymentRequest(order)).thenReturn(expectedVO);
 
         OrderPaymentVO vo = orderPaymentService.requestPayment(order);
 
         assertNotNull(vo);
+        assertEquals(expectedVO, vo);
         verify(orderMapper).markPaymentSucceededByNumber(eq("ORDER-001"), eq(Orders.PENDING_PAYMENT), eq(Orders.UN_PAID),
                 eq(Orders.TO_BE_CONFIRMED), eq(Orders.PAID), any(LocalDateTime.class));
+        verify(paymentGateway).createPaymentRequest(order);
     }
 
     @Test

@@ -6,7 +6,7 @@ import com.sky.mapper.GiftBoxProductMapper;
 import com.sky.mapper.OrderDetailMapper;
 import com.sky.mapper.OrderMapper;
 import com.sky.service.InventoryService;
-import com.sky.utils.WeChatPayUtil;
+import com.sky.service.payment.PaymentGateway;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -19,8 +19,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -40,7 +38,7 @@ class OrderCancellationServiceImplTest {
     private InventoryService inventoryService;
 
     @Mock
-    private WeChatPayUtil weChatPayUtil;
+    private PaymentGateway paymentGateway;
 
     @InjectMocks
     private OrderCancellationServiceImpl orderCancellationService;
@@ -52,7 +50,6 @@ class OrderCancellationServiceImplTest {
         order.setNumber("ORDER-010");
         order.setPayStatus(Orders.PAID);
         order.setAmount(new BigDecimal("188.00"));
-        when(weChatPayUtil.refund(any(), any(), any(), any())).thenReturn("{}");
         when(orderDetailMapper.getByOrderId(10L)).thenReturn(List.of(OrderDetail.builder()
                 .productId(20L)
                 .number(2)
@@ -60,8 +57,7 @@ class OrderCancellationServiceImplTest {
 
         orderCancellationService.cancelOrder(order, "商家取消", null, "ADMIN", 1L);
 
-        verify(weChatPayUtil).refund(eq("ORDER-010"), eq("ORDER-010"),
-                eq(new BigDecimal("188.00")), eq(new BigDecimal("188.00")));
+        verify(paymentGateway).refund(order, "商家取消");
         ArgumentCaptor<Orders> captor = ArgumentCaptor.forClass(Orders.class);
         verify(orderMapper).update(captor.capture());
         Orders updated = captor.getValue();

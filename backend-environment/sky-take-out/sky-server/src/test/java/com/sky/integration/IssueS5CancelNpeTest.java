@@ -2,7 +2,6 @@ package com.sky.integration;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.sky.utils.WeChatPayUtil;
 import com.sky.websocket.WebSocketServer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,13 +58,6 @@ class IssueS5CancelNpeTest {
 
     @MockitoBean
     private WebSocketServer webSocketServer;
-
-    /**
-     * WeChatPayUtil 在 cancel 流程中（status=TO_BE_CONFIRMED）才會被呼叫，
-     * 但為防止任何意外的外部 HTTP 呼叫，統一 Mock 掉。
-     */
-    @MockitoBean
-    private WeChatPayUtil weChatPayUtil;
 
     private String userToken;
 

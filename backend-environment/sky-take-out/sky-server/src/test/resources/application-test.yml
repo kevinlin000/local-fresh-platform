@@ -61,9 +61,6 @@ sky:
     user-secret-key: test-user-secret-key-32chars-pad--
     user-ttl: 7200000000
     user-token-name: authentication
-  wechat:
-    appid: test-appid
-    secret: test-secret
   shop:
     address: "台北市信義區市府路1號"
   delivery:

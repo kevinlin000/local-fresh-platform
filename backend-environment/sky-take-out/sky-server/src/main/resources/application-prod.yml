@@ -62,9 +62,6 @@ sky:
     api-key: ${GOOGLE_MAPS_API_KEY}
   shop:
     address: ${SHOP_ADDRESS}
-  wechat:
-    appid: ${WECHAT_APPID:disabled}
-    secret: ${WECHAT_SECRET:disabled}
   oauth:
     google:
       client-id: ${GOOGLE_OAUTH_CLIENT_ID}

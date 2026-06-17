@@ -20,10 +20,6 @@ sky:
       secret-access-key: ${AWS_SECRET_ACCESS_KEY:dev-aws-secret-key}
       bucket-name: ${S3_BUCKET_NAME:local-fresh-dev-bucket}
 
-  wechat:
-    appid: mock_appid_for_dev
-    secret: mock_secret_for_dev
-
   shop:
     address: 台北市大安區羅斯福路四段1號
 

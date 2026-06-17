@@ -21,7 +21,6 @@ import com.sky.mapper.ProductInventoryLogMapper;
 import com.sky.mapper.ProductMapper;
 import com.sky.mapper.ShippingAddressMapper;
 import com.sky.service.GroupBuyService;
-import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.GroupBuyVO;
 import com.sky.websocket.WebSocketServer;
 import org.junit.jupiter.api.Assertions;
@@ -104,9 +103,6 @@ class GroupBuyServiceTest {
 
     @MockitoBean
     private WebSocketServer webSocketServer;
-
-    @MockitoBean
-    private WeChatPayUtil weChatPayUtil;
 
     private Long memberId;
     private Long productId;
