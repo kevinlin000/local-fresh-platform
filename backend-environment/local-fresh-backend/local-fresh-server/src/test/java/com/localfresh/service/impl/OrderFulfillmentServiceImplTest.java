@@ -1,13 +1,13 @@
 package com.localfresh.service.impl;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.localfresh.constant.MessageConstant;
 import com.localfresh.context.BaseContext;
 import com.localfresh.dto.OrdersConfirmDTO;
 import com.localfresh.entity.Orders;
 import com.localfresh.exception.OrderBusinessException;
 import com.localfresh.mapper.OrderMapper;
+import com.localfresh.utils.JsonUtil;
 import com.localfresh.websocket.WebSocketServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -149,10 +149,10 @@ class OrderFulfillmentServiceImplTest {
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         verify(webSocketServer).sendToAllClient(captor.capture());
-        JSONObject payload = JSON.parseObject(captor.getValue());
-        assertEquals(2, payload.getInteger("type"));
-        assertEquals(62L, payload.getLong("orderId"));
-        assertEquals("訂單號：ORDER-062", payload.getString("content"));
+        JsonNode payload = JsonUtil.readTree(captor.getValue());
+        assertEquals(2, payload.path("type").asInt());
+        assertEquals(62L, payload.path("orderId").asLong());
+        assertEquals("訂單號：ORDER-062", payload.path("content").asText());
     }
 
     private Orders captureUpdatedOrder() {

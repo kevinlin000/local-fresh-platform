@@ -114,7 +114,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 查詢訂單详情（管理端，不驗證所有權）
+     * 查詢訂單明細（管理端，不驗證所有權）
      *
      * @param id
      * @return
@@ -139,10 +139,10 @@ public class OrderServiceImpl implements OrderService {
      * @param id
      */
     public void userCancelById(Long id) throws Exception {
-        // 根據id查詢訂單
+        // 根據 id 查詢訂單
         Orders ordersDB = orderMapper.getById(id);
 
-        // 校验訂單是否存在
+        // 驗證訂單是否存在
         if (ordersDB == null) {
             throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
         }
@@ -157,7 +157,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 再来一单
+     * 再下一單
      *
      * @param id
      */
@@ -170,14 +170,14 @@ public class OrderServiceImpl implements OrderService {
             throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
         }
 
-        // 根據訂單id查詢目前訂單详情
+        // 根據訂單 id 查詢目前訂單明細
         List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(id);
 
-        // 将訂單详情物件轉換为購物車物件
+        // 將訂單明細物件轉換為購物車物件
         List<Cart> shoppingCartList = orderDetailList.stream().map(x -> {
             Cart shoppingCart = new Cart();
 
-            // 将原訂單详情里面的商品信息重新复制到購物車物件中
+            // 將原訂單明細內的商品資訊重新複製到購物車物件中
             BeanUtils.copyProperties(x, shoppingCart, "id");
             shoppingCart.setUserId(userId);
             shoppingCart.setCreateTime(LocalDateTime.now());
@@ -190,7 +190,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 訂單搜索
+     * 訂單搜尋
      *
      * @param ordersPageQueryDTO
      * @return
@@ -200,7 +200,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 各個狀態的訂單數量统计
+     * 各個狀態的訂單數量統計
      *
      * @return
      */
@@ -210,7 +210,7 @@ public class OrderServiceImpl implements OrderService {
 
 
     /**
-     * 接单
+     * 確認訂單
      *
      * @param ordersConfirmDTO
      */
@@ -219,7 +219,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 拒单
+     * 拒絕訂單
      *
      * @param ordersRejectionDTO
      */

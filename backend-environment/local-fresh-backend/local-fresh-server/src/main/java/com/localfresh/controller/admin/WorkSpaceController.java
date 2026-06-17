@@ -37,7 +37,7 @@ public class WorkSpaceController {
     @GetMapping("/businessData")
     @Operation(summary = "工作台今日資料查詢")
     public Result<BusinessDataVO> businessData(){
-        //取得当天的开始時间
+        // 取得當天的開始時間
         LocalDateTime begin = LocalDateTime.now().with(LocalTime.MIN);
         //取得当天的结束時间
         LocalDateTime end = LocalDateTime.now().with(LocalTime.MAX);
@@ -57,11 +57,11 @@ public class WorkSpaceController {
     }
 
     /**
-     * 查詢單品總覽
+     * 查詢商品總覽
      * @return
      */
     @GetMapping("/overviewDishes")
-    @Operation(summary = "查詢單品總覽")
+    @Operation(summary = "查詢商品總覽")
     public Result<ProductOverViewVO> dishOverView(){
         return Result.success(workspaceService.getDishOverView());
     }
@@ -77,11 +77,11 @@ public class WorkSpaceController {
     }
 
     /**
-     * 查詢低庫存單品
+     * 查詢低庫存商品
      * @return
      */
     @GetMapping("/lowStockProducts")
-    @Operation(summary = "查詢低庫存單品")
+    @Operation(summary = "查詢低庫存商品")
     public Result<List<ProductVO>> lowStockProducts() {
         return Result.success(workspaceService.listLowStockProducts());
     }

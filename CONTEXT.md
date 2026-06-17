@@ -19,7 +19,7 @@ The product combines:
 
 ## Architecture
 
-- Backend: Java 17, Spring Boot 3.5, MyBatis, PageHelper, Flyway, JWT, Druid, Actuator
+- Backend: Java 17, Spring Boot 3.5, MyBatis, PageHelper, Flyway, JWT, HikariCP, Actuator
 - User frontend: Vue 3 + Vite
 - Admin frontend: Vue 3 + Vite + TypeScript + Element Plus
 - Data stores: MySQL 8, Redis 7

@@ -8,7 +8,7 @@
     </div>
 
     <div class="table-toolbar">
-      <el-input v-model="query.number" clearable placeholder="搜尋訂單號" @keyup.enter="loadData" />
+      <el-input v-model="query.number" clearable placeholder="搜尋訂單編號" @keyup.enter="loadData" />
       <el-select v-model="query.status" clearable placeholder="訂單狀態">
         <el-option v-for="item in statuses" :key="item.value" :label="item.label" :value="item.value" />
       </el-select>
@@ -16,7 +16,7 @@
     </div>
 
     <el-table v-loading="loading" :data="rows" stripe>
-      <el-table-column prop="number" label="訂單號" min-width="190" />
+      <el-table-column prop="number" label="訂單編號" min-width="190" />
       <el-table-column prop="consignee" label="收件人" min-width="110" />
       <el-table-column prop="phone" label="電話" min-width="130" />
       <el-table-column prop="amount" label="金額" width="110" />
@@ -30,7 +30,7 @@
         <template #default="{ row }">
           <el-button link type="primary" @click="openDetail(row)">詳情</el-button>
           <el-button v-if="row.status === 2" link type="success" @click="accept(row)">確認</el-button>
-          <el-button v-if="row.status === 2" link type="danger" @click="openReason(row, 'reject')">拒單</el-button>
+          <el-button v-if="row.status === 2" link type="danger" @click="openReason(row, 'reject')">婉拒</el-button>
           <el-button v-if="[2, 3].includes(row.status)" link type="warning" @click="openReason(row, 'cancel')">取消</el-button>
           <el-button v-if="row.status === 3" link type="primary" @click="delivery(row)">配送</el-button>
           <el-button v-if="row.status === 4" link type="success" @click="complete(row)">完成</el-button>
@@ -49,7 +49,7 @@
 
     <el-dialog v-model="detailVisible" title="訂單詳情" width="720px">
       <el-descriptions v-if="detail" :column="2" border>
-        <el-descriptions-item label="訂單號">{{ detail.number }}</el-descriptions-item>
+        <el-descriptions-item label="訂單編號">{{ detail.number }}</el-descriptions-item>
         <el-descriptions-item label="狀態">{{ statusText(detail.status) }}</el-descriptions-item>
         <el-descriptions-item label="收件人">{{ detail.consignee }}</el-descriptions-item>
         <el-descriptions-item label="電話">{{ detail.phone }}</el-descriptions-item>
@@ -65,7 +65,7 @@
       </el-table>
     </el-dialog>
 
-    <el-dialog v-model="reasonVisible" :title="reasonMode === 'reject' ? '拒單原因' : '取消原因'" width="460px">
+    <el-dialog v-model="reasonVisible" :title="reasonMode === 'reject' ? '婉拒原因' : '取消原因'" width="460px">
       <el-input v-model="reason" type="textarea" :rows="4" placeholder="請輸入原因" />
       <template #footer>
         <el-button @click="reasonVisible = false">取消</el-button>
@@ -119,7 +119,7 @@ const activeOrder = ref<any>(null)
 
 const statCards = computed(() => [
   { label: '待確認', value: statistics.value.toBeConfirmed ?? 0 },
-  { label: '待配送', value: statistics.value.confirmed ?? 0 },
+  { label: '已確認', value: statistics.value.confirmed ?? 0 },
   { label: '配送中', value: statistics.value.deliveryInProgress ?? 0 }
 ])
 
@@ -181,7 +181,7 @@ async function submitReason() {
   try {
     if (reasonMode.value === 'reject') {
       await orderReject({ id: activeOrder.value.id, rejectionReason: reason.value.trim() })
-      ElMessage.success('已拒單')
+      ElMessage.success('已婉拒')
     } else {
       await orderCancel({ id: activeOrder.value.id, cancelReason: reason.value.trim() })
       ElMessage.success('訂單已取消')
@@ -232,7 +232,7 @@ onMounted(async () => {
 
 .order-stat {
   padding: 18px;
-  border-radius: 18px;
+  border-radius: 8px;
   background: #f6f1df;
 }
 

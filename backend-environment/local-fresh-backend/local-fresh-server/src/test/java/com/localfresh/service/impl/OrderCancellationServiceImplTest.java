@@ -55,16 +55,16 @@ class OrderCancellationServiceImplTest {
                 .number(2)
                 .build()));
 
-        orderCancellationService.cancelOrder(order, "商家取消", null, "ADMIN", 1L);
+        orderCancellationService.cancelOrder(order, "店家取消", null, "ADMIN", 1L);
 
-        verify(paymentGateway).refund(order, "商家取消");
+        verify(paymentGateway).refund(order, "店家取消");
         ArgumentCaptor<Orders> captor = ArgumentCaptor.forClass(Orders.class);
         verify(orderMapper).update(captor.capture());
         Orders updated = captor.getValue();
         assertEquals(10L, updated.getId());
         assertEquals(Orders.CANCELLED, updated.getStatus());
         assertEquals(Orders.REFUND, updated.getPayStatus());
-        assertEquals("商家取消", updated.getCancelReason());
+        assertEquals("店家取消", updated.getCancelReason());
         assertNotNull(updated.getCancelTime());
         verify(inventoryService).restoreProduct(20L, 2, "ORDER_CANCEL_RESTORE", 10L, "ADMIN", 1L);
     }

@@ -44,7 +44,7 @@ public interface GiftBoxService {
     void update(GiftBoxDTO setmealDTO);
 
     /**
-     * 直送箱起售、停售
+     * 直送箱上架、下架
      * @param status
      * @param id
      */
@@ -58,7 +58,7 @@ public interface GiftBoxService {
     List<GiftBox> list(GiftBox setmeal);
 
     /**
-     * 根據id查詢商品选项
+     * 根據id查詢商品選項
      * @param id
      * @return
      */

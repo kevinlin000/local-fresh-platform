@@ -7,7 +7,7 @@
     <Orderview :orderviewData="orderviewData" />
     <!-- end -->
     <div class="homeMain">
-      <!-- 單品總覽 -->
+      <!-- 商品總覽 -->
       <CuisineStatistics :dishesData="dishesData" />
       <!-- end -->
       <!-- 直送箱總覽 -->
@@ -29,7 +29,7 @@ import {
   getBusinessData,
   getDataOverView, //營業資料
   getOrderData, //訂單管理今日訂單
-  getOverviewDishes, //單品總覽
+  getOverviewDishes, //商品總覽
   getSetMealStatistics, //直送箱總覽
 } from '@/api/index'
 import { getOrderListBy } from '@/api/order'
@@ -38,7 +38,7 @@ import { getOrderListBy } from '@/api/order'
 import Overview from './components/overview.vue'
 // 訂單管理
 import Orderview from './components/orderview.vue'
-// 單品總覽
+// 商品總覽
 import CuisineStatistics from './components/cuisineStatistics.vue'
 // 直送箱總覽
 import SetMealStatistics from './components/setMealStatistics.vue'
@@ -89,7 +89,7 @@ export default class extends Vue {
     const data = await getOrderData()
     this.orderviewData = data.data.data
   }
-  // 取得單品總覽資料
+  // 取得商品總覽資料
   async getOverStatisticsData() {
     const data = await getOverviewDishes()
     this.dishesData = data.data.data

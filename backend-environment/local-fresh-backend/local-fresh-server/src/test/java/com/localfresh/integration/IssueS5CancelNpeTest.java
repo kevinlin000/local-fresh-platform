@@ -1,7 +1,7 @@
 package com.localfresh.integration;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.localfresh.utils.JsonUtil;
 import com.localfresh.websocket.WebSocketServer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -72,8 +72,8 @@ class IssueS5CancelNpeTest {
                 .andReturn();
 
         String body = loginResult.getResponse().getContentAsString();
-        JSONObject json = JSON.parseObject(body);
-        userToken = json.getJSONObject("data").getString("token");
+        JsonNode json = JsonUtil.readTree(body);
+        userToken = json.path("data").path("token").asText();
     }
 
     @Test

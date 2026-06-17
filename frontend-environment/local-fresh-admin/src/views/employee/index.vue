@@ -69,7 +69,7 @@ export default {
   methods: {
     // 分頁查詢
     pageQuery(){
-      // 准备請求参数
+      // 準備請求參數
       const params = {name: this.name, page: this.page, pageSize: this.pageSize}
       getEmployeeList(params).then(res => {
           if(res.data.code === 1){

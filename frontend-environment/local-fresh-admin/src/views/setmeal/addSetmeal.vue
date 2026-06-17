@@ -34,20 +34,20 @@
           </el-form-item>
         </div>
         <div>
-          <el-form-item label="直送箱單品:"
+          <el-form-item label="直送箱商品:"
                         required>
             <el-form-item>
               <div class="addDish">
                 <span v-if="dishTable.length == 0"
                       class="addBut"
                       @click="openAddDish('new')">
-                  + 新增單品</span>
+                  + 新增商品</span>
                 <div v-if="dishTable.length != 0"
                      class="content">
                   <div class="addBut"
                        style="margin-bottom: 20px"
                        @click="openAddDish('change')">
-                    + 新增單品
+                    + 新增商品
                   </div>
                   <div class="table">
                     <el-table :data="dishTable"
@@ -134,7 +134,7 @@
       </el-form>
     </div>
     <el-dialog v-if="dialogVisible"
-               title="新增單品"
+               title="新增商品"
                class="addDishList"
                :visible.sync="dialogVisible"
                width="60%"
@@ -343,7 +343,7 @@ export default class extends Vue {
     })
   }
 
-  // 透過直送箱ID取得單品列表分類
+  // 透過直送箱ID取得商品列表分類
   // private getDishList (id:number) {
   //   getDishListType({id}).then(res => {
   //     if (res.data.code == 200) {
@@ -355,24 +355,24 @@ export default class extends Vue {
   //   })
   // }
 
-  // 刪除直送箱單品
+  // 刪除直送箱商品
   delDishHandle(index: any) {
     this.dishTable.splice(index, 1)
     this.checkList = this.dishTable
     // this.checkList.splice(index, 1)
   }
 
-  // 取得新增單品資料，確認後倒序展示
+  // 取得新增商品資料，確認後倒序展示
   private getCheckList(value: any) {
     this.checkList = [...value].reverse()
   }
 
-  // 新增單品
+  // 新增商品
   openAddDish(st: string) {
     this.seachKey = ''
     this.dialogVisible = true
   }
-  // 取消新增單品
+  // 取消新增商品
   handleClose(done: any) {
     // this.$refs.adddish.close()
     this.dialogVisible = false
@@ -380,7 +380,7 @@ export default class extends Vue {
     // this.dialogVisible = false
   }
 
-  // 儲存新增單品清單
+  // 儲存新增商品清單
   public addTableList() {
     this.dishTable = JSON.parse(JSON.stringify(this.checkList))
     this.dishTable.forEach((n: any) => {
@@ -393,7 +393,7 @@ export default class extends Vue {
     ;(this.$refs[formName] as any).validate((valid: any) => {
       if (valid) {
         if (this.dishTable.length === 0) {
-          return this.$message.error('直送箱內單品不能為空')
+          return this.$message.error('直送箱內商品不能為空')
         }
         if (!this.ruleForm.image) return this.$message.error('直送箱圖片不能為空')
         let prams = { ...this.ruleForm } as any

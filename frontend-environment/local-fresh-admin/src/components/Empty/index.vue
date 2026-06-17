@@ -18,7 +18,7 @@ import { Vue, Component, Prop } from 'vue-property-decorator'
   name: 'Empty'
 })
 export default class extends Vue {
-  @Prop({ default: false }) isSearch: boolean //用来区分是搜索还是預設无資料
+  @Prop({ default: false }) isSearch: boolean //用來區分是搜尋或是預設無資料
 }
 </script>
 <style scoped lang="scss">

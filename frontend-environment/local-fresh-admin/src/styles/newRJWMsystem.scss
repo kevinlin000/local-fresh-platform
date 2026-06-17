@@ -24,12 +24,12 @@
   }
 }
 
-//统一修改单选按鈕樣式
+// 統一修改單選按鈕樣式
 .el-radio__inner::after {
   background-color: #333;
 }
 
-//统一修改表单label的樣式
+// 統一修改表單 label 樣式
 .el-form-item__label {
   color: #333;
 }
@@ -38,7 +38,7 @@
   border-color: #E5E4E4;
 }
 
-//统一修改輸入框提示文字的樣式
+// 統一修改輸入框提示文字樣式
 .el-input__inner::-webkit-input-placeholder,
 .el-input__inner::-moz-placeholder,
 .el-input__inner::-ms-input-placeholder {

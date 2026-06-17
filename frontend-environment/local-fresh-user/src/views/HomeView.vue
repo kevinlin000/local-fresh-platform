@@ -6,7 +6,7 @@
           <p class="eyebrow">在地小農直送</p>
           <h1>今天的採買清單，從產地直送開始</h1>
           <p class="hero-copy">
-            挑選當季單品、主題直送箱，或從商品頁發起 3 人揪團免運。
+            挑選當季商品、主題直送箱，或從商品頁發起 3 人揪團免運。
           </p>
         </div>
       </div>
@@ -32,7 +32,7 @@
       <div class="catalog-layout">
         <aside class="category-panel">
           <div class="panel-header">
-            <h2>{{ activeTab === 'product' ? '單品分類' : '直送箱分類' }}</h2>
+            <h2>{{ activeTab === 'product' ? '商品分類' : '直送箱分類' }}</h2>
             <span>{{ activeTab === 'product' ? activeCategories.length + 1 : activeCategories.length }} 類</span>
           </div>
 
@@ -50,7 +50,7 @@
               :class="{ active: activeCategoryId === null }"
               @click="selectCategory(null)"
             >
-              <span>全部單品</span>
+              <span>全部商品</span>
             </button>
             <button
               v-for="category in activeCategories"
@@ -67,7 +67,7 @@
         <div class="catalog-content">
           <div class="content-header">
             <div>
-              <p class="eyebrow">{{ activeTab === 'product' ? '鮮選單品' : '主題直送箱' }}</p>
+              <p class="eyebrow">{{ activeTab === 'product' ? '鮮選商品' : '主題直送箱' }}</p>
               <h2>{{ activeCategoryName }}</h2>
               <p v-if="activeTab === 'product'" class="result-copy">{{ productResultCopy }}</p>
             </div>
@@ -164,7 +164,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage } from 'element-plus/es/components/message/index'
 import { useRouter } from 'vue-router'
 import heroImage from '@/assets/brand/hero.png'
 import {
@@ -207,7 +207,7 @@ const productSort = ref<'recommended' | 'priceAsc' | 'priceDesc' | 'nameAsc'>('r
 let productSearchTimer: ReturnType<typeof setTimeout> | undefined
 
 const tabOptions = [
-  { label: '當季單品', value: 'product' },
+  { label: '當季商品', value: 'product' },
   { label: '產地直送箱', value: 'giftbox' }
 ]
 
@@ -217,7 +217,7 @@ const activeCategories = computed(() =>
 
 const activeCategoryName = computed(() => {
   if (activeTab.value === 'product' && activeCategoryId.value === null) {
-    return '全部單品'
+    return '全部商品'
   }
   const category = activeCategories.value.find((item) => item.id === activeCategoryId.value)
   return category?.name || '請先選擇分類'

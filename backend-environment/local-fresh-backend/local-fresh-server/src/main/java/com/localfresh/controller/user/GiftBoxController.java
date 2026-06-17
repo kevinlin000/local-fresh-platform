@@ -54,13 +54,13 @@ public class GiftBoxController {
     }
 
     /**
-     * 根據直送箱 ID 查詢包含的單品列表
+     * 根據直送箱 ID 查詢包含的商品列表
      *
      * @param id
      * @return
      */
     @GetMapping("/product/{id}")
-    @Operation(summary = "根據直送箱 ID 查詢包含的單品列表")
+    @Operation(summary = "根據直送箱 ID 查詢包含的商品列表")
     public Result<List<ProductItemVO>> dishList(@PathVariable("id") Long id) {
         List<ProductItemVO> list = giftBoxService.getDishItemById(id);
         return Result.success(list);

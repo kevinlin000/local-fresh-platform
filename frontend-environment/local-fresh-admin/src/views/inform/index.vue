@@ -107,7 +107,7 @@
                 </p>
                 <p>
                   <span
-                    ><label>單品：</label>{{ item.details.orderDishes }}</span
+                    ><label>商品：</label>{{ item.details.orderDishes }}</span
                   >
                 </p>
               </div>
@@ -322,7 +322,7 @@ export default class extends Vue {
       this.$message.error(data.msg)
     }
   }
-  // 觸發已读未读按鈕
+  // 觸發已讀/未讀按鈕
   handleClass(index) {
     this.activeIndex = index
     if (index === 0) {
@@ -332,7 +332,7 @@ export default class extends Vue {
     }
     this.getData()
   }
-  // 下拉菜单显示
+  // 下拉選單顯示
   toggleShow(id, index) {
     this.shopShow = true
     this.showIndex = index
@@ -349,7 +349,7 @@ export default class extends Vue {
       }
     }, 1000)
   }
-  // 下拉菜单隐藏
+  // 下拉選單隱藏
   mouseLeaves(index) {
     this.shopShow = false
     this.showIndex = index

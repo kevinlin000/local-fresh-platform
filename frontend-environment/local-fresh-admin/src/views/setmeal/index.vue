@@ -23,7 +23,7 @@
           />
         </el-select>
         <el-button type="primary" style="margin-left: 20px" @click="pageQuery()">
-          搜索
+          搜尋
         </el-button>
         <div style="float: right">
           <el-button type="danger" @click="handleDeleteSetmeal('B')">
@@ -47,7 +47,7 @@
         <el-table-column label="販售狀態">
           <template slot-scope="scope">
             <div class="tableColumn-status" :class="{ 'stop-use': scope.row.status === 0 }">
-              {{ scope.row.status === 1 ? '啟售' : '停售' }}
+              {{ scope.row.status === 1 ? '上架' : '下架' }}
             </div>
           </template>
         </el-table-column>
@@ -61,7 +61,7 @@
               刪除
             </el-button>
             <el-button type="text" @click="handleEnableOrDisable(scope.row)">
-              {{ scope.row.status === 1 ? '停售' : '啟售' }}
+              {{ scope.row.status === 1 ? '下架' : '上架' }}
             </el-button>
           </template>
         </el-table-column>
@@ -94,10 +94,10 @@ export default {
       categoryId: '', // 分類id
       statusList: [{
           value: 0,
-          label: '停售'
+          label: '下架'
         }, {
           value: 1,
-          label: '啟售'
+          label: '上架'
         }],
         status: '', // 販售狀態
         total: 0,
@@ -151,7 +151,7 @@ export default {
       },
       // 更新套装狀態
       handleEnableOrDisable(row) {
-        const status = row.status === 1 ? '停售' : '啟售'
+        const status = row.status === 1 ? '下架' : '上架'
         this.$confirm('您確定要<span style="color:red">' + status + '</span>此直送箱的狀態嗎？', '提示', {
           dangerouslyUseHTMLString: true,
           confirmButtonText: '確定',

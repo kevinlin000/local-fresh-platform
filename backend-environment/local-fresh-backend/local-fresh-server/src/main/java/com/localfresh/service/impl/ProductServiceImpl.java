@@ -107,11 +107,11 @@ public class ProductServiceImpl implements ProductService {
      */
     @Transactional
     public void deleteBatch(List<Long> ids) {
-        //判斷當前商品是否能夠刪除 - 是否存在啟售中的商品？
+        //判斷當前商品是否能夠刪除 - 是否存在上架中的商品？
         for (Long id : ids) {
             Product dish = productMapper.getById(id);
             if (dish.getStatus() == StatusConstant.ENABLE) {
-                //當前商品正在啟售中，無法刪除
+                //當前商品正在上架中，無法刪除
                 throw new DeletionNotAllowedException(MessageConstant.DISH_ON_SALE);
             }
         }
@@ -128,7 +128,7 @@ public class ProductServiceImpl implements ProductService {
         //sql: delete from dish where id in (?,?,?)
         productMapper.deleteByIds(ids);
         //根據商品id集合批次刪除關聯的規格資料
-        // 刪除單品既有規格資料
+        // 刪除商品既有規格資料
         productSpecMapper.deleteByDishIds(ids);
 
         cleanCache("product_*");
@@ -221,7 +221,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     /**
-     * 商品起售停售
+     * 商品上架下架
      *
      * @param status
      * @param id
@@ -235,10 +235,10 @@ public class ProductServiceImpl implements ProductService {
         productMapper.update(dish);
 
         if (status == StatusConstant.DISABLE) {
-            // 如果是停售操作，還需要將包含目前商品的直送箱也停售
+            // 如果是下架操作，還需要將包含目前商品的直送箱也下架
             List<Long> dishIds = new ArrayList<>();
             dishIds.add(id);
-            // 查詢包含該單品的直送箱，停售時一併下架
+            // 查詢包含該商品的直送箱，下架時一併下架
             List<Long> setmealIds = giftBoxProductMapper.getSetmealIdsByDishIds(dishIds);
             if (setmealIds != null && setmealIds.size() > 0) {
                 for (Long giftBoxId : setmealIds) {

@@ -12,7 +12,7 @@
       <nav class="admin-nav">
         <RouterLink to="/dashboard">工作台</RouterLink>
         <RouterLink to="/orders">訂單管理</RouterLink>
-        <RouterLink to="/products">單品管理</RouterLink>
+        <RouterLink to="/products">商品管理</RouterLink>
         <RouterLink to="/gift-boxes">直送箱管理</RouterLink>
         <RouterLink to="/categories">分類管理</RouterLink>
         <RouterLink to="/employees">員工管理</RouterLink>
@@ -64,7 +64,7 @@ p {
 small {
   color: rgba(255, 255, 255, 0.58);
   font-size: 11px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 </style>

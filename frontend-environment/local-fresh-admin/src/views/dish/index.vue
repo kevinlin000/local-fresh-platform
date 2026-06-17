@@ -2,15 +2,15 @@
   <div class="dashboard-container">
     <div class="container">
       <div class="tableBar">
-        <label style="margin-right: 10px">單品名稱：</label>
+        <label style="margin-right: 10px">商品名稱：</label>
         <el-input v-model="input"
-                  placeholder="請輸入單品名稱"
+                  placeholder="請輸入商品名稱"
                   style="width: 14%"
                   clearable
                   @clear="init"
                   @keyup.enter.native="initFun" />
 
-        <label style="margin-right: 10px; margin-left: 20px">單品分類：</label>
+        <label style="margin-right: 10px; margin-left: 20px">商品分類：</label>
         <el-select v-model="categoryId"
                    style="width: 14%"
                    placeholder="請選擇"
@@ -41,17 +41,17 @@
         <div class="tableLab">
           <span class="delBut non"
                 @click="deleteHandle('批次', null)">批次刪除</span>
-          <!-- <span class="blueBug non" @click="statusHandle('1')">批次啟售</span>
+          <!-- <span class="blueBug non" @click="statusHandle('1')">批次上架</span>
           <span
             style="border: none"
             class="delBut non"
             @click="statusHandle('0')"
-            >批次停售</span
+            >批次下架</span
           > -->
           <el-button type="primary"
                      style="margin-left: 15px"
                      @click="addDishtype('add')">
-            + 新建單品
+            + 新建商品
           </el-button>
         </div>
       </div>
@@ -63,7 +63,7 @@
         <el-table-column type="selection"
                          width="25" />
         <el-table-column prop="productName"
-                         label="單品名稱" />
+                         label="商品名稱" />
         <el-table-column prop="image"
                          label="圖片">
           <template slot-scope="{ row }">
@@ -78,7 +78,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="categoryName"
-                         label="單品分類" />
+                         label="商品分類" />
         <el-table-column label="售價">
           <template slot-scope="scope">
             <span style="margin-right: 10px">NT$ {{ (scope.row.price ).toFixed(2)*100/100 }}</span>
@@ -88,7 +88,7 @@
           <template slot-scope="scope">
             <div class="tableColumn-status"
                  :class="{ 'stop-use': String(scope.row.status) === '0' }">
-              {{ String(scope.row.status) === '0' ? '停售' : '啟售' }}
+              {{ String(scope.row.status) === '0' ? '下架' : '上架' }}
             </div>
           </template>
         </el-table-column>
@@ -107,7 +107,7 @@
             <el-button type="text"
                        size="small"
                        class="delBut"
-                       @click="deleteHandle('单删', scope.row.id)">
+                       @click="deleteHandle('單筆刪除', scope.row.id)">
               刪除
             </el-button>
             <el-button type="text"
@@ -118,7 +118,7 @@
                          delBut: scope.row.status != '0'
                        }"
                        @click="statusHandle(scope.row)">
-              {{ scope.row.status == '0' ? '啟售' : '停售' }}
+              {{ scope.row.status == '0' ? '上架' : '下架' }}
             </el-button>
           </template>
         </el-table-column>
@@ -174,11 +174,11 @@ export default class extends Vue {
   private saleStatus: any = [
     {
       value: 0,
-      label: '停售'
+      label: '下架'
     },
     {
       value: 1,
-      label: '啟售'
+      label: '上架'
     }
   ]
 
@@ -233,7 +233,7 @@ export default class extends Vue {
         return this.$message.error('請選擇刪除物件')
       }
     }
-    this.$confirm('確認刪除該單品，是否繼續？', '確定刪除', {
+    this.$confirm('確認刪除該商品，是否繼續？', '確定刪除', {
       confirmButtonText: '刪除',
       cancelButtonText: '取消',
       type: 'warning'
@@ -252,7 +252,7 @@ export default class extends Vue {
         })
     })
   }
-  //取得單品分類下拉資料
+  //取得商品分類下拉資料
   private getDishCategoryList() {
     dishCategoryList({
       type: 1
@@ -276,7 +276,7 @@ export default class extends Vue {
     let params: any = {}
     if (typeof row === 'string') {
       if (this.checkList.length === 0) {
-        this.$message.error('批次操作前，請先勾選單品！')
+        this.$message.error('批次操作前，請先勾選商品！')
         return false
       }
       params.id = this.checkList.join(',')
@@ -286,16 +286,16 @@ export default class extends Vue {
       params.status = row.status ? '0' : '1'
     }
     this.dishState = params
-    this.$confirm('確認變更該單品狀態？', '提示', {
+    this.$confirm('確認變更該商品狀態？', '提示', {
       confirmButtonText: '確定',
       cancelButtonText: '取消',
       type: 'warning'
     }).then(() => {
-      // 起售停售---批次起售停售介面
+      // 上架下架---批次上架下架介面
       dishStatusByStatus(this.dishState)
         .then(res => {
           if (res && res.data && res.data.code === 1) {
-            this.$message.success('單品狀態更新成功！')
+            this.$message.success('商品狀態更新成功！')
             this.init()
           } else {
             this.$message.error(res.data.msg)

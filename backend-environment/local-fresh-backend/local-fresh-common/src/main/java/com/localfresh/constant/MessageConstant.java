@@ -12,7 +12,7 @@ public class MessageConstant {
     public static final String UNKNOWN_ERROR = "未知錯誤";
     public static final String USER_NOT_LOGIN = "會員未登入";
     public static final String CATEGORY_BE_RELATED_BY_SETMEAL = "目前分類關聯了直送箱，不能刪除";
-    public static final String CATEGORY_BE_RELATED_BY_DISH = "目前分類關聯了單品，不能刪除";
+    public static final String CATEGORY_BE_RELATED_BY_DISH = "目前分類關聯了商品，不能刪除";
     public static final String SHOPPING_CART_IS_NULL = "購物車資料為空，不能下單";
     public static final String SHOPPING_CART_ITEM_REQUIRED = "商品或直送箱不能為空";
     public static final String SHOPPING_CART_ITEM_AMBIGUOUS = "商品與直送箱不能同時指定";
@@ -23,11 +23,11 @@ public class MessageConstant {
     public static final String LOGIN_FAILED = "會員登入失敗";
     public static final String LOGIN_DISABLED = "此登入方式已停用";
     public static final String UPLOAD_FAILED = "檔案上傳失敗";
-    public static final String SETMEAL_ENABLE_FAILED = "直送箱內含未啟售的單品，無法啟售";
+    public static final String SETMEAL_ENABLE_FAILED = "直送箱內含未上架的商品，無法上架";
     public static final String PASSWORD_EDIT_FAILED = "密碼修改失敗";
-    public static final String DISH_ON_SALE = "啟售中的單品不能刪除";
-    public static final String SETMEAL_ON_SALE = "啟售中的直送箱不能刪除";
-    public static final String DISH_BE_RELATED_BY_SETMEAL = "目前單品關聯了直送箱，不能刪除";
+    public static final String DISH_ON_SALE = "上架中的商品不能刪除";
+    public static final String SETMEAL_ON_SALE = "上架中的直送箱不能刪除";
+    public static final String DISH_BE_RELATED_BY_SETMEAL = "目前商品關聯了直送箱，不能刪除";
     public static final String ORDER_STATUS_ERROR = "訂單狀態錯誤";
     public static final String ORDER_NOT_FOUND = "訂單不存在";
     public static final String GROUP_BUY_NOT_FOUND = "揪團不存在";

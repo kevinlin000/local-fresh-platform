@@ -3,7 +3,7 @@
     <div class="table-toolbar">
       <el-input v-model="query.name" clearable placeholder="搜尋分類名稱" @keyup.enter="loadData" />
       <el-select v-model="query.type" clearable placeholder="分類類型">
-        <el-option label="單品分類" :value="1" />
+        <el-option label="商品分類" :value="1" />
         <el-option label="直送箱分類" :value="2" />
       </el-select>
       <el-button type="primary" @click="loadData">查詢</el-button>
@@ -13,7 +13,7 @@
     <el-table v-loading="loading" :data="rows" stripe>
       <el-table-column prop="name" label="分類名稱" min-width="160" />
       <el-table-column label="類型" width="130">
-        <template #default="{ row }">{{ row.type === 1 ? '單品' : '直送箱' }}</template>
+        <template #default="{ row }">{{ row.type === 1 ? '商品' : '直送箱' }}</template>
       </el-table-column>
       <el-table-column prop="sort" label="排序" width="100" />
       <el-table-column label="狀態" width="120">
@@ -48,7 +48,7 @@
         </el-form-item>
         <el-form-item label="類型" prop="type">
           <el-select v-model="form.type" placeholder="請選擇">
-            <el-option label="單品分類" :value="1" />
+            <el-option label="商品分類" :value="1" />
             <el-option label="直送箱分類" :value="2" />
           </el-select>
         </el-form-item>

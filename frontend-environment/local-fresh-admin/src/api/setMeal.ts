@@ -13,7 +13,7 @@ export const getSetmealPage = (params: any) => {
     })
 }
 
-//直送箱啟售停售
+//直送箱上架下架
 export const enableOrDisableSetmeal = (params: any) => {
     return request({
         url: `/giftbox/status/${params.status}`,

@@ -97,7 +97,7 @@ public class GiftBoxController {
     }
 
     /**
-     * 直送箱起售停售
+     * 直送箱上架下架
      * @param status
      * @param id
      * @return

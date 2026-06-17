@@ -107,7 +107,7 @@ External services:
 
 | Layer | Technologies |
 |---|---|
-| Backend | Java 17, Spring Boot 3.5.14, MyBatis, PageHelper, Flyway, JWT, Druid, Actuator |
+| Backend | Java 17, Spring Boot 3.5.14, MyBatis, PageHelper, Flyway, JWT, HikariCP, Actuator |
 | Frontend | User Vue 3 + Vite 5, Admin Vue 3 + Vite 8, TypeScript, Pinia, Vue Router 4, Element Plus |
 | Infrastructure | MySQL 8, Redis 7, Redisson, Testcontainers, Docker, GitHub Actions |
 | Third-party Services | Google OAuth 2.0, Google Maps API, AWS EC2 + S3 + CloudFront + DuckDNS |

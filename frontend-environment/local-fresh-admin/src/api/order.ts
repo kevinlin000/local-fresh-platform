@@ -50,7 +50,7 @@ export const orderAccept = (params: any) => {
   })
 }
 
-//拒单
+// 拒絕訂單
 export const orderReject = (params: any) => {
   return request({
     url: '/order/rejection',

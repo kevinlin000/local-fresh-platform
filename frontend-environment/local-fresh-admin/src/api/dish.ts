@@ -1,7 +1,7 @@
 import request from '@/utils/request'
 /**
  *
- * 單品管理
+ * 商品管理
  *
  **/
 // 查詢列表介面
@@ -48,7 +48,7 @@ export const queryDishById = (id: string | (string | null)[]) => {
   })
 }
 
-// 查詢單品庫存異動紀錄
+// 查詢商品庫存異動紀錄
 export const queryDishInventoryLogs = (id: string | number) => {
   return request({
     url: `/product/${id}/inventory-logs`,
@@ -56,7 +56,7 @@ export const queryDishInventoryLogs = (id: string | number) => {
   })
 }
 
-// 手動調整單品庫存
+// 手動調整商品庫存
 export const adjustDishInventory = (id: string | number, data: any) => {
   return request({
     url: `/product/${id}/inventory`,
@@ -65,7 +65,7 @@ export const adjustDishInventory = (id: string | number, data: any) => {
   })
 }
 
-// 取得單品分類列表
+// 取得商品分類列表
 export const getCategoryList = (params: any) => {
   return request({
     url: '/category/list',
@@ -74,7 +74,7 @@ export const getCategoryList = (params: any) => {
   })
 }
 
-// 查單品列表的介面
+// 查商品列表的介面
 export const queryDishList = (params: any) => {
   return request({
     url: '/product/list',
@@ -95,7 +95,7 @@ export const commonDownload = (params: any) => {
   })
 }
 
-// 起售停售---批次起售停售介面
+// 上架下架---批次上架下架介面
 export const dishStatusByStatus = (params: any) => {
   return request({
     url: `/product/status/${params.status}`,
@@ -104,7 +104,7 @@ export const dishStatusByStatus = (params: any) => {
   })
 }
 
-//單品分類資料查詢
+//商品分類資料查詢
 export const dishCategoryList = (params: any) => {
   return request({
     url: `/category/list`,

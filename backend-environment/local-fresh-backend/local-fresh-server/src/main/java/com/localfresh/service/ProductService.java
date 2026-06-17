@@ -59,7 +59,7 @@ public interface ProductService {
     List<ProductVO> listWithFlavor(Product dish);
 
     /**
-     * 商品起售停售
+     * 商品上架下架
      * @param status
      * @param id
      */

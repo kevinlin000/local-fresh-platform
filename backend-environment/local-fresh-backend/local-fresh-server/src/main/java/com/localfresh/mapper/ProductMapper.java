@@ -70,7 +70,7 @@ public interface ProductMapper {
     void update(Product dish);
 
     /**
-     * 动态條件查詢商品
+     * 動態條件查詢商品
      * @param dish
      * @return
      */
@@ -110,7 +110,7 @@ public interface ProductMapper {
     Integer countLowStock();
 
     /**
-     * 根據條件统计商品數量
+     * 根據條件統計商品數量
      * @param map
      * @return
      */

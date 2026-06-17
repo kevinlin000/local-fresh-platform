@@ -23,7 +23,7 @@ public class WebSocketServer {
     private static Map<String, Session> sessionMap = new ConcurrentHashMap<>();
 
     /**
-     * 连接建立成功呼叫的方法
+     * 連接建立成功呼叫的方法
      */
     @OnOpen
     public void onOpen(Session session, @PathParam("sid") String sid) {
@@ -42,7 +42,7 @@ public class WebSocketServer {
     }
 
     /**
-     * 连接关闭呼叫的方法
+     * 連接关闭呼叫的方法
      *
      * @param sid
      */
@@ -53,7 +53,7 @@ public class WebSocketServer {
     }
 
     /**
-     * 群发
+     * 廣播
      *
      * @param message
      */

@@ -19,10 +19,10 @@ public class ProductSpec implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Long id;
-    //商品id
+    // 商品 id
     private Long productId;
 
-    //規格名称
+    // 規格名稱
     private String name;
 
     //規格資料list

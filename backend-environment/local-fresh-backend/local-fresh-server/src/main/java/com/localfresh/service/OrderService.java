@@ -39,7 +39,7 @@ public interface OrderService {
     PageResult pageQuery4User(int page, int pageSize, Integer status);
 
     /**
-     * 查詢訂單详情（管理端，不做所有權驗證）
+     * 查詢訂單明細（管理端，不做所有權驗證）
      * @param id
      * @return
      */
@@ -59,41 +59,41 @@ public interface OrderService {
     void userCancelById(Long id) throws Exception;
 
     /**
-     * 再来一单
+     * 再下一單
      *
      * @param id
      */
     void repetition(Long id);
 
     /**
-     * 條件搜索訂單
+     * 條件搜尋訂單
      * @param ordersPageQueryDTO
      * @return
      */
     PageResult conditionSearch(OrdersPageQueryDTO ordersPageQueryDTO);
 
     /**
-     * 各個狀態的訂單數量统计
+     * 各個狀態的訂單數量統計
      * @return
      */
     OrderStatisticsVO statistics();
 
     /**
-     * 接单
+     * 確認訂單
      *
      * @param ordersConfirmDTO
      */
     void confirm(OrdersConfirmDTO ordersConfirmDTO);
 
     /**
-     * 拒单
+     * 拒絕訂單
      *
      * @param ordersRejectionDTO
      */
     void rejection(OrdersRejectionDTO ordersRejectionDTO) throws Exception;
 
     /**
-     * 商家取消訂單
+     * 店家取消訂單
      *
      * @param ordersCancelDTO
      */

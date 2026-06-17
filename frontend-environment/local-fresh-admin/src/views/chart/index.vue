@@ -3,13 +3,13 @@
     <HeadLable :but-list="true">
       <div class="headBut">
         <span :class="{ act: act === 'day' }" @click="dateAct('day')"
-          >日报</span
+          >日報</span
         >
         <span :class="{ act: act === 'week' }" @click="dateAct('week')"
-          >周报</span
+          >週報</span
         >
         <span :class="{ act: act === 'mouth' }" @click="dateAct('mouth')"
-          >月报</span
+          >月報</span
         >
       </div>
     </HeadLable>
@@ -148,13 +148,13 @@
             <span
               :class="{ butAct: typeB == 2 }"
               @click="topActiveHandle('typeB')"
-              >按销量</span
+            >按銷量</span
             >
           </div>
-          <BarChart :chart-data="chartDataC" title="單品分類占比" />
+          <BarChart :chart-data="chartDataC" title="商品分類占比" />
         </div>
         <div>
-          <MixedChart :chart-data="chartDataB" title="菜单銷售排行" />
+          <MixedChart :chart-data="chartDataB" title="商品銷售排行" />
         </div>
       </div>
     </div>
@@ -164,9 +164,9 @@
           <BarChart id="bar" :chart-data="chartDataD" title="店內收款構成" />
         </div>
         <div class="itemList">
-          <div class="title">優惠指标</div>
+          <div class="title">優惠指標</div>
           <div class="item topLab">
-            <span>優惠合计</span><span>{{ discountTotal / 100 }}元</span
+            <span>優惠合計</span><span>{{ discountTotal / 100 }}元</span
             ><span>{{ discountPercentTotal * 100 }}%</span>
           </div>
           <div v-for="(item, index) in discount" :key="index" class="item">
@@ -238,7 +238,7 @@ export default class extends Vue {
 
   private chartDataC = {} //分類占比
   private chartDataD = {} // 收款構成
-  private discount = [] // 優惠指标
+  private discount = [] // 優惠指標
   private discountTotal = 0
   private discountPercentTotal = 0
 
@@ -423,7 +423,7 @@ export default class extends Vue {
         this.$message.error('請求發生錯誤：' + err.message)
       })
   }
-  // 取得單品分類銷售排行 - 單品分類占比 -當日
+  // 取得商品分類銷售排行 - 商品分類占比 -當日
   private getSalesRankData() {
     getSalesRanking({ type: this.typeB, date: this.dataTime })
       .then((res) => {
@@ -493,7 +493,7 @@ export default class extends Vue {
         this.$message.error('請求發生錯誤：' + err.message)
       })
   }
-  // 取得當日單品銷售排行 - 銷售排行图
+  // 取得當日商品銷售排行 - 銷售排行图
   private getDayRankingData() {
     getDayRanking({ type: this.dataType, date: this.dataTime })
       .then((res) => {
@@ -549,7 +549,7 @@ export default class extends Vue {
       })
   }
 
-  // 查看時间段介面呼叫
+  // 查看時間區間介面呼叫
   private getTimeWuantumData() {
     this.getTimeQuantumData()
     this.getReceivables()
@@ -559,8 +559,8 @@ export default class extends Vue {
     this.getDiscount()
   }
 
-  // 時间段資料取得
-  // 取得時間範圍內的優惠指标汇總資料 - 優惠指标
+  // 時間區間資料取得
+  // 取得時間範圍內的優惠指標彙總資料 - 優惠指標
   private getDiscount() {
     getTimeQuantumDiscount({ start: this.stateTime, end: this.endTime })
       .then((res) => {
@@ -583,7 +583,7 @@ export default class extends Vue {
         this.$message.error('請求發生錯誤：' + err.message)
       })
   }
-  // 取得一定日期之内的銷售趨勢
+  // 取得一定日期之內的銷售趨勢
   private getTimeQuantumData() {
     getTimeQuantumDataes({
       type: this.typeA,
@@ -644,7 +644,7 @@ export default class extends Vue {
       })
   }
 
-  // 取得時間範圍內的單品類別銷售汇總 -  單品分類占比 - 時间段
+  // 取得時間範圍內的商品類別銷售汇總 -  商品分類占比 - 時间段
   private getTimeQuantumTypeData() {
     getTimeQuantumType({
       type: this.typeB,
@@ -682,7 +682,7 @@ export default class extends Vue {
         this.$message.error('請求發生錯誤：' + err.message)
       })
   }
-  // 取得時間範圍內的單品銷售排行
+  // 取得時間範圍內的商品銷售排行
   private getTimeQuantumDishesDataes() {
     getTimeQuantumDishes({ start: this.stateTime, end: this.endTime })
       .then((res) => {

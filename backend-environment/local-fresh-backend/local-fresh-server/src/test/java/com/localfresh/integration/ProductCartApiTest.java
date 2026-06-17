@@ -1,7 +1,6 @@
 package com.localfresh.integration;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.localfresh.entity.Cart;
 import com.localfresh.entity.Product;
@@ -10,6 +9,7 @@ import com.localfresh.mapper.CartMapper;
 import com.localfresh.mapper.ProductMapper;
 import com.localfresh.mapper.ProductSpecMapper;
 import com.localfresh.test.support.LoginResult;
+import com.localfresh.utils.JsonUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,10 +109,10 @@ class ProductCartApiTest {
         productMapper.insert(matchingProduct);
 
         Product disabledProduct = Product.builder()
-                .productName("有機停售番茄")
+                .productName("有機下架番茄")
                 .categoryId(2L)
                 .price(new BigDecimal("150.00"))
-                .description("停售商品")
+                .description("下架商品")
                 .status(0)
                 .build();
         productMapper.insert(disabledProduct);
@@ -125,7 +125,7 @@ class ProductCartApiTest {
                 .andExpect(jsonPath("$.data", hasSize(2)))
                 .andExpect(jsonPath("$.data[?(@.productName == '有機小黃瓜')]", hasSize(1)))
                 .andExpect(jsonPath("$.data[?(@.productName == '高山有機菠菜')]", hasSize(1)))
-                .andExpect(jsonPath("$.data[?(@.productName == '有機停售番茄')]", hasSize(0)));
+                .andExpect(jsonPath("$.data[?(@.productName == '有機下架番茄')]", hasSize(0)));
     }
 
     @Test
@@ -193,9 +193,8 @@ class ProductCartApiTest {
                 .andExpect(jsonPath("$.code").value(1))
                 .andReturn();
 
-        JSONObject data = JSON.parseObject(loginResult.getResponse().getContentAsString())
-                .getJSONObject("data");
-        return new LoginResult(data.getLong("id"), data.getString("token"));
+        JsonNode data = JsonUtil.readTree(loginResult.getResponse().getContentAsString()).path("data");
+        return new LoginResult(data.path("id").asLong(), data.path("token").asText());
     }
 
     private static class CartRequest {

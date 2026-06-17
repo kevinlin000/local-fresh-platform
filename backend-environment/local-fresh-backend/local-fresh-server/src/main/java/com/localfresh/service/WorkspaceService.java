@@ -11,7 +11,7 @@ import java.util.List;
 public interface WorkspaceService {
 
     /**
-     * 根據時间段统计营业資料
+     * 根據時間區間統計營業資料
      * @param begin
      * @param end
      * @return
@@ -25,13 +25,13 @@ public interface WorkspaceService {
     OrderOverViewVO getOrderOverView();
 
     /**
-     * 查詢商品總览
+     * 查詢商品總覽
      * @return
      */
     ProductOverViewVO getDishOverView();
 
     /**
-     * 查詢直送箱總览
+     * 查詢直送箱總覽
      * @return
      */
     GiftBoxOverViewVO getSetmealOverView();

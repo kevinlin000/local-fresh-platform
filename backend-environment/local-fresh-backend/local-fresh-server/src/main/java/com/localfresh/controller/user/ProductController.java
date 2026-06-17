@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 @RestController("userProductController")
 @RequestMapping("/user/product")
 @Slf4j
-@Tag(name = "會員端-單品瀏覽介面")
+@Tag(name = "會員端-商品瀏覽介面")
 public class ProductController {
     @Autowired
     private ProductService productService;
@@ -33,13 +33,13 @@ public class ProductController {
     private RedisTemplate<String, Object> appRedisTemplate;
 
     /**
-     * 根據分類 ID 查詢單品
+     * 根據分類 ID 查詢商品
      *
      * @param categoryId
      * @return
      */
     @GetMapping("/list")
-    @Operation(summary = "查詢可販售單品")
+    @Operation(summary = "查詢可販售商品")
     @SuppressWarnings("unchecked")
     public Result<List<ProductVO>> list(@RequestParam(required = false) Long categoryId,
                                         @RequestParam(required = false) String productName) {
@@ -59,7 +59,7 @@ public class ProductController {
         Product dish = new Product();
         dish.setCategoryId(categoryId);
         dish.setProductName(normalizedProductName);
-        dish.setStatus(StatusConstant.ENABLE);//查詢起售中的商品
+        dish.setStatus(StatusConstant.ENABLE);//查詢上架中的商品
 
         List<ProductVO> list = productService.listWithFlavor(dish);
         if (cacheable) {

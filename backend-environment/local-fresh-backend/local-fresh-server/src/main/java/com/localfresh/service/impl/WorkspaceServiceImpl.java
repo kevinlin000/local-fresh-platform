@@ -35,33 +35,33 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     private GiftBoxMapper giftBoxMapper;
 
     /**
-     * 根據時间段统计营业資料
+     * 根據時間區間統計營業資料
      * @param begin
      * @param end
      * @return
      */
     public BusinessDataVO getBusinessData(LocalDateTime begin, LocalDateTime end) {
         /**
-         * 營業額：当日已完成訂單的總金額
-         * 有效訂單：当日已完成訂單的數量
-         * 訂單完成率：有效訂單數 / 總訂單数
+         * 營業額：當日已完成訂單的總金額
+         * 有效訂單：當日已完成訂單的數量
+         * 訂單完成率：有效訂單數 / 總訂單數
          * 平均客單價：營業額 / 有效訂單數
-         * 新增會員：当日新增會員的數量
+         * 新增會員：當日新增會員的數量
          */
 
         Map map = new HashMap();
         map.put("begin",begin);
         map.put("end",end);
 
-        //查詢總訂單数
+        // 查詢總訂單數
         Integer totalOrderCount = orderMapper.countByMap(map);
 
         map.put("status", Orders.COMPLETED);
-        //營業額
+        // 營業額
         Double turnover = orderMapper.sumByMap(map);
         turnover = turnover == null? 0.0 : turnover;
 
-        //有效訂單數
+        // 有效訂單數
         Integer validOrderCount = orderMapper.countByMap(map);
 
         Double unitPrice = 0.0;

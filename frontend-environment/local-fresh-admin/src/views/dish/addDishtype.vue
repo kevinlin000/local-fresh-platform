@@ -10,16 +10,16 @@
                label-width="180px"
                class="demo-ruleForm">
         <div>
-          <el-form-item label="單品名稱:"
+          <el-form-item label="商品名稱:"
                         prop="productName">
             <el-input v-model="ruleForm.productName"
-                      placeholder="請輸入單品名稱"
+                      placeholder="請輸入商品名稱"
                       maxlength="20" />
           </el-form-item>
-          <el-form-item label="單品分類:"
+          <el-form-item label="商品分類:"
                         prop="categoryId">
             <el-select v-model="ruleForm.categoryId"
-                       placeholder="請選擇單品分類">
+                       placeholder="請選擇商品分類">
               <el-option v-for="(item, index) in dishList"
                          :key="index"
                          :label="item.name"
@@ -28,10 +28,10 @@
           </el-form-item>
         </div>
         <div>
-          <el-form-item label="單品價格:"
+          <el-form-item label="商品價格:"
                         prop="price">
             <el-input v-model="ruleForm.price"
-                      placeholder="請設定單品價格" />
+                      placeholder="請設定商品價格" />
           </el-form-item>
         </div>
         <el-form-item v-if="false"
@@ -84,7 +84,7 @@
           </el-form-item>
         </el-form-item>
         <div>
-          <el-form-item label="單品圖片:"
+          <el-form-item label="商品圖片:"
                         prop="image">
             <image-upload :prop-image-url="imageUrl"
                           @imageChange="imageChange">
@@ -93,13 +93,13 @@
           </el-form-item>
         </div>
         <div class="address">
-          <el-form-item label="單品描述:"
+          <el-form-item label="商品描述:"
                         prop="region">
             <el-input v-model="ruleForm.description"
                       type="textarea"
                       :rows="3"
                       maxlength="200"
-                      placeholder="單品描述，最長 200 字" />
+                      placeholder="商品描述，最長 200 字" />
           </el-form-item>
         </div>
         <div class="subBox address">
@@ -180,11 +180,11 @@ export default class extends Vue {
           required: true,
           validator: (rule: any, value: string, callback: Function) => {
             if (!value) {
-              callback(new Error('請輸入單品名稱'))
+              callback(new Error('請輸入商品名稱'))
             } else {
               const reg = /^([A-Za-z0-9\u4e00-\u9fa5]){2,20}$/
               if (!reg.test(value)) {
-                callback(new Error('單品名稱格式不符，請輸入 2-20 個字元'))
+                callback(new Error('商品名稱格式不符，請輸入 2-20 個字元'))
               } else {
                 callback()
               }
@@ -194,22 +194,22 @@ export default class extends Vue {
         }
       ],
       categoryId: [
-        { required: true, message: '請選擇單品分類', trigger: 'change' }
+        { required: true, message: '請選擇商品分類', trigger: 'change' }
       ],
       image: {
         required: true,
-        message: '單品圖片不能為空'
+        message: '商品圖片不能為空'
       },
       price: [
         {
           required: true,
-          // 'message': '請填寫單品價格',
+          // 'message': '請填寫商品價格',
           validator: (rules: any, value: string, callback: Function) => {
             const reg = /^([1-9]\d{0,5}|0)(\.\d{1,2})?$/
             if (!reg.test(value) || Number(value) <= 0) {
               callback(
                 new Error(
-                  '單品價格格式有誤，請輸入大於零且最多保留兩位小數的金額'
+                  '商品價格格式有誤，請輸入大於零且最多保留兩位小數的金額'
                 )
               )
             } else {
@@ -350,7 +350,7 @@ export default class extends Vue {
     }
   }
 
-  // 取得單品分類
+  // 取得商品分類
   private getDishList() {
     getCategoryList({ type: 1 }).then(res => {
       if (res.data.code === 1) {
@@ -382,7 +382,7 @@ export default class extends Vue {
     ;(this.$refs[formName] as any).validate((valid: any) => {
       console.log(valid, 'valid')
       if (valid) {
-        if (!this.ruleForm.image) return this.$message.error('單品圖片不能為空')
+        if (!this.ruleForm.image) return this.$message.error('商品圖片不能為空')
         let params: any = { ...this.ruleForm }
         // params.flavors = this.dishFlavors
         params.status =
@@ -399,7 +399,7 @@ export default class extends Vue {
           addDish(params)
             .then(res => {
               if (res.data.code === 1) {
-                this.$message.success('單品新增成功！')
+                this.$message.success('商品新增成功！')
                 if (!st) {
                   this.$router.push({ path: '/dish' })
                 } else {
@@ -419,13 +419,13 @@ export default class extends Vue {
             .then(res => {
               if (res && res.data && res.data.code === 1) {
                 this.$router.push({ path: '/dish' })
-                this.$message.success('單品修改成功！')
+                this.$message.success('商品修改成功！')
               } else {
                 this.$message.error(res.data.desc || res.data.msg)
               }
               // if (res.data.code == 200) {
               //   this.$router.push({'path': '/dish'})
-              //   this.$message.success('單品修改成功！')
+              //   this.$message.success('商品修改成功！')
               // } else {
               //   this.$message.error(res.data.desc || res.data.message)
               // }

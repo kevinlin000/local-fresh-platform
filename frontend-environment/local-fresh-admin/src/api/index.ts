@@ -19,7 +19,7 @@ import request from '@/utils/request'
     'url': `/workspace/overviewOrders`,
     'method': 'get'
   })
-// 單品總覽
+// 商品總覽
 export const getOverviewDishes = () =>
 request({
   'url': `/workspace/overviewDishes`,
@@ -38,7 +38,7 @@ request({
   'method': 'get'
 })
 
-// 低庫存單品
+// 低庫存商品
 export const getLowStockProducts = () =>
 request({
   'url': `/workspace/lowStockProducts`,
@@ -49,7 +49,7 @@ request({
  * 報表資料
  *
  **/
-// 统计
+// 統計
 // 取得當日銷售資料 -> 頂部資料
 // export const getDataes = (params: any) =>
 //   request({
@@ -58,7 +58,7 @@ request({
 //   })
 
 
-// 營業额统计
+// 營業額統計
 export const getTurnoverStatistics= (params: any) =>
   request({
     'url': `/report/turnoverStatistics`,
@@ -66,21 +66,21 @@ export const getTurnoverStatistics= (params: any) =>
     params
   })
 
-// 會員统计
+// 會員統計
 export const getUserStatistics= (params: any) =>
   request({
     'url': `/report/userStatistics`,
     'method': 'get',
     params
   })
-  // 訂單统计
+  // 訂單統計
 export const getOrderStatistics= (params: any) =>
 request({
   'url': `/report/ordersStatistics`,
   'method': 'get',
   params
 })
-  // 销量排名TOP10
+  // 銷量排名 TOP10
   export const getTop= (params: any) =>
   request({
     'url': `/report/top10`,

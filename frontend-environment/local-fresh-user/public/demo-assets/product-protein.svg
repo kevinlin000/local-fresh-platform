@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 270" role="img" aria-label="Local protein">
+  <rect width="360" height="270" fill="#f8f1e8"/>
+  <circle cx="294" cy="70" r="86" fill="#ead5c9"/>
+  <circle cx="76" cy="221" r="94" fill="#e7ead8"/>
+  <path d="M97 154c18-56 72-85 127-65 49 18 75 65 63 111-55 25-127 15-190-46Z" fill="#ba6b52"/>
+  <path d="M129 149c29-39 70-51 109-31" stroke="#f0b09c" stroke-width="12" stroke-linecap="round"/>
+  <path d="M116 183c47 30 101 37 150 18" stroke="#834735" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="105" cy="91" r="25" fill="#fff6e6"/>
+  <circle cx="105" cy="91" r="11" fill="#d8a24f"/>
+  <circle cx="135" cy="82" r="18" fill="#fff6e6"/>
+</svg>

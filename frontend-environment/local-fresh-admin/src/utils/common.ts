@@ -32,7 +32,7 @@ export const throttle = (fn, time)=> {
     fn.apply(_this, args)
   }
 }
-// 判断正、负
+// 判斷正、负
 export const strIncrease = (str)=>{
   if(str.slice(0,1) ==='-'){
     return true

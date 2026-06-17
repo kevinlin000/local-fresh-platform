@@ -9,14 +9,14 @@
     </div>
 
     <div class="table-toolbar">
-      <el-input v-model="query.name" clearable placeholder="搜尋單品名稱" @keyup.enter="loadData" />
+      <el-input v-model="query.name" clearable placeholder="搜尋商品名稱" @keyup.enter="loadData" />
       <el-select v-model="query.status" clearable placeholder="上架狀態">
-        <el-option label="起售" :value="1" />
-        <el-option label="停售" :value="0" />
+        <el-option label="上架" :value="1" />
+        <el-option label="下架" :value="0" />
       </el-select>
       <el-checkbox v-model="query.lowStock">只看低庫存</el-checkbox>
       <el-button type="primary" @click="loadData">查詢</el-button>
-      <el-button type="success" @click="openCreate">新增單品</el-button>
+      <el-button type="success" @click="openCreate">新增商品</el-button>
     </div>
 
     <el-alert
@@ -25,11 +25,11 @@
       type="warning"
       show-icon
       :closable="false"
-      title="目前只顯示低庫存單品，請優先補貨或調整庫存。"
+      title="目前只顯示低庫存商品，請優先補貨或調整庫存。"
     />
 
     <el-table v-loading="loading" :data="rows" stripe>
-      <el-table-column prop="productName" label="單品名稱" min-width="180" />
+      <el-table-column prop="productName" label="商品名稱" min-width="180" />
       <el-table-column prop="categoryName" label="分類" min-width="120" />
       <el-table-column prop="price" label="價格" width="110" />
       <el-table-column label="庫存" width="130">
@@ -39,7 +39,7 @@
       </el-table-column>
       <el-table-column label="狀態" width="120">
         <template #default="{ row }">
-          <el-tag :type="row.status === 1 ? 'success' : 'info'">{{ row.status === 1 ? '起售' : '停售' }}</el-tag>
+          <el-tag :type="row.status === 1 ? 'success' : 'info'">{{ row.status === 1 ? '上架' : '下架' }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="上架品質" min-width="220">
@@ -60,7 +60,7 @@
         <template #default="{ row }">
           <el-button link type="primary" @click="openEdit(row)">編輯</el-button>
           <el-button link type="primary" @click="toggleStatus(row)">
-            {{ row.status === 1 ? '停售' : '起售' }}
+            {{ row.status === 1 ? '下架' : '上架' }}
           </el-button>
           <el-button link type="primary" @click="openInventoryAdjust(row)">調整庫存</el-button>
           <el-button link type="primary" @click="openInventoryLogs(row)">庫存紀錄</el-button>
@@ -78,7 +78,7 @@
       @current-change="loadData"
     />
 
-    <el-dialog v-model="dialogVisible" :title="form.id ? '編輯單品' : '新增單品'" width="620px">
+    <el-dialog v-model="dialogVisible" :title="form.id ? '編輯商品' : '新增商品'" width="620px">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="96px">
         <el-form-item label="名稱" prop="productName">
           <el-input v-model="form.productName" />
@@ -99,8 +99,8 @@
         </el-form-item>
         <el-form-item label="狀態" prop="status">
           <el-radio-group v-model="form.status">
-            <el-radio :value="1">起售</el-radio>
-            <el-radio :value="0">停售</el-radio>
+            <el-radio :value="1">上架</el-radio>
+            <el-radio :value="0">下架</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="圖片 URL">
@@ -244,7 +244,7 @@ const form = reactive({
 const specs = ref<Array<{ name: string; value: string }>>([])
 
 const rules: FormRules = {
-  productName: [{ required: true, message: '請輸入單品名稱', trigger: 'blur' }],
+  productName: [{ required: true, message: '請輸入商品名稱', trigger: 'blur' }],
   categoryId: [{ required: true, message: '請選擇分類', trigger: 'change' }],
   price: [{ required: true, message: '請輸入價格', trigger: 'blur' }],
   stock: [{ required: true, message: '請輸入庫存', trigger: 'blur' }],
@@ -264,7 +264,7 @@ const summaryCards = computed(() => {
   const lowStock = rows.value.filter((item) => isLowStock(item)).length
 
   return [
-    { label: '本頁起售', value: onSale, caption: '目前可被會員購買' },
+    { label: '本頁上架', value: onSale, caption: '目前可被會員購買' },
     { label: '低庫存', value: lowStock, caption: '低於警示門檻' },
     { label: '需補資料', value: needsWork, caption: '缺圖或缺描述' }
   ]
@@ -439,7 +439,7 @@ async function submit() {
     } else {
       await addDish(payload)
     }
-    ElMessage.success('單品已儲存')
+    ElMessage.success('商品已儲存')
     dialogVisible.value = false
     await loadData()
   } finally {
@@ -448,9 +448,9 @@ async function submit() {
 }
 
 async function remove(row: any) {
-  await ElMessageBox.confirm(`確定刪除單品「${row.productName}」？`, '刪除確認', { type: 'warning' })
+  await ElMessageBox.confirm(`確定刪除商品「${row.productName}」？`, '刪除確認', { type: 'warning' })
   await deleteDish(String(row.id))
-  ElMessage.success('單品已刪除')
+  ElMessage.success('商品已刪除')
   await loadData()
 }
 
@@ -525,7 +525,7 @@ onMounted(async () => {
 .summary-card {
   padding: 16px;
   border: 1px solid rgba(32, 49, 38, 0.08);
-  border-radius: 18px;
+  border-radius: 8px;
   background: #f8f2df;
 }
 

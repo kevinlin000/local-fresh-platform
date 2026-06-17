@@ -1,9 +1,9 @@
 import md5 from 'md5';
 
-//根據請求的地址，方式，参数，统一计算出目前請求的md5值作为key
+// 根據請求地址、方法與參數，統一計算目前請求的 md5 值作為 key
 const getRequestKey = (config) => {
     if (!config) {
-        // 如果沒有取得到請求的相關配置資訊，根據時间戳產生
+        // 如果沒有取得請求的相關配置資訊，根據時間戳產生
         return md5(+new Date());
     }
 
@@ -12,7 +12,7 @@ const getRequestKey = (config) => {
     return md5(config.url + '&' + config.method + '&' + data);
 }
 
-// 存储key值
+// 儲存 key 值
 const pending = {};
 // 检查key值
 const checkPending = (key) => !!pending[key];

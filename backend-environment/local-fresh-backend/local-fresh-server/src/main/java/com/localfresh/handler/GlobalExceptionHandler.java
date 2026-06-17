@@ -27,25 +27,25 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.FORBIDDEN)
     @ExceptionHandler
     public Result exceptionHandler(ForbiddenOperationException ex){
-        log.error("例外信息：{}", ex.getMessage());
+        log.error("例外訊息：{}", ex.getMessage());
         return Result.error(ex.getMessage());
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler
     public Result exceptionHandler(ShoppingCartBusinessException ex){
-        log.error("例外信息：{}", ex.getMessage());
+        log.error("例外訊息：{}", ex.getMessage());
         return Result.error(ex.getMessage());
     }
 
     /**
-     * 捕获業務例外
+     * 捕捉業務例外
      * @param ex
      * @return
      */
     @ExceptionHandler
     public Result exceptionHandler(BaseException ex){
-        log.error("例外信息：{}", ex.getMessage());
+        log.error("例外訊息：{}", ex.getMessage());
         return Result.error(ex.getMessage());
     }
 

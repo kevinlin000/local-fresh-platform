@@ -1,7 +1,6 @@
 package com.localfresh.integration;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.localfresh.constant.JwtClaimsConstant;
 import com.localfresh.entity.Cart;
@@ -23,6 +22,7 @@ import com.localfresh.service.CacheService;
 import com.localfresh.service.payment.PaymentGateway;
 import com.localfresh.test.support.LoginResult;
 import com.localfresh.utils.JwtUtil;
+import com.localfresh.utils.JsonUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -143,9 +143,10 @@ class ProductInventoryOrderTest {
                 .andExpect(jsonPath("$.code").value(1))
                 .andReturn();
 
-        Long orderId = JSON.parseObject(submitResult.getResponse().getContentAsString())
-                .getJSONObject("data")
-                .getLong("id");
+        Long orderId = JsonUtil.readTree(submitResult.getResponse().getContentAsString())
+                .path("data")
+                .path("id")
+                .asLong();
         assertEquals(1, productMapper.getById(product.getId()).getStock());
         List<ProductInventoryLog> logsAfterSubmit = productInventoryLogMapper.listByProductId(product.getId());
         assertEquals(1, logsAfterSubmit.size());
@@ -269,9 +270,10 @@ class ProductInventoryOrderTest {
                 .andExpect(jsonPath("$.code").value(1))
                 .andReturn();
 
-        Long orderId = JSON.parseObject(submitResult.getResponse().getContentAsString())
-                .getJSONObject("data")
-                .getLong("id");
+        Long orderId = JsonUtil.readTree(submitResult.getResponse().getContentAsString())
+                .path("data")
+                .path("id")
+                .asLong();
         assertEquals(1, productMapper.getById(product.getId()).getStock());
         List<ProductInventoryLog> logsAfterSubmit = productInventoryLogMapper.listByProductId(product.getId());
         assertEquals(1, logsAfterSubmit.size());
@@ -300,9 +302,10 @@ class ProductInventoryOrderTest {
                 .andExpect(jsonPath("$.code").value(1))
                 .andReturn();
 
-        Long orderId = JSON.parseObject(submitResult.getResponse().getContentAsString())
-                .getJSONObject("data")
-                .getLong("id");
+        Long orderId = JsonUtil.readTree(submitResult.getResponse().getContentAsString())
+                .path("data")
+                .path("id")
+                .asLong();
         Orders paidOrder = new Orders();
         paidOrder.setId(orderId);
         paidOrder.setStatus(Orders.TO_BE_CONFIRMED);
@@ -369,9 +372,8 @@ class ProductInventoryOrderTest {
                 .andExpect(jsonPath("$.code").value(1))
                 .andReturn();
 
-        JSONObject data = JSON.parseObject(loginResult.getResponse().getContentAsString())
-                .getJSONObject("data");
-        return new LoginResult(data.getLong("id"), data.getString("token"));
+        JsonNode data = JsonUtil.readTree(loginResult.getResponse().getContentAsString()).path("data");
+        return new LoginResult(data.path("id").asLong(), data.path("token").asText());
     }
 
     private String adminToken() {

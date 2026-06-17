@@ -12,14 +12,14 @@
       <el-table-column prop="price" label="價格" width="110" />
       <el-table-column label="狀態" width="120">
         <template #default="{ row }">
-          <el-tag :type="row.status === 1 ? 'success' : 'info'">{{ row.status === 1 ? '起售' : '停售' }}</el-tag>
+          <el-tag :type="row.status === 1 ? 'success' : 'info'">{{ row.status === 1 ? '上架' : '下架' }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="操作" width="260">
         <template #default="{ row }">
           <el-button link type="primary" @click="openEdit(row)">編輯</el-button>
           <el-button link type="primary" @click="toggleStatus(row)">
-            {{ row.status === 1 ? '停售' : '起售' }}
+            {{ row.status === 1 ? '下架' : '上架' }}
           </el-button>
           <el-button link type="danger" @click="remove(row)">刪除</el-button>
         </template>
@@ -50,8 +50,8 @@
         </el-form-item>
         <el-form-item label="狀態" prop="status">
           <el-radio-group v-model="form.status">
-            <el-radio :value="1">起售</el-radio>
-            <el-radio :value="0">停售</el-radio>
+            <el-radio :value="1">上架</el-radio>
+            <el-radio :value="0">下架</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="圖片 URL">
@@ -60,7 +60,7 @@
         <el-form-item label="描述">
           <el-input v-model="form.description" type="textarea" :rows="3" />
         </el-form-item>
-        <el-form-item label="箱內單品">
+        <el-form-item label="箱內商品">
           <div class="relation-list">
             <div v-for="item in selectedProducts" :key="item.productId" class="relation-row">
               <span>{{ item.name }}</span>
@@ -70,7 +70,7 @@
             <el-select
               v-model="selectedProductId"
               filterable
-              placeholder="新增單品"
+              placeholder="新增商品"
               :disabled="products.length === selectedProducts.length"
               @change="addProduct"
             >
@@ -81,7 +81,7 @@
                 :value="item.id"
               />
             </el-select>
-            <p class="helper-text">直送箱至少需要一個已起售單品，否則後端無法建立商品關聯。</p>
+            <p class="helper-text">直送箱至少需要一個已上架商品，否則後端無法建立商品關聯。</p>
           </div>
         </el-form-item>
       </el-form>
@@ -231,7 +231,7 @@ function removeProduct(productId: number) {
 async function submit() {
   await formRef.value?.validate()
   if (!selectedProducts.value.length) {
-    ElMessage.warning('請至少加入一個箱內單品')
+    ElMessage.warning('請至少加入一個箱內商品')
     return
   }
   saving.value = true

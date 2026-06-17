@@ -62,7 +62,7 @@ public class MemberServiceImpl implements MemberService {
         if (member == null) {
             member = Member.builder()
                     .openid(openid)
-                    .name("測試會員_" + code)
+                    .name("試用會員_" + code)
                     .loginProvider("mock")
                     .createTime(LocalDateTime.now())
                     .build();

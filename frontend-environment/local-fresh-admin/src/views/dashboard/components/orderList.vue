@@ -30,7 +30,7 @@
             @row-click="handleTable"
           >
             <el-table-column prop="number" label="訂單編號"> </el-table-column>
-            <el-table-column label="訂單單品">
+            <el-table-column label="訂單商品">
               <template slot-scope="scope">
                 <div class="ellipsisHidden">
                   <el-popover
@@ -250,7 +250,7 @@
           </div>
 
           <div class="dish-info">
-            <div class="dish-label">單品</div>
+            <div class="dish-label">商品</div>
             <div class="dish-list">
               <div
                 v-for="(item, index) in diaForm.orderDetailList"
@@ -265,7 +265,7 @@
               </div>
             </div>
             <div class="dish-all-amount">
-              <label>單品小計</label>
+              <label>商品小計</label>
               <span
                 >NT$ {{
                   (diaForm.amount - 6 - diaForm.packAmount).toFixed(2)
@@ -280,7 +280,7 @@
             <div class="amount-label">費用</div>
             <div class="amount-list">
               <div class="dish-amount">
-                <span class="amount-name">單品小計：</span>
+                <span class="amount-name">商品小計：</span>
                 <span class="amount-price"
                   >NT$ {{
                     ((diaForm.amount - 6 - diaForm.packAmount).toFixed(2) *
@@ -463,7 +463,7 @@ export default class extends Vue {
     },
     {
       value: 2,
-      label: '單品已售完，暫時無法受理訂單',
+      label: '商品已售完，暫時無法受理訂單',
     },
     {
       value: 3,
@@ -482,7 +482,7 @@ export default class extends Vue {
     },
     {
       value: 2,
-      label: '單品已售完，暫時無法受理訂單',
+      label: '商品已售完，暫時無法受理訂單',
     },
     {
       value: 3,

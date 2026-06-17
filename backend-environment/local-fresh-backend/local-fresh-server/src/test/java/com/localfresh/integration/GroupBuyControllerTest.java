@@ -1,10 +1,10 @@
 package com.localfresh.integration;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.localfresh.exception.ForbiddenOperationException;
 import com.localfresh.service.GroupBuyService;
 import com.localfresh.test.support.LoginResult;
+import com.localfresh.utils.JsonUtil;
 import com.localfresh.vo.GroupBuyParticipantVO;
 import com.localfresh.vo.GroupBuyVO;
 import com.localfresh.websocket.WebSocketServer;
@@ -203,8 +203,7 @@ class GroupBuyControllerTest {
                 .andExpect(jsonPath("$.code").value(1))
                 .andReturn();
 
-        JSONObject data = JSON.parseObject(loginResult.getResponse().getContentAsString())
-                .getJSONObject("data");
-        return new LoginResult(data.getLong("id"), data.getString("token"));
+        JsonNode data = JsonUtil.readTree(loginResult.getResponse().getContentAsString()).path("data");
+        return new LoginResult(data.path("id").asLong(), data.path("token").asText());
     }
 }

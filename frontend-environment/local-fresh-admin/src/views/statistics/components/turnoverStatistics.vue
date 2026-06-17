@@ -32,7 +32,7 @@ export default class extends Vue {
     var option: any
     option = {
       // title: {
-      //   text: '營業额(元)',
+      //   text: '營業額(元)',
       //   top: 'bottom',
       //   left: 'center',
       //   textAlign: 'center',
@@ -55,20 +55,20 @@ export default class extends Vue {
         type: 'category',
         boundaryGap: false,
         axisLabel: {
-          //X轴字型顏色
+          // X 軸字型顏色
           textStyle: {
             color: '#666',
             fontSize: '12px',
           },
         },
         axisLine: {
-          //X轴线顏色
+          // X 軸線顏色
           lineStyle: {
             color: '#E5E4E4',
-            width: 1, //x轴线的宽度
+            width: 1, // X 軸線寬度
           },
         },
-        data: this.turnoverdata.dateList, //后端传来的动态資料
+        data: this.turnoverdata.dateList, // 後端回傳的動態資料
       },
       yAxis: [
         {
@@ -81,7 +81,7 @@ export default class extends Vue {
               color: '#666',
               fontSize: '12px',
             }
-            // formatter: "{value} ml",//单位
+            // formatter: "{value} ml", // 單位
           }
         }
       ],
@@ -90,10 +90,10 @@ export default class extends Vue {
           name: '營業額',
           type: 'line',
           // stack: 'Total',
-          smooth: false, //否平滑曲线
-          showSymbol: false, //未显示鼠标上移的圆点
+          smooth: false, // 是否平滑曲線
+          showSymbol: false, // 不顯示滑鼠移入圓點
           symbolSize: 10,
-          // symbol:"circle", //設定折线点定位實心點
+          // symbol:"circle", // 設定折線點定位實心點
           itemStyle: {
             normal: {
               color: '#F29C1B',

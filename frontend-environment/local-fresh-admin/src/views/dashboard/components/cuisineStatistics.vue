@@ -1,22 +1,22 @@
 <template>
   <div class="container">
     <h2 class="homeTitle">
-      單品總覽<span><router-link to="dish">單品管理</router-link></span>
+      商品總覽<span><router-link to="dish">商品管理</router-link></span>
     </h2>
     <div class="orderviewBox">
       <ul>
         <li>
-          <span class="status"><i class="iconfont icon-open"></i>已啟售</span>
+          <span class="status"><i class="iconfont icon-open"></i>已上架</span>
           <span class="num">{{ dishesData.sold }}</span>
         </li>
         <li>
-          <span class="status"><i class="iconfont icon-stop"></i>已停售</span>
+          <span class="status"><i class="iconfont icon-stop"></i>已下架</span>
           <span class="num">{{ dishesData.discontinued }}</span>
         </li>
         <li class="add">
           <router-link to="/dish/add">
             <i></i>
-            <p>新增單品</p>
+            <p>新增商品</p>
           </router-link>
         </li>
       </ul>

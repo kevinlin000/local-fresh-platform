@@ -50,7 +50,7 @@ export const enableOrDisableEmployee = (params: any) => {
   })
 }
 
-// 根據類型查詢分類：1为單品分類 2为直送箱分類
+// 根據類型查詢分類：1为商品分類 2为直送箱分類
 export const getCategoryByType = (params: any) => {
   return request({
     url: `/category/list`,

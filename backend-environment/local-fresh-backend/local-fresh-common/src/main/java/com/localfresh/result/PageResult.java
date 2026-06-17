@@ -8,15 +8,15 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * 封裝分頁查詢结果
+ * 封裝分頁查詢結果
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class PageResult implements Serializable {
 
-    private long total; //總紀錄数
+    private long total; // 總紀錄數
 
-    private List records; //目前页資料集合
+    private List records; // 目前頁資料集合
 
 }

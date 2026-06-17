@@ -45,7 +45,7 @@ public class JacksonObjectMapper extends ObjectMapper {
                 .addSerializer(LocalDate.class, new LocalDateSerializer(DateTimeFormatter.ofPattern(DEFAULT_DATE_FORMAT)))
                 .addSerializer(LocalTime.class, new LocalTimeSerializer(DateTimeFormatter.ofPattern(DEFAULT_TIME_FORMAT)));
 
-        //註冊功能模块 例如，可以添加自定义序列化器和反序列化器
+        // 註冊功能模組，例如可以加入自訂序列化器和反序列化器
         this.registerModule(simpleModule);
     }
 }

@@ -22,16 +22,16 @@ public class Cart implements Serializable {
 
     private Long id;
 
-    //名称
+    // 名稱
     private String name;
 
-    //会员id
+    // 會員 id
     private Long userId;
 
-    //商品id
+    // 商品 id
     private Long productId;
 
-    //直送箱id
+    // 直送箱 id
     private Long giftBoxId;
 
     //商品規格
@@ -43,7 +43,7 @@ public class Cart implements Serializable {
     //金額
     private BigDecimal amount;
 
-    //图片
+    // 圖片
     private String image;
 
     private LocalDateTime createTime;

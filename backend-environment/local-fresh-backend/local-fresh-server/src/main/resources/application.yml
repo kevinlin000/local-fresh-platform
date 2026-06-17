@@ -5,11 +5,10 @@ spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
   datasource:
-    druid:
-      driver-class-name: ${localfresh.datasource.driver-class-name}
-      url: jdbc:mysql://${localfresh.datasource.host}:${localfresh.datasource.port}/${localfresh.datasource.database}?serverTimezone=Asia/Taipei&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=${localfresh.datasource.use-ssl:false}&allowPublicKeyRetrieval=true
-      username: ${localfresh.datasource.username}
-      password: ${localfresh.datasource.password}
+    driver-class-name: ${localfresh.datasource.driver-class-name}
+    url: jdbc:mysql://${localfresh.datasource.host}:${localfresh.datasource.port}/${localfresh.datasource.database}?serverTimezone=Asia/Taipei&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=${localfresh.datasource.use-ssl:false}&allowPublicKeyRetrieval=true
+    username: ${localfresh.datasource.username}
+    password: ${localfresh.datasource.password}
   flyway:
     enabled: true
     locations: classpath:db/migration
@@ -31,11 +30,9 @@ mybatis:
 
 logging:
   level:
-    com:
-      sky:
-        mapper: debug
-        service: info
-        controller: info
+    com.localfresh.mapper: debug
+    com.localfresh.service: info
+    com.localfresh.controller: info
 
 localfresh:
   cors:

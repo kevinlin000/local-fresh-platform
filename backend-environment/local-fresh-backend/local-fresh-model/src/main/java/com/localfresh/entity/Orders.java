@@ -40,7 +40,7 @@ public class Orders implements Serializable {
 
     private Long id;
 
-    //訂單号
+    // 訂單編號
     private String number;
 
     //訂單狀態 1待付款 2待確認 3已確認 4配送中 5已完成 6已取消 7退款 8揪團中
@@ -70,42 +70,42 @@ public class Orders implements Serializable {
     // 備註
     private String remark;
 
-    //會員名
+    // 會員姓名
     private String userName;
 
-    //手機號碼
+    // 手機號碼
     private String phone;
 
-    //地址
+    // 地址
     private String address;
 
-    //收货人
+    // 收件人
     private String consignee;
 
-    //訂單取消原因
+    // 訂單取消原因
     private String cancelReason;
 
-    //訂單拒绝原因
+    // 訂單拒絕原因
     private String rejectionReason;
 
-    //訂單取消時间
+    // 訂單取消時間
     private LocalDateTime cancelTime;
 
-    //预计送达時间
+    // 預計送達時間
     private LocalDateTime estimatedDeliveryTime;
 
-    //配送狀態  1立即送出  0選擇具体時间
+    // 配送狀態 1 立即送出 0 選擇指定時間
     private Integer deliveryStatus;
 
-    //送达時间
+    // 送達時間
     private LocalDateTime deliveryTime;
 
-    //打包费
+    // 包裝費
     private int packAmount;
 
-    //餐具數量
+    // 餐具數量
     private int tablewareNumber;
 
-    //餐具數量狀態  1按餐量提供  0選擇具体數量
+    // 餐具數量狀態 1 按餐量提供 0 選擇指定數量
     private Integer tablewareStatus;
 }

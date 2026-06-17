@@ -27,7 +27,7 @@
                   <span style="flex: 3; text-align: left">{{
                     item.dishName
                   }}</span>
-                  <span>{{ item.status == 0 ? '停售' : '在售' }}</span>
+                  <span>{{ item.status == 0 ? '下架' : '上架' }}</span>
                   <span>{{ (Number(item.price) ).toFixed(2)*100/100 }}</span>
                 </div>
               </el-checkbox>
@@ -38,7 +38,7 @@
     </div>
     <div class="ritCont">
       <div class="tit">
-        已選單品({{ checkedListAll.length }})
+        已選商品({{ checkedListAll.length }})
       </div>
       <div class="items">
         <div v-for="(item, ind) in checkedListAll"
@@ -94,11 +94,11 @@ export default class extends Vue {
   }
 
   public init() {
-    // 菜单列表資料取得
+    // 商品列表資料取得
     this.getDishType()
-    // 初始化选项
+    // 初始化選項
     this.checkedList = this.checkList.map((it: any) => it.productName || it.dishName || it.name)
-    // 已选项的單品-詳細資訊
+    // 已選項的商品詳細資訊
     this.checkedListAll = this.checkList.reverse()
   }
   // 取得直送箱分類
@@ -120,7 +120,7 @@ export default class extends Vue {
     })
   }
 
-  // 透過直送箱ID取得單品列表分類
+  // 透過直送箱ID取得商品列表分類
   private getDishList(id: number) {
     queryDishList({ categoryId: id }).then(res => {
       if (res && res.data && res.data.code === 1) {
@@ -147,7 +147,7 @@ export default class extends Vue {
     })
   }
 
-  // 关键词收搜單品列表分類
+  // 关键词收搜商品列表分類
   private getDishForName(name: any) {
     queryDishList({ name }).then(res => {
       if (res && res.data && res.data.code === 1) {
@@ -169,13 +169,13 @@ export default class extends Vue {
     this.keyInd = ind
     this.getDishList(id)
   }
-  // 新增單品
+  // 新增商品
   private checkedListHandle(value: [string]) {
     // TODO：元件內部 value 封裝限制，先以倒序方式處理新增清單
     // 倒序展示：資料處理前先反轉為正序
     this.checkedListAll.reverse()
-    // value 是只包含單品名稱的陣列，需從 dishList 篩出對應詳情
-    // 執行新增單品
+    // value 是只包含商品名稱的陣列，需從 dishList 篩出對應詳情
+    // 執行新增商品
     const list = this.allDishList.filter((item: any) => {
       let data
       value.forEach((it: any) => {
@@ -185,8 +185,8 @@ export default class extends Vue {
       })
       return data
     })
-    // 編輯時需要與既有單品合併
-    // 與目前已選單品合併後再去重
+    // 編輯時需要與既有商品合併
+    // 與目前已選商品合併後再去重
     const dishListCat = [...this.checkedListAll, ...list]
     let arrData: any[] = []
     this.checkedListAll = dishListCat.filter((item: any) => {
@@ -203,7 +203,7 @@ export default class extends Vue {
       }
       return allArrDate
     })
-    // 若為移除單品，走這段邏輯
+    // 若為移除商品，走這段邏輯
     if (value.length < arrData.length) {
       this.checkedListAll = this.checkedListAll.filter((item: any) => {
         if (value.some(it => it == item.name)) {

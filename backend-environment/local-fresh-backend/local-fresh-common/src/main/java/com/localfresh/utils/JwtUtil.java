@@ -17,8 +17,8 @@ public class JwtUtil {
      * 使用Hs256演算法, 私鑰使用固定金鑰
      *
      * @param secretKey jwt金鑰
-     * @param ttlMillis jwt過期時间(毫秒)
-     * @param claims    設定的信息
+     * @param ttlMillis jwt過期時間(毫秒)
+     * @param claims    設定的資訊
      * @return
      */
     public static String createJWT(String secretKey, long ttlMillis, Map<String, Object> claims) {

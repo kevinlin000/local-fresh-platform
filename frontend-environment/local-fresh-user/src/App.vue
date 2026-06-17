@@ -1,36 +1,39 @@
 <template>
-  <div class="app-shell">
-    <header v-if="showNavbar" class="navbar">
-      <div class="brand">
-        <RouterLink to="/" class="brand-link">
-          <span class="brand-mark">菜</span>
-          <span>
-            <strong>菜籃日</strong>
-            <small>Cailán Day</small>
-          </span>
-        </RouterLink>
-      </div>
+  <el-config-provider :locale="zhTw">
+    <div class="app-shell">
+      <header v-if="showNavbar" class="navbar">
+        <div class="brand">
+          <RouterLink to="/" class="brand-link">
+            <span class="brand-mark">菜</span>
+            <span>
+              <strong>菜籃日</strong>
+              <small>Cailán Day</small>
+            </span>
+          </RouterLink>
+        </div>
 
-      <nav class="nav-links">
-        <RouterLink to="/">首頁</RouterLink>
-        <RouterLink to="/cart">購物車</RouterLink>
-        <RouterLink to="/orders">我的訂單</RouterLink>
-        <RouterLink to="/addresses">我的地址</RouterLink>
-      </nav>
+        <nav class="nav-links">
+          <RouterLink to="/">首頁</RouterLink>
+          <RouterLink to="/cart">購物車</RouterLink>
+          <RouterLink to="/orders">我的訂單</RouterLink>
+          <RouterLink to="/addresses">我的地址</RouterLink>
+        </nav>
 
-      <div class="member-bar">
-        <span class="member-name">{{ memberDisplayName }}</span>
-        <el-button type="success" plain @click="logout">登出</el-button>
-      </div>
-    </header>
+        <div class="member-bar">
+          <span class="member-name">{{ memberDisplayName }}</span>
+          <el-button type="success" plain @click="logout">登出</el-button>
+        </div>
+      </header>
 
-    <main class="view-shell" :class="{ 'with-navbar': showNavbar }">
-      <RouterView />
-    </main>
-  </div>
+      <main class="view-shell" :class="{ 'with-navbar': showNavbar }">
+        <RouterView />
+      </main>
+    </div>
+  </el-config-provider>
 </template>
 
 <script setup lang="ts">
+import zhTw from 'element-plus/es/locale/lang/zh-tw'
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useMemberStore } from '@/stores/member'

@@ -193,7 +193,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage } from 'element-plus/es/components/message/index'
 import { useRoute, useRouter } from 'vue-router'
 import { fetchMyGroupBuys, type GroupBuyRecord } from '@/services/groupBuy'
 import { fetchOrderDetail, fetchOrderHistory, payOrder, type OrderRecord } from '@/services/order'

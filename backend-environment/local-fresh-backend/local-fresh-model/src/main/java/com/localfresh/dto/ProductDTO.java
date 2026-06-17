@@ -16,21 +16,21 @@ import jakarta.validation.constraints.NotNull;
 public class ProductDTO implements Serializable {
 
     private Long id;
-    //商品名称
+    // 商品名稱
     @NotBlank(message = "商品名稱不能為空")
     private String productName;
-    //商品分類id
+    // 商品分類 id
     @NotNull(message = "商品分類不能為空")
     private Long categoryId;
-    //商品价格
+    // 商品價格
     @NotNull(message = "商品價格不能為空")
     @DecimalMin(value = "0.01", message = "商品價格必須大於 0")
     private BigDecimal price;
-    //图片
+    // 圖片
     private String image;
-    //描述信息
+    // 描述資訊
     private String description;
-    //0 停售 1 起售
+    //0 下架 1 上架
     @NotNull(message = "商品狀態不能為空")
     @Min(value = 0, message = "商品狀態錯誤")
     @Max(value = 1, message = "商品狀態錯誤")

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 270" role="img" aria-label="Leaf vegetables">
+  <rect width="360" height="270" fill="#f6f1e6"/>
+  <circle cx="292" cy="64" r="88" fill="#dbe8d5"/>
+  <circle cx="77" cy="219" r="92" fill="#efe1c8"/>
+  <path d="M106 182c51-87 119-95 161-65-38 69-94 95-161 65Z" fill="#2f6f4e"/>
+  <path d="M121 177c47-23 86-43 132-59" stroke="#e8f1df" stroke-width="8" stroke-linecap="round"/>
+  <path d="M133 188c43-66 101-74 136-50-32 53-79 74-136 50Z" fill="#6f9d65"/>
+  <path d="M148 183c36-18 70-32 106-44" stroke="#edf4df" stroke-width="6" stroke-linecap="round"/>
+  <ellipse cx="140" cy="132" rx="44" ry="78" transform="rotate(-28 140 132)" fill="#8db279"/>
+  <ellipse cx="185" cy="126" rx="42" ry="82" transform="rotate(17 185 126)" fill="#4f875b"/>
+</svg>

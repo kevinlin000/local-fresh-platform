@@ -1,6 +1,5 @@
 package com.localfresh.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.localfresh.constant.MessageConstant;
 import com.localfresh.context.BaseContext;
 import com.localfresh.dto.OrdersConfirmDTO;
@@ -9,6 +8,7 @@ import com.localfresh.exception.OrderBusinessException;
 import com.localfresh.mapper.OrderMapper;
 import com.localfresh.service.OrderFulfillmentService;
 import com.localfresh.service.support.OrderStatusTransitionPolicy;
+import com.localfresh.utils.JsonUtil;
 import com.localfresh.websocket.WebSocketServer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -78,6 +78,6 @@ public class OrderFulfillmentServiceImpl implements OrderFulfillmentService {
         map.put("orderId", id);
         map.put("content", "訂單號：" + ordersDB.getNumber());
 
-        webSocketServer.sendToAllClient(JSON.toJSONString(map));
+        webSocketServer.sendToAllClient(JsonUtil.toJson(map));
     }
 }

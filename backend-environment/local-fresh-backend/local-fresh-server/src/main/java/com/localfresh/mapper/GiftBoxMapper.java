@@ -55,14 +55,14 @@ public interface GiftBoxMapper {
     void deleteById(Long giftBoxId);
 
     /**
-     * 动态條件查詢直送箱
+     * 動態條件查詢直送箱
      * @param setmeal
      * @return
      */
     List<GiftBox> list(GiftBox setmeal);
 
     /**
-     * 根據直送箱id查詢商品选项
+     * 根據直送箱id查詢商品選項
      * @param giftBoxId
      * @return
      */
@@ -80,7 +80,7 @@ public interface GiftBoxMapper {
     void update(GiftBox setmeal);
 
     /**
-     * 根據條件统计直送箱數量
+     * 根據條件統計直送箱數量
      * @param map
      * @return
      */

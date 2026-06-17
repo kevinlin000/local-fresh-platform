@@ -26,62 +26,62 @@ export const getDayDataes= (params: any) =>
     'method': 'get'
   })
 
-// 支付類型資料汇總 -> 店內收款構成 - 當日
+// 支付類型資料彙總 -> 店內收款構成 - 當日
 export const getDayPayType = (params: any) =>
   request({
     'url': `/report/payTypeCollect/${params.date}`,
     'method': 'get'
   })
-// 取得當日各种優惠類型資料汇總 -> 優惠指标
+// 取得當日各種優惠類型資料彙總 -> 優惠指標
 export const getprivilege = (params: any) =>
   request({
     'url': `/report/privilegeCollect/${params.date}`,
     'method': 'get'
   })
 
-// 取得單品分類銷售排行 - 單品分類占比 -當日
+// 取得商品分類銷售排行 - 商品分類占比 -當日
 export const getSalesRanking = (params: any) =>
   request({
     'url': `/report/categoryCollect/${params.type}/${params.date}`,
     'method': 'get'
   })
 
-// 取得當日單品銷售排行
+// 取得當日商品銷售排行
 export const getDayRanking = (params: any) =>
   request({
     'url': `/report/currentDishRank/${params.date}`,
     'method': 'get'
   })
 
-// 取得一定日期之内的銷售趨勢 - 銷售趨勢 图
+// 取得一段日期內的銷售趨勢 - 銷售趨勢圖
 export const getTimeQuantumDataes = (params: any) =>
   request({
     'url': `/report/dayAmountCollect/${params.type}/${params.start}/${params.end}`,
     'method': 'get'
   })
 
-// 取得時間範圍內的各种支付類型資料汇總 - 店內收款構成 - 時间段
+// 取得時間範圍內的各種支付類型資料彙總 - 店內收款構成
 export const getTimeQuantumReceivables = (params: any) =>
   request({
     'url': `/report/datePayTypeCollect/${params.start}/${params.end}`,
     'method': 'get'
   })
 
-// 取得時間範圍內的單品類別銷售汇總 -  單品分類占比 - 時间段
+// 取得時間範圍內的商品類別銷售彙總 - 商品分類占比
 export const getTimeQuantumType = (params: any) =>
   request({
     'url': `/report/dateCategoryCollect/${params.type}/${params.start}/${params.end}`,
     'method': 'get'
   })
 
-// 取得時間範圍內的單品銷售排行 - 單品銷售排行
+// 取得時間範圍內的商品銷售排行 - 商品銷售排行
 export const getTimeQuantumDishes = (params: any) =>
   request({
     'url': `/report/dishRankForDate/${params.start}/${params.end}`,
     'method': 'get'
   })
 
-// 取得時間範圍內的優惠指标汇總資料 - 頂部資訊
+// 取得時間範圍內的優惠指標彙總資料 - 頂部資訊
 export const getTimeQuantumDiscount = (params: any) =>
   request({
     'url': `/report/privilegeByDate/${params.start}/${params.end}`,

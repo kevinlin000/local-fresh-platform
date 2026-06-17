@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 单品商品
+ * 商品
  */
 @Data
 @Builder
@@ -21,22 +21,22 @@ public class Product implements Serializable {
 
     private Long id;
 
-    //商品名称
+    // 商品名稱
     private String productName;
 
-    //商品分類id
+    // 商品分類 id
     private Long categoryId;
 
-    //商品价格
+    // 商品價格
     private BigDecimal price;
 
-    //图片
+    // 圖片
     private String image;
 
-    //描述信息
+    // 描述資訊
     private String description;
 
-    //0 停售 1 起售
+    //0 下架 1 上架
     private Integer status;
 
     //可售庫存

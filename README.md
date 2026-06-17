@@ -15,11 +15,11 @@
 
 > 用戶端 demo 開放使用,可透過開發模式快捷登入快速試玩,或使用 Google 帳號登入體驗完整 OAuth 流程。
 
-商家端 demo
+管理端 demo
 
 [https://d3czahyk4cnvb9.cloudfront.net](https://d3czahyk4cnvb9.cloudfront.net)
 
-> 商家端已升級為 Vue 3 + Vite + Element Plus 管理後台,負責訂單確認、商品上下架、員工 / 分類 / 直送箱管理與營運數據檢視。
+> 管理端已升級為 Vue 3 + Vite + Element Plus 管理後台,負責訂單確認、商品上下架、員工 / 分類 / 直送箱管理與營運數據檢視。
 
 - 如需登入體驗,請聯繫專案作者取得測試帳號(避免公開憑證遭濫用)。
 - 後端 API 入口:`https://localfresh-demo.duckdns.org`
@@ -67,7 +67,7 @@
 
 ## 專案簡介
 
-台灣生鮮電商常見兩個痛點：第一，運費門檻高，少量購買時消費者容易卻步；第二，平台多半只做商品陳列與配送，缺少能提升轉換率與社群擴散的購物機制。菜籃日的設計目標，就是把「在地小農直送」與「揪團湊免運」結合成一個完整的 B2C 訂購流程。消費者可以瀏覽單品與直送箱、加入購物車、建立配送地址並完成下單；若希望降低運費，也可以發起揪團，透過分享連結邀請其他會員加入，達到 3 人成團後即免運。平台後端同時提供商品、訂單、店鋪狀態與營運管理能力，前後端整體圍繞「基本功扎實、流程完整、可實際部署」作為實作目標。
+台灣生鮮電商常見兩個痛點：第一，運費門檻高，少量購買時消費者容易卻步；第二，平台多半只做商品陳列與配送，缺少能提升轉換率與社群擴散的購物機制。菜籃日的設計目標，就是把「在地小農直送」與「揪團湊免運」結合成一個完整的 B2C 訂購流程。消費者可以瀏覽商品與直送箱、加入購物車、建立配送地址並完成下單；若希望降低運費，也可以發起揪團，透過分享連結邀請其他會員加入，達到 3 人成團後即免運。平台後端同時提供商品、訂單、店鋪狀態與營運管理能力，前後端整體圍繞「基本功扎實、流程完整、可實際部署」作為實作目標。
 
 ## 技術架構
 
@@ -140,14 +140,14 @@ erDiagram
 
 | 區域 | 技術 |
 |---|---|
-| 後端 | Java 17、Spring Boot 3.5.14、MyBatis、PageHelper、Flyway、JWT、Druid、Actuator |
+| 後端 | Java 17、Spring Boot 3.5.14、MyBatis、PageHelper、Flyway、JWT、HikariCP、Actuator |
 | 前端 | 用戶端 Vue 3 + Vite 5、管理端 Vue 3 + Vite 8、TypeScript、Pinia、Vue Router 4、Element Plus |
 | 基礎設施 | MySQL 8、Redis 7、Redisson、Testcontainers、Docker、GitHub Actions |
 | 第三方服務 | Google OAuth 2.0、Google Maps API、AWS EC2 + S3 + CloudFront + DuckDNS |
 
 ## 核心功能
 
-- 單品與直送箱瀏覽：依分類查看蔬果、肉品、海鮮等單品，以及主題直送箱。
+- 商品與直送箱瀏覽：依分類查看蔬果、肉品、海鮮等商品，以及主題直送箱。
 - 購物車與下單流程：支援加入購物車、數量調整、地址選擇、備註填寫與歷史訂單查詢。
 - 揪團湊免運：會員可建立揪團、分享連結邀請他人加入，3 人成團後轉為正式訂單。
 - 雙軌登入機制：前端支援 Google OAuth 2.0，開發環境保留 mock login 方便測試與 demo。
@@ -159,7 +159,7 @@ erDiagram
 
 ### 1. 揪團模組的併發控制
 
-揪團的關鍵風險在於多人同時加入時，不能超過成團人數，也不能讓同一位會員重複加入。這個專案使用 Redisson 的 `RLock` 對每個 `groupNo` 建立細粒度鎖，採用 `tryLock(3, 5, TimeUnit.SECONDS)`，讓請求在 3 秒內嘗試取得鎖，並把鎖持有時間限制在 5 秒內。實作上將「檢查狀態、建立預訂單、寫入 participant、更新 currentCount、必要時觸發成團」包在同一段交易內，確保資料一致性；而 WebSocket 通知則刻意放在 transaction commit 之後，避免商家收到通知時資料尚未落庫。
+揪團的關鍵風險在於多人同時加入時，不能超過成團人數，也不能讓同一位會員重複加入。這個專案使用 Redisson 的 `RLock` 對每個 `groupNo` 建立細粒度鎖，採用 `tryLock(3, 5, TimeUnit.SECONDS)`，讓請求在 3 秒內嘗試取得鎖，並把鎖持有時間限制在 5 秒內。實作上將「檢查狀態、建立預訂單、寫入 participant、更新 currentCount、必要時觸發成團」包在同一段交易內，確保資料一致性；而 WebSocket 通知則刻意放在 transaction commit 之後，避免管理端收到通知時資料尚未落庫。
 
 除了 `100-thread` 的 Testcontainers Redis 整合測試外，這組邏輯也補上 JMeter 本地壓測證據：`100` 個併發會員加入同一團時，`POST /user/groupBuy/join` 的 `P95 = 2847.65 ms`、`P99 = 2952.75 ms`、`error rate = 0.00%`，且資料庫最終 `current_count = 101`、`group_buy_participant = 100`，代表沒有出現超賣、重複加入或資料不一致。完整報告請參考 [docs/perf/README.md](docs/perf/README.md)。
 
@@ -322,6 +322,8 @@ docker compose up -d
 
 後端已接入 Flyway，啟動時會自動執行 `local-fresh-server/src/main/resources/db/migration/` 內的版本化 migration。全新資料庫可直接啟動；若使用的是舊有非空 schema 且尚未有 `flyway_schema_history`，第一次啟動請加上 `FLYWAY_BASELINE_ON_MIGRATE=true` 完成 baseline，之後再關閉此設定。
 
+本地 MySQL 容器只負責提供空資料庫，schema 與 seed data 都由 Spring Boot 啟動時的 Flyway 統一管理。`V10__demo_journey_seed.sql` 會建立作品展示用資料：試用會員 `user_a / user_b / user_c`、配送地址、購物車、一般訂單與揪團案例。這三個 code 對應用戶端登入頁的「試用會員 A/B/C」，可直接走完商品瀏覽、購物車、下單、訂單狀態與揪團頁面。
+
 若本機 `3306` 已被 MySQL 佔用，可只啟動 Redis，並讓後端連到既有 MySQL：
 
 ```bash
@@ -332,12 +334,14 @@ docker compose up -d redis
 
 ```bash
 cd backend-environment/local-fresh-backend
+mvn install -DskipTests
 mvn -pl local-fresh-server spring-boot:run
 ```
 
 舊資料庫第一次導入 Flyway 時：
 
 ```bash
+FLYWAY_BASELINE_ON_MIGRATE=true mvn install -DskipTests
 FLYWAY_BASELINE_ON_MIGRATE=true mvn -pl local-fresh-server spring-boot:run
 ```
 
@@ -430,7 +434,7 @@ pnpm dev
 - 揪團發起 / 加入 / 取消 / 過期失敗回滾完整流程
 - Google OAuth 2.0 Authorization Code Flow + JWT 雙軌登入(mock login dev 開關)
 - 完整 AWS 部署:EC2 (Spring Boot + Docker MySQL/Redis) + S3 + CloudFront + DuckDNS + Let's Encrypt
-- Spring Boot 3.5 升級 + Flyway migration 檔案版本化(V1~V9)
+- Spring Boot 3.5 升級 + Flyway migration 檔案版本化(V1~V10)
 - 管理端 Vue 3 + Vite + TypeScript + Pinia + Element Plus 升級
 - Testcontainers Redis 整合測試 + GitHub Actions backend/admin/user frontend checks
 

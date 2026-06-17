@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 270" role="img" aria-label="Rice and grains">
+  <rect width="360" height="270" fill="#f7f2e5"/>
+  <circle cx="74" cy="72" r="84" fill="#e4ead5"/>
+  <circle cx="298" cy="221" r="90" fill="#ead9c5"/>
+  <path d="M116 93h128l21 118H95l21-118Z" fill="#fff8e7"/>
+  <path d="M129 93h102l8 34H121l8-34Z" fill="#c28a2c"/>
+  <path d="M132 163h95" stroke="#2f6f4e" stroke-width="10" stroke-linecap="round"/>
+  <path d="M146 186h67" stroke="#d8b66f" stroke-width="8" stroke-linecap="round"/>
+  <path d="M255 80c-19 32-20 62-3 92" stroke="#8b9d55" stroke-width="8" stroke-linecap="round"/>
+  <path d="M271 85c-19 32-20 62-3 92" stroke="#b8a85d" stroke-width="7" stroke-linecap="round"/>
+</svg>

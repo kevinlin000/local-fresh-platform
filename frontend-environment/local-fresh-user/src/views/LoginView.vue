@@ -78,7 +78,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage } from 'element-plus/es/components/message/index'
 import { useRoute, useRouter } from 'vue-router'
 import { useMemberStore } from '@/stores/member'
 import loginImage from '@/assets/brand/login.png'
@@ -100,9 +100,9 @@ const submittingCode = ref('')
 const errorMessage = ref('')
 
 const presets = [
-  { label: '測試會員 A', code: 'user_a' },
-  { label: '測試會員 B', code: 'user_b' },
-  { label: '測試會員 C', code: 'user_c' }
+  { label: '試用會員 A', code: 'user_a' },
+  { label: '試用會員 B', code: 'user_b' },
+  { label: '試用會員 C', code: 'user_c' }
 ]
 
 const redirectTarget = computed(() => {

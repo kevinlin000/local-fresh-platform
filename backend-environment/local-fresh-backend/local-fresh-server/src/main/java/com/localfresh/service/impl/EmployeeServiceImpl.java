@@ -47,11 +47,11 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new AccountNotFoundException(MessageConstant.ACCOUNT_NOT_FOUND);
         }
 
-        //密碼比对
-        // 對前端傳過來的密碼進行MD5加密，然後和數據庫中存儲的密碼進行比對
+        // 密碼比對
+        // 對前端傳來的密碼進行 MD5 加密，然後和資料庫中儲存的密碼比對
         password = DigestUtils.md5DigestAsHex(password.getBytes());
         if (!password.equals(employee.getPassword())) {
-            //密碼错误
+            // 密碼錯誤
             throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR);
         }
 

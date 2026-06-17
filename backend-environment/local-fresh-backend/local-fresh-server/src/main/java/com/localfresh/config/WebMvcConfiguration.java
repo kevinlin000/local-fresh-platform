@@ -22,7 +22,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupp
 import java.util.List;
 
 /**
- * 設定類，註冊web层相關元件
+ * 設定類，註冊 Web 層相關元件
  */
 @Configuration
 @Slf4j
@@ -41,13 +41,13 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
     private boolean swaggerUiEnabled;
 
     /**
-     * 註冊自定义拦截器
+     * 註冊自訂攔截器
      *
      * @param registry
      */
 
     protected void addInterceptors(InterceptorRegistry registry) {
-        log.info("开始註冊自定义拦截器...");
+        log.info("開始註冊自訂攔截器...");
         registry.addInterceptor(jwtTokenAdminInterceptor)
                 .addPathPatterns("/admin/**")
                 .excludePathPatterns("/admin/employee/login");

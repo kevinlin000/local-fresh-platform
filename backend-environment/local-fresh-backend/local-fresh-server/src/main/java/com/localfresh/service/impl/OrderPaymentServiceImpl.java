@@ -1,6 +1,5 @@
 package com.localfresh.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.localfresh.constant.MessageConstant;
 import com.localfresh.entity.Orders;
 import com.localfresh.exception.OrderBusinessException;
@@ -8,6 +7,7 @@ import com.localfresh.mapper.OrderMapper;
 import com.localfresh.service.OrderPaymentService;
 import com.localfresh.service.payment.PaymentGateway;
 import com.localfresh.service.support.OrderStatusTransitionPolicy;
+import com.localfresh.utils.JsonUtil;
 import com.localfresh.vo.OrderPaymentVO;
 import com.localfresh.websocket.WebSocketServer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +54,7 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
         payload.put("type", 1);
         payload.put("orderId", ordersDB.getId());
         payload.put("content", "訂單號：" + orderNumber);
-        webSocketServer.sendToAllClient(JSON.toJSONString(payload));
+        webSocketServer.sendToAllClient(JsonUtil.toJson(payload));
     }
 
     private boolean ensurePaymentSucceeded(String orderNumber) {

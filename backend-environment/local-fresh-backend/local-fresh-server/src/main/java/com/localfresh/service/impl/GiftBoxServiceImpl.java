@@ -87,7 +87,7 @@ public class GiftBoxServiceImpl implements GiftBoxService {
         ids.forEach(id -> {
             GiftBox setmeal = giftBoxMapper.getById(id);
             if(StatusConstant.ENABLE == setmeal.getStatus()){
-                //起售中的直送箱不能刪除
+                //上架中的直送箱不能刪除
                 throw new DeletionNotAllowedException(MessageConstant.SETMEAL_ON_SALE);
             }
         });
@@ -127,30 +127,30 @@ public class GiftBoxServiceImpl implements GiftBoxService {
         GiftBox setmeal = new GiftBox();
         BeanUtils.copyProperties(setmealDTO, setmeal);
 
-        //1、修改直送箱表，执行update
+        //1、修改直送箱表，執行update
         giftBoxMapper.update(setmeal);
 
         //直送箱id
         Long giftBoxId = setmealDTO.getId();
 
-        //2、刪除直送箱和商品的關聯關係，操作setmeal_dish表，执行delete
+        //2、刪除直送箱和商品的關聯關係，操作setmeal_dish表，執行delete
         giftBoxProductMapper.deleteBySetmealId(giftBoxId);
 
         List<GiftBoxProduct> giftBoxProducts = setmealDTO.getGiftBoxProducts();
         giftBoxProducts.forEach(setmealDish -> {
             setmealDish.setGiftBoxId(giftBoxId);
         });
-        //3、重新插入直送箱和商品的關聯關係，操作setmeal_dish表，执行insert
+        //3、重新插入直送箱和商品的關聯關係，操作setmeal_dish表，執行insert
         giftBoxProductMapper.insertBatch(giftBoxProducts);
     }
 
     /**
-     * 直送箱起售、停售
+     * 直送箱上架、下架
      * @param status
      * @param id
      */
     public void startOrStop(Integer status, Long id) {
-        //起售直送箱時，判断直送箱内是否有停售商品，有停售商品提示"直送箱内包含未啟售商品，無法啟售"
+        //上架直送箱時，判斷直送箱內是否有下架商品，有下架商品提示"直送箱內包含未上架商品，無法上架"
         if(status == StatusConstant.ENABLE){
             // select a.* from product a left join gift_box_product b on a.id = b.product_id where b.gift_box_id = ?
             List<Product> dishList = productMapper.getBySetmealId(id);
@@ -181,7 +181,7 @@ public class GiftBoxServiceImpl implements GiftBoxService {
     }
 
     /**
-     * 根據id查詢商品选项
+     * 根據id查詢商品選項
      * @param id
      * @return
      */

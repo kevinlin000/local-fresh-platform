@@ -13,15 +13,15 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class ProductItemVO implements Serializable {
 
-    //商品名称
+    // 商品名稱
     private String name;
 
-    //份数
+    // 份數
     private Integer copies;
 
-    //商品图片
+    // 商品圖片
     private String image;
 
-    //商品描述
+    // 商品描述
     private String description;
 }

@@ -1,11 +1,11 @@
 package com.localfresh.constant;
 
 /**
- * 公共字段自动填充相關常量
+ * 共用欄位自動填充相關常數
  */
 public class AutoFillConstant {
     /**
-     * 实体类中的方法名称
+     * 實體類別中的方法名稱
      */
     public static final String SET_CREATE_TIME = "setCreateTime";
     public static final String SET_UPDATE_TIME = "setUpdateTime";

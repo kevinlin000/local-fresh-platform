@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 270" role="img" aria-label="Dairy and eggs">
+  <rect width="360" height="270" fill="#f8f4ea"/>
+  <circle cx="294" cy="72" r="86" fill="#e4eadc"/>
+  <circle cx="74" cy="222" r="88" fill="#eadbcc"/>
+  <path d="M129 82h85l16 38v97H113v-97l16-38Z" fill="#ffffff"/>
+  <path d="M129 82h85l10 24H119l10-24Z" fill="#d9e8ef"/>
+  <rect x="132" y="132" width="79" height="48" rx="8" fill="#2f6f4e"/>
+  <ellipse cx="246" cy="184" rx="34" ry="45" fill="#fff2cc"/>
+  <ellipse cx="282" cy="193" rx="27" ry="37" fill="#f4dfaa"/>
+</svg>

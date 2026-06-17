@@ -1,21 +1,21 @@
 <template>
   <div class="dashboard-container home">
-    <!-- 标题 -->
+    <!-- 標題 -->
     <TitleIndex @sendTitleInd="getTitleNum" :flag="flag" :tateData="tateData" />
     <!-- end -->
     <div class="homeMain">
-      <!-- 營業额统计 -->
+      <!-- 營業額統計 -->
       <TurnoverStatistics :turnoverdata="turnoverData" />
       <!-- end -->
-      <!-- 會員统计 -->
+      <!-- 會員統計 -->
       <UserStatistics :userdata="userData" />
       <!-- end -->
     </div>
     <div class="homeMain homecon">
-      <!-- 訂單统计 -->
+      <!-- 訂單統計 -->
       <OrderStatistics :orderdata="orderData" :overviewData="overviewData" />
       <!-- end -->
-      <!-- 销量排名TOP10 -->
+      <!-- 銷量排名 TOP10 -->
       <Top :top10data="top10Data" />
       <!-- end -->
     </div>
@@ -39,13 +39,13 @@ import {
   getTop,
 } from '@/api/index'
 // 元件
-// 标题
+// 標題
 import TitleIndex from './components/titleIndex.vue'
-// 營業额统计
+// 營業額統計
 import TurnoverStatistics from './components/turnoverStatistics.vue'
-// 會員统计
+// 會員統計
 import UserStatistics from './components/userStatistics.vue'
-// 訂單统计
+// 訂單統計
 import OrderStatistics from './components/orderStatistics.vue'
 // 排名
 import Top from './components/top10.vue'
@@ -83,7 +83,7 @@ export default class extends Vue {
     })
   }
 
-  // 取得營業额统计資料
+  // 取得營業額統計資料
   async getTurnoverStatisticsData(begin: any ,end:any) {
     const data = await getTurnoverStatistics({ begin: begin,end:end })
     const turnoverData = data.data.data
@@ -100,7 +100,7 @@ export default class extends Vue {
     // })
     // this.tateData = arr
   }
-  // 取得會員统计資料
+  // 取得會員統計資料
   async getUserStatisticsData(begin: any ,end:any) {
     const data = await getUserStatistics({ begin: begin,end:end })
     const userData = data.data.data
@@ -110,7 +110,7 @@ export default class extends Vue {
       newUserList: userData.newUserList.split(','),
     }
   }
-  // 取得訂單统计資料
+  // 取得訂單統計資料
   async getOrderStatisticsData(begin: any ,end:any) {
     const data = await getOrderStatistics({begin: begin,end:end })
     const orderData = data.data.data

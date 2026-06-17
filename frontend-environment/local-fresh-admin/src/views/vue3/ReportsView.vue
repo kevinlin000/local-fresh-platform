@@ -2,7 +2,7 @@
   <section v-loading="loading" class="report-page">
     <div class="admin-card admin-card-pad report-toolbar">
       <div>
-        <p class="eyebrow">Reports</p>
+        <p class="eyebrow">報表</p>
         <h2>營運資料統計</h2>
       </div>
       <div class="report-actions">
@@ -30,7 +30,7 @@
     <article class="admin-card admin-card-pad">
       <div class="section-title">
         <div>
-          <p class="eyebrow">Trend</p>
+          <p class="eyebrow">趨勢</p>
           <h2>營業額趨勢</h2>
         </div>
       </div>
@@ -48,7 +48,7 @@
     <article class="admin-card admin-card-pad">
       <div class="section-title">
         <div>
-          <p class="eyebrow">Top 10</p>
+          <p class="eyebrow">排行</p>
           <h2>商品銷量排行</h2>
         </div>
       </div>
@@ -83,7 +83,7 @@ const summaryCards = computed(() => [
   { label: '訂單總數', value: orderReport.value.totalOrderCount ?? 0, caption: '區間內全部訂單' },
   { label: '有效訂單', value: orderReport.value.validOrderCount ?? 0, caption: '已完成訂單' },
   { label: '訂單完成率', value: percent(orderReport.value.orderCompletionRate), caption: '有效訂單 / 全部訂單' },
-  { label: '新增用戶', value: latest(csvNumbers(userReport.value.newUserList)), caption: '區間最後一天新增' }
+  { label: '新增會員', value: latest(csvNumbers(userReport.value.newUserList)), caption: '區間最後一天新增' }
 ])
 
 const turnoverSeries = computed(() => {

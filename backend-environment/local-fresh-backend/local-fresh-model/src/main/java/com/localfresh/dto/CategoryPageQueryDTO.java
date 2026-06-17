@@ -7,13 +7,13 @@ import java.io.Serializable;
 @Data
 public class CategoryPageQueryDTO implements Serializable {
 
-    //頁碼
+    // 頁碼
     private int page;
 
-    //每页紀錄数
+    // 每頁紀錄數
     private int pageSize;
 
-    //分類名称
+    // 分類名稱
     private String name;
 
     //分類類型 1商品分類  2直送箱分類

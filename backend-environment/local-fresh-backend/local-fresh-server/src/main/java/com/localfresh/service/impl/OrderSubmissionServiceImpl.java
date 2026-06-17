@@ -1,9 +1,7 @@
 package com.localfresh.service.impl;
 
 import cn.hutool.core.util.IdUtil;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.localfresh.constant.MessageConstant;
 import com.localfresh.context.BaseContext;
 import com.localfresh.dto.OrdersSubmitDTO;
@@ -22,6 +20,7 @@ import com.localfresh.mapper.ShippingAddressMapper;
 import com.localfresh.service.InventoryService;
 import com.localfresh.service.OrderSubmissionService;
 import com.localfresh.utils.HttpClientUtil;
+import com.localfresh.utils.JsonUtil;
 import com.localfresh.vo.OrderSubmitVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -178,25 +177,31 @@ public class OrderSubmissionServiceImpl implements OrderSubmissionService {
         map.put("key", apiKey);
 
         String json = HttpClientUtil.doGet("https://maps.googleapis.com/maps/api/distancematrix/json", map);
-        JSONObject jsonObject = JSON.parseObject(json);
+        JsonNode jsonObject = JsonUtil.readTree(json);
 
-        if (!"OK".equals(jsonObject.getString("status"))) {
+        if (!"OK".equals(jsonObject.path("status").asText())) {
             throw new OrderBusinessException("配送路線規劃失敗");
         }
 
-        JSONArray rows = jsonObject.getJSONArray("rows");
-        if (rows.isEmpty()) {
+        JsonNode rows = jsonObject.path("rows");
+        if (!rows.isArray() || rows.isEmpty()) {
             throw new OrderBusinessException("無法計算配送距離");
         }
 
-        JSONArray elements = rows.getJSONObject(0).getJSONArray("elements");
-        JSONObject element = elements.getJSONObject(0);
+        JsonNode elements = rows.get(0).path("elements");
+        if (!elements.isArray() || elements.isEmpty()) {
+            throw new OrderBusinessException("無法計算配送距離");
+        }
+        JsonNode element = elements.get(0);
 
-        if (!"OK".equals(element.getString("status"))) {
+        if (!"OK".equals(element.path("status").asText())) {
             throw new OrderBusinessException("該地址無法送達（可能跨海或無道路）");
         }
 
-        Integer distance = element.getJSONObject("distance").getInteger("value");
+        Integer distance = element.path("distance").path("value").asInt(-1);
+        if (distance < 0) {
+            throw new OrderBusinessException("無法計算配送距離");
+        }
         if (distance > MAX_DELIVERY_DISTANCE_METERS) {
             throw new OrderBusinessException("超出配送範圍");
         }
@@ -208,15 +213,21 @@ public class OrderSubmissionServiceImpl implements OrderSubmissionService {
         map.put("key", apiKey);
 
         String json = HttpClientUtil.doGet("https://maps.googleapis.com/maps/api/geocode/json", map);
-        JSONObject jsonObject = JSON.parseObject(json);
+        JsonNode jsonObject = JsonUtil.readTree(json);
 
-        if ("OK".equals(jsonObject.getString("status"))) {
-            JSONObject location = jsonObject.getJSONArray("results")
-                    .getJSONObject(0)
-                    .getJSONObject("geometry")
-                    .getJSONObject("location");
-            String lat = location.getString("lat");
-            String lng = location.getString("lng");
+        if ("OK".equals(jsonObject.path("status").asText())) {
+            JsonNode location = jsonObject.path("results")
+                    .path(0)
+                    .path("geometry")
+                    .path("location");
+            if (location.isMissingNode()) {
+                return null;
+            }
+            String lat = location.path("lat").asText(null);
+            String lng = location.path("lng").asText(null);
+            if (lat == null || lng == null) {
+                return null;
+            }
             return lat + "," + lng;
         }
         return null;

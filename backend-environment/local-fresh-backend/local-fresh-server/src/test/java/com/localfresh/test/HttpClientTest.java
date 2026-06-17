@@ -1,6 +1,6 @@
 package com.localfresh.test;
 
-import com.alibaba.fastjson.JSONObject;
+import com.localfresh.utils.JsonUtil;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.IOException;
+import java.util.Map;
 
 // @SpringBootTest
 @Disabled("跟著課程實作的 demo 測試，需要外部依賴（HTTP server / Redis），不適合自動化測試環境")
@@ -56,11 +57,10 @@ public class HttpClientTest {
         //創建請求對象
         HttpPost httpPost = new HttpPost("http://localhost:8080/admin/employee/login");
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("username","admin");
-        jsonObject.put("password","123456");
-
-        StringEntity entity = new StringEntity(jsonObject.toString());
+        StringEntity entity = new StringEntity(JsonUtil.toJson(Map.of(
+                "username", "admin",
+                "password", "123456"
+        )));
         //指定請求編碼方式
         entity.setContentEncoding("UTF-8");
         //數據格式

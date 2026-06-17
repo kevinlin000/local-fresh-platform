@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 
 /**
- * 收货地址
+ * 配送地址
  */
 @Data
 @Builder
@@ -20,42 +20,42 @@ public class ShippingAddress implements Serializable {
 
     private Long id;
 
-    //会员id
+    // 會員 id
     private Long memberId;
 
-    //收货人
+    // 收件人
     private String consignee;
 
-    //手機號碼
+    // 手機號碼
     private String phone;
 
-    //性别 0 女 1 男
+    // 性別 0 女 1 男
     private String sex;
 
-    //省级区划编号
+    // 省/縣市代碼
     private String provinceCode;
 
-    //省级名称
+    // 省/縣市名稱
     private String provinceName;
 
-    //市级区划编号
+    // 城市代碼
     private String cityCode;
 
-    //市级名称
+    // 城市名稱
     private String cityName;
 
-    //区级区划编号
+    // 行政區代碼
     private String districtCode;
 
-    //区级名称
+    // 行政區名稱
     private String districtName;
 
-    //详细地址
+    // 詳細地址
     private String detail;
 
-    //標籤
+    // 標籤
     private String label;
 
-    //是否預設 0否 1是
+    // 是否預設 0 否 1 是
     private Integer isDefault;
 }

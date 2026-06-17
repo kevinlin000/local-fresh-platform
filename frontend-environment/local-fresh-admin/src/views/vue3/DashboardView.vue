@@ -9,7 +9,7 @@
     <article class="admin-card admin-card-pad wide">
       <div class="section-title">
         <div>
-          <p class="eyebrow">Today</p>
+          <p class="eyebrow">今日</p>
           <h2>今日營運概覽</h2>
         </div>
         <el-button type="primary" plain @click="loadDashboard">重新整理</el-button>
@@ -26,13 +26,13 @@
     <article class="admin-card admin-card-pad wide">
       <div class="section-title">
         <div>
-          <p class="eyebrow">Operations</p>
+          <p class="eyebrow">營運</p>
           <h2>今日優先處理</h2>
         </div>
         <div class="section-actions">
           <el-button @click="goToOrders(2)">待確認</el-button>
           <el-button @click="goToProducts(undefined, true)">低庫存</el-button>
-          <el-button @click="goToProducts(0)">停售商品</el-button>
+          <el-button @click="goToProducts(0)">下架商品</el-button>
         </div>
       </div>
 
@@ -67,12 +67,12 @@
           <div class="ops-panel-title">
             <div>
               <span>庫存補貨</span>
-              <strong>{{ lowStockProducts.length }} 個低庫存單品</strong>
+              <strong>{{ lowStockProducts.length }} 個低庫存商品</strong>
             </div>
             <el-tag type="danger" effect="plain">影響履約能力</el-tag>
           </div>
 
-          <el-empty v-if="!lowStockProducts.length" description="目前沒有低庫存單品" />
+          <el-empty v-if="!lowStockProducts.length" description="目前沒有低庫存商品" />
           <div v-else class="ops-list">
             <button
               v-for="product in lowStockProducts.slice(0, 5)"
@@ -93,12 +93,12 @@
           <div class="ops-panel-title">
             <div>
               <span>商品上架</span>
-              <strong>{{ offlineProducts.length }} 個停售單品</strong>
+              <strong>{{ offlineProducts.length }} 個下架商品</strong>
             </div>
             <el-tag type="warning" effect="plain">影響可售品項</el-tag>
           </div>
 
-          <el-empty v-if="!offlineProducts.length" description="目前沒有停售單品" />
+          <el-empty v-if="!offlineProducts.length" description="目前沒有下架商品" />
           <div v-else class="ops-list">
             <button
               v-for="product in offlineProducts"
@@ -118,15 +118,15 @@
     </article>
 
     <article class="admin-card admin-card-pad half">
-      <p class="eyebrow">Products</p>
-      <h2>單品狀態</h2>
+      <p class="eyebrow">商品</p>
+      <h2>商品狀態</h2>
       <div class="split-stat product-split-stat">
         <div>
-          <span>起售</span>
+          <span>上架</span>
           <strong>{{ productOverview.sold ?? 0 }}</strong>
         </div>
         <div>
-          <span>停售</span>
+          <span>下架</span>
           <strong>{{ productOverview.discontinued ?? 0 }}</strong>
         </div>
         <div>
@@ -137,15 +137,15 @@
     </article>
 
     <article class="admin-card admin-card-pad half">
-      <p class="eyebrow">Gift Boxes</p>
+      <p class="eyebrow">直送箱</p>
       <h2>直送箱狀態</h2>
       <div class="split-stat">
         <div>
-          <span>起售</span>
+          <span>上架</span>
           <strong>{{ giftBoxOverview.sold ?? 0 }}</strong>
         </div>
         <div>
-          <span>停售</span>
+          <span>下架</span>
           <strong>{{ giftBoxOverview.discontinued ?? 0 }}</strong>
         </div>
       </div>
@@ -175,13 +175,13 @@ const metricCards = computed(() => [
   { label: '有效訂單', value: businessData.value.validOrderCount ?? 0, caption: '今日完成訂單數' },
   { label: '客單價', value: money(businessData.value.unitPrice), caption: '平均每筆有效訂單' },
   { label: '完成率', value: percent(businessData.value.orderCompletionRate), caption: '有效訂單 / 全部訂單' },
-  { label: '新增用戶', value: businessData.value.newUsers ?? 0, caption: '今日新增會員' },
+  { label: '新增會員', value: businessData.value.newUsers ?? 0, caption: '今日新增會員' },
   { label: '低庫存', value: productOverview.value.lowStock ?? lowStockProducts.value.length, caption: '需補貨或調整庫存' }
 ])
 
 const orderCards = computed(() => [
   { label: '待確認', value: orderOverview.value.waitingOrders ?? 0 },
-  { label: '待配送', value: orderOverview.value.deliveredOrders ?? 0 },
+  { label: '已確認', value: orderOverview.value.deliveredOrders ?? 0 },
   { label: '已完成', value: orderOverview.value.completedOrders ?? 0 },
   { label: '已取消', value: orderOverview.value.cancelledOrders ?? 0 }
 ])
@@ -284,7 +284,7 @@ onMounted(loadDashboard)
   margin: 0 0 8px;
   color: var(--admin-gold);
   font-weight: 800;
-  letter-spacing: 0.14em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -302,7 +302,7 @@ h2 {
 .overview-tile,
 .split-stat > div {
   padding: 16px;
-  border-radius: 18px;
+  border-radius: 8px;
   background: #f7f1df;
 }
 
@@ -337,7 +337,7 @@ h2 {
 .ops-panel {
   padding: 18px;
   border: 1px solid rgba(32, 49, 38, 0.08);
-  border-radius: 22px;
+  border-radius: 8px;
   background: #fffaf0;
 }
 
@@ -378,7 +378,7 @@ h2 {
   width: 100%;
   padding: 14px;
   border: 1px solid rgba(32, 49, 38, 0.08);
-  border-radius: 16px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.72);
   color: var(--admin-ink);
   text-align: left;

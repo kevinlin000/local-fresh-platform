@@ -15,7 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.lang.Nullable;
 
 /**
- * jwt令牌校验的拦截器
+ * JWT 令牌驗證攔截器
  */
 @Component
 @Slf4j
@@ -25,7 +25,7 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
     private JwtProperties jwtProperties;
 
     /**
-     * 校验jwt
+     * 驗證 JWT
      *
      * @param request
      * @param response
@@ -35,26 +35,26 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
      */
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
-        //判断目前拦截到的是Controller的方法还是其他資源
+        // 判斷目前攔截到的是 Controller 方法還是其他資源
         if (!(handler instanceof HandlerMethod)) {
-            //目前拦截到的不是动态方法，直接放行
+            // 目前攔截到的不是動態方法，直接放行
             return true;
         }
 
-        //1、從請求头中取得令牌
+        // 1、從請求標頭中取得令牌
         String token = request.getHeader(jwtProperties.getAdminTokenName());
 
-        //2、校验令牌
+        // 2、驗證令牌
         try {
-            log.info("jwt校验");
+            log.info("JWT 驗證");
             Claims claims = JwtUtil.parseJWT(jwtProperties.getAdminSecretKey(), token);
             Long empId = Long.valueOf(claims.get(JwtClaimsConstant.EMP_ID).toString());
-            log.info("目前员工id：{}", empId);
+            log.info("目前員工 id：{}", empId);
             BaseContext.setCurrentId(empId);
-            //3、透過，放行
+            // 3、通過驗證，放行
             return true;
         } catch (Exception ex) {
-            //4、不透過，响应401狀態码
+            // 4、未通過驗證，回應 401 狀態碼
             response.setStatus(401);
             return false;
         }

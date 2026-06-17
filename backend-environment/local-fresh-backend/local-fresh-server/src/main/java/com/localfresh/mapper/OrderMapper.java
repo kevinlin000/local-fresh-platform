@@ -31,7 +31,7 @@ public interface OrderMapper {
     Orders getByNumber(String orderNumber);
 
     /**
-     * 修改訂單信息
+     * 修改訂單資訊
      * @param orders
      */
     void update(Orders orders);
@@ -66,7 +66,7 @@ public interface OrderMapper {
     Orders getById(Long id);
 
     /**
-     * 根據狀態统计訂單數量
+     * 根據狀態統計訂單數量
      * @param status
      */
     @Select("select count(id) from orders where status = #{status}")

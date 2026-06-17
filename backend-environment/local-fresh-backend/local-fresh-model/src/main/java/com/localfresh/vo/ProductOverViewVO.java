@@ -15,10 +15,10 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductOverViewVO implements Serializable {
-    // 已啟售數量
+    // 已上架數量
     private Integer sold;
 
-    // 已停售數量
+    // 已下架數量
     private Integer discontinued;
 
     // 低庫存數量

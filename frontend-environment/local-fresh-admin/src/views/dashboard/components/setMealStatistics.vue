@@ -6,11 +6,11 @@
     <div class="orderviewBox">
       <ul>
         <li>
-          <span class="status"><i class="iconfont icon-open"></i>已啟售</span>
+          <span class="status"><i class="iconfont icon-open"></i>已上架</span>
           <span class="num">{{ setMealData.sold }}</span>
         </li>
         <li>
-          <span class="status"><i class="iconfont icon-stop"></i>已停售</span>
+          <span class="status"><i class="iconfont icon-stop"></i>已下架</span>
           <span class="num">{{ setMealData.discontinued }}</span>
         </li>
         <li class="add">

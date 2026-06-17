@@ -32,17 +32,17 @@ export default class extends Vue {
     var option: any
     option = {
       // legend: {
-      //   itemHeight: 3, //图例高
-      //   itemWidth: 12, //图例宽
-      //   icon: 'rect', //图例
+      //   itemHeight: 3, // 圖例高
+      //   itemWidth: 12, // 圖例寬
+      //   icon: 'rect', // 圖例
       //   show: true,
       //   top: 'bottom',
       //   data: ['會員總量', '新增會員'],
       // },
       tooltip: {
         trigger: 'axis',
-        backgroundColor: '#fff', //背景顏色（此時为預設色）
-        borderRadius: 2, //边框圆角
+        backgroundColor: '#fff', // 背景顏色
+        borderRadius: 2, // 邊框圓角
         textStyle: {
           color: '#333', //字型顏色
           fontSize: 12, //字型大小
@@ -60,20 +60,20 @@ export default class extends Vue {
         type: 'category',
         boundaryGap: false,
         axisLabel: {
-          //X轴字型顏色
+          // X 軸字型顏色
           textStyle: {
             color: '#666',
             fontSize: '12px',
           },
         },
         axisLine: {
-          //X轴线顏色
+          // X 軸線顏色
           lineStyle: {
             color: '#E5E4E4',
-            width: 1, //x轴线的宽度
+            width: 1, // X 軸線寬度
           },
         },
-        data: this.userdata.dateList, //后端传来的动态資料
+        data: this.userdata.dateList, // 後端回傳的動態資料
       },
       yAxis: [
         {
@@ -86,19 +86,19 @@ export default class extends Vue {
               color: '#666',
               fontSize: '12px',
             },
-            // formatter: "{value} ml",//单位
+            // formatter: "{value} ml", // 單位
           },
-        }, //左侧值
+        }, // 左側值
       ],
       series: [
         {
           name: '會員總量',
           type: 'line',
           // stack: 'Total',
-          smooth: false, //否平滑曲线
-          showSymbol: false, //未显示鼠标上移的圆点
+          smooth: false, // 是否平滑曲線
+          showSymbol: false, // 不顯示滑鼠移入圓點
           symbolSize: 10,
-          // symbol:"circle", //設定折线点定位實心點
+          // symbol:"circle", // 設定折線點定位實心點
           itemStyle: {
             normal: {
               color: '#FFD000',
@@ -119,10 +119,10 @@ export default class extends Vue {
           name: '新增會員',
           type: 'line',
           // stack: 'Total',
-          smooth: false, //否平滑曲线
-          showSymbol: false, //未显示鼠标上移的圆点
-          symbolSize: 10, //圆点大小
-          // symbol:"circle", //設定折线点定位實心點
+          smooth: false, // 是否平滑曲線
+          showSymbol: false, // 不顯示滑鼠移入圓點
+          symbolSize: 10, // 圓點大小
+          // symbol:"circle", // 設定折線點定位實心點
           itemStyle: {
             normal: {
               color: '#FD7F7F',
@@ -132,7 +132,7 @@ export default class extends Vue {
               },
             },
             emphasis: {
-              // 圆点顏色
+              // 圓點顏色
               color: '#fff',
               borderWidth: 5,
               borderColor: '#FD7F7F',

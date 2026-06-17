@@ -1,7 +1,6 @@
 package com.localfresh.service.impl;
 
 import cn.hutool.core.util.IdUtil;
-import com.alibaba.fastjson.JSON;
 import com.localfresh.constant.MessageConstant;
 import com.localfresh.context.BaseContext;
 import com.localfresh.dto.InitiateGroupBuyDTO;
@@ -23,6 +22,7 @@ import com.localfresh.mapper.ProductMapper;
 import com.localfresh.mapper.ShippingAddressMapper;
 import com.localfresh.service.GroupBuyService;
 import com.localfresh.service.InventoryService;
+import com.localfresh.utils.JsonUtil;
 import com.localfresh.vo.GroupBuyParticipantVO;
 import com.localfresh.vo.GroupBuyVO;
 import lombok.extern.slf4j.Slf4j;
@@ -376,9 +376,9 @@ public class GroupBuyServiceImpl implements GroupBuyService {
     private void sendGroupBuyCompletedNotification(String groupNo) {
         Map<String, Object> payload = new HashMap<>();
         payload.put("type", 1);
-        payload.put("content", "揪團已成團，請商家確認");
+        payload.put("content", "揪團已成團，請店家確認");
         payload.put("groupNo", groupNo);
-        webSocketServer.sendToAllClient(JSON.toJSONString(payload));
+        webSocketServer.sendToAllClient(JsonUtil.toJson(payload));
     }
 
     private Orders buildPreOrder(Long memberId, Long productId, Integer quantity, Long addressId) {
