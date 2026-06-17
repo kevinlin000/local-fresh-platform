@@ -65,3 +65,14 @@
 - The first visual pass improved the member home page, but browser inspection exposed a misleading `0 款直送箱` header fact because gift boxes are only loaded when the gift-box tab is active. The header now uses a non-numeric "產地直送箱" fact instead of implying loaded data that does not exist yet.
 - Admin product management exposed a concrete usability issue at 1280px desktop width: the wide operation column clipped actions off the right edge. Product table columns are now narrower and row actions wrap, so edit, status, inventory adjustment, inventory logs, and delete remain visible.
 - Final Phase 7 browser inspection covered member home, product detail, cart, orders, admin dashboard, admin products, admin orders, and mobile member/admin layouts with clean console output.
+
+## Phase 8 Portfolio Evidence Findings
+
+- The project implementation is ahead of the documentation: `README.md` still describes the old hero-led storefront and only includes member-side screenshots, while Phase 7 moved the UI toward a shopping-first storefront and operations-console admin.
+- The highest-value next documentation work is not adding more claims; it is replacing stale screenshots, adding admin proof, and giving reviewers a guided demo path.
+- The best evidence package for this project is a small set of curated screenshots plus a spoken demo route. Raw feature lists are less persuasive than showing the full loop: storefront browsing, product decision, group-buy progress, cart, orders, admin dashboard, products, and fulfillment.
+- Known limitations should stay visible rather than hidden. For this portfolio, payment mock, no visual-regression suite, single-instance AWS deployment, and dev-disabled delivery range checks are acceptable if they are framed as deliberate next steps.
+- Interview preparation should separate three stories:
+  - Product story: local fresh-produce storefront, cart/order flow, and group-buy free-shipping mechanism.
+  - Backend story: Spring Boot modularity, transaction boundaries, Redisson lock, Redis/Testcontainers evidence, Flyway, JWT/ThreadLocal cleanup, OAuth, and deployment readiness.
+  - Full-stack story: Vue 3 member/admin surfaces, Vite builds, API proxy integration, responsive polish, and real browser acceptance evidence.

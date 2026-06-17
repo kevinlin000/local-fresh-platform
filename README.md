@@ -27,21 +27,21 @@
 
 ## Demo 流程截圖
 
-實際操作流程,從首頁瀏覽到下單、發起揪團、查看訂單。
+實際操作流程，從會員端採買到管理端履約，展示完整的前後台閉環。
 
-### 1. 首頁 — 在地小農直送
+### 1. 首頁 — 今日市場與採買入口
 
-直接展示揪團湊免運核心訴求,商品依葉菜類 / 根莖類等 7 大分類陳列。
+首屏以「今日市場」和商品搜尋為主，讓使用者直接進入採買任務，同時保留 3 人揪團免運作為輔助購買動機。
 
 ![首頁](docs/screenshots/01-home.png)
 
-### 2. 商品列表 — 七大分類切換
+### 2. 商品列表 — 分類、篩選與商品卡
 
-點選分類即時切換商品,每個商品搭配產地描述與台幣定價。
+分類側欄、排序、價格篩選與商品卡整合在同一個採買畫面，商品卡顯示分類、配送狀態、描述與台幣定價。
 
 ![商品列表](docs/screenshots/02-product-list.png)
 
-### 3. 商品詳情 — 雙路徑下單
+### 3. 商品詳情 — 購物車與揪團雙路徑
 
 可選「加入購物車」累積後一次結算,或「立即揪團」直接發起 3 人成團免運。
 
@@ -49,13 +49,13 @@
 
 ### 4. 揪團詳情 — 即時進度與一人取消
 
-倒數計時 + 進度顯示 + 分享連結;發起人在無他人加入時可取消揪團,預訂單同步取消。
+倒數計時、成員進度、分享連結與參與者列表集中呈現；發起人在無他人加入時可取消揪團，預訂單同步取消。
 
 ![揪團詳情](docs/screenshots/04-group-buy.png)
 
 ### 5. 購物車 — 即時計算總額
 
-商品數量調整即時更新總計,清空購物車一鍵歸零。
+確認採買清單、數量調整與訂單摘要分欄呈現，讓結帳前的金額與品項更容易掃描。
 
 ![購物車](docs/screenshots/05-cart.png)
 
@@ -64,6 +64,24 @@
 列出各狀態訂單(已完成 / 配送中 / 已確認 / 待付款 / 已取消),含商品明細與取消備註。
 
 ![我的訂單](docs/screenshots/06-orders.png)
+
+### 7. 管理端工作台 — 營運優先順序
+
+管理端提供今日營業額、訂單狀態、低庫存與待處理事項，作為後台營運入口。
+
+![管理端工作台](docs/screenshots/07-admin-dashboard.png)
+
+### 8. 商品管理 — 上架品質與庫存
+
+商品管理支援搜尋、狀態篩選、低庫存檢視、上架品質檢查、庫存調整與庫存紀錄。
+
+![商品管理](docs/screenshots/08-admin-products.png)
+
+### 9. 訂單管理 — 履約操作
+
+訂單管理支援狀態查詢、詳情檢視、確認、婉拒、取消、配送與完成等履約操作。
+
+![訂單管理](docs/screenshots/09-admin-orders.png)
 
 ## 專案簡介
 
@@ -134,7 +152,7 @@ erDiagram
 - 成團與失敗只需要做狀態流轉，不必在成團瞬間重建正式訂單
 - `group_buy_participant (group_buy_id, member_id)` 的唯一鍵可以和 Redisson lock 一起防止重複加團
 
-完整架構、ER 圖與設計取捨請參考 [docs/architecture.md](docs/architecture.md)。
+完整架構、ER 圖與設計取捨請參考 [docs/architecture.md](docs/architecture.md)。面試展示路線與答辯重點請參考 [docs/interview-guide.md](docs/interview-guide.md)。
 
 ### 技術棧
 
@@ -404,7 +422,7 @@ pnpm dev
 ## 已知限制
 
 - 支付流程仍為 mock，未串接真實金流
-- 管理端已升級 Vue 3，但仍以基本 CRUD、訂單操作與營運資料展示為主，尚未做完整 E2E 視覺回歸
+- 管理端已完成核心營運台與表格頁 polish，但尚未加入完整 E2E 視覺回歸
 - 用戶端已完成桌面與手機版 RWD 基礎體驗，尚未加入跨瀏覽器視覺回歸測試
 - 舊資料庫第一次導入 Flyway 時需要 baseline；全新資料庫可直接套用 migration
 
@@ -415,6 +433,7 @@ pnpm dev
 
 - [docs/known-issues.md](docs/known-issues.md)
 - [docs/architecture.md](docs/architecture.md)
+- [docs/interview-guide.md](docs/interview-guide.md)
 - [docs/testing.md](docs/testing.md)
 - [frontend-environment/local-fresh-user/README.md](frontend-environment/local-fresh-user/README.md)
 
@@ -436,7 +455,7 @@ pnpm dev
 ### 已完成里程碑
 
 - 揪團分散式鎖壓測證據:100 concurrent join JMeter 壓測,`joinGroupBuy` error rate `0.00%`, P95 `2847.65 ms`, DB 最終 `current_count=101 / participant=100`
-- 雙端品牌改造:菜籃日 Cailán Day,草綠 #4A7C3A / 暖米 #F5F0E6 / 紅磚 #C76E4E 配色,Noto Serif TC 標題字
+- 雙端產品級 UI polish:會員端採買流程、商品詳情、購物車、訂單頁與管理端 dashboard / products / orders 已完成新版截圖與 README 同步
 - 揪團發起 / 加入 / 取消 / 過期失敗回滾完整流程
 - Google OAuth 2.0 Authorization Code Flow + JWT 雙軌登入(mock login dev 開關)
 - 完整 AWS 部署:EC2 (Spring Boot + Docker MySQL/Redis) + S3 + CloudFront + DuckDNS + Let's Encrypt

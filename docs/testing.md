@@ -56,6 +56,38 @@ corepack pnpm@10.25.0 install --frozen-lockfile
 corepack pnpm@10.25.0 run build
 ```
 
+## Manual Browser Acceptance
+
+Frontend visual quality is currently validated through targeted browser
+acceptance rather than a full visual-regression suite. For portfolio review, the
+latest accepted screenshots are committed under `docs/screenshots/` and cover:
+
+- User storefront: home, product list, product detail, group-buy detail, cart,
+  and order history.
+- Admin console: dashboard, product management, and order management.
+
+The local acceptance pass uses Playwright against the running dev services:
+
+```bash
+# backend
+cd backend-environment/local-fresh-backend
+mvn install -DskipTests
+mvn -pl local-fresh-server spring-boot:run
+
+# user storefront
+cd frontend-environment/local-fresh-user
+corepack pnpm@10.25.0 run dev
+
+# admin console
+cd frontend-environment/local-fresh-admin
+npm run dev
+```
+
+This is intentionally lighter than full E2E automation. The current project
+goal is to prove the backend workflow and provide credible UI evidence; a future
+production-facing slice should add automated smoke tests for login, checkout,
+group-buy join, and admin order fulfillment.
+
 ## Test Profile
 
 Backend tests run with `application-test.yml`:
@@ -75,4 +107,5 @@ Backend tests run with `application-test.yml`:
   interceptors.
 - Keep Testcontainers reserved for infrastructure behavior that mocks cannot
   prove, such as Redisson locking.
-- Avoid UI E2E until the deployment target and demo flows are stable.
+- Add UI smoke or visual-regression coverage once the demo deployment and main
+  browser flows stop changing between portfolio polish passes.

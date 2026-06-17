@@ -9,26 +9,34 @@
 
 **Demo URL**
 
+User storefront
+
 [https://d3hqnux25iirgl.cloudfront.net](https://d3hqnux25iirgl.cloudfront.net)
 
 > The user-facing storefront is publicly accessible. Try the dev-mode mock login for instant access, or sign in with a real Google account to experience the full OAuth flow.
+
+Admin console
+
+[https://d3czahyk4cnvb9.cloudfront.net](https://d3czahyk4cnvb9.cloudfront.net)
+
+> The admin console is a Vue 3 + Vite + Element Plus operations surface for order handling, product operations, inventory checks, categories, delivery boxes, employees, and operational metrics.
+
 > Backend API endpoint: `https://localfresh-demo.duckdns.org`
 > Deployment topology: Vue 3 storefront hosted on AWS S3 + CloudFront (HTTPS), Spring Boot API on AWS EC2 (Nginx reverse proxy with Let's Encrypt TLS).
 
 ## Demo Screenshots
 
-End-to-end user flow: browse → checkout → group buy → order tracking.
+End-to-end flow: storefront browsing → checkout → group buy → order tracking → admin operations.
 
-### 1. Home — Local Farm to Table
+### 1. Home — Market Entry and Shopping Context
 
-Hero section showcases the core "3 friends → free shipping" group-buy proposition;
-products organized into 7 categories (leafy greens, roots, meat, seafood, etc.).
+The home page is shopping-first: market context, delivery facts, search, category entry points, and the group-buy free-shipping offer as a supporting commerce module.
 
 ![Home](docs/screenshots/01-home.png)
 
-### 2. Product List — Category Switching
+### 2. Product List — Categories, Filters, Product Cards
 
-Switch categories to filter products instantly; each item paired with origin description and TWD pricing.
+The catalog combines category navigation, sorting, price filters, product metadata, delivery status, descriptions, and TWD pricing.
 
 ![Product List](docs/screenshots/02-product-list.png)
 
@@ -40,14 +48,13 @@ Either "Add to Cart" for batch checkout, or "Start Group Buy" to launch a 3-pers
 
 ### 4. Group Buy Detail — Live Progress & Initiator Cancellation
 
-Countdown + participant progress + shareable link; the initiator can cancel
-the group when no one else has joined, with the pre-order auto-canceled.
+Countdown, participant progress, shareable link, and member list are shown together. The initiator can cancel when no other member has joined, with the pre-order auto-canceled.
 
 ![Group Buy](docs/screenshots/04-group-buy.png)
 
 ### 5. Cart — Real-time Total
 
-Quantity adjustments update total instantly; one-click "clear cart".
+Cart items and the order summary are separated so item quantities and checkout totals are easy to scan before submitting an order.
 
 ![Cart](docs/screenshots/05-cart.png)
 
@@ -57,6 +64,24 @@ Lists orders across all states (completed / delivering / accepted / unpaid / can
 with product details and cancellation notes.
 
 ![My Orders](docs/screenshots/06-orders.png)
+
+### 7. Admin Dashboard — Operational Priorities
+
+The dashboard gives operators a daily view of revenue, order states, low-stock items, and priority queues.
+
+![Admin Dashboard](docs/screenshots/07-admin-dashboard.png)
+
+### 8. Product Management — Listing Quality and Inventory
+
+The product table supports search, status filters, low-stock filtering, listing-quality checks, inventory adjustment, and inventory logs.
+
+![Admin Products](docs/screenshots/08-admin-products.png)
+
+### 9. Order Management — Fulfillment Actions
+
+The admin order page supports status search, detail inspection, confirmation, rejection, cancellation, delivery, and completion workflows.
+
+![Admin Orders](docs/screenshots/09-admin-orders.png)
 
 ## Overview
 
@@ -280,12 +305,17 @@ docker compose up -d redis
 
 ```bash
 cd backend-environment/local-fresh-backend
+mvn install -DskipTests
 mvn -pl local-fresh-server spring-boot:run
 ```
+
+The install step refreshes sibling module artifacts (`local-fresh-common`, `local-fresh-model`) in the local Maven repository before running the server module directly.
 
 For the first Flyway baseline on a legacy database:
 
 ```bash
+cd backend-environment/local-fresh-backend
+mvn install -DskipTests
 FLYWAY_BASELINE_ON_MIGRATE=true mvn -pl local-fresh-server spring-boot:run
 ```
 
@@ -342,7 +372,7 @@ The deployment topology is:
 ## Known Limitations
 
 - Payment is still mocked; no real payment gateway integration is included yet.
-- The admin console has been migrated to Vue 3, but it remains focused on core CRUD, order operations, and operations data rather than a fully polished back-office product.
+- The admin console now has a polished operations-console baseline, but it does not yet include automated visual regression coverage.
 - The user frontend now covers desktop and mobile responsive basics, but does not yet include cross-browser visual regression testing.
 - Legacy databases need a one-time Flyway baseline; fresh databases can apply migrations directly.
 
@@ -353,6 +383,7 @@ See also:
 
 - [docs/known-issues.md](docs/known-issues.md)
 - [docs/testing.md](docs/testing.md)
+- [docs/interview-guide.md](docs/interview-guide.md)
 - [frontend-environment/local-fresh-user/README.md](frontend-environment/local-fresh-user/README.md)
 - `docs/architecture.md` (system architecture and sequence diagrams)
 

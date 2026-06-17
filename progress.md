@@ -121,3 +121,28 @@
   - Playwright screenshots checked member home/product detail/cart/orders, admin dashboard/products/orders, plus mobile member/admin layouts.
   - Browser console checks reported 0 errors for member and admin sessions.
   - Legacy-term scan reported no matches for old project/login/map/cloud provider terms in source/planning files checked in this phase.
+
+## 2026-06-18 00:10 +0800
+
+- Started Phase 8 after user confirmation.
+- Confirmed working tree is clean on `hardening-and-upgrade`, ahead of remote by 7 commits.
+- Confirmed local services are still running:
+  - Backend on `http://127.0.0.1:8080`
+  - Member frontend on `http://127.0.0.1:5176`
+  - Admin frontend on `http://127.0.0.1:5177`
+- Identified documentation drift: README screenshots and copy still describe the pre-Phase-7 storefront and do not show the improved admin operations console.
+
+## 2026-06-18 00:24 +0800
+
+- Completed the Phase 8 portfolio evidence pass.
+- Refreshed README screenshots and demo copy to cover 9 reviewer-facing screens:
+  - member home, product list, product detail, group-buy detail, cart, and orders
+  - admin dashboard, product management, and order management
+- Added `docs/interview-guide.md` with a 30-second pitch, 5-minute demo route, backend/full-stack talking points, common interview questions, and honest limitations.
+- Updated `docs/known-issues.md` so current limitations are explicit: mock payment, no automated visual-regression suite yet, portfolio-grade AWS deployment, and dev-disabled delivery range checks.
+- Updated `docs/testing.md` with the current manual browser acceptance approach and screenshot evidence scope.
+- Verification:
+  - `npm run build` passes for member frontend.
+  - `npm run build` passes for admin frontend.
+  - README screenshot references point to the committed `docs/screenshots/01-09` PNG files.
+  - Legacy-term scan found no old course/platform/login/map/cloud provider terms; the only `Fastjson` matches are historical notes saying it was removed.
