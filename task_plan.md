@@ -22,6 +22,7 @@ Raise `local-fresh-platform` to an interview-ready Java backend/fullstack portfo
 | 4. Evidence pass | completed | Run tests/builds/scans, update README/docs with accurate verification notes. |
 | 5. Commit checkpoint | completed | Commit a clean, reviewable slice with summary and residual risks. |
 | 6. Browser acceptance pass | completed | Run backend/user/admin locally, inspect real desktop/mobile flows, fix high-impact UI/UX or flow blockers, and record evidence. |
+| 7. Frontend product-grade visual pass | completed | Reduce template-like UI, make the member storefront feel like a real fresh-produce shopping flow, and make the admin surface feel like an operational tool. |
 
 ## Constraints
 

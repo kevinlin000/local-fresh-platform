@@ -53,18 +53,18 @@ async function logout() {
 
 <style>
 :root {
-  --farm-bg: #f7f5ef;
+  --farm-bg: #f6f5f1;
   --farm-surface: #ffffff;
-  --farm-surface-strong: #fffdf8;
-  --farm-line: rgba(35, 49, 39, 0.12);
-  --farm-shadow: 0 10px 28px rgba(28, 39, 32, 0.08);
-  --farm-primary: #2f6f4e;
-  --farm-primary-deep: #1f4c35;
-  --farm-primary-soft: #eaf3ec;
-  --farm-accent: #c56f45;
-  --farm-accent-soft: #faeee7;
+  --farm-surface-strong: #fbfaf7;
+  --farm-line: rgba(31, 42, 36, 0.12);
+  --farm-shadow: 0 12px 30px rgba(28, 39, 32, 0.07);
+  --farm-primary: #2d6a4f;
+  --farm-primary-deep: #1f4b39;
+  --farm-primary-soft: #e9f1ec;
+  --farm-accent: #b66a3c;
+  --farm-accent-soft: #f7ece4;
   --farm-text: #1f2a24;
-  --farm-muted: #647268;
+  --farm-muted: #66746b;
   --farm-radius: 8px;
   color: var(--farm-text);
   background: var(--farm-bg);
@@ -116,11 +116,11 @@ a {
   grid-template-columns: minmax(150px, auto) 1fr auto;
   align-items: center;
   gap: 20px;
-  padding: 12px clamp(16px, 4vw, 48px);
-  background: rgba(255, 253, 248, 0.96);
+  padding: 10px clamp(16px, 4vw, 48px);
+  background: rgba(255, 255, 255, 0.93);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--farm-line);
-  box-shadow: 0 6px 18px rgba(28, 39, 32, 0.06);
+  box-shadow: 0 5px 18px rgba(28, 39, 32, 0.045);
 }
 
 .brand {
@@ -139,8 +139,8 @@ a {
   width: 34px;
   height: 34px;
   border-radius: 8px;
-  background: var(--farm-primary-deep);
-  color: #fffdf8;
+  background: #22372d;
+  color: #fffaf1;
   font-weight: 800;
 }
 
@@ -160,21 +160,21 @@ a {
 
 .nav-links {
   display: flex;
-  gap: 6px;
+  gap: 4px;
   color: #415148;
   font-weight: 600;
   justify-content: center;
 }
 
 .nav-links a {
-  padding: 9px 12px;
-  border-radius: 8px;
+  padding: 8px 11px;
+  border-radius: 7px;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .nav-links a.router-link-active {
   color: var(--farm-primary-deep);
-  background: var(--farm-primary-soft);
+  background: #edf2ee;
 }
 
 .member-bar {
@@ -216,7 +216,7 @@ a {
 }
 
 .eyebrow {
-  color: #5f8452;
+  color: var(--farm-accent);
 }
 
 .el-empty {

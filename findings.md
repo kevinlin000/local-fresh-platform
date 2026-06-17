@@ -54,3 +54,14 @@
 - Admin Vite/Rolldown build emitted third-party `INVALID_ANNOTATION` warnings from `@vueuse/core`; these are now filtered narrowly through Rolldown's `onLog` hook only for that dependency/code combination, leaving other warnings visible.
 - Final verification for this slice: user build passes, admin build passes cleanly, backend `mvn test` passes with 100 tests, 0 failures, 0 errors, and 5 skipped manual/external tests.
 - A hard legacy-term scan found no remaining matches for the old course/project name, old login-provider terms, old map/cloud-provider names, or related romanized variants in tracked source/docs outside build artifacts.
+
+## Phase 7 Frontend Visual Findings
+
+- The member frontend is functionally credible, but the visual language still reads like a generic generated storefront: large marketing hero, card-in-card layout, many pill-like labels, soft cream/green surfaces everywhere, and slogan-heavy copy.
+- The highest-impact member-side improvement is to make the first screen shopping-first: delivery context, search, categories, product count, product grid, and group-buy as a supporting commerce module rather than a separate marketing card.
+- The admin frontend should feel more like a daily operations console than a branded landing page. The current dashboard uses large decorative cards and warm gradients; a stronger portfolio signal is a quieter surface with dense metrics, clear priority queues, subtle borders, and less ornament.
+- Design research used for this pass: Material Design's emphasis on grid, spacing, responsive behavior, and depth; Human Interface Guidelines' emphasis on consistency and learnability; Nielsen-style heuristics for system status, real-world language, and consistency; and the aesthetic-usability effect, which supports treating visual polish as part of perceived usability rather than decoration.
+- Implementation constraint: keep the existing Vue/Element Plus stack, avoid adding new UI dependencies, and improve only the visible structure, spacing, color system, and copy needed for a stronger portfolio demo.
+- The first visual pass improved the member home page, but browser inspection exposed a misleading `0 款直送箱` header fact because gift boxes are only loaded when the gift-box tab is active. The header now uses a non-numeric "產地直送箱" fact instead of implying loaded data that does not exist yet.
+- Admin product management exposed a concrete usability issue at 1280px desktop width: the wide operation column clipped actions off the right edge. Product table columns are now narrower and row actions wrap, so edit, status, inventory adjustment, inventory logs, and delete remain visible.
+- Final Phase 7 browser inspection covered member home, product detail, cart, orders, admin dashboard, admin products, admin orders, and mobile member/admin layouts with clean console output.

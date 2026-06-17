@@ -96,3 +96,28 @@
   - `npm run build` passes cleanly for admin frontend after filtering only the known `@vueuse/core` Rolldown `INVALID_ANNOTATION` dependency warning through `onLog`.
   - `mvn test` passes for backend: 100 tests, 0 failures, 0 errors, 5 skipped.
   - Legacy-term scan reports no matches for old project/login/map/cloud provider terms outside generated build artifacts.
+
+## 2026-06-17 19:34 +0800
+
+- Started Phase 7 after user confirmation to improve frontend visual quality.
+- Re-audited member `App.vue`/`HomeView.vue` and admin `vue3-admin.scss`/`DashboardView.vue`.
+- Decided to keep the existing Vue/Element Plus stack and focus on a product-grade visual pass:
+  - Member side: replace template-like marketing hero with shopping-first storefront context, denser filters, cleaner product cards, and a less repetitive color/card system.
+  - Admin side: reduce decorative gradients and oversized cards in favor of a quieter operations-console feel with clearer status hierarchy.
+
+## 2026-06-17 23:57 +0800
+
+- Completed Phase 7 frontend visual pass.
+- Member frontend changes:
+  - Reworked home into a shopping-first storefront with market context, delivery facts, integrated group-buy module, stronger catalog toolbar, cleaner category rail, and product/gift-box cards with commerce metadata.
+  - Aligned product detail, cart, and orders pages with the new visual language by reducing heavy shadows, removing uppercase/pill-heavy treatment, and using clearer shopping-flow headings.
+- Admin frontend changes:
+  - Reworked global admin shell toward an operations-console look: white sidebar, subtle borders, less decorative color, denser dashboard cards, and calmer toolbars.
+  - Aligned product/order management summary cards with the dashboard style.
+  - Fixed product management table usability at 1280px so all row actions remain visible instead of clipping off the right edge.
+- Verification:
+  - `npm run build` passes for member frontend.
+  - `npm run build` passes for admin frontend.
+  - Playwright screenshots checked member home/product detail/cart/orders, admin dashboard/products/orders, plus mobile member/admin layouts.
+  - Browser console checks reported 0 errors for member and admin sessions.
+  - Legacy-term scan reported no matches for old project/login/map/cloud provider terms in source/planning files checked in this phase.

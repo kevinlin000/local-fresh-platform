@@ -4,7 +4,7 @@
       <div class="section-header">
         <div>
           <p class="eyebrow">我的訂單</p>
-          <h1>查看最近下單紀錄與揪團進度</h1>
+          <h1>訂單與揪團紀錄</h1>
         </div>
         <el-button text type="success" @click="refreshCurrentTab">重新整理</el-button>
       </div>
@@ -382,7 +382,7 @@ onMounted(async () => {
   border: 1px solid var(--farm-line);
   border-radius: 8px;
   background: var(--farm-surface);
-  box-shadow: var(--farm-shadow);
+  box-shadow: 0 10px 28px rgba(28, 39, 32, 0.06);
 }
 
 .section-header {
@@ -402,8 +402,6 @@ onMounted(async () => {
   color: var(--farm-accent);
   font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0;
-  text-transform: uppercase;
 }
 
 h1,
@@ -424,7 +422,7 @@ h2 {
   padding: 16px;
   border: 1px solid var(--farm-line);
   border-radius: 8px;
-  background: var(--farm-surface-strong);
+  background: #fbfcfa;
 }
 
 .clickable-card {
@@ -528,7 +526,7 @@ h2 {
 
 .participant-chip {
   padding: 6px 10px;
-  border-radius: 999px;
+  border-radius: 7px;
   background: var(--farm-primary-soft);
   color: var(--farm-primary-deep);
   font-size: 13px;
@@ -568,7 +566,7 @@ h2 {
 .detail-section {
   padding: 16px 18px;
   border-radius: 8px;
-  background: #fbfaf6;
+  background: #f8faf7;
 }
 
 .detail-item span,

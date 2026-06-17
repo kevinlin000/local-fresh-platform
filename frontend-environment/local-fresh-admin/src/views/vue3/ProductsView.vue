@@ -29,20 +29,20 @@
     />
 
     <el-table v-loading="loading" :data="rows" stripe>
-      <el-table-column prop="productName" label="商品名稱" min-width="180" />
-      <el-table-column prop="categoryName" label="分類" min-width="120" />
-      <el-table-column prop="price" label="價格" width="110" />
-      <el-table-column label="庫存" width="130">
+      <el-table-column prop="productName" label="商品名稱" min-width="150" />
+      <el-table-column prop="categoryName" label="分類" width="110" />
+      <el-table-column prop="price" label="價格" width="90" />
+      <el-table-column label="庫存" width="100">
         <template #default="{ row }">
           <span :class="{ 'stock-warning': isLowStock(row) }">{{ row.stock ?? 0 }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="狀態" width="120">
+      <el-table-column label="狀態" width="100">
         <template #default="{ row }">
           <el-tag :type="row.status === 1 ? 'success' : 'info'">{{ row.status === 1 ? '上架' : '下架' }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="上架品質" min-width="220">
+      <el-table-column label="上架品質" min-width="150">
         <template #default="{ row }">
           <div class="quality-tags">
             <el-tag
@@ -56,15 +56,17 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="400">
+      <el-table-column label="操作" width="230">
         <template #default="{ row }">
-          <el-button link type="primary" @click="openEdit(row)">編輯</el-button>
-          <el-button link type="primary" @click="toggleStatus(row)">
-            {{ row.status === 1 ? '下架' : '上架' }}
-          </el-button>
-          <el-button link type="primary" @click="openInventoryAdjust(row)">調整庫存</el-button>
-          <el-button link type="primary" @click="openInventoryLogs(row)">庫存紀錄</el-button>
-          <el-button link type="danger" @click="remove(row)">刪除</el-button>
+          <div class="row-actions">
+            <el-button link type="primary" @click="openEdit(row)">編輯</el-button>
+            <el-button link type="primary" @click="toggleStatus(row)">
+              {{ row.status === 1 ? '下架' : '上架' }}
+            </el-button>
+            <el-button link type="primary" @click="openInventoryAdjust(row)">調整庫存</el-button>
+            <el-button link type="primary" @click="openInventoryLogs(row)">庫存紀錄</el-button>
+            <el-button link type="danger" @click="remove(row)">刪除</el-button>
+          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -524,9 +526,9 @@ onMounted(async () => {
 
 .summary-card {
   padding: 16px;
-  border: 1px solid rgba(32, 49, 38, 0.08);
+  border: 1px solid var(--admin-line);
   border-radius: 8px;
-  background: #f8f2df;
+  background: #f8faf7;
 }
 
 .summary-card span,
@@ -545,6 +547,16 @@ onMounted(async () => {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+}
+
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+
+.row-actions :deep(.el-button) {
+  margin-left: 0;
 }
 
 .stock-warning {

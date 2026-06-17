@@ -24,7 +24,7 @@
       <header class="admin-topbar">
         <div>
           <h1>{{ currentTitle }}</h1>
-          <p>在地小農生鮮配送平台管理後台</p>
+          <p>訂單、商品、庫存與直送箱營運管理</p>
         </div>
         <el-button type="primary" plain @click="handleLogout">登出</el-button>
       </header>
@@ -62,7 +62,7 @@ p {
 }
 
 small {
-  color: rgba(255, 255, 255, 0.58);
+  color: var(--admin-muted);
   font-size: 11px;
   letter-spacing: 0;
   text-transform: uppercase;

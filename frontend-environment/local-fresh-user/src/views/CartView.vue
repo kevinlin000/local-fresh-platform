@@ -4,8 +4,8 @@
       <div class="cart-main card">
         <div class="section-header">
           <div>
-            <p class="eyebrow">購物車</p>
-            <h1>整理這一餐想帶走的鮮選商品</h1>
+            <p class="eyebrow">結帳流程</p>
+            <h1>確認採買清單</h1>
           </div>
           <el-button text type="danger" :disabled="!cartItems.length" @click="handleCleanCart">
             清空購物車
@@ -51,8 +51,8 @@
       </div>
 
       <aside class="cart-summary card">
-        <p class="eyebrow">結算資訊</p>
-        <h2>本次合計</h2>
+        <p class="eyebrow">訂單摘要</p>
+        <h2>本次結算</h2>
 
         <div class="summary-row">
           <span>商品小計</span>
@@ -484,7 +484,7 @@ onMounted(() => {
   border: 1px solid var(--farm-line);
   border-radius: 8px;
   background: var(--farm-surface);
-  box-shadow: var(--farm-shadow);
+  box-shadow: 0 10px 28px rgba(28, 39, 32, 0.06);
 }
 
 .cart-main {
@@ -504,8 +504,6 @@ onMounted(() => {
   color: var(--farm-accent);
   font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0;
-  text-transform: uppercase;
 }
 
 h1,
@@ -528,7 +526,7 @@ h3 {
   padding: 14px;
   border-radius: 8px;
   border: 1px solid var(--farm-line);
-  background: var(--farm-surface-strong);
+  background: #fbfcfa;
 }
 
 .cart-item-image {
@@ -693,7 +691,7 @@ h3 {
 .checkout-summary {
   padding: 18px 20px;
   border-radius: 8px;
-  background: #fbfaf6;
+  background: #f8faf7;
   color: var(--farm-primary-deep);
 }
 

@@ -13,6 +13,11 @@
           <p class="eyebrow">商品詳情</p>
           <h1>{{ product.productName }}</h1>
           <p class="price">NT$ {{ formatPrice(product.price) }}</p>
+          <div class="detail-meta">
+            <span>{{ product.categoryName || '當季鮮選' }}</span>
+            <span>可排單配送</span>
+            <span>可發起 3 人揪團</span>
+          </div>
           <p class="description">{{ product.description || '來自在地產區的當季鮮選，適合日常料理與家庭備菜。' }}</p>
 
           <div v-if="specOptions.length" class="specs-panel">
@@ -446,18 +451,18 @@ onMounted(() => {
   display: grid;
   grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1fr);
   gap: 24px;
-  padding: 20px;
+  padding: 18px;
   border: 1px solid var(--farm-line);
   border-radius: 8px;
   background: var(--farm-surface);
-  box-shadow: var(--farm-shadow);
+  box-shadow: 0 10px 28px rgba(28, 39, 32, 0.06);
 }
 
 .media-panel {
   overflow: hidden;
-  min-height: 420px;
+  min-height: 396px;
   border-radius: 8px;
-  background: #edf1e9;
+  background: #eef1eb;
 }
 
 .media-panel img,
@@ -483,7 +488,7 @@ onMounted(() => {
 }
 
 .content-panel {
-  padding: 8px 4px;
+  padding: 10px 6px;
 }
 
 .eyebrow {
@@ -491,14 +496,12 @@ onMounted(() => {
   color: var(--farm-accent);
   font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0;
-  text-transform: uppercase;
 }
 
 h1 {
   margin: 0;
   color: var(--farm-text);
-  font-size: 34px;
+  font-size: 32px;
   line-height: 1.25;
 }
 
@@ -507,6 +510,23 @@ h1 {
   color: var(--farm-primary-deep);
   font-size: 28px;
   font-weight: 800;
+}
+
+.detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.detail-meta span {
+  padding: 6px 9px;
+  border: 1px solid var(--farm-line);
+  border-radius: 7px;
+  background: #f8faf7;
+  color: #53625a;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .description {

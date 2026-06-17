@@ -278,8 +278,9 @@ onMounted(async () => {
 
 .order-stat {
   padding: 18px;
+  border: 1px solid var(--admin-line);
   border-radius: 8px;
-  background: #f6f1df;
+  background: #f8faf7;
 }
 
 .order-stat span {

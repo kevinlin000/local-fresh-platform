@@ -1,25 +1,33 @@
 <template>
   <section class="home-shell">
-    <header class="hero">
-      <div class="hero-main" :style="{ backgroundImage: heroBackground }">
-        <div class="hero-main-content">
-          <p class="eyebrow">在地小農直送</p>
-          <h1>今天的採買清單，從產地直送開始</h1>
-          <p class="hero-copy">
-            挑選當季商品、主題直送箱，或從商品頁發起 3 人揪團免運。
-          </p>
+    <header class="storefront-header">
+      <div class="storefront-copy">
+        <p class="eyebrow">今日市場</p>
+        <h1>把一週餐桌補齊，從當季鮮選開始</h1>
+        <p class="header-copy">
+          依分類快速挑選蔬果、肉品、海鮮與直送箱；下單後由門市確認配送與備貨。
+        </p>
+        <div class="header-facts" aria-label="今日市場狀態">
+          <span><strong>{{ productItems.length }}</strong> 項商品</span>
+          <span>產地直送箱</span>
+          <span>台北、新北配送</span>
         </div>
       </div>
-      <div class="hero-banner">
-        <span>Group Buy</span>
-        <strong>3 人成團免運</strong>
-        <p>適合鄰居、同事與家庭共同採買，成團後訂單自動轉待確認。</p>
-      </div>
+      <aside class="fulfillment-panel" :style="{ backgroundImage: heroBackground }">
+        <div class="fulfillment-overlay">
+          <span class="delivery-state">今日接單中</span>
+          <strong>3 人揪團免運</strong>
+          <p>從商品頁建立揪團，滿員後自動進入訂單確認。</p>
+        </div>
+      </aside>
     </header>
 
     <section class="catalog-card">
       <div class="catalog-toolbar">
-        <el-segmented v-model="activeTab" :options="tabOptions" />
+        <div class="catalog-switch">
+          <el-segmented v-model="activeTab" :options="tabOptions" />
+          <span>{{ activeItemSummary }}</span>
+        </div>
         <el-input
           v-if="activeTab === 'product'"
           v-model="productSearchDraft"
@@ -32,7 +40,7 @@
       <div class="catalog-layout">
         <aside class="category-panel">
           <div class="panel-header">
-            <h2>{{ activeTab === 'product' ? '商品分類' : '直送箱分類' }}</h2>
+            <h2>分類</h2>
             <span>{{ activeTab === 'product' ? activeCategories.length + 1 : activeCategories.length }} 類</span>
           </div>
 
@@ -67,7 +75,7 @@
         <div class="catalog-content">
           <div class="content-header">
             <div>
-              <p class="eyebrow">{{ activeTab === 'product' ? '鮮選商品' : '主題直送箱' }}</p>
+              <p class="eyebrow">{{ activeTab === 'product' ? '鮮選商品' : '產地直送箱' }}</p>
               <h2>{{ activeCategoryName }}</h2>
               <p v-if="activeTab === 'product'" class="result-copy">{{ productResultCopy }}</p>
             </div>
@@ -113,11 +121,18 @@
                 <div v-else class="image-placeholder">暫無圖片</div>
               </div>
               <div class="product-body">
+                <div class="product-meta">
+                  <span>{{ resolveProductCategory(product) }}</span>
+                  <span>可排單配送</span>
+                </div>
                 <div class="product-topline">
                   <h3>{{ product.productName }}</h3>
-                  <span class="price">NT$ {{ formatPrice(product.price) }}</span>
                 </div>
                 <p class="description">{{ product.description || '當季鮮採，適合家常料理。' }}</p>
+                <div class="product-footer">
+                  <span class="price">NT$ {{ formatPrice(product.price) }}</span>
+                  <span class="detail-link">查看商品</span>
+                </div>
               </div>
             </article>
           </div>
@@ -129,9 +144,12 @@
                 <div v-else class="image-placeholder">暫無圖片</div>
               </div>
               <div class="giftbox-body">
+                <div class="product-meta">
+                  <span>組合箱</span>
+                  <span>家庭備菜</span>
+                </div>
                 <div class="product-topline">
                   <h3>{{ giftBox.boxName }}</h3>
-                  <span class="price">NT$ {{ formatPrice(giftBox.price) }}</span>
                 </div>
                 <p class="description">{{ giftBox.description || '精選主題箱，一次帶走多樣食材。' }}</p>
                 <div class="giftbox-items">
@@ -149,6 +167,7 @@
                   </template>
                 </div>
                 <div class="giftbox-actions">
+                  <span class="price">NT$ {{ formatPrice(giftBox.price) }}</span>
                   <el-button type="success" plain @click="addGiftBoxToCart(giftBox.id)">
                     加入購物車
                   </el-button>
@@ -243,6 +262,13 @@ const displayedProductItems = computed(() => {
   return products
 })
 
+const activeItemSummary = computed(() => {
+  if (activeTab.value === 'product') {
+    return `${displayedProductItems.value.length} / ${productItems.value.length} 項可購買`
+  }
+  return `${giftBoxItems.value.length} 款直送箱`
+})
+
 const productResultCopy = computed(() => {
   const keyword = productSearchTerm.value ? `「${productSearchTerm.value}」` : '所有商品'
   return `${keyword}，顯示 ${displayedProductItems.value.length} / ${productItems.value.length} 項可販售商品`
@@ -250,6 +276,12 @@ const productResultCopy = computed(() => {
 
 function formatPrice(value: number) {
   return Number(value || 0).toLocaleString('zh-TW')
+}
+
+function resolveProductCategory(product: Product) {
+  return product.categoryName
+    || productCategories.value.find((category) => category.id === product.categoryId)?.name
+    || '當季鮮選'
 }
 
 function selectCategory(categoryId: number | null) {
@@ -408,55 +440,114 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .home-shell {
-  padding: 24px 0 48px;
+  padding: 20px 0 52px;
 }
 
-.hero {
+.storefront-header {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 22px;
   align-items: stretch;
-  margin: 0 0 18px;
+  margin: 0 0 22px;
 }
 
-.hero-main,
-.hero-banner,
-.catalog-card {
-  border: 1px solid var(--farm-line);
-  border-radius: 8px;
-  background: var(--farm-surface);
-}
-
-.hero-main {
-  min-height: 260px;
-  padding: 28px 32px;
+.storefront-copy {
   display: flex;
-  align-items: flex-end;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 226px;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--farm-line);
 }
 
-.hero-main-content {
-  max-width: 620px;
-  padding: 18px 20px;
-  border-radius: 8px;
-  background: rgba(255, 253, 248, 0.86);
-  backdrop-filter: blur(8px);
-}
-
-.hero h1 {
+.storefront-copy h1 {
+  max-width: 680px;
   margin: 0;
   color: var(--farm-text);
-  font-size: 34px;
-  line-height: 1.2;
-  font-weight: 800;
+  font-size: 36px;
+  line-height: 1.18;
+  font-weight: 780;
 }
 
-.hero-copy {
-  margin: 12px 0 0;
+.header-copy {
+  max-width: 640px;
+  margin: 14px 0 0;
   color: var(--farm-muted);
-  line-height: 1.7;
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.header-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+  color: #4f5d55;
+  font-size: 13px;
+}
+
+.header-facts span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid rgba(41, 59, 49, 0.12);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.header-facts strong {
+  margin-right: 4px;
+  color: var(--farm-primary-deep);
+  font-size: 16px;
+}
+
+.fulfillment-panel {
+  display: flex;
+  align-items: flex-end;
+  min-height: 226px;
+  overflow: hidden;
+  border: 1px solid rgba(41, 59, 49, 0.12);
+  border-radius: 8px;
+  background-position: center;
+  background-size: cover;
+  box-shadow: 0 14px 32px rgba(28, 39, 32, 0.08);
+}
+
+.fulfillment-overlay {
+  width: 100%;
+  padding: 18px;
+  color: #fffaf1;
+  background: linear-gradient(180deg, rgba(27, 37, 31, 0.08) 0%, rgba(22, 32, 26, 0.78) 44%, rgba(18, 27, 22, 0.92) 100%);
+}
+
+.delivery-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.delivery-state::before {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #9be27d;
+  content: "";
+}
+
+.fulfillment-overlay strong {
+  display: block;
+  margin-top: 12px;
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+.fulfillment-overlay p {
+  margin: 8px 0 0;
+  color: rgba(255, 250, 241, 0.84);
+  line-height: 1.65;
 }
 
 .eyebrow {
@@ -464,43 +555,12 @@ onBeforeUnmount(() => {
   color: var(--farm-accent);
   font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0;
-  text-transform: uppercase;
-}
-
-.hero-banner {
-  padding: 24px;
-  background:
-    linear-gradient(180deg, rgba(47, 111, 78, 0.96), rgba(31, 76, 53, 0.98)),
-    var(--farm-primary-deep);
-  color: #fffdf8;
-}
-
-.hero-banner span {
-  display: inline-block;
-  padding: 5px 9px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.18);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0;
-}
-
-.hero-banner strong {
-  display: block;
-  margin-top: 16px;
-  font-size: 28px;
-  line-height: 1.2;
-}
-
-.hero-banner p {
-  margin: 16px 0 0;
-  color: rgba(255, 255, 255, 0.86);
-  line-height: 1.7;
 }
 
 .catalog-card {
-  padding: 20px;
+  padding: 0;
+  border: none;
+  background: transparent;
   box-shadow: none;
 }
 
@@ -508,7 +568,33 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 20px;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 12px;
+  border: 1px solid var(--farm-line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 22px rgba(28, 39, 32, 0.05);
+}
+
+.catalog-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.catalog-switch span {
+  color: var(--farm-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.catalog-switch :deep(.el-segmented) {
+  --el-segmented-bg-color: #eef1ec;
+  --el-segmented-item-selected-bg-color: #ffffff;
+  --el-segmented-item-selected-color: var(--farm-primary-deep);
+  --el-border-radius-base: 7px;
 }
 
 .catalog-search {
@@ -517,18 +603,17 @@ onBeforeUnmount(() => {
 
 .catalog-layout {
   display: grid;
-  grid-template-columns: 220px minmax(0, 1fr);
-  gap: 20px;
+  grid-template-columns: 198px minmax(0, 1fr);
+  gap: 22px;
 }
 
 .category-panel {
-  padding: 14px;
-  border: 1px solid var(--farm-line);
-  border-radius: 8px;
-  background: #fbfaf6;
+  padding: 8px 0;
+  border: none;
+  background: transparent;
   height: fit-content;
   position: sticky;
-  top: 98px;
+  top: 88px;
 }
 
 .panel-header,
@@ -545,6 +630,10 @@ onBeforeUnmount(() => {
   color: var(--farm-text);
 }
 
+.panel-header h2 {
+  font-size: 15px;
+}
+
 .panel-header span {
   color: var(--farm-muted);
   font-size: 13px;
@@ -554,36 +643,47 @@ onBeforeUnmount(() => {
 .category-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 14px;
+  gap: 6px;
+  margin-top: 12px;
 }
 
 .category-button {
-  padding: 11px 12px;
+  padding: 10px 11px;
   border: 1px solid transparent;
-  border-radius: 8px;
-  background: white;
+  border-radius: 7px;
+  background: transparent;
   color: #405047;
   font-size: 14px;
   font-weight: 700;
   text-align: left;
   cursor: pointer;
-  transition: border-color 0.18s ease, background-color 0.18s ease, color 0.18s ease;
+  transition: border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
 }
 
 .category-button:hover,
 .category-button.active {
-  border-color: rgba(47, 111, 78, 0.26);
-  background: var(--farm-primary-soft);
+  border-color: rgba(47, 111, 78, 0.18);
+  background: #ffffff;
   color: var(--farm-primary-deep);
+  box-shadow: 0 7px 18px rgba(28, 39, 32, 0.06);
 }
 
 .catalog-content {
   min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--farm-line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 10px 28px rgba(28, 39, 32, 0.06);
 }
 
 .content-header {
-  margin-bottom: 14px;
+  margin-bottom: 12px;
+}
+
+.content-header h2 {
+  font-size: 24px;
+  line-height: 1.25;
 }
 
 .result-copy {
@@ -598,9 +698,9 @@ onBeforeUnmount(() => {
   gap: 10px;
   align-items: center;
   margin: 0 0 16px;
-  padding: 12px;
-  border-radius: 8px;
-  background: #fbfaf6;
+  padding: 10px;
+  border-radius: 7px;
+  background: #f7f8f5;
   border: 1px solid var(--farm-line);
 }
 
@@ -611,15 +711,17 @@ onBeforeUnmount(() => {
 .product-grid,
 .giftbox-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
 }
 
 .product-card,
 .giftbox-card {
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   border-radius: 8px;
-  background: white;
+  background: #ffffff;
   border: 1px solid var(--farm-line);
   box-shadow: none;
 }
@@ -633,13 +735,13 @@ onBeforeUnmount(() => {
 .product-card:focus-visible {
   outline: none;
   border-color: rgba(47, 111, 78, 0.36);
-  box-shadow: 0 10px 24px rgba(28, 39, 32, 0.08);
+  box-shadow: 0 14px 30px rgba(28, 39, 32, 0.09);
 }
 
 .product-image,
 .giftbox-image {
-  height: 178px;
-  background: #edf1e9;
+  height: 168px;
+  background: #eef1eb;
 }
 
 .product-image img,
@@ -662,14 +764,33 @@ onBeforeUnmount(() => {
 
 .product-body,
 .giftbox-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   padding: 14px;
 }
 
-.product-topline {
+.product-meta {
   display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 9px;
+  color: #617067;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.product-meta span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 7px;
+  border-radius: 6px;
+  background: #f2f4ef;
+}
+
+.product-topline {
+  min-height: 46px;
 }
 
 .product-topline h3 {
@@ -686,11 +807,26 @@ onBeforeUnmount(() => {
 }
 
 .description {
-  min-height: 42px;
+  min-height: 44px;
   margin: 10px 0 0;
   color: var(--farm-muted);
   line-height: 1.6;
   font-size: 14px;
+}
+
+.product-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 14px;
+}
+
+.detail-link {
+  color: var(--farm-primary);
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .giftbox-items {
@@ -725,7 +861,9 @@ onBeforeUnmount(() => {
 
 .giftbox-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
   margin-top: 14px;
 }
 
@@ -734,8 +872,13 @@ onBeforeUnmount(() => {
     padding: 16px 0 36px;
   }
 
-  .hero {
+  .storefront-header {
     grid-template-columns: 1fr;
+  }
+
+  .storefront-copy {
+    min-height: auto;
+    padding: 8px 0 18px;
   }
 
   .catalog-layout {
@@ -753,21 +896,20 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 640px) {
-  .hero-main {
-    min-height: 240px;
-    padding: 16px;
+  .storefront-copy h1 {
+    font-size: 28px;
   }
 
-  .hero-main-content {
-    padding: 14px;
+  .header-copy {
+    font-size: 15px;
   }
 
-  .hero h1 {
-    font-size: 26px;
+  .fulfillment-panel {
+    min-height: 190px;
   }
 
   .catalog-card {
-    padding: 14px;
+    padding: 0;
   }
 
   .catalog-toolbar,
