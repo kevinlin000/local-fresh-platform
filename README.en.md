@@ -172,7 +172,7 @@ Mocks are appropriate for isolating business logic, but not for validating distr
 
 ### Q5. Why migrate the admin app to Vue 3 as well?
 
-The admin console started as a Vue 2 + vue-cli course-era implementation, which made the repository look unfinished next to the upgraded backend and user storefront. It has now been migrated to Vue 3 + Vite + TypeScript + Pinia + Element Plus, covering login, list pages, forms, order operations, dashboards, and API proxy integration without expanding the project beyond its fundamentals-focused scope.
+The admin console is an important verification surface for a backend portfolio. Without it, the repository would only demonstrate the consumer purchase path. It has therefore been migrated to Vue 3 + Vite + TypeScript + Pinia + Element Plus, covering login, list pages, forms, order operations, dashboards, and API proxy integration without expanding the project beyond its fundamentals-focused scope.
 
 ### Q6. Why keep both mock login and Google OAuth in the same repository?
 
@@ -200,18 +200,18 @@ cd local-fresh-platform
 Create:
 
 ```text
-backend-environment/sky-take-out/sky-server/src/main/resources/application-dev.yml
+backend-environment/local-fresh-backend/local-fresh-server/src/main/resources/application-dev.yml
 ```
 
 At minimum, provide the following values:
 
 ```yaml
-sky:
+localfresh:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     host: localhost
     port: 3306
-    database: sky_take_out
+    database: local_fresh
     username: your_db_user
     password: your_db_password
 
@@ -257,7 +257,7 @@ knife4j:
 ### 3. Start local MySQL / Redis
 
 ```bash
-cd backend-environment/sky-take-out
+cd backend-environment/local-fresh-backend
 cp .env.example .env
 docker compose up -d
 ```
@@ -265,7 +265,7 @@ docker compose up -d
 The backend uses Flyway and automatically applies migrations from:
 
 ```text
-backend-environment/sky-take-out/sky-server/src/main/resources/db/migration/
+backend-environment/local-fresh-backend/local-fresh-server/src/main/resources/db/migration/
 ```
 
 For a fresh database, no manual SQL step is required. For an existing non-empty schema that does not yet have `flyway_schema_history`, start the backend once with `FLYWAY_BASELINE_ON_MIGRATE=true`, then disable that flag afterward.
@@ -279,20 +279,20 @@ docker compose up -d redis
 ### 4. Start the backend
 
 ```bash
-cd backend-environment/sky-take-out
-mvn -pl sky-server spring-boot:run
+cd backend-environment/local-fresh-backend
+mvn -pl local-fresh-server spring-boot:run
 ```
 
 For the first Flyway baseline on a legacy database:
 
 ```bash
-FLYWAY_BASELINE_ON_MIGRATE=true mvn -pl sky-server spring-boot:run
+FLYWAY_BASELINE_ON_MIGRATE=true mvn -pl local-fresh-server spring-boot:run
 ```
 
 ### 5. Start the admin frontend
 
 ```bash
-cd frontend-environment/sky-admin-vue-ts
+cd frontend-environment/local-fresh-admin
 npm ci
 npm run dev -- --host 127.0.0.1
 ```
@@ -304,7 +304,7 @@ The admin app defaults to `http://127.0.0.1:5174`, with `/api` proxied to `http:
 Create:
 
 ```text
-frontend-environment/sky-user-vue3/.env.local
+frontend-environment/local-fresh-user/.env.local
 ```
 
 Example:
@@ -316,7 +316,7 @@ VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 ### 7. Start the user frontend
 
 ```bash
-cd frontend-environment/sky-user-vue3
+cd frontend-environment/local-fresh-user
 pnpm install
 pnpm dev
 ```
@@ -325,7 +325,7 @@ pnpm dev
 
 For the full frontend-side OAuth setup, see:
 
-- [frontend-environment/sky-user-vue3/README.md](frontend-environment/sky-user-vue3/README.md)
+- [frontend-environment/local-fresh-user/README.md](frontend-environment/local-fresh-user/README.md)
 
 ## Deployment
 
@@ -343,7 +343,7 @@ The deployment topology is:
 
 - Payment is still mocked; no real payment gateway integration is included yet.
 - The admin console has been migrated to Vue 3, but it remains focused on core CRUD, order operations, and operations data rather than a fully polished back-office product.
-- The user frontend is desktop-first and does not yet implement responsive design.
+- The user frontend now covers desktop and mobile responsive basics, but does not yet include cross-browser visual regression testing.
 - Legacy databases need a one-time Flyway baseline; fresh databases can apply migrations directly.
 
 See also:
@@ -353,7 +353,7 @@ See also:
 
 - [docs/known-issues.md](docs/known-issues.md)
 - [docs/testing.md](docs/testing.md)
-- [frontend-environment/sky-user-vue3/README.md](frontend-environment/sky-user-vue3/README.md)
+- [frontend-environment/local-fresh-user/README.md](frontend-environment/local-fresh-user/README.md)
 - `docs/architecture.md` (system architecture and sequence diagrams)
 
 ## License

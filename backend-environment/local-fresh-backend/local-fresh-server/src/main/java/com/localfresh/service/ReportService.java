@@ -1,0 +1,50 @@
+package com.localfresh.service;
+
+import com.localfresh.vo.OrderReportVO;
+import com.localfresh.vo.SalesTop10ReportVO;
+import com.localfresh.vo.TurnoverReportVO;
+import com.localfresh.vo.UserReportVO;
+
+import jakarta.servlet.http.HttpServletResponse;
+import java.time.LocalDate;
+
+public interface ReportService {
+
+    /**
+     * 統計指定時間區間內的營業額數據
+     * @param begin
+     * @param end
+     * @return
+     */
+    TurnoverReportVO getTurnoverStatistics(LocalDate begin, LocalDate end);
+
+    /**
+     * 統計指定時間區間內的用戶數據
+     * @param begin
+     * @param end
+     * @return
+     */
+    UserReportVO getUserStatistics(LocalDate begin, LocalDate end);
+
+    /**
+     * 統計指定時間區間內的訂單數據
+     * @param begin
+     * @param end
+     * @return
+     */
+    OrderReportVO getOrderStatistics(LocalDate begin, LocalDate end);
+
+    /**
+     * 統計指定時間區間內的銷量排名前10的菜品數據
+     * @param begin
+     * @param end
+     * @return
+     */
+    SalesTop10ReportVO getSalesTop10(LocalDate begin, LocalDate end);
+
+    /**
+     * 導出運營數據報表
+     * @param response
+     */
+    void exportBusinessData(HttpServletResponse response);
+}

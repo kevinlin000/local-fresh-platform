@@ -4,7 +4,7 @@
 
 ### 環境
 
-- 後端：`mvn spring-boot:run -pl sky-server -Dspring-boot.run.profiles=dev`
+- 後端：`mvn spring-boot:run -pl local-fresh-server -Dspring-boot.run.profiles=dev`
 - MySQL：本機 `mysqld`，資料已套用 `V5__taiwan_localization.sql` 與 `V6__add_product_images.sql`
 - Redis：`docker compose up -d redis`
 - JMeter：`/usr/local/bin/jmeter`
@@ -83,7 +83,7 @@ jmeter -n \
 - JMeter 計畫：[groupbuy-join-load-test.jmx](/Users/kevinlintingwei/local-fresh-platform/docs/perf/groupbuy-join-load-test.jmx)
 - 使用者對應表：[loadtest-users.csv](/Users/kevinlintingwei/local-fresh-platform/docs/perf/loadtest-users.csv)
 - 原始結果：[results.jtl](/Users/kevinlintingwei/local-fresh-platform/docs/perf/results.jtl)
-- HTML Dashboard：[index.html](/Users/kevinlintingwei/local-fresh-platform/docs/perf/html-report/index.html)
+- HTML Dashboard：可透過上述 JMeter 指令重新產生至 `docs/perf/html-report/`；該目錄屬產物，不提交版本庫。
 
 ### 結論
 

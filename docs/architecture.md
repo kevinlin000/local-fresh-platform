@@ -16,11 +16,11 @@
 
 ```mermaid
 graph TD
-    U[用戶端 sky-user-vue3<br/>Vue 3 / Vite / Pinia / Element Plus]
-    A[管理端 sky-admin-vue-ts<br/>Vue 2 / vue-cli / Element UI]
-    API[sky-server<br/>Spring Boot 2.7 API]
-    POJO[sky-pojo<br/>Entity / DTO / VO]
-    COMMON[sky-common<br/>常量 / 工具 / 攔截器 / 配置]
+    U[用戶端 local-fresh-user<br/>Vue 3 / Vite / Pinia / Element Plus]
+    A[管理端 local-fresh-admin<br/>Vue 3 / Vite / Pinia / Element Plus]
+    API[local-fresh-server<br/>Spring Boot 3.5 API]
+    POJO[local-fresh-model<br/>Entity / DTO / VO]
+    COMMON[local-fresh-common<br/>常量 / 工具 / 攔截器 / 配置]
     MYSQL[(MySQL 8)]
     REDIS[(Redis 7)]
     REDISSON[Redisson]
@@ -51,9 +51,9 @@ graph TD
 
 ### 模組劃分
 
-#### 1. 用戶端 `sky-user-vue3`
+#### 1. 用戶端 `local-fresh-user`
 
-用戶端是桌面版生鮮電商網站，負責：
+用戶端是支援桌面與手機版的生鮮電商網站，負責：
 
 - 會員登入（Google OAuth 與開發模式 mock login）
 - 單品與直送箱瀏覽
@@ -62,9 +62,9 @@ graph TD
 
 前端採用 Vue 3、Vite、Pinia 與 Element Plus，透過 `/api` proxy 串接後端，並以 JWT 維持會員登入狀態。
 
-#### 2. 管理端 `sky-admin-vue-ts`
+#### 2. 管理端 `local-fresh-admin`
 
-管理端為既有 Vue 2 + vue-cli 初版實作，主要負責：
+管理端採用 Vue 3、Vite、Pinia、TypeScript 與 Element Plus，主要負責：
 
 - 單品與直送箱管理
 - 商品分類維護
@@ -72,11 +72,11 @@ graph TD
 - 店鋪營業狀態切換
 - 基本營運統計與報表頁面
 
-目前管理端保留既有架構，並針對 API 路徑與用語做對齊調整，部署與展示重點則放在用戶端。
+目前管理端以「可展示營運基本功」為範圍，涵蓋登入、列表、表單、訂單操作與營運報表，避免把作品停留在只展示會員端的狀態。
 
-#### 3. `sky-server`
+#### 3. `local-fresh-server`
 
-`sky-server` 是主要業務模組，包含：
+`local-fresh-server` 是主要業務模組，包含：
 
 - Controller：對外 API 入口
 - Service：業務流程與交易邊界
@@ -87,9 +87,9 @@ graph TD
 
 此模組負責整合 MySQL、Redis、Redisson、Google OAuth 與 Google Maps。
 
-#### 4. `sky-pojo`
+#### 4. `local-fresh-model`
 
-`sky-pojo` 負責承載資料結構：
+`local-fresh-model` 負責承載資料結構：
 
 - Entity：對應資料表
 - DTO：前端入參
@@ -97,9 +97,9 @@ graph TD
 
 將資料模型獨立出來的好處是讓 controller / service / mapper 可以共用同一組型別，降低模組間重複。
 
-#### 5. `sky-common`
+#### 5. `local-fresh-common`
 
-`sky-common` 提供橫向共用能力：
+`local-fresh-common` 提供橫向共用能力：
 
 - 常量定義
 - 工具類（JWT、Snowflake、地圖、第三方整合）
@@ -647,8 +647,8 @@ stateDiagram-v2
 | 揪團過期處理 | 每分鐘排程掃描 | Redis keyspace events | 排程較容易測試與維護；Redis 過期事件需額外配置，且投遞語意較弱。 |
 | 交易邊界實作 | `TransactionTemplate` + 受控鎖區塊 | 全部直接 `@Transactional` 包外層 | 揪團 join 流程需把鎖與交易邊界明確區分，避免通知與交易提交時序混亂。 |
 | ORM 框架 | MyBatis | JPA / Hibernate | 訂單統計、報表、揪團批次更新等場景需要對 SQL 有直接控制，MyBatis 的 XML mapper 表達原生 SQL 更清楚；JPA 在這類場景容易回到 native query 或 specification，反而增加複雜度。 |
-| 用戶端前端 | Vue 3 + Vite | 延續 Vue 2 | 用戶端是主要展示面，使用較新的前端工程組合較合理。 |
-| 管理端前端 | 保留既有 Vue 2 初版 | 全量重寫 Vue 3 | 重寫成本高，對專案整體價值提升有限，因此保留初版並調整 API 與文案。 |
+| 用戶端前端 | Vue 3 + Vite | 沿用早期前端棧 | 用戶端是主要展示面，使用較新的前端工程組合較合理。 |
+| 管理端前端 | Vue 3 + Vite + TypeScript | 保留早期腳手架 | 管理端是後端作品的重要驗證入口，升級後能展示 API 串接、表單驗證、營運操作與報表資料，而不是只留下不可展示的舊管理介面。 |
 
 ### 為什麼揪團模組偏向 `TransactionTemplate`
 

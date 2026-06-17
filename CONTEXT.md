@@ -2,7 +2,7 @@
 
 ## Project Positioning
 
-`local-fresh-platform` is a Java backend portfolio project for job seeking. It is a modified version of the Sky Take Out course project, repositioned as `菜籃日 Cailan Day`: a Taiwan local fresh-produce B2C ecommerce platform with group-buy free-shipping mechanics.
+`local-fresh-platform` is a Java backend portfolio project for job seeking. It is presented as `菜籃日 Cailan Day`: a Taiwan local fresh-produce B2C ecommerce platform with group-buy free-shipping mechanics.
 
 The project should demonstrate solid Java backend fundamentals rather than excessive architecture novelty.
 

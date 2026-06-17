@@ -19,9 +19,9 @@ This is a single product repo with separated backend and frontend workspaces:
 /
 ├── CONTEXT.md
 ├── docs/adr/
-├── backend-environment/sky-take-out/
-├── frontend-environment/sky-user-vue3/
-└── frontend-environment/sky-admin-vue-ts/
+├── backend-environment/local-fresh-backend/
+├── frontend-environment/local-fresh-user/
+└── frontend-environment/local-fresh-admin/
 ```
 
 ## Use the glossary's vocabulary

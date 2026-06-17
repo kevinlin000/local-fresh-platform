@@ -17,11 +17,11 @@ backend portfolio project.
 The default command is CI-safe and does not require local Redis or Docker:
 
 ```bash
-cd backend-environment/sky-take-out
+cd backend-environment/local-fresh-backend
 mvn test
 ```
 
-`sky-server` configures Maven Surefire with `excludedGroups=redis`, so Redis
+`local-fresh-server` configures Maven Surefire with `excludedGroups=redis`, so Redis
 Testcontainers tests are skipped by default. This keeps ordinary local review
 and GitHub Actions runs deterministic.
 
@@ -30,8 +30,8 @@ and GitHub Actions runs deterministic.
 Run the Redis-tagged concurrency tests when Docker is available:
 
 ```bash
-cd backend-environment/sky-take-out
-mvn -pl sky-server -DexcludedGroups= -Dgroups=redis test
+cd backend-environment/local-fresh-backend
+mvn -pl local-fresh-server -DexcludedGroups= -Dgroups=redis test
 ```
 
 These tests intentionally use real Redis instead of pure mocks because the risk
@@ -42,14 +42,19 @@ being tested is distributed lock behavior under concurrent group-buy joins.
 The admin frontend is checked in CI with:
 
 ```bash
-cd frontend-environment/sky-admin-vue-ts
+cd frontend-environment/local-fresh-admin
 npm ci
 npm run build
 npm audit --omit=dev
 ```
 
-The user storefront is still demo-focused and should be added to CI once its
-dependency and build baseline are normalized.
+The user storefront is also checked in CI:
+
+```bash
+cd frontend-environment/local-fresh-user
+corepack pnpm@10.25.0 install --frozen-lockfile
+corepack pnpm@10.25.0 run build
+```
 
 ## Test Profile
 

@@ -1,0 +1,20 @@
+package com.localfresh.service;
+
+import com.localfresh.entity.ShippingAddress;
+import java.util.List;
+
+public interface ShippingAddressService {
+
+    List<ShippingAddress> list(ShippingAddress addressBook);
+
+    void save(ShippingAddress addressBook);
+
+    ShippingAddress getById(Long id);
+
+    void update(ShippingAddress addressBook);
+
+    void setDefault(ShippingAddress addressBook);
+
+    void deleteById(Long id);
+
+}

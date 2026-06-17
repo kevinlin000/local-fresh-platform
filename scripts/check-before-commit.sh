@@ -11,16 +11,16 @@ run_step() {
 }
 
 run_step "Backend Maven tests" \
-  sh -c "cd '$ROOT_DIR/backend-environment/sky-take-out' && mvn test"
+  sh -c "cd '$ROOT_DIR/backend-environment/local-fresh-backend' && mvn test"
 
-if [ -f "$ROOT_DIR/frontend-environment/sky-admin-vue-ts/package-lock.json" ]; then
+if [ -f "$ROOT_DIR/frontend-environment/local-fresh-admin/package-lock.json" ]; then
   run_step "Admin frontend build" \
-    sh -c "cd '$ROOT_DIR/frontend-environment/sky-admin-vue-ts' && npm ci && npm run build"
+    sh -c "cd '$ROOT_DIR/frontend-environment/local-fresh-admin' && npm ci && npm run build"
 fi
 
-if [ -f "$ROOT_DIR/frontend-environment/sky-user-vue3/pnpm-lock.yaml" ]; then
+if [ -f "$ROOT_DIR/frontend-environment/local-fresh-user/pnpm-lock.yaml" ]; then
   run_step "User frontend build" \
-    sh -c "cd '$ROOT_DIR/frontend-environment/sky-user-vue3' && corepack pnpm@10.25.0 install --frozen-lockfile && corepack pnpm@10.25.0 run build"
+    sh -c "cd '$ROOT_DIR/frontend-environment/local-fresh-user' && corepack pnpm@10.25.0 install --frozen-lockfile && corepack pnpm@10.25.0 run build"
 fi
 
 printf "\nAll pre-commit checks passed.\n"

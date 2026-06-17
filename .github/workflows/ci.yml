@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: backend-environment/sky-take-out
+        working-directory: backend-environment/local-fresh-backend
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,12 +28,12 @@ jobs:
       - name: Test
         run: mvn test
 
-  frontend:
-    name: Frontend build
+  admin-frontend:
+    name: Admin frontend build
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: frontend-environment/sky-admin-vue-ts
+        working-directory: frontend-environment/local-fresh-admin
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,7 +43,7 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-          cache-dependency-path: frontend-environment/sky-admin-vue-ts/package-lock.json
+          cache-dependency-path: frontend-environment/local-fresh-admin/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -53,3 +53,29 @@ jobs:
 
       - name: Audit production dependencies
         run: npm audit --omit=dev
+
+  user-frontend:
+    name: User frontend build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend-environment/local-fresh-user
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: frontend-environment/local-fresh-user/pnpm-lock.yaml
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: corepack pnpm@10.25.0 install --frozen-lockfile
+
+      - name: Build
+        run: corepack pnpm@10.25.0 run build

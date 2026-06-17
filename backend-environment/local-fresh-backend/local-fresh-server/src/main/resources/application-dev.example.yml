@@ -1,0 +1,43 @@
+localfresh:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    host: localhost
+    port: 3306
+    database: local_fresh
+    username: root
+    password: ${MYSQL_ROOT_PASSWORD:password}
+    use-ssl: false
+
+  redis:
+    host: localhost
+    port: 6379
+    database: 0
+
+  aws:
+    s3:
+      region: ${AWS_REGION:ap-northeast-1}
+      access-key-id: ${AWS_ACCESS_KEY_ID:dev-aws-access-key}
+      secret-access-key: ${AWS_SECRET_ACCESS_KEY:dev-aws-secret-key}
+      bucket-name: ${S3_BUCKET_NAME:local-fresh-dev-bucket}
+
+  shop:
+    address: 台北市大安區羅斯福路四段1號
+
+  google:
+    api-key: ${GOOGLE_MAPS_API_KEY:dev-google-maps-api-key}
+
+  oauth:
+    google:
+      client-id: ${GOOGLE_OAUTH_CLIENT_ID:dev-google-client-id.apps.googleusercontent.com}
+      client-secret: ${GOOGLE_OAUTH_CLIENT_SECRET:dev-google-client-secret}
+      redirect-uri: ${GOOGLE_OAUTH_REDIRECT_URI:http://localhost:5173/oauth/callback}
+
+  auth:
+    mock-login-enabled: true
+
+  jwt:
+    admin-secret-key: ${JWT_ADMIN_SECRET:local-dev-admin-secret-key-32-bytes}
+    user-secret-key: ${JWT_USER_SECRET:local-dev-user-secret-key-32-bytes-}
+
+  group-buy:
+    share-base-url: ${GROUP_BUY_SHARE_BASE_URL:http://localhost:5173/groupBuy}

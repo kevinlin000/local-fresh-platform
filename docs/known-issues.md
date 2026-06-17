@@ -10,8 +10,6 @@
 - `schema-test.sql` 對齊 `NOT NULL DEFAULT 1`
 - 補 3 個 Issue 測試 fixture
 
-尚未處理：
-- 其他可能存在類似問題的 `orders` 表欄位未完整審視
-- `V1` migration 不存在（`orders` 等原始表的 DDL 未版本化管理）
-
-後續處理時機：`Stage 5` 收尾或下一個專案版本
+後續注意：
+- 變更 `orders` 欄位時，需同步檢查 production migration 與 `schema-test.sql`
+- 新增訂單狀態或支付欄位時，需補對應的 Service 測試與 migration 驗證

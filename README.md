@@ -228,7 +228,7 @@ Redis key 過期事件看起來很直覺，但在真實系統裡，若採用這�
 
 ### Q5. 為什麼管理端也升級到 Vue 3？
 
-管理端原本是課程延伸的 Vue 2 + vue-cli 初版，已不符合目前作品要展示的工程水準。這次升級採用 Vue 3 + Vite + TypeScript + Pinia + Element Plus，保留「基本功展示專案」的範圍，不追求複雜 UI，但把登入、列表、表單、訂單操作、營運報表與 API proxy 串接補齊。這樣比保留舊棧更能避免 reviewer 把它判定成未整理的 toy project。
+管理端是後端作品的重要驗證入口，只做會員端會讓整個系統看起來像單一路徑展示。因此管理端採用 Vue 3 + Vite + TypeScript + Pinia + Element Plus，保留「基本功展示專案」的範圍，不追求複雜 UI，但把登入、列表、表單、訂單操作、營運報表與 API proxy 串接補齊。這樣能讓 reviewer 直接看到後台營運面，而不是只看到前台購物流程。
 
 ### Q6. 為什麼 repo 內同時保留 mock login 與 Google OAuth？
 
@@ -256,18 +256,18 @@ cd local-fresh-platform
 請在以下路徑建立本地開發設定：
 
 ```text
-backend-environment/sky-take-out/sky-server/src/main/resources/application-dev.yml
+backend-environment/local-fresh-backend/local-fresh-server/src/main/resources/application-dev.yml
 ```
 
 至少需要補齊以下設定：
 
 ```yaml
-sky:
+localfresh:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     host: localhost
     port: 3306
-    database: sky_take_out
+    database: local_fresh
     username: your_db_user
     password: your_db_password
 
@@ -315,12 +315,12 @@ knife4j:
 ### 3. 啟動本地 MySQL / Redis
 
 ```bash
-cd backend-environment/sky-take-out
+cd backend-environment/local-fresh-backend
 cp .env.example .env
 docker compose up -d
 ```
 
-後端已接入 Flyway，啟動時會自動執行 `sky-server/src/main/resources/db/migration/` 內的版本化 migration。全新資料庫可直接啟動；若使用的是舊有非空 schema 且尚未有 `flyway_schema_history`，第一次啟動請加上 `FLYWAY_BASELINE_ON_MIGRATE=true` 完成 baseline，之後再關閉此設定。
+後端已接入 Flyway，啟動時會自動執行 `local-fresh-server/src/main/resources/db/migration/` 內的版本化 migration。全新資料庫可直接啟動；若使用的是舊有非空 schema 且尚未有 `flyway_schema_history`，第一次啟動請加上 `FLYWAY_BASELINE_ON_MIGRATE=true` 完成 baseline，之後再關閉此設定。
 
 若本機 `3306` 已被 MySQL 佔用，可只啟動 Redis，並讓後端連到既有 MySQL：
 
@@ -331,20 +331,20 @@ docker compose up -d redis
 ### 4. 啟動後端
 
 ```bash
-cd backend-environment/sky-take-out
-mvn -pl sky-server spring-boot:run
+cd backend-environment/local-fresh-backend
+mvn -pl local-fresh-server spring-boot:run
 ```
 
 舊資料庫第一次導入 Flyway 時：
 
 ```bash
-FLYWAY_BASELINE_ON_MIGRATE=true mvn -pl sky-server spring-boot:run
+FLYWAY_BASELINE_ON_MIGRATE=true mvn -pl local-fresh-server spring-boot:run
 ```
 
 ### 5. 啟動管理端
 
 ```bash
-cd frontend-environment/sky-admin-vue-ts
+cd frontend-environment/local-fresh-admin
 npm ci
 npm run dev -- --host 127.0.0.1
 ```
@@ -356,7 +356,7 @@ npm run dev -- --host 127.0.0.1
 請建立：
 
 ```text
-frontend-environment/sky-user-vue3/.env.local
+frontend-environment/local-fresh-user/.env.local
 ```
 
 內容範例：
@@ -368,7 +368,7 @@ VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 ### 7. 啟動用戶端
 
 ```bash
-cd frontend-environment/sky-user-vue3
+cd frontend-environment/local-fresh-user
 pnpm install
 pnpm dev
 ```
@@ -377,7 +377,7 @@ pnpm dev
 
 完整的前端 OAuth 設定說明請參考：
 
-- [frontend-environment/sky-user-vue3/README.md](frontend-environment/sky-user-vue3/README.md)
+- [frontend-environment/local-fresh-user/README.md](frontend-environment/local-fresh-user/README.md)
 
 ## 部署
 
@@ -395,7 +395,7 @@ pnpm dev
 
 - 支付流程仍為 mock，未串接真實金流
 - 管理端已升級 Vue 3，但仍以基本 CRUD、訂單操作與營運資料展示為主，尚未做完整 E2E 視覺回歸
-- 用戶端目前僅提供桌面版體驗，未做 RWD
+- 用戶端已完成桌面與手機版 RWD 基礎體驗，尚未加入跨瀏覽器視覺回歸測試
 - 舊資料庫第一次導入 Flyway 時需要 baseline；全新資料庫可直接套用 migration
 
 更多細節請參考：
@@ -406,7 +406,7 @@ pnpm dev
 - [docs/known-issues.md](docs/known-issues.md)
 - [docs/architecture.md](docs/architecture.md)
 - [docs/testing.md](docs/testing.md)
-- [frontend-environment/sky-user-vue3/README.md](frontend-environment/sky-user-vue3/README.md)
+- [frontend-environment/local-fresh-user/README.md](frontend-environment/local-fresh-user/README.md)
 
 ## Roadmap
 
@@ -421,7 +421,7 @@ pnpm dev
 
 - **TapPay 沙箱金流串接**:取代現有 mock 付款,實作完整的 idempotency key 機制(Redis SETNX)、Webhook 簽章驗證,以及 reconciliation job 處理回呼遺失場景。
 - **可觀測性三件套**:Spring Boot Actuator + Prometheus + Grafana,自訂業務 metric(揪團成團率、支付成功率),搭配結構化 log 與 Trace ID 串穿全鏈路。
-- **CI/CD 自動化**:GitHub Actions 自動跑測試、build Docker image、推送 ECR,觸發 EC2 滾動部署。
+- **CD 自動化**:在現有 GitHub Actions 測試/build 基礎上,加入 Docker image build、推送 ECR,並觸發 EC2 滾動部署。
 
 ### 已完成里程碑
 
@@ -430,9 +430,9 @@ pnpm dev
 - 揪團發起 / 加入 / 取消 / 過期失敗回滾完整流程
 - Google OAuth 2.0 Authorization Code Flow + JWT 雙軌登入(mock login dev 開關)
 - 完整 AWS 部署:EC2 (Spring Boot + Docker MySQL/Redis) + S3 + CloudFront + DuckDNS + Let's Encrypt
-- Spring Boot 3.5 升級 + Flyway migration 檔案版本化(V1~V6)
+- Spring Boot 3.5 升級 + Flyway migration 檔案版本化(V1~V9)
 - 管理端 Vue 3 + Vite + TypeScript + Pinia + Element Plus 升級
-- Testcontainers Redis 整合測試 + GitHub Actions backend/frontend checks
+- Testcontainers Redis 整合測試 + GitHub Actions backend/admin/user frontend checks
 
 ## License
 

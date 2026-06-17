@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-This repo is a job-seeking Java backend portfolio project. It started from the Sky Take Out course project and has been adapted into a Taiwan local fresh-produce ecommerce platform with group-buy mechanics, AWS deployment, and performance evidence.
+This repo is a job-seeking Java backend portfolio project. It is presented as a Taiwan local fresh-produce ecommerce platform with group-buy mechanics, AWS deployment, and performance evidence.
 
 The project needs to be easy to explain in interviews. Its value comes from complete business flow, backend correctness, deployment evidence, and practical concurrency handling.
 
