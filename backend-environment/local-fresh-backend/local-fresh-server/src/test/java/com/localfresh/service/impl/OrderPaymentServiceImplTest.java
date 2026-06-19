@@ -6,6 +6,7 @@ import com.localfresh.entity.PaymentEvent;
 import com.localfresh.exception.OrderBusinessException;
 import com.localfresh.mapper.OrderMapper;
 import com.localfresh.mapper.PaymentEventMapper;
+import com.localfresh.service.payment.PaymentCallbackCommand;
 import com.localfresh.service.payment.PaymentGateway;
 import com.localfresh.vo.OrderPaymentVO;
 import com.localfresh.websocket.WebSocketServer;
@@ -125,6 +126,60 @@ class OrderPaymentServiceImplTest {
         assertEquals("ORDER-002", event.getOrderNumber());
         assertEquals("UNKNOWN:CALLBACK_SUCCEEDED:ORDER-002", event.getIdempotencyKey());
         verify(webSocketServer).sendToAllClient(anyString());
+    }
+
+    @Test
+    void handlePaymentCallbackShouldRecordProviderTradeNoAndRawPayload() {
+        Orders order = orderWithStatus(7L, Orders.PENDING_PAYMENT);
+        order.setNumber("ORDER-007");
+        order.setPayStatus(Orders.UN_PAID);
+        order.setAmount(new java.math.BigDecimal("450.00"));
+        when(orderMapper.getByNumber("ORDER-007")).thenReturn(order);
+        when(orderMapper.markPaymentSucceededByNumber(eq("ORDER-007"), eq(Orders.PENDING_PAYMENT), eq(Orders.UN_PAID),
+                eq(Orders.TO_BE_CONFIRMED), eq(Orders.PAID), any(LocalDateTime.class))).thenReturn(1);
+        PaymentCallbackCommand command = PaymentCallbackCommand.builder()
+                .provider("DEMO")
+                .orderNumber("ORDER-007")
+                .providerReference("demo-callback:ORDER-007")
+                .providerTradeNo("DEMO-TRADE-007")
+                .rawPayload("{\"orderNumber\":\"ORDER-007\"}")
+                .paymentSucceeded(true)
+                .build();
+
+        orderPaymentService.handlePaymentCallback(command);
+
+        PaymentEvent event = singlePaymentEvent();
+        assertEquals(PaymentEvent.EVENT_CALLBACK_SUCCEEDED, event.getEventType());
+        assertEquals(PaymentEvent.RESULT_SUCCEEDED, event.getResult());
+        assertEquals("DEMO", event.getProvider());
+        assertEquals("demo-callback:ORDER-007", event.getProviderReference());
+        assertEquals("DEMO-TRADE-007", event.getProviderTradeNo());
+        assertEquals("DEMO:CALLBACK_SUCCEEDED:ORDER-007:DEMO-TRADE-007", event.getIdempotencyKey());
+        assertEquals("{\"orderNumber\":\"ORDER-007\"}", event.getRawPayload());
+        verify(webSocketServer).sendToAllClient(anyString());
+    }
+
+    @Test
+    void handlePaymentCallbackShouldRejectFailedProviderStatus() {
+        PaymentCallbackCommand command = PaymentCallbackCommand.builder()
+                .provider("DEMO")
+                .orderNumber("ORDER-FAILED")
+                .providerReference("demo-callback:ORDER-FAILED")
+                .providerTradeNo("DEMO-TRADE-FAILED")
+                .rawPayload("{\"status\":\"FAILED\"}")
+                .paymentSucceeded(false)
+                .build();
+
+        OrderBusinessException exception = assertThrows(OrderBusinessException.class,
+                () -> orderPaymentService.handlePaymentCallback(command));
+
+        assertEquals(MessageConstant.PAYMENT_CALLBACK_FAILED, exception.getMessage());
+        verify(orderMapper, never()).getByNumber(anyString());
+        PaymentEvent event = singlePaymentEvent();
+        assertEquals(PaymentEvent.EVENT_CALLBACK_REJECTED, event.getEventType());
+        assertEquals(PaymentEvent.RESULT_REJECTED, event.getResult());
+        assertEquals("DEMO:CALLBACK_REJECTED:ORDER-FAILED:DEMO-TRADE-FAILED", event.getIdempotencyKey());
+        verifyNoInteractions(webSocketServer);
     }
 
     @Test

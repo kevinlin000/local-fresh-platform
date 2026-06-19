@@ -44,3 +44,6 @@ localfresh:
 
   group-buy:
     share-base-url: ${GROUP_BUY_SHARE_BASE_URL:http://localhost:5173/groupBuy}
+
+  payment:
+    callback-secret: ${PAYMENT_CALLBACK_SECRET:local-demo-payment-callback-secret}

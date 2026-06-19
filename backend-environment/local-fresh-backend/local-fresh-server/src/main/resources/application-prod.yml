@@ -67,3 +67,5 @@ localfresh:
       redirect-uri: ${GOOGLE_OAUTH_REDIRECT_URI}
   group-buy:
     share-base-url: ${GROUP_BUY_SHARE_BASE_URL}
+  payment:
+    callback-secret: ${PAYMENT_CALLBACK_SECRET}

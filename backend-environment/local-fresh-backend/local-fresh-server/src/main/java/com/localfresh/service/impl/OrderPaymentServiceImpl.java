@@ -7,6 +7,7 @@ import com.localfresh.exception.OrderBusinessException;
 import com.localfresh.mapper.OrderMapper;
 import com.localfresh.mapper.PaymentEventMapper;
 import com.localfresh.service.OrderPaymentService;
+import com.localfresh.service.payment.PaymentCallbackCommand;
 import com.localfresh.service.payment.PaymentGateway;
 import com.localfresh.service.support.OrderStatusTransitionPolicy;
 import com.localfresh.utils.JsonUtil;
@@ -49,29 +50,57 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 
     @Override
     public void handlePaymentSuccess(String orderNumber) {
+        handlePaymentCallback(PaymentCallbackCommand.builder()
+                .provider(resolveProvider())
+                .orderNumber(orderNumber)
+                .paymentSucceeded(true)
+                .build());
+    }
+
+    @Override
+    public void handlePaymentCallback(PaymentCallbackCommand callbackCommand) {
+        if (!callbackCommand.isPaymentSucceeded()) {
+            recordPaymentEvent(null, callbackCommand.getOrderNumber(), callbackCommand.getProvider(),
+                    PaymentEvent.EVENT_CALLBACK_REJECTED, PaymentEvent.RESULT_REJECTED,
+                    callbackCommand.getProviderReference(), callbackCommand.getProviderTradeNo(),
+                    callbackCommand.getRawPayload());
+            throw new OrderBusinessException(MessageConstant.PAYMENT_CALLBACK_FAILED);
+        }
+        handlePaymentSuccess(callbackCommand);
+    }
+
+    private void handlePaymentSuccess(PaymentCallbackCommand callbackCommand) {
+        String orderNumber = callbackCommand.getOrderNumber();
         Orders ordersDB = orderMapper.getByNumber(orderNumber);
         if (ordersDB == null) {
-            recordPaymentEvent(null, orderNumber, PaymentEvent.EVENT_CALLBACK_REJECTED, PaymentEvent.RESULT_REJECTED,
-                    null, null);
+            recordPaymentEvent(null, orderNumber, callbackCommand.getProvider(),
+                    PaymentEvent.EVENT_CALLBACK_REJECTED, PaymentEvent.RESULT_REJECTED,
+                    callbackCommand.getProviderReference(), callbackCommand.getProviderTradeNo(),
+                    callbackCommand.getRawPayload());
             throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
         }
         if (Orders.PAID.equals(ordersDB.getPayStatus())) {
-            recordPaymentEvent(ordersDB, PaymentEvent.EVENT_CALLBACK_DUPLICATE, PaymentEvent.RESULT_IGNORED,
-                    null, null);
+            recordPaymentEvent(ordersDB, callbackCommand.getProvider(), PaymentEvent.EVENT_CALLBACK_DUPLICATE,
+                    PaymentEvent.RESULT_IGNORED, callbackCommand.getProviderReference(),
+                    callbackCommand.getProviderTradeNo(), callbackCommand.getRawPayload());
             return;
         }
         try {
             if (!ensurePaymentSucceeded(orderNumber)) {
-                recordPaymentEvent(ordersDB, PaymentEvent.EVENT_CALLBACK_DUPLICATE, PaymentEvent.RESULT_IGNORED,
-                        null, null);
+                recordPaymentEvent(ordersDB, callbackCommand.getProvider(), PaymentEvent.EVENT_CALLBACK_DUPLICATE,
+                        PaymentEvent.RESULT_IGNORED, callbackCommand.getProviderReference(),
+                        callbackCommand.getProviderTradeNo(), callbackCommand.getRawPayload());
                 return;
             }
         } catch (OrderBusinessException ex) {
-            recordPaymentEvent(ordersDB, PaymentEvent.EVENT_CALLBACK_REJECTED, PaymentEvent.RESULT_REJECTED,
-                    null, null);
+            recordPaymentEvent(ordersDB, callbackCommand.getProvider(), PaymentEvent.EVENT_CALLBACK_REJECTED,
+                    PaymentEvent.RESULT_REJECTED, callbackCommand.getProviderReference(),
+                    callbackCommand.getProviderTradeNo(), callbackCommand.getRawPayload());
             throw ex;
         }
-        recordPaymentEvent(ordersDB, PaymentEvent.EVENT_CALLBACK_SUCCEEDED, PaymentEvent.RESULT_SUCCEEDED, null, null);
+        recordPaymentEvent(ordersDB, callbackCommand.getProvider(), PaymentEvent.EVENT_CALLBACK_SUCCEEDED,
+                PaymentEvent.RESULT_SUCCEEDED, callbackCommand.getProviderReference(),
+                callbackCommand.getProviderTradeNo(), callbackCommand.getRawPayload());
 
         Map<String, Object> payload = new HashMap<>();
         payload.put("type", 1);
@@ -97,19 +126,34 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 
     private void recordPaymentEvent(Orders order, String eventType, String result, String providerReference,
                                     String rawPayload) {
-        recordPaymentEvent(order, order.getNumber(), eventType, result, providerReference, rawPayload);
+        recordPaymentEvent(order, order.getNumber(), resolveProvider(), eventType, result, providerReference, null,
+                rawPayload);
     }
 
     private void recordPaymentEvent(Orders order, String orderNumber, String eventType, String result,
                                     String providerReference, String rawPayload) {
-        String provider = resolveProvider();
+        recordPaymentEvent(order, orderNumber, resolveProvider(), eventType, result, providerReference, null,
+                rawPayload);
+    }
+
+    private void recordPaymentEvent(Orders order, String provider, String eventType, String result,
+                                    String providerReference, String providerTradeNo, String rawPayload) {
+        recordPaymentEvent(order, order.getNumber(), provider, eventType, result, providerReference, providerTradeNo,
+                rawPayload);
+    }
+
+    private void recordPaymentEvent(Orders order, String orderNumber, String provider, String eventType, String result,
+                                    String providerReference, String providerTradeNo, String rawPayload) {
+        String resolvedProvider = normalizeProvider(provider);
         PaymentEvent paymentEvent = PaymentEvent.builder()
                 .orderId(order == null ? null : order.getId())
                 .orderNumber(orderNumber)
-                .provider(provider)
+                .provider(resolvedProvider)
                 .eventType(eventType)
                 .providerReference(providerReference)
-                .idempotencyKey(buildIdempotencyKey(provider, eventType, orderNumber, providerReference))
+                .providerTradeNo(providerTradeNo)
+                .idempotencyKey(buildIdempotencyKey(resolvedProvider, eventType, orderNumber, providerReference,
+                        providerTradeNo))
                 .amount(order == null ? null : order.getAmount())
                 .result(result)
                 .rawPayload(rawPayload)
@@ -118,15 +162,22 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
         paymentEventMapper.insert(paymentEvent);
     }
 
-    private String buildIdempotencyKey(String provider, String eventType, String orderNumber, String providerReference) {
-        if (providerReference == null || providerReference.isBlank()) {
-            return String.join(":", provider, eventType, orderNumber);
+    private String buildIdempotencyKey(String provider, String eventType, String orderNumber, String providerReference,
+                                       String providerTradeNo) {
+        if (providerTradeNo != null && !providerTradeNo.isBlank()) {
+            return String.join(":", provider, eventType, orderNumber, providerTradeNo);
         }
-        return String.join(":", provider, eventType, orderNumber, providerReference);
+        if (providerReference != null && !providerReference.isBlank()) {
+            return String.join(":", provider, eventType, orderNumber, providerReference);
+        }
+        return String.join(":", provider, eventType, orderNumber);
     }
 
     private String resolveProvider() {
-        String provider = paymentGateway.provider();
+        return normalizeProvider(paymentGateway.provider());
+    }
+
+    private String normalizeProvider(String provider) {
         if (provider == null || provider.isBlank()) {
             return PaymentEvent.PROVIDER_UNKNOWN;
         }

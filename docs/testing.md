@@ -48,8 +48,12 @@ The current coverage emphasis is the order lifecycle:
 - `OrderStatusTransitionPolicy`: legal order-state transitions.
 - `OrderServiceImpl`: member/admin ownership and status guard behavior.
 - `OrderPaymentServiceImpl`: provider-neutral payment request creation, demo
-  immediate success strategy, payment event recording, duplicate callback,
-  concurrent callback race, and invalid transition handling.
+  immediate success strategy, payment callback command handling, payment event
+  recording, duplicate callback, concurrent callback race, and invalid
+  transition handling.
+- `DemoPaymentGatewayTest`: demo callback HMAC verification and payload mapping.
+- `PaymentCallbackControllerTest`: provider callback HTTP response contract
+  (`1|OK` / `0|FAIL`) without requiring member or admin JWT.
 - `PaymentEventMapperTest`: payment-event insert, order-number lookup, provider
   trade number filtering, and idempotency-key filtering through the real mapper
   and H2 schema.

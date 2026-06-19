@@ -3,6 +3,8 @@ package com.localfresh.service.payment;
 import com.localfresh.entity.Orders;
 import com.localfresh.vo.OrderPaymentVO;
 
+import java.util.Map;
+
 public interface PaymentGateway {
 
     OrderPaymentVO createPaymentRequest(Orders order);
@@ -15,5 +17,9 @@ public interface PaymentGateway {
 
     default boolean completesPaymentOnRequest() {
         return false;
+    }
+
+    default PaymentCallbackCommand parsePaymentCallback(Map<String, String> payload) {
+        throw new UnsupportedOperationException("Payment callback is not supported by this provider");
     }
 }

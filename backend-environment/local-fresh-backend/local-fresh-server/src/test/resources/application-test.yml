@@ -82,5 +82,7 @@ localfresh:
   group-buy:
     expire-hours: 24
     share-base-url: http://localhost:5173/groupBuy
+  payment:
+    callback-secret: test-payment-callback-secret
   test:
     mock-redisson: true
