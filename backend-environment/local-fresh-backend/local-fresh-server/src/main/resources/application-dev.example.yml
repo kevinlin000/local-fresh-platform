@@ -46,4 +46,12 @@ localfresh:
     share-base-url: ${GROUP_BUY_SHARE_BASE_URL:http://localhost:5173/groupBuy}
 
   payment:
+    provider: ${PAYMENT_PROVIDER:demo}
     callback-secret: ${PAYMENT_CALLBACK_SECRET:local-demo-payment-callback-secret}
+    ecpay:
+      merchant-id: ${ECPAY_MERCHANT_ID:2000132}
+      hash-key: ${ECPAY_HASH_KEY:5294y06JbISpM5x9}
+      hash-iv: ${ECPAY_HASH_IV:v77hoKGq4kWxNNIS}
+      checkout-url: ${ECPAY_CHECKOUT_URL:https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5}
+      return-url: ${ECPAY_RETURN_URL:http://localhost:8080/payment/callback}
+      order-result-url: ${ECPAY_ORDER_RESULT_URL:http://localhost:5173/orders}

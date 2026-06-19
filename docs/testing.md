@@ -52,6 +52,10 @@ The current coverage emphasis is the order lifecycle:
   recording, duplicate callback, concurrent callback race, and invalid
   transition handling.
 - `DemoPaymentGatewayTest`: demo callback HMAC verification and payload mapping.
+- `EcpayCheckMacValueCalculatorTest`: ECPay callback checksum sorting,
+  CheckMacValue exclusion, and case-insensitive verification.
+- `EcpayPaymentGatewayTest`: ECPay callback CheckMacValue verification,
+  MerchantTradeNo / TradeNo / RtnCode mapping, and signed redirect payload shape.
 - `PaymentCallbackControllerTest`: provider callback HTTP response contract
   (`1|OK` / `0|FAIL`) without requiring member or admin JWT.
 - `PaymentEventMapperTest`: payment-event insert, order-number lookup, provider

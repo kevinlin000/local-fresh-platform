@@ -83,6 +83,14 @@ localfresh:
     expire-hours: 24
     share-base-url: http://localhost:5173/groupBuy
   payment:
+    provider: demo
     callback-secret: test-payment-callback-secret
+    ecpay:
+      merchant-id: 2000132
+      hash-key: 5294y06JbISpM5x9
+      hash-iv: v77hoKGq4kWxNNIS
+      checkout-url: https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5
+      return-url: http://localhost:8080/payment/callback
+      order-result-url: http://localhost:5173/orders
   test:
     mock-redisson: true

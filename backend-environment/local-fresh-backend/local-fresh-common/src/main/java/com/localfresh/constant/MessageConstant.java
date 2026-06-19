@@ -30,6 +30,7 @@ public class MessageConstant {
     public static final String DISH_BE_RELATED_BY_SETMEAL = "目前商品關聯了直送箱，不能刪除";
     public static final String ORDER_STATUS_ERROR = "訂單狀態錯誤";
     public static final String ORDER_NOT_FOUND = "訂單不存在";
+    public static final String PAYMENT_PROVIDER_NOT_CONFIGURED = "付款 provider 設定不完整";
     public static final String PAYMENT_CALLBACK_INVALID = "付款回呼驗證失敗";
     public static final String PAYMENT_CALLBACK_FAILED = "付款回呼未成功";
     public static final String GROUP_BUY_NOT_FOUND = "揪團不存在";

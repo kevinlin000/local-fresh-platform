@@ -7,6 +7,7 @@ import com.localfresh.utils.JsonUtil;
 import com.localfresh.vo.OrderPaymentVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.Mac;
@@ -18,6 +19,7 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 @Component
+@ConditionalOnProperty(name = "localfresh.payment.provider", havingValue = "demo", matchIfMissing = true)
 @Slf4j
 public class DemoPaymentGateway implements PaymentGateway {
 
