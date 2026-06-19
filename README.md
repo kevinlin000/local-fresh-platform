@@ -214,7 +214,7 @@ erDiagram
 
 ### 4. 管理端操作 Audit Log
 
-管理端的訂單確認、婉拒、取消、配送、完成，以及商品手動庫存調整，現在會寫入 `admin_operation_log`。這張表記錄 `action`、目標類型與 id、操作前後值、原因、操作者與操作時間，用來回答「誰在什麼時候對哪個業務物件做了什麼變更」。這和 `product_inventory_log` 的庫存流水分工不同：庫存流水專注商品數量變化，Audit Log 則專注後台操作責任與追蹤。
+管理端的訂單確認、婉拒、取消、配送、完成，以及商品手動庫存調整，現在會寫入 `admin_operation_log`。這張表記錄 `action`、目標類型與 id、操作前後值、原因、操作者與操作時間，用來回答「誰在什麼時候對哪個業務物件做了什麼變更」。管理端也提供 `GET /admin/operationLogs/page` 分頁查詢，可依 action、target、operator 與時間範圍篩選。這和 `product_inventory_log` 的庫存流水分工不同：庫存流水專注商品數量變化，Audit Log 則專注後台操作責任與追蹤。
 
 ### 5. Testcontainers 驗證 Redis 鎖而非用 mock 帶過
 
@@ -454,7 +454,7 @@ pnpm dev
 ### 進行中
 
 - **付款與庫存 idempotency 補強**:現有 mock payment 已涵蓋基本狀態流轉,下一步可補 idempotency key、付款回呼重試保護、庫存異動防重與 reconciliation job 設計。
-- **管理端 Audit Log 查詢 API**:目前已完成寫入,下一步可補管理端查詢 API、篩選條件與操作詳情頁,讓營運人員能直接查閱歷史操作。
+- **管理端 Audit Log UI**:目前後端已完成寫入與分頁查詢 API,下一步可補管理端篩選頁與操作詳情頁,讓營運人員能直接查閱歷史操作。
 
 ### 規劃中
 
@@ -466,12 +466,12 @@ pnpm dev
 
 - 揪團分散式鎖壓測證據:100 concurrent join JMeter 壓測,`joinGroupBuy` error rate `0.00%`, P95 `2847.65 ms`, DB 最終 `current_count=101 / participant=100`
 - 訂單生命週期測試證據:`OrderStatusTransitionPolicy` 集中管理狀態轉移,核心 Order service 測試涵蓋付款、取消、婉拒、配送、完成與還庫存,並可用 JaCoCo 產生本地覆蓋率報告
-- 管理端操作 Audit Log:訂單確認、婉拒、取消、配送、完成與商品手動庫存調整會寫入 `admin_operation_log`,保留操作前後值、原因與操作者
+- 管理端操作 Audit Log:訂單確認、婉拒、取消、配送、完成與商品手動庫存調整會寫入 `admin_operation_log`,並提供分頁查詢 API,保留操作前後值、原因與操作者
 - 雙端產品級 UI polish:會員端採買流程、商品詳情、購物車、訂單頁與管理端 dashboard / products / orders 已完成新版截圖與 README 同步
 - 揪團發起 / 加入 / 取消 / 過期失敗回滾完整流程
 - Google OAuth 2.0 Authorization Code Flow + JWT 雙軌登入(mock login dev 開關)
 - 完整 AWS 部署:EC2 (Spring Boot + Docker MySQL/Redis) + S3 + CloudFront + DuckDNS + Let's Encrypt
-- Spring Boot 3.5 升級 + Flyway migration 檔案版本化(V1~V10)
+- Spring Boot 3.5 升級 + Flyway migration 檔案版本化(V1~V11)
 - 管理端 Vue 3 + Vite + TypeScript + Pinia + Element Plus 升級
 - Testcontainers Redis 整合測試 + GitHub Actions backend/admin/user frontend checks
 

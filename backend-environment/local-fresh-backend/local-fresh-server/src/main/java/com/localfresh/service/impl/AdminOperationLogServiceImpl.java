@@ -1,14 +1,21 @@
 package com.localfresh.service.impl;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.localfresh.context.BaseContext;
+import com.localfresh.dto.AdminOperationLogPageQueryDTO;
 import com.localfresh.entity.AdminOperationLog;
 import com.localfresh.entity.Orders;
 import com.localfresh.mapper.AdminOperationLogMapper;
+import com.localfresh.result.PageResult;
 import com.localfresh.service.AdminOperationLogService;
+import com.localfresh.vo.AdminOperationLogVO;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class AdminOperationLogServiceImpl implements AdminOperationLogService {
@@ -53,5 +60,21 @@ public class AdminOperationLogServiceImpl implements AdminOperationLogService {
                 .build();
 
         adminOperationLogMapper.insert(log);
+    }
+
+    @Override
+    public PageResult pageQuery(AdminOperationLogPageQueryDTO queryDTO) {
+        PageHelper.startPage(queryDTO.getPage(), queryDTO.getPageSize());
+        Page<AdminOperationLog> page = adminOperationLogMapper.pageQuery(queryDTO);
+        List<AdminOperationLogVO> records = page.getResult().stream()
+                .map(this::toVO)
+                .toList();
+        return new PageResult(page.getTotal(), records);
+    }
+
+    private AdminOperationLogVO toVO(AdminOperationLog log) {
+        AdminOperationLogVO vo = new AdminOperationLogVO();
+        BeanUtils.copyProperties(log, vo);
+        return vo;
     }
 }

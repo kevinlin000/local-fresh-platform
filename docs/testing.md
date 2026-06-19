@@ -53,7 +53,7 @@ The current coverage emphasis is the order lifecycle:
 - `OrderFulfillmentServiceImpl`: admin confirm, delivery, completion, and member
   reminder behavior.
 - `AdminOperationLogServiceImpl`: admin order and inventory operation audit
-  entries.
+  entries plus paginated query mapping.
 
 ## Redis / Testcontainers Command
 

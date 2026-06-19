@@ -1,5 +1,7 @@
 package com.localfresh.mapper;
 
+import com.github.pagehelper.Page;
+import com.localfresh.dto.AdminOperationLogPageQueryDTO;
 import com.localfresh.entity.AdminOperationLog;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
@@ -13,4 +15,6 @@ public interface AdminOperationLogMapper {
             "values (#{action}, #{targetType}, #{targetId}, #{beforeValue}, #{afterValue}, #{reason}, #{operatorType}, #{operatorId}, #{createdAt})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     void insert(AdminOperationLog adminOperationLog);
+
+    Page<AdminOperationLog> pageQuery(AdminOperationLogPageQueryDTO queryDTO);
 }
