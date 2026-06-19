@@ -453,11 +453,11 @@ pnpm dev
 
 ### 進行中
 
-- **付款與庫存 idempotency 補強**:現有 mock payment 已涵蓋基本狀態流轉,下一步可補 idempotency key、付款回呼重試保護、庫存異動防重與 reconciliation job 設計。
+- **付款與庫存 idempotency 補強**:現有 mock payment 已涵蓋基本狀態流轉,下一步可補付款回呼重試保護、庫存異動防重、provider-neutral payment event 紀錄與 reconciliation job 設計。
 
 ### 規劃中
 
-- **TapPay 沙箱金流串接**:取代現有 mock 付款,實作完整的 idempotency key 機制(Redis SETNX)、Webhook 簽章驗證,以及 reconciliation job 處理回呼遺失場景。
+- **綠界 ECPay 沙箱金流串接**:在付款 idempotency 補強後,以綠界全方位金流導轉式流程取代現有 mock 付款,補 CheckMacValue 驗證、ReturnURL / OrderResultURL 回呼處理與 reconciliation job。
 - **可觀測性三件套**:Spring Boot Actuator + Prometheus + Grafana,自訂業務 metric(揪團成團率、支付成功率),搭配結構化 log 與 Trace ID 串穿全鏈路。
 - **CD 自動化**:在現有 GitHub Actions 測試/build 基礎上,加入 Docker image build、推送 ECR,並觸發 EC2 滾動部署。
 

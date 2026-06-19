@@ -47,8 +47,8 @@ The current coverage emphasis is the order lifecycle:
 
 - `OrderStatusTransitionPolicy`: legal order-state transitions.
 - `OrderServiceImpl`: member/admin ownership and status guard behavior.
-- `OrderPaymentServiceImpl`: payment success, duplicate callback, and invalid
-  transition handling.
+- `OrderPaymentServiceImpl`: payment success, duplicate callback, concurrent
+  callback race, and invalid transition handling.
 - `OrderCancellationServiceImpl`: refund metadata and inventory restoration.
 - `OrderFulfillmentServiceImpl`: admin confirm, delivery, completion, and member
   reminder behavior.

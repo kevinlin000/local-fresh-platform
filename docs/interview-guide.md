@@ -85,7 +85,7 @@ RedisTemplate 用在快取與一般 KV，RedissonClient 用在分散式鎖。這
 
 ### Q: 為什麼沒有真的接金流？
 
-目前支付是 mock，因為這個作品的核心展示點是後端交易一致性、揪團流程、Redis lock、測試與部署。真實金流會是下一階段，應該包含 idempotency key、Webhook 簽章驗證、回呼重試與 reconciliation job，而不是只把 SDK 接進來。
+目前支付是 mock，因為這個作品的核心展示點是後端交易一致性、揪團流程、Redis lock、測試與部署。真實金流會是下一階段，方向會以綠界 ECPay sandbox 的導轉式金流為主，但前提是先把 provider-neutral idempotency、回呼重試保護、簽章驗證與 reconciliation job 設計補清楚，而不是只把 SDK 接進來。
 
 ### Q: 如果流量更大會怎麼改？
 
@@ -99,7 +99,7 @@ RedisTemplate 用在快取與一般 KV，RedissonClient 用在分散式鎖。這
 
 ## 可以主動承認的限制
 
-- 支付仍是 mock，未接真實 TapPay / 信用卡流程。
+- 支付仍是 mock，未接真實綠界 ECPay / 信用卡導轉流程。
 - 管理端已有產品級基礎，但還沒有完整自動化視覺回歸。
 - 部署是作品級單機 EC2 + Docker MySQL/Redis，不是高可用 production 架構。
 - 前端 UI 已 polish，但主要價值仍是後端流程與工程證據。

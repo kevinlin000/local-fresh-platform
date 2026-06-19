@@ -107,6 +107,25 @@ class OrderPaymentServiceImplTest {
     }
 
     @Test
+    void handlePaymentSuccessShouldNotNotifyWhenConcurrentCallbackAlreadyMarkedPaid() {
+        Orders unpaidOrder = orderWithStatus(6L, Orders.PENDING_PAYMENT);
+        unpaidOrder.setNumber("ORDER-006");
+        unpaidOrder.setPayStatus(Orders.UN_PAID);
+        Orders paidOrder = orderWithStatus(6L, Orders.TO_BE_CONFIRMED);
+        paidOrder.setNumber("ORDER-006");
+        paidOrder.setPayStatus(Orders.PAID);
+        when(orderMapper.getByNumber("ORDER-006")).thenReturn(unpaidOrder, paidOrder);
+        when(orderMapper.markPaymentSucceededByNumber(eq("ORDER-006"), eq(Orders.PENDING_PAYMENT), eq(Orders.UN_PAID),
+                eq(Orders.TO_BE_CONFIRMED), eq(Orders.PAID), any(LocalDateTime.class))).thenReturn(0);
+
+        orderPaymentService.handlePaymentSuccess("ORDER-006");
+
+        verify(orderMapper).markPaymentSucceededByNumber(eq("ORDER-006"), eq(Orders.PENDING_PAYMENT), eq(Orders.UN_PAID),
+                eq(Orders.TO_BE_CONFIRMED), eq(Orders.PAID), any(LocalDateTime.class));
+        verifyNoInteractions(webSocketServer);
+    }
+
+    @Test
     void handlePaymentSuccessShouldRejectMissingOrder() {
         when(orderMapper.getByNumber("ORDER-MISSING")).thenReturn(null);
 
