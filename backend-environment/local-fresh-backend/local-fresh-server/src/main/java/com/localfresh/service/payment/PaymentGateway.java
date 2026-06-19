@@ -8,4 +8,8 @@ public interface PaymentGateway {
     OrderPaymentVO createPaymentRequest(Orders order);
 
     void refund(Orders order, String reason);
+
+    default boolean completesPaymentOnRequest() {
+        return false;
+    }
 }

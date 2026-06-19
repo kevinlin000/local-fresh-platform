@@ -42,39 +42,43 @@ class OrderPaymentServiceImplTest {
     private OrderPaymentServiceImpl orderPaymentService;
 
     @Test
-    void requestPaymentShouldMarkOrderPaidAndReturnPaymentVO() {
+    void requestPaymentShouldCreatePaymentRequestWithoutMarkingPaid() {
         Orders order = orderWithStatus(1L, Orders.PENDING_PAYMENT);
         order.setNumber("ORDER-001");
         OrderPaymentVO expectedVO = OrderPaymentVO.builder()
-                .packageStr("demo-paid:ORDER-001")
+                .packageStr("ecpay-form:ORDER-001")
                 .build();
-        when(orderMapper.markPaymentSucceededByNumber(eq("ORDER-001"), eq(Orders.PENDING_PAYMENT), eq(Orders.UN_PAID),
-                eq(Orders.TO_BE_CONFIRMED), eq(Orders.PAID), any(LocalDateTime.class))).thenReturn(1);
         when(paymentGateway.createPaymentRequest(order)).thenReturn(expectedVO);
 
         OrderPaymentVO vo = orderPaymentService.requestPayment(order);
 
         assertNotNull(vo);
         assertEquals(expectedVO, vo);
-        verify(orderMapper).markPaymentSucceededByNumber(eq("ORDER-001"), eq(Orders.PENDING_PAYMENT), eq(Orders.UN_PAID),
-                eq(Orders.TO_BE_CONFIRMED), eq(Orders.PAID), any(LocalDateTime.class));
         verify(paymentGateway).createPaymentRequest(order);
+        verify(orderMapper, never()).markPaymentSucceededByNumber(anyString(), any(), any(), any(), any(), any());
+        verifyNoInteractions(webSocketServer);
     }
 
     @Test
-    void requestPaymentShouldRejectOrderThatCannotBeMarkedPaid() {
-        Orders order = orderWithStatus(5L, Orders.CONFIRMED);
+    void requestPaymentShouldCompleteImmediatelyWhenDemoGatewayRequiresIt() {
+        Orders order = orderWithStatus(5L, Orders.PENDING_PAYMENT);
         order.setNumber("ORDER-005");
         order.setPayStatus(Orders.UN_PAID);
-        when(orderMapper.markPaymentSucceededByNumber(eq("ORDER-005"), eq(Orders.PENDING_PAYMENT), eq(Orders.UN_PAID),
-                eq(Orders.TO_BE_CONFIRMED), eq(Orders.PAID), any(LocalDateTime.class))).thenReturn(0);
+        OrderPaymentVO expectedVO = OrderPaymentVO.builder()
+                .packageStr("demo-paid:ORDER-005")
+                .build();
+        when(paymentGateway.createPaymentRequest(order)).thenReturn(expectedVO);
+        when(paymentGateway.completesPaymentOnRequest()).thenReturn(true);
         when(orderMapper.getByNumber("ORDER-005")).thenReturn(order);
+        when(orderMapper.markPaymentSucceededByNumber(eq("ORDER-005"), eq(Orders.PENDING_PAYMENT), eq(Orders.UN_PAID),
+                eq(Orders.TO_BE_CONFIRMED), eq(Orders.PAID), any(LocalDateTime.class))).thenReturn(1);
 
-        OrderBusinessException exception = assertThrows(OrderBusinessException.class,
-                () -> orderPaymentService.requestPayment(order));
+        OrderPaymentVO vo = orderPaymentService.requestPayment(order);
 
-        assertEquals(MessageConstant.ORDER_STATUS_ERROR, exception.getMessage());
-        verifyNoInteractions(paymentGateway);
+        assertEquals(expectedVO, vo);
+        verify(orderMapper).markPaymentSucceededByNumber(eq("ORDER-005"), eq(Orders.PENDING_PAYMENT), eq(Orders.UN_PAID),
+                eq(Orders.TO_BE_CONFIRMED), eq(Orders.PAID), any(LocalDateTime.class));
+        verify(webSocketServer).sendToAllClient(anyString());
     }
 
     @Test

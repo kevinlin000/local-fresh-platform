@@ -33,8 +33,11 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 
     @Override
     public OrderPaymentVO requestPayment(Orders order) {
-        ensurePaymentSucceeded(order.getNumber());
-        return paymentGateway.createPaymentRequest(order);
+        OrderPaymentVO paymentRequest = paymentGateway.createPaymentRequest(order);
+        if (paymentGateway.completesPaymentOnRequest()) {
+            handlePaymentSuccess(order.getNumber());
+        }
+        return paymentRequest;
     }
 
     @Override

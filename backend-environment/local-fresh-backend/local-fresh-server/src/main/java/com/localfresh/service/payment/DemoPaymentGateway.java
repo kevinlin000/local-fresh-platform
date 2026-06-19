@@ -23,4 +23,9 @@ public class DemoPaymentGateway implements PaymentGateway {
         log.info("Demo refund recorded: orderNumber={}, amount={}, reason={}",
                 order.getNumber(), order.getAmount(), reason);
     }
+
+    @Override
+    public boolean completesPaymentOnRequest() {
+        return true;
+    }
 }
