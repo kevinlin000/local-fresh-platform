@@ -51,7 +51,7 @@
 
 ### 付款事件紀錄
 
-付款流程新增 `payment_event`，將建立付款請求、成功 callback、重複 callback 與非法 callback 都寫成事件，並提供 `GET /admin/paymentEvents/page` 查詢。這讓 demo gateway 不只是「假付款」，而是先具備真實金流會需要的 provider、reference、amount、raw payload、處理結果與查詢入口。面試時可以說：目前沒有硬接 SDK，但已先把 callback idempotency 與未來對帳需要的資料痕跡建立起來，下一步才是接綠界 ECPay sandbox adapter。
+付款流程新增 `payment_event`，將建立付款請求、成功 callback、重複 callback 與非法 callback 都寫成事件，並提供 `GET /admin/paymentEvents/page` 與管理端「付款事件」頁查詢。這讓 demo gateway 不只是「假付款」，而是先具備真實金流會需要的 provider、reference、amount、raw payload、處理結果與查詢入口。面試時可以說：目前沒有硬接 SDK，但已先把 callback idempotency 與未來對帳需要的資料痕跡建立起來，下一步才是接綠界 ECPay sandbox adapter。
 
 ### 管理端操作 Audit Log
 

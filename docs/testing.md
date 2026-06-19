@@ -120,6 +120,9 @@ cd frontend-environment/local-fresh-admin
 npm run dev
 ```
 
+The current manual browser acceptance also checks the admin operation-log and
+payment-event pages for API data loading, filtering surfaces, and layout width.
+
 This is intentionally lighter than full E2E automation. The current project
 goal is to prove the backend workflow and provide credible UI evidence; a future
 production-facing slice should add automated smoke tests for login, checkout,

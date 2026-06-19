@@ -214,6 +214,8 @@ erDiagram
 
 付款流程另外新增 `payment_event` 事件表，紀錄 `REQUEST_CREATED`、`CALLBACK_SUCCEEDED`、`CALLBACK_DUPLICATE` 與 `CALLBACK_REJECTED`，並提供 `GET /admin/paymentEvents/page` 依訂單編號、provider、事件類型、結果與時間範圍查詢。目前 demo gateway 仍維持本機立即付款成功，方便展示；但資料模型已先保留 provider、provider reference、amount、raw payload 與處理結果，後續接綠界 ECPay sandbox 時可以直接承接 ReturnURL callback、簽章驗證與對帳紀錄。
 
+管理端也新增「付款事件」頁，可直接查 demo 訂單的付款請求、成功回呼、重複回呼與拒絕回呼，作為未來金流對帳與客服查單的前台證據。
+
 ### 4. 管理端操作 Audit Log
 
 管理端的訂單確認、婉拒、取消、配送、完成，以及商品手動庫存調整，現在會寫入 `admin_operation_log`。這張表記錄 `action`、目標類型與 id、操作前後值、原因、操作者與操作時間，用來回答「誰在什麼時候對哪個業務物件做了什麼變更」。管理端也提供 `GET /admin/operationLogs/page` 分頁查詢，可依 action、target、operator 與時間範圍篩選；後台「操作紀錄」頁可直接查閱這些紀錄，`AdminOperationLogApiTest` 也會從 HTTP 層驗證分頁、篩選與 newest-first 排序。這和 `product_inventory_log` 的庫存流水分工不同：庫存流水專注商品數量變化，Audit Log 則專注後台操作責任與追蹤。

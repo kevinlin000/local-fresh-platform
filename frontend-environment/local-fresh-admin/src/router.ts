@@ -38,6 +38,12 @@ export const routes: RouteRecordRaw[] = [
         meta: { title: '操作紀錄' }
       },
       {
+        path: 'payment-events',
+        name: 'PaymentEvents',
+        component: () => import('@/views/vue3/PaymentEventsView.vue'),
+        meta: { title: '付款事件' }
+      },
+      {
         path: 'gift-boxes',
         name: 'GiftBoxes',
         component: () => import('@/views/vue3/GiftBoxesView.vue'),

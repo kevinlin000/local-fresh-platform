@@ -165,6 +165,8 @@ The backend now includes focused tests for `OrderServiceImpl`, `OrderPaymentServ
 
 Payment processing also writes a provider-neutral `payment_event` trail for `REQUEST_CREATED`, `CALLBACK_SUCCEEDED`, `CALLBACK_DUPLICATE`, and `CALLBACK_REJECTED`. Admins can query that trail through `GET /admin/paymentEvents/page` by order number, provider, event type, result, and time range. The current demo gateway still completes payments immediately for local demos, but the data model already stores provider, provider reference, amount, raw payload, and processing result so a future ECPay sandbox adapter can reuse the same callback and reconciliation evidence.
 
+The admin console also includes a Payment Events page, so demo reviewers can inspect payment requests, successful callbacks, duplicate callbacks, and rejected callbacks without calling the API manually.
+
 ### 4. Admin operation audit log
 
 Admin order confirmation, rejection, cancellation, delivery, completion, and manual product inventory adjustments now write to `admin_operation_log`. The log records the action, target type and id, before/after values, reason, operator, and timestamp, so the backend can answer who changed which business object and why. The admin API also exposes `GET /admin/operationLogs/page` for paginated filtering by action, target, operator, and time range; the admin console includes an Operation Logs page for direct review, and `AdminOperationLogApiTest` verifies pagination, filtering, and newest-first ordering from the HTTP layer. This is separate from `product_inventory_log`: inventory logs explain stock movement, while audit logs explain admin accountability.
