@@ -9,6 +9,10 @@ public interface PaymentGateway {
 
     void refund(Orders order, String reason);
 
+    default String provider() {
+        return "UNKNOWN";
+    }
+
     default boolean completesPaymentOnRequest() {
         return false;
     }

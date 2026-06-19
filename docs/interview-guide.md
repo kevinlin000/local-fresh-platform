@@ -47,7 +47,11 @@
 
 ### 訂單狀態機與 Service 測試
 
-一般訂單的狀態流轉集中在 `OrderStatusTransitionPolicy`，付款、會員取消、管理端確認 / 婉拒 / 取消、配送與完成都有明確合法來源狀態。核心 service 測試涵蓋付款請求與付款成功回呼分離、重複付款 callback、concurrent callback race、已完成訂單不可取消、會員不可操作他人訂單、未付款拒單不退款、取消直送箱時還原組成商品庫存等案例。JaCoCo 報告可用 `mvn -pl local-fresh-server -am verify` 產生，展示的是可重跑的測試證據，不是單純追 coverage 數字。
+一般訂單的狀態流轉集中在 `OrderStatusTransitionPolicy`，付款、會員取消、管理端確認 / 婉拒 / 取消、配送與完成都有明確合法來源狀態。核心 service 測試涵蓋付款請求與付款成功回呼分離、付款事件紀錄、重複付款 callback、concurrent callback race、已完成訂單不可取消、會員不可操作他人訂單、未付款拒單不退款、取消直送箱時還原組成商品庫存等案例。JaCoCo 報告可用 `mvn -pl local-fresh-server -am verify` 產生，展示的是可重跑的測試證據，不是單純追 coverage 數字。
+
+### 付款事件紀錄
+
+付款流程新增 `payment_event`，將建立付款請求、成功 callback、重複 callback 與非法 callback 都寫成事件。這讓 demo gateway 不只是「假付款」，而是先具備真實金流會需要的 provider、reference、amount、raw payload 與處理結果欄位。面試時可以說：目前沒有硬接 SDK，但已先把 callback idempotency 與未來對帳需要的資料痕跡建立起來，下一步才是接綠界 ECPay sandbox adapter。
 
 ### 管理端操作 Audit Log
 
@@ -85,7 +89,7 @@ RedisTemplate 用在快取與一般 KV，RedissonClient 用在分散式鎖。這
 
 ### Q: 為什麼沒有真的接金流？
 
-目前支付仍是 demo gateway，但付款請求與付款成功回呼已經分離：一般 gateway 只建立付款請求，只有 demo gateway 會宣告 request 後立即完成，方便本機展示。真實金流會是下一階段，方向會以綠界 ECPay sandbox 的導轉式金流為主，但前提是先把 provider-neutral idempotency、回呼重試保護、簽章驗證與 reconciliation job 設計補清楚，而不是只把 SDK 接進來。
+目前支付仍是 demo gateway，但付款請求與付款成功回呼已經分離：一般 gateway 只建立付款請求，只有 demo gateway 會宣告 request 後立即完成，方便本機展示。付款事件已寫入 `payment_event`，可以追蹤 request、success、duplicate 與 rejected callback。真實金流會是下一階段，方向會以綠界 ECPay sandbox 的導轉式金流為主，接入前仍需要補 CheckMacValue / 簽章驗證、ReturnURL / OrderResultURL payload mapping、idempotency key 與 reconciliation job。
 
 ### Q: 如果流量更大會怎麼改？
 
@@ -93,13 +97,13 @@ RedisTemplate 用在快取與一般 KV，RedissonClient 用在分散式鎖。這
 
 - 將 group-buy join path 補更多觀測指標與慢查詢監控。
 - 對商品列表與熱門直送箱做更明確的 cache invalidation。
-- 把付款與庫存異動做 idempotency 防重。
-- 管理端操作加 audit log。
+- 把付款事件與庫存異動做 idempotency key 防重。
+- 管理端操作 audit log 延伸成更完整的營運追蹤報表。
 - 只有在明確瓶頸出現後，再討論服務拆分。
 
 ## 可以主動承認的限制
 
-- 支付仍是 mock，未接真實綠界 ECPay / 信用卡導轉流程。
+- 支付仍是 demo gateway，未接真實綠界 ECPay / 信用卡導轉流程；但付款事件表與 callback 分支測試已完成。
 - 管理端已有產品級基礎，但還沒有完整自動化視覺回歸。
 - 部署是作品級單機 EC2 + Docker MySQL/Redis，不是高可用 production 架構。
 - 前端 UI 已 polish，但主要價值仍是後端流程與工程證據。

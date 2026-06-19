@@ -48,8 +48,10 @@ The current coverage emphasis is the order lifecycle:
 - `OrderStatusTransitionPolicy`: legal order-state transitions.
 - `OrderServiceImpl`: member/admin ownership and status guard behavior.
 - `OrderPaymentServiceImpl`: provider-neutral payment request creation, demo
-  immediate success strategy, duplicate callback, concurrent callback race, and
-  invalid transition handling.
+  immediate success strategy, payment event recording, duplicate callback,
+  concurrent callback race, and invalid transition handling.
+- `PaymentEventMapperTest`: payment-event insert and order-number lookup through
+  the real mapper and H2 schema.
 - `OrderCancellationServiceImpl`: refund metadata and inventory restoration.
 - `OrderFulfillmentServiceImpl`: admin confirm, delivery, completion, and member
   reminder behavior.

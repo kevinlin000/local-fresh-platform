@@ -25,6 +25,11 @@ public class DemoPaymentGateway implements PaymentGateway {
     }
 
     @Override
+    public String provider() {
+        return "DEMO";
+    }
+
+    @Override
     public boolean completesPaymentOnRequest() {
         return true;
     }

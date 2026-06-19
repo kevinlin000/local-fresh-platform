@@ -4,7 +4,7 @@
 
 ## 目前刻意保留的限制
 
-- 支付仍是 mock flow，尚未接真實綠界 ECPay / 信用卡導轉流程。若要正式化，下一步應先補 provider-neutral idempotency、回呼重試保護、CheckMacValue / 簽章驗證與 reconciliation job，再接 ECPay sandbox。
+- 支付仍是 demo gateway，尚未接真實綠界 ECPay / 信用卡導轉流程。目前已完成付款請求 / 成功回呼分離與 `payment_event` 事件紀錄；若要正式化，下一步應補 provider callback idempotency key、CheckMacValue / 簽章驗證與 reconciliation job，再接 ECPay sandbox。
 - 管理端與會員端已有產品級 demo polish，但目前沒有自動化視覺回歸測試；最新畫面證據以 Playwright 手動截圖保存在 `docs/screenshots/`。
 - Demo 部署是求職作品級 AWS 架構：Vue 靜態站在 S3 + CloudFront，Spring Boot API 在 EC2，資料層為 MySQL / Redis；它不是多區高可用 production 架構。
 - 開發環境預設關閉 Google Maps 配送範圍檢查，避免本地 demo 被第三方 API key 或地址資料阻塞；正式環境需以環境變數打開並設定有效 API key。

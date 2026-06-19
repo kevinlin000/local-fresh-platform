@@ -210,7 +210,9 @@ erDiagram
 
 訂單狀態轉移集中在 `OrderStatusTransitionPolicy`，明確列出付款、會員取消、管理端確認 / 婉拒 / 取消、配送與完成等操作的合法來源狀態與目標狀態。這讓 service 層不需要散落判斷規則，也讓「待付款 → 待確認 → 已確認 → 配送中 → 已完成」與取消路徑能被單元測試直接驗證。
 
-目前已補上 `OrderServiceImpl`、`OrderPaymentServiceImpl`、`OrderCancellationServiceImpl`、`OrderFulfillmentServiceImpl` 與 `OrderStatusTransitionPolicy` 的核心測試，涵蓋付款請求與付款成功回呼分離、重複付款 callback、concurrent callback race、已完成訂單不可取消、會員不可操作他人訂單、未付款拒單不退款、直送箱取消時還原組成商品庫存等案例。`local-fresh-server` 已接入 JaCoCo，可用 `mvn -pl local-fresh-server -am verify` 產生 HTML 報告，完整測試策略見 [docs/testing.md](docs/testing.md)。
+目前已補上 `OrderServiceImpl`、`OrderPaymentServiceImpl`、`OrderCancellationServiceImpl`、`OrderFulfillmentServiceImpl` 與 `OrderStatusTransitionPolicy` 的核心測試，涵蓋付款請求與付款成功回呼分離、付款事件紀錄、重複付款 callback、concurrent callback race、已完成訂單不可取消、會員不可操作他人訂單、未付款拒單不退款、直送箱取消時還原組成商品庫存等案例。`local-fresh-server` 已接入 JaCoCo，可用 `mvn -pl local-fresh-server -am verify` 產生 HTML 報告，完整測試策略見 [docs/testing.md](docs/testing.md)。
+
+付款流程另外新增 `payment_event` 事件表，紀錄 `REQUEST_CREATED`、`CALLBACK_SUCCEEDED`、`CALLBACK_DUPLICATE` 與 `CALLBACK_REJECTED`。目前 demo gateway 仍維持本機立即付款成功，方便展示；但資料模型已先保留 provider、provider reference、amount、raw payload 與處理結果，後續接綠界 ECPay sandbox 時可以直接承接 ReturnURL callback、簽章驗證與對帳紀錄。
 
 ### 4. 管理端操作 Audit Log
 
@@ -453,7 +455,7 @@ pnpm dev
 
 ### 進行中
 
-- **付款與庫存 idempotency 補強**:目前已把付款請求與付款成功回呼拆開,Demo gateway 僅作為本機立即完成策略;下一步可補 provider-neutral payment event 紀錄、庫存異動防重與 reconciliation job 設計。
+- **付款與庫存 idempotency 補強**:目前已把付款請求與付款成功回呼拆開,並新增 provider-neutral `payment_event` 紀錄;下一步可補庫存異動防重、付款事件 idempotency key 與 reconciliation job 設計。
 
 ### 規劃中
 
