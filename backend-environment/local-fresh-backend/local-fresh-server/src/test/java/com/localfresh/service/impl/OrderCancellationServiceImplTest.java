@@ -1,5 +1,6 @@
 package com.localfresh.service.impl;
 
+import com.localfresh.entity.GiftBoxProduct;
 import com.localfresh.entity.OrderDetail;
 import com.localfresh.entity.Orders;
 import com.localfresh.mapper.GiftBoxProductMapper;
@@ -19,6 +20,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -67,5 +69,46 @@ class OrderCancellationServiceImplTest {
         assertEquals("店家取消", updated.getCancelReason());
         assertNotNull(updated.getCancelTime());
         verify(inventoryService).restoreProduct(20L, 2, "ORDER_CANCEL_RESTORE", 10L, "ADMIN", 1L);
+    }
+
+    @Test
+    void cancelOrder_recordsRejectionWithoutRefundingUnpaidOrder() throws Exception {
+        Orders order = new Orders();
+        order.setId(11L);
+        order.setNumber("ORDER-011");
+        order.setPayStatus(Orders.UN_PAID);
+        when(orderDetailMapper.getByOrderId(11L)).thenReturn(List.of());
+
+        orderCancellationService.cancelOrder(order, null, "商品售完", "ADMIN", 2L);
+
+        verify(paymentGateway, never()).refund(order, "商品售完");
+        ArgumentCaptor<Orders> captor = ArgumentCaptor.forClass(Orders.class);
+        verify(orderMapper).update(captor.capture());
+        Orders updated = captor.getValue();
+        assertEquals(11L, updated.getId());
+        assertEquals(Orders.CANCELLED, updated.getStatus());
+        assertEquals("商品售完", updated.getRejectionReason());
+        assertNotNull(updated.getCancelTime());
+    }
+
+    @Test
+    void cancelOrder_restoresGiftBoxComponentStock() throws Exception {
+        Orders order = new Orders();
+        order.setId(12L);
+        order.setNumber("ORDER-012");
+        order.setPayStatus(Orders.UN_PAID);
+        when(orderDetailMapper.getByOrderId(12L)).thenReturn(List.of(OrderDetail.builder()
+                .giftBoxId(30L)
+                .number(2)
+                .build()));
+        when(giftBoxProductMapper.getBySetmealId(30L)).thenReturn(List.of(
+                GiftBoxProduct.builder().productId(40L).copies(3).build(),
+                GiftBoxProduct.builder().productId(41L).copies(1).build()
+        ));
+
+        orderCancellationService.cancelOrder(order, "會員取消", null, "MEMBER", 3L);
+
+        verify(inventoryService).restoreProduct(40L, 6, "ORDER_CANCEL_RESTORE", 12L, "MEMBER", 3L);
+        verify(inventoryService).restoreProduct(41L, 2, "ORDER_CANCEL_RESTORE", 12L, "MEMBER", 3L);
     }
 }

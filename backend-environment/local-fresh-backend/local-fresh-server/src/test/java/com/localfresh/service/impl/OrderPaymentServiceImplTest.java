@@ -62,6 +62,22 @@ class OrderPaymentServiceImplTest {
     }
 
     @Test
+    void requestPaymentShouldRejectOrderThatCannotBeMarkedPaid() {
+        Orders order = orderWithStatus(5L, Orders.CONFIRMED);
+        order.setNumber("ORDER-005");
+        order.setPayStatus(Orders.UN_PAID);
+        when(orderMapper.markPaymentSucceededByNumber(eq("ORDER-005"), eq(Orders.PENDING_PAYMENT), eq(Orders.UN_PAID),
+                eq(Orders.TO_BE_CONFIRMED), eq(Orders.PAID), any(LocalDateTime.class))).thenReturn(0);
+        when(orderMapper.getByNumber("ORDER-005")).thenReturn(order);
+
+        OrderBusinessException exception = assertThrows(OrderBusinessException.class,
+                () -> orderPaymentService.requestPayment(order));
+
+        assertEquals(MessageConstant.ORDER_STATUS_ERROR, exception.getMessage());
+        verifyNoInteractions(paymentGateway);
+    }
+
+    @Test
     void handlePaymentSuccessShouldUpdatePendingOrderAndNotifyAdmin() {
         Orders order = orderWithStatus(2L, Orders.PENDING_PAYMENT);
         order.setNumber("ORDER-002");
@@ -87,6 +103,17 @@ class OrderPaymentServiceImplTest {
         orderPaymentService.handlePaymentSuccess("ORDER-003");
 
         verify(orderMapper, never()).markPaymentSucceededByNumber(anyString(), any(), any(), any(), any(), any());
+        verifyNoInteractions(webSocketServer);
+    }
+
+    @Test
+    void handlePaymentSuccessShouldRejectMissingOrder() {
+        when(orderMapper.getByNumber("ORDER-MISSING")).thenReturn(null);
+
+        OrderBusinessException exception = assertThrows(OrderBusinessException.class,
+                () -> orderPaymentService.handlePaymentSuccess("ORDER-MISSING"));
+
+        assertEquals(MessageConstant.ORDER_NOT_FOUND, exception.getMessage());
         verifyNoInteractions(webSocketServer);
     }
 

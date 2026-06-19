@@ -81,6 +81,34 @@ class OrderServiceImplTest {
     }
 
     @Test
+    void paymentShouldRejectMissingOrder() {
+        BaseContext.setCurrentId(100L);
+        when(orderMapper.getByNumber("ORDER-MISSING")).thenReturn(null);
+
+        OrderBusinessException exception = assertThrows(OrderBusinessException.class,
+                () -> orderService.payment(paymentDTO("ORDER-MISSING")));
+
+        assertEquals(MessageConstant.ORDER_NOT_FOUND, exception.getMessage());
+        verifyNoInteractions(orderPaymentService);
+    }
+
+    @Test
+    void paymentShouldRejectAlreadyPaidOrder() {
+        BaseContext.setCurrentId(100L);
+        Orders order = orderWithStatus(2L, Orders.TO_BE_CONFIRMED);
+        order.setUserId(100L);
+        order.setNumber("ORDER-PAID");
+        order.setPayStatus(Orders.PAID);
+        when(orderMapper.getByNumber("ORDER-PAID")).thenReturn(order);
+
+        OrderBusinessException exception = assertThrows(OrderBusinessException.class,
+                () -> orderService.payment(paymentDTO("ORDER-PAID")));
+
+        assertEquals(MessageConstant.ORDER_STATUS_ERROR, exception.getMessage());
+        verifyNoInteractions(orderPaymentService);
+    }
+
+    @Test
     void paymentShouldMovePendingUnpaidOrderToWaitingForAcceptance() throws Exception {
         BaseContext.setCurrentId(100L);
         Orders order = orderWithStatus(1L, Orders.PENDING_PAYMENT);
@@ -133,6 +161,20 @@ class OrderServiceImplTest {
     }
 
     @Test
+    void userCancelShouldRejectCompletedOrder() throws Exception {
+        BaseContext.setCurrentId(100L);
+        Orders order = orderWithStatus(23L, Orders.COMPLETED);
+        order.setUserId(100L);
+        when(orderMapper.getById(23L)).thenReturn(order);
+
+        OrderBusinessException exception = assertThrows(OrderBusinessException.class,
+                () -> orderService.userCancelById(23L));
+
+        assertEquals(MessageConstant.ORDER_STATUS_ERROR, exception.getMessage());
+        verifyNoInteractions(orderCancellationService);
+    }
+
+    @Test
     void userCancelShouldRefundPaidWaitingOrder() throws Exception {
         BaseContext.setCurrentId(100L);
         Orders order = orderWithStatus(21L, Orders.TO_BE_CONFIRMED);
@@ -160,6 +202,22 @@ class OrderServiceImplTest {
         orderService.rejection(dto);
 
         verify(orderCancellationService).cancelOrder(eq(order), eq(null), eq("商品售完"), eq("ADMIN"), eq(null));
+    }
+
+    @Test
+    void adminRejectShouldRejectOrderThatIsNotWaitingForAcceptance() throws Exception {
+        Orders order = orderWithStatus(24L, Orders.CONFIRMED);
+        when(orderMapper.getById(24L)).thenReturn(order);
+
+        OrdersRejectionDTO dto = new OrdersRejectionDTO();
+        dto.setId(24L);
+        dto.setRejectionReason("商品售完");
+
+        OrderBusinessException exception = assertThrows(OrderBusinessException.class,
+                () -> orderService.rejection(dto));
+
+        assertEquals(MessageConstant.ORDER_STATUS_ERROR, exception.getMessage());
+        verifyNoInteractions(orderCancellationService);
     }
 
     @Test

@@ -25,6 +25,34 @@ mvn test
 Testcontainers tests are skipped by default. This keeps ordinary local review
 and GitHub Actions runs deterministic.
 
+## Backend Coverage Report
+
+`local-fresh-server` also configures JaCoCo for local evidence generation. The
+report is intentionally informational; there is no hard coverage gate because
+this portfolio project values tested business boundaries over an arbitrary
+percentage.
+
+```bash
+cd backend-environment/local-fresh-backend
+mvn -pl local-fresh-server -am verify
+```
+
+The generated HTML report is written to:
+
+```text
+backend-environment/local-fresh-backend/local-fresh-server/target/site/jacoco/index.html
+```
+
+The current coverage emphasis is the order lifecycle:
+
+- `OrderStatusTransitionPolicy`: legal order-state transitions.
+- `OrderServiceImpl`: member/admin ownership and status guard behavior.
+- `OrderPaymentServiceImpl`: payment success, duplicate callback, and invalid
+  transition handling.
+- `OrderCancellationServiceImpl`: refund metadata and inventory restoration.
+- `OrderFulfillmentServiceImpl`: admin confirm, delivery, completion, and member
+  reminder behavior.
+
 ## Redis / Testcontainers Command
 
 Run the Redis-tagged concurrency tests when Docker is available:
