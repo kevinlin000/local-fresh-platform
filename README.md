@@ -214,7 +214,7 @@ erDiagram
 
 ### 4. 管理端操作 Audit Log
 
-管理端的訂單確認、婉拒、取消、配送、完成，以及商品手動庫存調整，現在會寫入 `admin_operation_log`。這張表記錄 `action`、目標類型與 id、操作前後值、原因、操作者與操作時間，用來回答「誰在什麼時候對哪個業務物件做了什麼變更」。管理端也提供 `GET /admin/operationLogs/page` 分頁查詢，可依 action、target、operator 與時間範圍篩選。這和 `product_inventory_log` 的庫存流水分工不同：庫存流水專注商品數量變化，Audit Log 則專注後台操作責任與追蹤。
+管理端的訂單確認、婉拒、取消、配送、完成，以及商品手動庫存調整，現在會寫入 `admin_operation_log`。這張表記錄 `action`、目標類型與 id、操作前後值、原因、操作者與操作時間，用來回答「誰在什麼時候對哪個業務物件做了什麼變更」。管理端也提供 `GET /admin/operationLogs/page` 分頁查詢，可依 action、target、operator 與時間範圍篩選；`AdminOperationLogApiTest` 會從 HTTP 層驗證分頁、篩選與 newest-first 排序。這和 `product_inventory_log` 的庫存流水分工不同：庫存流水專注商品數量變化，Audit Log 則專注後台操作責任與追蹤。
 
 ### 5. Testcontainers 驗證 Redis 鎖而非用 mock 帶過
 

@@ -165,7 +165,7 @@ The backend now includes focused tests for `OrderServiceImpl`, `OrderPaymentServ
 
 ### 4. Admin operation audit log
 
-Admin order confirmation, rejection, cancellation, delivery, completion, and manual product inventory adjustments now write to `admin_operation_log`. The log records the action, target type and id, before/after values, reason, operator, and timestamp, so the backend can answer who changed which business object and why. The admin API also exposes `GET /admin/operationLogs/page` for paginated filtering by action, target, operator, and time range. This is separate from `product_inventory_log`: inventory logs explain stock movement, while audit logs explain admin accountability.
+Admin order confirmation, rejection, cancellation, delivery, completion, and manual product inventory adjustments now write to `admin_operation_log`. The log records the action, target type and id, before/after values, reason, operator, and timestamp, so the backend can answer who changed which business object and why. The admin API also exposes `GET /admin/operationLogs/page` for paginated filtering by action, target, operator, and time range; `AdminOperationLogApiTest` verifies pagination, filtering, and newest-first ordering from the HTTP layer. This is separate from `product_inventory_log`: inventory logs explain stock movement, while audit logs explain admin accountability.
 
 ### 5. Choosing Testcontainers over mocks for lock verification
 

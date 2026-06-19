@@ -51,7 +51,7 @@
 
 ### 管理端操作 Audit Log
 
-管理端訂單確認、婉拒、取消、配送、完成，以及商品手動庫存調整會寫入 `admin_operation_log`。這張表記錄 action、target、before/after value、reason、operator 與 createdAt，並提供 `GET /admin/operationLogs/page` 分頁查詢。面試時可以把它解釋成 production-minded backend practice：不是只有把資料改掉，還要能追蹤「誰在什麼時候改了什麼、原因是什麼」。
+管理端訂單確認、婉拒、取消、配送、完成，以及商品手動庫存調整會寫入 `admin_operation_log`。這張表記錄 action、target、before/after value、reason、operator 與 createdAt，並提供 `GET /admin/operationLogs/page` 分頁查詢；`AdminOperationLogApiTest` 會打 HTTP endpoint 驗證分頁、篩選與 newest-first 排序。面試時可以把它解釋成 production-minded backend practice：不是只有把資料改掉，還要能追蹤「誰在什麼時候改了什麼、原因是什麼」。
 
 ### Flyway 與 seed story
 
