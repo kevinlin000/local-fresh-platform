@@ -13,6 +13,7 @@
         <RouterLink to="/dashboard">工作台</RouterLink>
         <RouterLink to="/orders">訂單管理</RouterLink>
         <RouterLink to="/products">商品管理</RouterLink>
+        <RouterLink to="/operation-logs">操作紀錄</RouterLink>
         <RouterLink to="/gift-boxes">直送箱管理</RouterLink>
         <RouterLink to="/categories">分類管理</RouterLink>
         <RouterLink to="/employees">員工管理</RouterLink>

@@ -32,6 +32,12 @@ export const routes: RouteRecordRaw[] = [
         meta: { title: '商品管理' }
       },
       {
+        path: 'operation-logs',
+        name: 'OperationLogs',
+        component: () => import('@/views/vue3/OperationLogsView.vue'),
+        meta: { title: '操作紀錄' }
+      },
+      {
         path: 'gift-boxes',
         name: 'GiftBoxes',
         component: () => import('@/views/vue3/GiftBoxesView.vue'),
