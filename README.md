@@ -206,23 +206,29 @@ erDiagram
 
 揪團期間的訂單並不是一般下單流程，而是先建立 `PENDING_GROUP` 狀態的預訂單。這樣做的好處是可以避免在尚未成團前就扣庫存、清購物車或進行完整配送檢查，讓一般下單與揪團下單的業務邊界保持清楚。成團時，系統再批次把所有 participant 對應訂單轉成 `TO_BE_CONFIRMED`；若過期失敗，則統一轉成 `CANCELLED` 並記錄 mock 退款 log。這種設計讓原有 `order` 模組邏輯大致維持穩定，只在狀態流轉層擴充揪團語意。
 
-### 3. Testcontainers 驗證 Redis 鎖而非用 mock 帶過
+### 3. 訂單生命週期規則與 Service 測試證據
+
+訂單狀態轉移集中在 `OrderStatusTransitionPolicy`，明確列出付款、會員取消、管理端確認 / 婉拒 / 取消、配送與完成等操作的合法來源狀態與目標狀態。這讓 service 層不需要散落判斷規則，也讓「待付款 → 待確認 → 已確認 → 配送中 → 已完成」與取消路徑能被單元測試直接驗證。
+
+目前已補上 `OrderServiceImpl`、`OrderPaymentServiceImpl`、`OrderCancellationServiceImpl`、`OrderFulfillmentServiceImpl` 與 `OrderStatusTransitionPolicy` 的核心測試，涵蓋重複付款 callback、已完成訂單不可取消、會員不可操作他人訂單、未付款拒單不退款、直送箱取消時還原組成商品庫存等案例。`local-fresh-server` 已接入 JaCoCo，可用 `mvn -pl local-fresh-server -am verify` 產生 HTML 報告，完整測試策略見 [docs/testing.md](docs/testing.md)。
+
+### 4. Testcontainers 驗證 Redis 鎖而非用 mock 帶過
 
 揪團併發控制若只用 `MockBean RedissonClient` 驗證流程，說服力不足，因為真正的風險發生在多執行緒與真實 Redis 鎖行為。這個專案的整合測試採用 Testcontainers 啟動 Redis container，並以 `@DynamicPropertySource` 把 host / port 動態注入測試環境，讓 `GroupBuyRedisIntegrationTest` 真正對 Redisson 做 100-thread 並發驗證。這樣的取捨比 pure mock 更重，但能換來更可信的測試結論；對展示「我知道哪裡該用真實整合測試」這件事，比單純追求測試執行速度更有價值。
 
-### 4. JWT 驗證與 ThreadLocal 請求隔離
+### 5. JWT 驗證與 ThreadLocal 請求隔離
 
 前後端 API 使用 JWT 作為會員與管理端身份驗證，並透過攔截器在請求進入時解析 token，將當前使用者資訊放入 ThreadLocal，供後續 service / mapper 取得。這種作法的優點是 controller 不需要反覆傳遞 memberId，邏輯較乾淨；但同時也要求在請求結束時明確清理 ThreadLocal，否則在 servlet thread pool 重用情境下，容易出現跨請求資料污染。專案中已針對這個風險補上回歸測試，確保登入上下文不會殘留到下一個請求。
 
-### 5. Google OAuth 2.0 採授權碼流程而非 Implicit Flow
+### 6. Google OAuth 2.0 採授權碼流程而非 Implicit Flow
 
 會員登入採 Google OAuth 2.0 Authorization Code Flow，而不是已逐漸被淘汰的 Implicit Flow。前端只負責導向 Google 授權頁並接收 callback code，真正與 Google token endpoint 溝通、驗證 `id_token`、檢查 `aud / exp` 等工作放在後端進行，降低憑證暴露風險。服務層另外抽出 `GoogleOAuthClient` 作為外部依賴封裝，使測試可以直接 mock `GoogleProfile`，專注驗證 account merge、JWT 簽發與 mock login 開關，而不是把測試耦合到 Google SDK 細節。
 
-### 6. Redisson 與 Spring Data Redis 職責分離
+### 7. Redisson 與 Spring Data Redis 職責分離
 
 專案中 Redis 有兩種用途：一種是一般 KV / cache，例如商品列表、店鋪營業狀態；另一種是揪團需要的分散式鎖。如果所有 Redis 存取都混用同一套 client，實務上容易出現相容性與責任界線不清的問題。這個專案最後採取的策略是：`RedissonClient` 專責分散式鎖與協調，`RedisTemplate` 則使用 Spring Boot 3 預設的 Lettuce 路徑處理快取與一般資料存取。這個分離避免了 `Tuple` 類別相容性問題，也讓後續維護者更容易理解「哪種場景該用哪種 Redis API」。
 
-### 7. 可部署導向的全流程設計
+### 8. 可部署導向的全流程設計
 
 這個專案雖然是求職作品，但實作方式不是只做出 API 或畫面，而是完整串成「可啟動、可測試、可實際部署」的系統。從 migration 版本化、環境變數管理、dev/test profile 分流、Google OAuth 設定隔離，到前端 Vite proxy 與後端 CORS 協作，都是以實際上線為前提在設計。目前 demo 已部署於 AWS，前端靜態資源、API 服務與 DNS 入口的切分方式，也與實際的 EC2、S3、CloudFront、DuckDNS 架構一致。
 
@@ -443,8 +449,8 @@ pnpm dev
 
 ### 進行中
 
-- **訂單狀態機重構**:目前訂單狀態流轉散落於 Service 層多處 if-else,計畫改用集中式狀態機(Enum + Strategy 或 Spring State Machine),搭配 Spring Application Event 解耦副作用(通知、退款、庫存),提升可測試性與可維護性。
-- **核心 Service 單元測試 + JaCoCo**:現有測試以揪團整合測試為主,接下來補齊 OrderService / GroupBuyService / PaymentService 的單元測試,目標 Service 層覆蓋率 ≥ 70%,並在 README 附 JaCoCo 報告截圖。
+- **付款與庫存 idempotency 補強**:現有 mock payment 已涵蓋基本狀態流轉,下一步可補 idempotency key、付款回呼重試保護、庫存異動防重與 reconciliation job 設計。
+- **管理端操作 audit log**:訂單確認、婉拒、取消、配送與庫存調整目前已可操作,下一步可補操作人、操作前後狀態與原因紀錄,提升後台可追蹤性。
 
 ### 規劃中
 
@@ -455,6 +461,7 @@ pnpm dev
 ### 已完成里程碑
 
 - 揪團分散式鎖壓測證據:100 concurrent join JMeter 壓測,`joinGroupBuy` error rate `0.00%`, P95 `2847.65 ms`, DB 最終 `current_count=101 / participant=100`
+- 訂單生命週期測試證據:`OrderStatusTransitionPolicy` 集中管理狀態轉移,核心 Order service 測試涵蓋付款、取消、婉拒、配送、完成與還庫存,並可用 JaCoCo 產生本地覆蓋率報告
 - 雙端產品級 UI polish:會員端採買流程、商品詳情、購物車、訂單頁與管理端 dashboard / products / orders 已完成新版截圖與 README 同步
 - 揪團發起 / 加入 / 取消 / 過期失敗回滾完整流程
 - Google OAuth 2.0 Authorization Code Flow + JWT 雙軌登入(mock login dev 開關)

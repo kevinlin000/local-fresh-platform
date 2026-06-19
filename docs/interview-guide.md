@@ -45,6 +45,10 @@
 
 揪團不直接重用一般訂單流程，而是先建立 `PENDING_GROUP` 預訂單。成團後批次轉成 `TO_BE_CONFIRMED`，失敗則轉成 `CANCELLED`。這樣每個參與者都有自己的地址、金額與訂單快照，也讓一般 checkout 不被揪團邏輯污染。
 
+### 訂單狀態機與 Service 測試
+
+一般訂單的狀態流轉集中在 `OrderStatusTransitionPolicy`，付款、會員取消、管理端確認 / 婉拒 / 取消、配送與完成都有明確合法來源狀態。核心 service 測試涵蓋重複付款 callback、已完成訂單不可取消、會員不可操作他人訂單、未付款拒單不退款、取消直送箱時還原組成商品庫存等案例。JaCoCo 報告可用 `mvn -pl local-fresh-server -am verify` 產生，展示的是可重跑的測試證據，不是單純追 coverage 數字。
+
 ### Flyway 與 seed story
 
 資料庫 schema 與 demo data 由 Flyway migration 管理。全新資料庫啟動時會套用商品、會員、地址、訂單與揪團 seed，讓 reviewer 可以直接走完整 demo，不需要手動建資料。
@@ -73,7 +77,7 @@ RedisTemplate 用在快取與一般 KV，RedissonClient 用在分散式鎖。這
 
 ### Q: 你最想讓我看哪段程式？
 
-優先看揪團 service、group-buy migration、Redisson/Testcontainers 測試、訂單狀態流轉相關 service，以及 JWT interceptor/ThreadLocal cleanup 測試。這些比單純 CRUD 更能展示後端基本功。
+優先看揪團 service、group-buy migration、Redisson/Testcontainers 測試、`OrderStatusTransitionPolicy` 與核心 Order service 測試，以及 JWT interceptor/ThreadLocal cleanup 測試。這些比單純 CRUD 更能展示後端基本功。
 
 ### Q: 為什麼沒有真的接金流？
 

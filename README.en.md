@@ -157,23 +157,29 @@ The hardest part of the group-buy workflow is preventing oversubscription when m
 
 Group-buy orders are modeled as pre-orders instead of reusing the standard checkout path end-to-end. During the campaign window, each participant receives an order with status `PENDING_GROUP`, which avoids prematurely deducting stock, clearing cart state, or triggering the full delivery validation flow. Once the group succeeds, all related orders are promoted in batch to `TO_BE_CONFIRMED`; if the campaign expires, the orders are batch-cancelled and refund actions are logged in a mock payment flow. This keeps the original order module stable while isolating group-buy concerns in a clear and traceable way.
 
-### 3. Choosing Testcontainers over mocks for lock verification
+### 3. Order lifecycle rules backed by service-level tests
+
+Order status transitions are centralized in `OrderStatusTransitionPolicy`, which defines the valid source states and target state for payment, member cancellation, admin confirmation, rejection, cancellation, delivery, and completion. That keeps lifecycle rules out of scattered service conditionals while making the ordinary path and cancellation paths directly testable.
+
+The backend now includes focused tests for `OrderServiceImpl`, `OrderPaymentServiceImpl`, `OrderCancellationServiceImpl`, `OrderFulfillmentServiceImpl`, and `OrderStatusTransitionPolicy`. These tests cover duplicate payment callbacks, completed orders that cannot be cancelled, member ownership checks, unpaid rejections that should not refund, and gift-box cancellation restoring component product stock. `local-fresh-server` also produces a JaCoCo HTML report with `mvn -pl local-fresh-server -am verify`; see [docs/testing.md](docs/testing.md) for the repeatable command and report path.
+
+### 4. Choosing Testcontainers over mocks for lock verification
 
 A mocked Redis client would verify method flow, but not the real failure mode that matters here: concurrent access against an actual distributed lock. For that reason, the group-buy integration tests spin up Redis through Testcontainers and inject host and port dynamically with `@DynamicPropertySource`. This makes the 100-thread test substantially more trustworthy than a pure mock-based approach. The cost is a slightly heavier test setup, but the benefit is stronger evidence that the locking strategy behaves correctly under realistic concurrency.
 
-### 4. JWT-based authentication with ThreadLocal request isolation
+### 5. JWT-based authentication with ThreadLocal request isolation
 
 Both the admin API and member API use JWT for authentication. Incoming requests are intercepted, the token is parsed, and the current user context is stored in ThreadLocal so downstream services can access it without repeatedly threading member IDs through controller signatures. That design keeps application code clean, but it also introduces a known risk: if ThreadLocal is not cleared after request completion, data can leak across reused servlet threads. This project explicitly addresses that risk and includes regression coverage for the cleanup path.
 
-### 5. Google OAuth 2.0 via Authorization Code Flow
+### 6. Google OAuth 2.0 via Authorization Code Flow
 
 The login system uses Google OAuth 2.0 Authorization Code Flow instead of the deprecated Implicit Flow. The frontend is responsible only for redirecting users to Google and receiving the callback code; the backend exchanges the code for tokens, verifies the `id_token`, and checks token claims such as `aud` and `exp`. The external Google integration is wrapped behind a `GoogleOAuthClient` abstraction, which keeps business logic testable and allows account-linking behavior to be verified independently from the Google SDK implementation details.
 
-### 6. Clear separation between Redisson and Spring Data Redis
+### 7. Clear separation between Redisson and Spring Data Redis
 
 Redis plays two distinct roles in this system: distributed coordination for group-buy locks, and conventional KV/cache use cases such as product list caching and store status reads. Instead of forcing both concerns through the same client path, the project uses `RedissonClient` specifically for locking, while `RedisTemplate` is backed by Spring Boot’s standard Lettuce integration for general Redis access. This separation resolved a real compatibility issue around `Tuple` support and also leaves the codebase easier to reason about for future maintainers.
 
-### 7. Built with deployment readiness in mind
+### 8. Built with deployment readiness in mind
 
 Although this is a portfolio project, it is structured with deployment realism in mind rather than as a collection of disconnected demos. Database migrations are versioned, environment-specific configuration is separated cleanly, OAuth credentials are kept out of source control, and frontend/backend integration is designed around realistic local-to-cloud transitions. The deployment topology described below is the actual production setup serving the demo URL.
 
