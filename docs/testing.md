@@ -52,6 +52,8 @@ The current coverage emphasis is the order lifecycle:
   concurrent callback race, and invalid transition handling.
 - `PaymentEventMapperTest`: payment-event insert and order-number lookup through
   the real mapper and H2 schema.
+- `PaymentEventApiTest`: admin payment-event pagination and filtering through
+  the HTTP layer and JWT interceptor.
 - `OrderCancellationServiceImpl`: refund metadata and inventory restoration.
 - `OrderFulfillmentServiceImpl`: admin confirm, delivery, completion, and member
   reminder behavior.

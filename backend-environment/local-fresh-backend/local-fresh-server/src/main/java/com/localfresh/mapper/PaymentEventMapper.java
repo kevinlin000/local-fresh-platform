@@ -1,6 +1,8 @@
 package com.localfresh.mapper;
 
 import com.localfresh.entity.PaymentEvent;
+import com.localfresh.dto.PaymentEventPageQueryDTO;
+import com.github.pagehelper.Page;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
@@ -18,4 +20,6 @@ public interface PaymentEventMapper {
     void insert(PaymentEvent paymentEvent);
 
     List<PaymentEvent> listByOrderNumber(@Param("orderNumber") String orderNumber);
+
+    Page<PaymentEvent> pageQuery(PaymentEventPageQueryDTO queryDTO);
 }

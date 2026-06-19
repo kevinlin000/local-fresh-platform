@@ -9,4 +9,29 @@
         order by created_at desc, id desc
     </select>
 
+    <select id="pageQuery" resultType="com.localfresh.entity.PaymentEvent">
+        select * from payment_event
+        <where>
+            <if test="orderNumber != null and orderNumber != ''">
+                and order_number = #{orderNumber}
+            </if>
+            <if test="provider != null and provider != ''">
+                and provider = #{provider}
+            </if>
+            <if test="eventType != null and eventType != ''">
+                and event_type = #{eventType}
+            </if>
+            <if test="result != null and result != ''">
+                and result = #{result}
+            </if>
+            <if test="beginTime != null">
+                and created_at &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and created_at &lt;= #{endTime}
+            </if>
+        </where>
+        order by created_at desc, id desc
+    </select>
+
 </mapper>

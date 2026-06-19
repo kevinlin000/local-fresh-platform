@@ -212,7 +212,7 @@ erDiagram
 
 目前已補上 `OrderServiceImpl`、`OrderPaymentServiceImpl`、`OrderCancellationServiceImpl`、`OrderFulfillmentServiceImpl` 與 `OrderStatusTransitionPolicy` 的核心測試，涵蓋付款請求與付款成功回呼分離、付款事件紀錄、重複付款 callback、concurrent callback race、已完成訂單不可取消、會員不可操作他人訂單、未付款拒單不退款、直送箱取消時還原組成商品庫存等案例。`local-fresh-server` 已接入 JaCoCo，可用 `mvn -pl local-fresh-server -am verify` 產生 HTML 報告，完整測試策略見 [docs/testing.md](docs/testing.md)。
 
-付款流程另外新增 `payment_event` 事件表，紀錄 `REQUEST_CREATED`、`CALLBACK_SUCCEEDED`、`CALLBACK_DUPLICATE` 與 `CALLBACK_REJECTED`。目前 demo gateway 仍維持本機立即付款成功，方便展示；但資料模型已先保留 provider、provider reference、amount、raw payload 與處理結果，後續接綠界 ECPay sandbox 時可以直接承接 ReturnURL callback、簽章驗證與對帳紀錄。
+付款流程另外新增 `payment_event` 事件表，紀錄 `REQUEST_CREATED`、`CALLBACK_SUCCEEDED`、`CALLBACK_DUPLICATE` 與 `CALLBACK_REJECTED`，並提供 `GET /admin/paymentEvents/page` 依訂單編號、provider、事件類型、結果與時間範圍查詢。目前 demo gateway 仍維持本機立即付款成功，方便展示；但資料模型已先保留 provider、provider reference、amount、raw payload 與處理結果，後續接綠界 ECPay sandbox 時可以直接承接 ReturnURL callback、簽章驗證與對帳紀錄。
 
 ### 4. 管理端操作 Audit Log
 
