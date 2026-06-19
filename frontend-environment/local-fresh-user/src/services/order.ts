@@ -45,7 +45,11 @@ export interface PayOrderPayload {
 
 export interface PayOrderResult {
   code?: string | null
+  nonceStr?: string | null
   packageStr?: string | null
+  paySign?: string | null
+  timeStamp?: string | null
+  signType?: string | null
 }
 
 export interface SubmitOrderPayload {

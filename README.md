@@ -212,7 +212,7 @@ erDiagram
 
 目前已補上 `OrderServiceImpl`、`OrderPaymentServiceImpl`、`DemoPaymentGateway`、`EcpayPaymentGateway`、`OrderCancellationServiceImpl`、`OrderFulfillmentServiceImpl` 與 `OrderStatusTransitionPolicy` 的核心測試，涵蓋付款請求與付款成功回呼分離、demo HMAC callback 驗證、ECPay CheckMacValue 驗證與 callback mapping、付款事件紀錄、重複付款 callback、concurrent callback race、已完成訂單不可取消、會員不可操作他人訂單、未付款拒單不退款、直送箱取消時還原組成商品庫存等案例。`local-fresh-server` 已接入 JaCoCo，可用 `mvn -pl local-fresh-server -am verify` 產生 HTML 報告，完整測試策略見 [docs/testing.md](docs/testing.md)。
 
-付款流程另外新增 `payment_event` 事件表，紀錄 `REQUEST_CREATED`、`CALLBACK_SUCCEEDED`、`CALLBACK_DUPLICATE` 與 `CALLBACK_REJECTED`，並提供 `GET /admin/paymentEvents/page` 依訂單編號、provider、事件類型、結果、金流交易編號、冪等鍵與時間範圍查詢。目前 demo gateway 仍維持本機立即付款成功，方便展示；但後端已新增 `/payment/callback` provider 回呼入口、demo HMAC 驗證與可切換的 ECPay CheckMacValue parser，資料模型也保留 provider、provider reference、provider trade no、idempotency key、amount、raw payload 與處理結果。後續接綠界 ECPay sandbox 時，主要剩導轉頁整合、真實 sandbox callback 驗證與對帳紀錄。
+付款流程另外新增 `payment_event` 事件表，紀錄 `REQUEST_CREATED`、`CALLBACK_SUCCEEDED`、`CALLBACK_DUPLICATE` 與 `CALLBACK_REJECTED`，並提供 `GET /admin/paymentEvents/page` 依訂單編號、provider、事件類型、結果、金流交易編號、冪等鍵與時間範圍查詢。目前 demo gateway 仍維持本機立即付款成功，方便展示；但後端已新增 `/payment/callback` provider 回呼入口、demo HMAC 驗證與可切換的 ECPay CheckMacValue parser，會員端也能把 ECPay 付款請求組成 POST form 導轉。資料模型保留 provider、provider reference、provider trade no、idempotency key、amount、raw payload 與處理結果。後續接綠界 ECPay sandbox 時，主要剩真實 ReturnURL / OrderResultURL callback 驗證與對帳紀錄。
 
 管理端也新增「付款事件」頁，可直接查 demo 訂單的付款請求、成功回呼、重複回呼與拒絕回呼，作為未來金流對帳與客服查單的前台證據。
 
@@ -461,7 +461,7 @@ pnpm dev
 
 ### 規劃中
 
-- **綠界 ECPay 沙箱金流串接**:在 ECPay CheckMacValue parser 已補上後,以綠界全方位金流導轉式流程取代現有 demo 付款,補前端導轉頁、真實 ReturnURL / OrderResultURL sandbox 驗證與 reconciliation job。
+- **綠界 ECPay 沙箱金流串接**:在 ECPay CheckMacValue parser 與會員端 POST form 導轉骨架已補上後,以綠界全方位金流導轉式流程取代現有 demo 付款,補真實 ReturnURL / OrderResultURL sandbox 驗證與 reconciliation job。
 - **可觀測性三件套**:Spring Boot Actuator + Prometheus + Grafana,自訂業務 metric(揪團成團率、支付成功率),搭配結構化 log 與 Trace ID 串穿全鏈路。
 - **CD 自動化**:在現有 GitHub Actions 測試/build 基礎上,加入 Docker image build、推送 ECR,並觸發 EC2 滾動部署。
 

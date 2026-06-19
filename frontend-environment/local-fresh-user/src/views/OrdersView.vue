@@ -65,7 +65,7 @@
                 :loading="payingOrderNumber === order.number"
                 @click.stop="handlePayOrder(order.number)"
               >
-                模擬付款
+                付款
               </el-button>
             </div>
           </article>
@@ -197,6 +197,7 @@ import { ElMessage } from 'element-plus/es/components/message/index'
 import { useRoute, useRouter } from 'vue-router'
 import { fetchMyGroupBuys, type GroupBuyRecord } from '@/services/groupBuy'
 import { fetchOrderDetail, fetchOrderHistory, payOrder, type OrderRecord } from '@/services/order'
+import { isEcpayPaymentResponse, redirectToEcpayCheckout } from '@/services/paymentRedirect'
 
 const route = useRoute()
 const router = useRouter()
@@ -326,7 +327,12 @@ async function refreshCurrentTab() {
 async function handlePayOrder(orderNumber: string) {
   payingOrderNumber.value = orderNumber
   try {
-    await payOrder(orderNumber, 1)
+    const payment = await payOrder(orderNumber, 1)
+    if (isEcpayPaymentResponse(payment)) {
+      ElMessage.info('前往付款頁')
+      redirectToEcpayCheckout(payment)
+      return
+    }
     ElMessage.success('付款成功')
     await loadOrders()
   } catch (error) {

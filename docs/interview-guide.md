@@ -51,7 +51,7 @@
 
 ### 付款事件紀錄
 
-付款流程新增 `payment_event`，將建立付款請求、成功 callback、重複 callback 與非法 callback 都寫成事件，並提供 `GET /admin/paymentEvents/page` 與管理端「付款事件」頁查詢。這讓 demo gateway 不只是「假付款」，而是先具備真實金流會需要的 provider callback 入口、demo HMAC 驗證、ECPay CheckMacValue parser、reference、provider trade no、idempotency key、amount、raw payload、處理結果與查詢入口。面試時可以說：目前沒有硬接 SDK 或真 sandbox 端到端，但已先把 callback 驗證邊界、idempotency 與未來對帳需要的資料痕跡建立起來。
+付款流程新增 `payment_event`，將建立付款請求、成功 callback、重複 callback 與非法 callback 都寫成事件，並提供 `GET /admin/paymentEvents/page` 與管理端「付款事件」頁查詢。這讓 demo gateway 不只是「假付款」，而是先具備真實金流會需要的 provider callback 入口、demo HMAC 驗證、ECPay CheckMacValue parser、會員端 POST form 導轉、reference、provider trade no、idempotency key、amount、raw payload、處理結果與查詢入口。面試時可以說：目前沒有硬接 SDK 或真 sandbox 端到端，但已先把 callback 驗證邊界、導轉資料處理、idempotency 與未來對帳需要的資料痕跡建立起來。
 
 ### 管理端操作 Audit Log
 
@@ -89,7 +89,7 @@ RedisTemplate 用在快取與一般 KV，RedissonClient 用在分散式鎖。這
 
 ### Q: 為什麼沒有真的接金流？
 
-目前支付預設仍是 demo gateway，但付款請求與付款成功回呼已經分離：一般 gateway 只建立付款請求，只有 demo gateway 會宣告 request 後立即完成，方便本機展示。後端也有 `/payment/callback` provider 回呼入口，demo provider 用 HMAC 驗證 payload，ECPay provider 則有 CheckMacValue 驗證與 MerchantTradeNo / TradeNo / RtnCode mapping 測試，通過後才會進入訂單付款狀態流轉。付款事件已寫入 `payment_event`，可以追蹤 request、success、duplicate 與 rejected callback，並保留金流交易編號與 idempotency key。還沒做的是綠界 sandbox 導轉頁、真實 ReturnURL / OrderResultURL 端到端驗證與 reconciliation job。
+目前支付預設仍是 demo gateway，但付款請求與付款成功回呼已經分離：一般 gateway 只建立付款請求，只有 demo gateway 會宣告 request 後立即完成，方便本機展示。後端也有 `/payment/callback` provider 回呼入口，demo provider 用 HMAC 驗證 payload，ECPay provider 則有 CheckMacValue 驗證與 MerchantTradeNo / TradeNo / RtnCode mapping 測試；會員端收到 ECPay response 時會組 hidden form POST 到綠界付款頁。付款事件已寫入 `payment_event`，可以追蹤 request、success、duplicate 與 rejected callback，並保留金流交易編號與 idempotency key。還沒做的是用 ngrok 或正式網域實測真實 ReturnURL / OrderResultURL 端到端驗證與 reconciliation job。
 
 ### Q: 如果流量更大會怎麼改？
 
@@ -103,7 +103,7 @@ RedisTemplate 用在快取與一般 KV，RedissonClient 用在分散式鎖。這
 
 ## 可以主動承認的限制
 
-- 支付預設仍是 demo gateway，未接真實綠界 ECPay / 信用卡導轉端到端流程；但 provider callback 入口、demo HMAC 驗證、ECPay CheckMacValue parser、付款事件表、金流交易編號、idempotency key 與 callback 分支測試已完成。
+- 支付預設仍是 demo gateway，未接真實綠界 ECPay / 信用卡導轉端到端流程；但 provider callback 入口、demo HMAC 驗證、ECPay CheckMacValue parser、會員端 POST form 導轉、付款事件表、金流交易編號、idempotency key 與 callback 分支測試已完成。
 - 管理端已有產品級基礎，但還沒有完整自動化視覺回歸。
 - 部署是作品級單機 EC2 + Docker MySQL/Redis，不是高可用 production 架構。
 - 前端 UI 已 polish，但主要價值仍是後端流程與工程證據。
