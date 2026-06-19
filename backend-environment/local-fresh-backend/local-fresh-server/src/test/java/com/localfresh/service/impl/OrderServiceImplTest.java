@@ -10,6 +10,7 @@ import com.localfresh.dto.OrdersSubmitDTO;
 import com.localfresh.entity.Orders;
 import com.localfresh.exception.OrderBusinessException;
 import com.localfresh.mapper.OrderMapper;
+import com.localfresh.service.AdminOperationLogService;
 import com.localfresh.service.OrderCancellationService;
 import com.localfresh.service.OrderFulfillmentService;
 import com.localfresh.service.OrderPaymentService;
@@ -53,6 +54,9 @@ class OrderServiceImplTest {
 
     @Mock
     private OrderFulfillmentService orderFulfillmentService;
+
+    @Mock
+    private AdminOperationLogService adminOperationLogService;
 
     @InjectMocks
     private OrderServiceImpl orderService;
@@ -202,6 +206,7 @@ class OrderServiceImplTest {
         orderService.rejection(dto);
 
         verify(orderCancellationService).cancelOrder(eq(order), eq(null), eq("商品售完"), eq("ADMIN"), eq(null));
+        verify(adminOperationLogService).recordOrderAction("ORDER_REJECT", order, Orders.CANCELLED, "商品售完");
     }
 
     @Test
@@ -242,6 +247,7 @@ class OrderServiceImplTest {
         orderService.cancel(cancelDTO(31L, "stock unavailable"));
 
         verify(orderCancellationService).cancelOrder(eq(order), eq("stock unavailable"), eq(null), eq("ADMIN"), eq(null));
+        verify(adminOperationLogService).recordOrderAction("ORDER_CANCEL", order, Orders.CANCELLED, "stock unavailable");
     }
 
     @Test

@@ -6,6 +6,7 @@ import com.localfresh.dto.*;
 import com.localfresh.entity.*;
 import com.localfresh.exception.OrderBusinessException;
 import com.localfresh.mapper.*;
+import com.localfresh.service.AdminOperationLogService;
 import com.localfresh.service.OrderCancellationService;
 import com.localfresh.service.OrderFulfillmentService;
 import com.localfresh.service.OrderPaymentService;
@@ -36,6 +37,8 @@ public class OrderServiceImpl implements OrderService {
 
     private static final String INVENTORY_OPERATOR_MEMBER = "MEMBER";
     private static final String INVENTORY_OPERATOR_ADMIN = "ADMIN";
+    private static final String ACTION_ORDER_REJECT = "ORDER_REJECT";
+    private static final String ACTION_ORDER_CANCEL = "ORDER_CANCEL";
 
     @Autowired
     private OrderMapper orderMapper;
@@ -60,6 +63,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private OrderFulfillmentService orderFulfillmentService;
+
+    @Autowired
+    private AdminOperationLogService adminOperationLogService;
 
     /**
      * 用戶下單
@@ -231,6 +237,8 @@ public class OrderServiceImpl implements OrderService {
 
         orderCancellationService.cancelOrder(ordersDB, null, ordersRejectionDTO.getRejectionReason(),
                 INVENTORY_OPERATOR_ADMIN, BaseContext.getCurrentId());
+        adminOperationLogService.recordOrderAction(ACTION_ORDER_REJECT, ordersDB, Orders.CANCELLED,
+                ordersRejectionDTO.getRejectionReason());
     }
 
     /**
@@ -248,6 +256,8 @@ public class OrderServiceImpl implements OrderService {
 
         orderCancellationService.cancelOrder(ordersDB, ordersCancelDTO.getCancelReason(), null,
                 INVENTORY_OPERATOR_ADMIN, BaseContext.getCurrentId());
+        adminOperationLogService.recordOrderAction(ACTION_ORDER_CANCEL, ordersDB, Orders.CANCELLED,
+                ordersCancelDTO.getCancelReason());
     }
 
     /**

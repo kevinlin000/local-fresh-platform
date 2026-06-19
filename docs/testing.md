@@ -8,7 +8,7 @@ backend portfolio project.
 
 | Layer | Purpose | Examples |
 |---|---|---|
-| Unit tests | Validate isolated business rules without Spring context cost. | `OrderStatusTransitionPolicyTest`, `OrderServiceImplTest`, `GoogleOAuthClientImplTest` |
+| Unit tests | Validate isolated business rules without Spring context cost. | `OrderStatusTransitionPolicyTest`, `OrderServiceImplTest`, `AdminOperationLogServiceImplTest`, `GoogleOAuthClientImplTest` |
 | Spring integration tests | Validate HTTP/interceptor/mapper behavior against H2 in MySQL mode. | IDOR order/address regression tests, product/cart API tests, group-buy controller tests |
 | Redis integration tests | Validate Redisson lock behavior against real Redis through Testcontainers. | `GroupBuyRedisIntegrationTest` |
 
@@ -52,6 +52,8 @@ The current coverage emphasis is the order lifecycle:
 - `OrderCancellationServiceImpl`: refund metadata and inventory restoration.
 - `OrderFulfillmentServiceImpl`: admin confirm, delivery, completion, and member
   reminder behavior.
+- `AdminOperationLogServiceImpl`: admin order and inventory operation audit
+  entries.
 
 ## Redis / Testcontainers Command
 

@@ -20,6 +20,7 @@ import com.localfresh.mapper.ProductMapper;
 import com.localfresh.mapper.GiftBoxProductMapper;
 import com.localfresh.mapper.GiftBoxMapper;
 import com.localfresh.result.PageResult;
+import com.localfresh.service.AdminOperationLogService;
 import com.localfresh.service.CacheService;
 import com.localfresh.service.InventoryService;
 import com.localfresh.service.ProductService;
@@ -57,6 +58,8 @@ public class ProductServiceImpl implements ProductService {
     private InventoryService inventoryService;
     @Autowired
     private CacheService cacheService;
+    @Autowired
+    private AdminOperationLogService adminOperationLogService;
     /**
      * 新增商品
      * @param dishDTO
@@ -269,9 +272,17 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public void adjustInventory(Long id, ProductInventoryAdjustDTO productInventoryAdjustDTO) {
+        Product before = productMapper.getById(id);
+
         inventoryService.adjustProduct(id, productInventoryAdjustDTO.getChangeQuantity(),
                 INVENTORY_REASON_MANUAL_ADJUSTMENT, productInventoryAdjustDTO.getReason(),
                 INVENTORY_OPERATOR_ADMIN, BaseContext.getCurrentId());
+
+        Product after = productMapper.getById(id);
+        adminOperationLogService.recordProductInventoryAdjustment(id,
+                before == null ? null : before.getStock(),
+                after == null ? null : after.getStock(),
+                productInventoryAdjustDTO.getReason());
 
         cleanCache("product_*");
     }

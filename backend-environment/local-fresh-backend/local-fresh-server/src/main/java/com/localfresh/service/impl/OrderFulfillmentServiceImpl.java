@@ -6,6 +6,7 @@ import com.localfresh.dto.OrdersConfirmDTO;
 import com.localfresh.entity.Orders;
 import com.localfresh.exception.OrderBusinessException;
 import com.localfresh.mapper.OrderMapper;
+import com.localfresh.service.AdminOperationLogService;
 import com.localfresh.service.OrderFulfillmentService;
 import com.localfresh.service.support.OrderStatusTransitionPolicy;
 import com.localfresh.utils.JsonUtil;
@@ -22,11 +23,18 @@ import static com.localfresh.service.support.OrderStatusTransitionPolicy.Transit
 @Service
 public class OrderFulfillmentServiceImpl implements OrderFulfillmentService {
 
+    private static final String ACTION_ORDER_CONFIRM = "ORDER_CONFIRM";
+    private static final String ACTION_ORDER_START_DELIVERY = "ORDER_START_DELIVERY";
+    private static final String ACTION_ORDER_COMPLETE = "ORDER_COMPLETE";
+
     @Autowired
     private OrderMapper orderMapper;
 
     @Autowired
     private WebSocketServer webSocketServer;
+
+    @Autowired
+    private AdminOperationLogService adminOperationLogService;
 
     @Override
     public void confirm(OrdersConfirmDTO ordersConfirmDTO) {
@@ -39,6 +47,7 @@ public class OrderFulfillmentServiceImpl implements OrderFulfillmentService {
                 .build();
 
         orderMapper.update(orders);
+        adminOperationLogService.recordOrderAction(ACTION_ORDER_CONFIRM, ordersDB, Orders.CONFIRMED, null);
     }
 
     @Override
@@ -51,6 +60,8 @@ public class OrderFulfillmentServiceImpl implements OrderFulfillmentService {
         orders.setStatus(Orders.DELIVERY_IN_PROGRESS);
 
         orderMapper.update(orders);
+        adminOperationLogService.recordOrderAction(ACTION_ORDER_START_DELIVERY, ordersDB,
+                Orders.DELIVERY_IN_PROGRESS, null);
     }
 
     @Override
@@ -64,6 +75,7 @@ public class OrderFulfillmentServiceImpl implements OrderFulfillmentService {
         orders.setDeliveryTime(LocalDateTime.now());
 
         orderMapper.update(orders);
+        adminOperationLogService.recordOrderAction(ACTION_ORDER_COMPLETE, ordersDB, Orders.COMPLETED, null);
     }
 
     @Override

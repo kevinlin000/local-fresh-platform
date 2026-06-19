@@ -7,6 +7,7 @@ import com.localfresh.dto.OrdersConfirmDTO;
 import com.localfresh.entity.Orders;
 import com.localfresh.exception.OrderBusinessException;
 import com.localfresh.mapper.OrderMapper;
+import com.localfresh.service.AdminOperationLogService;
 import com.localfresh.utils.JsonUtil;
 import com.localfresh.websocket.WebSocketServer;
 import org.junit.jupiter.api.AfterEach;
@@ -34,6 +35,9 @@ class OrderFulfillmentServiceImplTest {
 
     @Mock
     private WebSocketServer webSocketServer;
+
+    @Mock
+    private AdminOperationLogService adminOperationLogService;
 
     @InjectMocks
     private OrderFulfillmentServiceImpl orderFulfillmentService;
@@ -71,6 +75,7 @@ class OrderFulfillmentServiceImplTest {
         Orders updated = captureUpdatedOrder();
         assertEquals(11L, updated.getId());
         assertEquals(Orders.CONFIRMED, updated.getStatus());
+        verify(adminOperationLogService).recordOrderAction("ORDER_CONFIRM", order, Orders.CONFIRMED, null);
         verifyNoInteractions(webSocketServer);
     }
 
@@ -96,6 +101,8 @@ class OrderFulfillmentServiceImplTest {
         Orders updated = captureUpdatedOrder();
         assertEquals(41L, updated.getId());
         assertEquals(Orders.DELIVERY_IN_PROGRESS, updated.getStatus());
+        verify(adminOperationLogService).recordOrderAction("ORDER_START_DELIVERY", order,
+                Orders.DELIVERY_IN_PROGRESS, null);
     }
 
     @Test
@@ -121,6 +128,7 @@ class OrderFulfillmentServiceImplTest {
         assertEquals(51L, updated.getId());
         assertEquals(Orders.COMPLETED, updated.getStatus());
         assertNotNull(updated.getDeliveryTime());
+        verify(adminOperationLogService).recordOrderAction("ORDER_COMPLETE", order, Orders.COMPLETED, null);
     }
 
     @Test

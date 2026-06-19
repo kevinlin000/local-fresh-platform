@@ -1,6 +1,7 @@
 -- Drop in reverse dependency order
 DROP TABLE IF EXISTS group_buy_participant;
 DROP TABLE IF EXISTS group_buy;
+DROP TABLE IF EXISTS admin_operation_log;
 DROP TABLE IF EXISTS product_inventory_log;
 DROP TABLE IF EXISTS gift_box_product;
 DROP TABLE IF EXISTS product_spec;
@@ -94,6 +95,19 @@ CREATE TABLE product_inventory_log (
     operator_type   VARCHAR(32) NOT NULL,
     operator_id     BIGINT,
     created_at      DATETIME    NOT NULL
+);
+
+CREATE TABLE admin_operation_log (
+    id            BIGINT AUTO_INCREMENT PRIMARY KEY,
+    action        VARCHAR(64) NOT NULL,
+    target_type   VARCHAR(32) NOT NULL,
+    target_id     BIGINT      NOT NULL,
+    before_value  VARCHAR(64),
+    after_value   VARCHAR(64),
+    reason        VARCHAR(255),
+    operator_type VARCHAR(32) NOT NULL,
+    operator_id   BIGINT,
+    created_at    DATETIME    NOT NULL
 );
 
 CREATE TABLE gift_box (
