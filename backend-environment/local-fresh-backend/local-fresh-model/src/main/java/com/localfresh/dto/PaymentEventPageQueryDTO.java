@@ -17,6 +17,8 @@ public class PaymentEventPageQueryDTO implements Serializable {
     private String provider;
     private String eventType;
     private String result;
+    private String providerTradeNo;
+    private String idempotencyKey;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime beginTime;

@@ -70,6 +70,7 @@ class OrderPaymentServiceImplTest {
         assertEquals(PaymentEvent.RESULT_PENDING, event.getResult());
         assertEquals("ECPAY", event.getProvider());
         assertEquals("ecpay-form:ORDER-001", event.getProviderReference());
+        assertEquals("ECPAY:REQUEST_CREATED:ORDER-001:ecpay-form:ORDER-001", event.getIdempotencyKey());
         assertEquals(order.getAmount(), event.getAmount());
         assertNotNull(event.getRawPayload());
         verifyNoInteractions(webSocketServer);
@@ -98,8 +99,10 @@ class OrderPaymentServiceImplTest {
         List<PaymentEvent> events = capturedPaymentEvents();
         assertEquals(2, events.size());
         assertEquals(PaymentEvent.EVENT_REQUEST_CREATED, events.get(0).getEventType());
+        assertEquals("DEMO:REQUEST_CREATED:ORDER-005:demo-paid:ORDER-005", events.get(0).getIdempotencyKey());
         assertEquals(PaymentEvent.EVENT_CALLBACK_SUCCEEDED, events.get(1).getEventType());
         assertEquals(PaymentEvent.RESULT_SUCCEEDED, events.get(1).getResult());
+        assertEquals("DEMO:CALLBACK_SUCCEEDED:ORDER-005", events.get(1).getIdempotencyKey());
         verify(webSocketServer).sendToAllClient(anyString());
     }
 
@@ -120,6 +123,7 @@ class OrderPaymentServiceImplTest {
         assertEquals(PaymentEvent.EVENT_CALLBACK_SUCCEEDED, event.getEventType());
         assertEquals(PaymentEvent.RESULT_SUCCEEDED, event.getResult());
         assertEquals("ORDER-002", event.getOrderNumber());
+        assertEquals("UNKNOWN:CALLBACK_SUCCEEDED:ORDER-002", event.getIdempotencyKey());
         verify(webSocketServer).sendToAllClient(anyString());
     }
 
@@ -136,6 +140,7 @@ class OrderPaymentServiceImplTest {
         PaymentEvent event = singlePaymentEvent();
         assertEquals(PaymentEvent.EVENT_CALLBACK_DUPLICATE, event.getEventType());
         assertEquals(PaymentEvent.RESULT_IGNORED, event.getResult());
+        assertEquals("UNKNOWN:CALLBACK_DUPLICATE:ORDER-003", event.getIdempotencyKey());
         verifyNoInteractions(webSocketServer);
     }
 
@@ -158,6 +163,7 @@ class OrderPaymentServiceImplTest {
         PaymentEvent event = singlePaymentEvent();
         assertEquals(PaymentEvent.EVENT_CALLBACK_DUPLICATE, event.getEventType());
         assertEquals(PaymentEvent.RESULT_IGNORED, event.getResult());
+        assertEquals("UNKNOWN:CALLBACK_DUPLICATE:ORDER-006", event.getIdempotencyKey());
         verifyNoInteractions(webSocketServer);
     }
 
@@ -173,6 +179,7 @@ class OrderPaymentServiceImplTest {
         assertEquals(PaymentEvent.EVENT_CALLBACK_REJECTED, event.getEventType());
         assertEquals(PaymentEvent.RESULT_REJECTED, event.getResult());
         assertEquals("ORDER-MISSING", event.getOrderNumber());
+        assertEquals("UNKNOWN:CALLBACK_REJECTED:ORDER-MISSING", event.getIdempotencyKey());
         verifyNoInteractions(webSocketServer);
     }
 
@@ -192,6 +199,7 @@ class OrderPaymentServiceImplTest {
         PaymentEvent event = singlePaymentEvent();
         assertEquals(PaymentEvent.EVENT_CALLBACK_REJECTED, event.getEventType());
         assertEquals(PaymentEvent.RESULT_REJECTED, event.getResult());
+        assertEquals("UNKNOWN:CALLBACK_REJECTED:ORDER-004", event.getIdempotencyKey());
         verifyNoInteractions(webSocketServer);
     }
 

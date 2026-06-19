@@ -35,6 +35,8 @@ public class PaymentEvent implements Serializable {
     private String provider;
     private String eventType;
     private String providerReference;
+    private String providerTradeNo;
+    private String idempotencyKey;
     private BigDecimal amount;
     private String result;
     private String rawPayload;

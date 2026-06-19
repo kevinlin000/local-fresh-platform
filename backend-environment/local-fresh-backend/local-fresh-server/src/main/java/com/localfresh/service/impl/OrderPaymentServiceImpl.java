@@ -102,18 +102,27 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
 
     private void recordPaymentEvent(Orders order, String orderNumber, String eventType, String result,
                                     String providerReference, String rawPayload) {
+        String provider = resolveProvider();
         PaymentEvent paymentEvent = PaymentEvent.builder()
                 .orderId(order == null ? null : order.getId())
                 .orderNumber(orderNumber)
-                .provider(resolveProvider())
+                .provider(provider)
                 .eventType(eventType)
                 .providerReference(providerReference)
+                .idempotencyKey(buildIdempotencyKey(provider, eventType, orderNumber, providerReference))
                 .amount(order == null ? null : order.getAmount())
                 .result(result)
                 .rawPayload(rawPayload)
                 .createdAt(LocalDateTime.now())
                 .build();
         paymentEventMapper.insert(paymentEvent);
+    }
+
+    private String buildIdempotencyKey(String provider, String eventType, String orderNumber, String providerReference) {
+        if (providerReference == null || providerReference.isBlank()) {
+            return String.join(":", provider, eventType, orderNumber);
+        }
+        return String.join(":", provider, eventType, orderNumber, providerReference);
     }
 
     private String resolveProvider() {

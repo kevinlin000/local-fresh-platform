@@ -50,10 +50,12 @@ The current coverage emphasis is the order lifecycle:
 - `OrderPaymentServiceImpl`: provider-neutral payment request creation, demo
   immediate success strategy, payment event recording, duplicate callback,
   concurrent callback race, and invalid transition handling.
-- `PaymentEventMapperTest`: payment-event insert and order-number lookup through
-  the real mapper and H2 schema.
+- `PaymentEventMapperTest`: payment-event insert, order-number lookup, provider
+  trade number filtering, and idempotency-key filtering through the real mapper
+  and H2 schema.
 - `PaymentEventApiTest`: admin payment-event pagination and filtering through
-  the HTTP layer and JWT interceptor.
+  the HTTP layer and JWT interceptor, including provider trade number and
+  idempotency-key query fields.
 - `OrderCancellationServiceImpl`: refund metadata and inventory restoration.
 - `OrderFulfillmentServiceImpl`: admin confirm, delivery, completion, and member
   reminder behavior.

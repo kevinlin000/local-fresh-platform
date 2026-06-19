@@ -118,6 +118,8 @@ CREATE TABLE payment_event (
     provider           VARCHAR(32) NOT NULL,
     event_type         VARCHAR(32) NOT NULL,
     provider_reference VARCHAR(128),
+    provider_trade_no  VARCHAR(128),
+    idempotency_key    VARCHAR(255),
     amount             DECIMAL(10, 2),
     result             VARCHAR(32) NOT NULL,
     raw_payload        VARCHAR(1000),

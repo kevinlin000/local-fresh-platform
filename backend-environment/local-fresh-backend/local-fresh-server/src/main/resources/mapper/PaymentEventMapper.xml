@@ -24,6 +24,12 @@
             <if test="result != null and result != ''">
                 and result = #{result}
             </if>
+            <if test="providerTradeNo != null and providerTradeNo != ''">
+                and provider_trade_no = #{providerTradeNo}
+            </if>
+            <if test="idempotencyKey != null and idempotencyKey != ''">
+                and idempotency_key = #{idempotencyKey}
+            </if>
             <if test="beginTime != null">
                 and created_at &gt;= #{beginTime}
             </if>

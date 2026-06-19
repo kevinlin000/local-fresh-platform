@@ -45,11 +45,11 @@ class PaymentEventApiTest {
     void setUp() {
         jdbcTemplate.update("""
                 insert into payment_event
-                    (order_id, order_number, provider, event_type, provider_reference, amount, result, raw_payload, created_at)
+                    (order_id, order_number, provider, event_type, provider_reference, provider_trade_no, idempotency_key, amount, result, raw_payload, created_at)
                 values
-                    (100, 'ORDER-API-1', 'DEMO', ?, 'demo-paid:ORDER-API-1', 300.00, ?, '{}', '2026-01-02 10:00:00'),
-                    (101, 'ORDER-API-1', 'DEMO', ?, null, 300.00, ?, null, '2026-01-02 10:01:00'),
-                    (102, 'ORDER-API-2', 'ECPAY', ?, 'ecpay:ORDER-API-2', 500.00, ?, '{}', '2026-01-03 10:00:00')
+                    (100, 'ORDER-API-1', 'DEMO', ?, 'demo-paid:ORDER-API-1', null, 'DEMO:REQUEST_CREATED:ORDER-API-1:demo-paid:ORDER-API-1', 300.00, ?, '{}', '2026-01-02 10:00:00'),
+                    (101, 'ORDER-API-1', 'DEMO', ?, null, 'DEMO-TRADE-API-1', 'DEMO:CALLBACK_SUCCEEDED:ORDER-API-1:DEMO-TRADE-API-1', 300.00, ?, null, '2026-01-02 10:01:00'),
+                    (102, 'ORDER-API-2', 'ECPAY', ?, 'ecpay:ORDER-API-2', null, 'ECPAY:REQUEST_CREATED:ORDER-API-2:ecpay:ORDER-API-2', 500.00, ?, '{}', '2026-01-03 10:00:00')
                 """,
                 PaymentEvent.EVENT_REQUEST_CREATED,
                 PaymentEvent.RESULT_PENDING,
@@ -66,18 +66,21 @@ class PaymentEventApiTest {
                         .param("pageSize", "10")
                         .param("orderNumber", "ORDER-API-1")
                         .param("provider", "DEMO")
+                        .param("providerTradeNo", "DEMO-TRADE-API-1")
+                        .param("idempotencyKey", "DEMO:CALLBACK_SUCCEEDED:ORDER-API-1:DEMO-TRADE-API-1")
                         .param("beginTime", "2026-01-01 00:00:00")
                         .param("endTime", "2026-01-05 00:00:00")
                         .header("token", adminToken()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(1))
-                .andExpect(jsonPath("$.data.total").value(2))
+                .andExpect(jsonPath("$.data.total").value(1))
                 .andExpect(jsonPath("$.data.records[0].orderNumber").value("ORDER-API-1"))
                 .andExpect(jsonPath("$.data.records[0].provider").value("DEMO"))
                 .andExpect(jsonPath("$.data.records[0].eventType").value(PaymentEvent.EVENT_CALLBACK_SUCCEEDED))
                 .andExpect(jsonPath("$.data.records[0].result").value(PaymentEvent.RESULT_SUCCEEDED))
-                .andExpect(jsonPath("$.data.records[1].eventType").value(PaymentEvent.EVENT_REQUEST_CREATED))
-                .andExpect(jsonPath("$.data.records[1].providerReference").value("demo-paid:ORDER-API-1"));
+                .andExpect(jsonPath("$.data.records[0].providerTradeNo").value("DEMO-TRADE-API-1"))
+                .andExpect(jsonPath("$.data.records[0].idempotencyKey")
+                        .value("DEMO:CALLBACK_SUCCEEDED:ORDER-API-1:DEMO-TRADE-API-1"));
     }
 
     private String adminToken() {

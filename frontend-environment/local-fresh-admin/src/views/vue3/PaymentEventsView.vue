@@ -10,6 +10,8 @@
 
     <div class="table-toolbar payment-toolbar">
       <el-input v-model="query.orderNumber" clearable placeholder="訂單編號" @keyup.enter="search" />
+      <el-input v-model="query.providerTradeNo" clearable placeholder="交易編號" @keyup.enter="search" />
+      <el-input v-model="query.idempotencyKey" clearable placeholder="冪等鍵" @keyup.enter="search" />
       <el-select v-model="query.provider" clearable placeholder="付款 Provider">
         <el-option v-for="item in providerOptions" :key="item.value" :label="item.label" :value="item.value" />
       </el-select>
@@ -59,8 +61,14 @@
         <el-table-column label="金額" width="105" align="right">
           <template #default="{ row }">{{ currency(row.amount) }}</template>
         </el-table-column>
-        <el-table-column label="Reference" min-width="165">
-          <template #default="{ row }">{{ row.providerReference || '-' }}</template>
+        <el-table-column label="Reference" min-width="220">
+          <template #default="{ row }">
+            <div class="reference-cell">
+              <strong>{{ row.providerReference || '-' }}</strong>
+              <span v-if="row.providerTradeNo">Trade #{{ row.providerTradeNo }}</span>
+              <small v-if="row.idempotencyKey">{{ row.idempotencyKey }}</small>
+            </div>
+          </template>
         </el-table-column>
         <el-table-column label="時間" min-width="165">
           <template #default="{ row }">{{ formatDateTime(row.createdAt) }}</template>
@@ -111,6 +119,8 @@ const page = usePage()
 const { loading, withLoading } = useLoading()
 const query = reactive({
   orderNumber: '',
+  providerTradeNo: '',
+  idempotencyKey: '',
   provider: '',
   eventType: '',
   result: '',
@@ -137,6 +147,8 @@ async function loadData() {
       page: page.page,
       pageSize: page.pageSize,
       orderNumber: query.orderNumber.trim() || undefined,
+      providerTradeNo: query.providerTradeNo.trim() || undefined,
+      idempotencyKey: query.idempotencyKey.trim() || undefined,
       provider: query.provider || undefined,
       eventType: query.eventType || undefined,
       result: query.result || undefined,
@@ -157,6 +169,8 @@ async function search() {
 async function resetQuery() {
   Object.assign(query, {
     orderNumber: '',
+    providerTradeNo: '',
+    idempotencyKey: '',
     provider: '',
     eventType: '',
     result: '',
@@ -263,18 +277,29 @@ onMounted(loadData)
   width: 100%;
 }
 
-.order-cell {
+.order-cell,
+.reference-cell {
   display: grid;
   gap: 2px;
 }
 
-.order-cell strong {
+.order-cell strong,
+.reference-cell strong {
   font-size: 14px;
 }
 
-.order-cell span {
+.order-cell span,
+.reference-cell span,
+.reference-cell small {
   color: var(--admin-muted);
   font-size: 12px;
+}
+
+.reference-cell strong,
+.reference-cell span,
+.reference-cell small {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 900px) {

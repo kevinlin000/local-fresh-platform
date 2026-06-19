@@ -41,6 +41,8 @@ class PaymentEventServiceImplTest {
                 .orderNumber("ORDER-100")
                 .provider("DEMO")
                 .eventType(PaymentEvent.EVENT_CALLBACK_SUCCEEDED)
+                .providerTradeNo("DEMO-TRADE-100")
+                .idempotencyKey("DEMO:CALLBACK_SUCCEEDED:ORDER-100:DEMO-TRADE-100")
                 .amount(new BigDecimal("320.00"))
                 .result(PaymentEvent.RESULT_SUCCEEDED)
                 .build());
@@ -56,5 +58,7 @@ class PaymentEventServiceImplTest {
         assertEquals("DEMO", vo.getProvider());
         assertEquals(PaymentEvent.EVENT_CALLBACK_SUCCEEDED, vo.getEventType());
         assertEquals(PaymentEvent.RESULT_SUCCEEDED, vo.getResult());
+        assertEquals("DEMO-TRADE-100", vo.getProviderTradeNo());
+        assertEquals("DEMO:CALLBACK_SUCCEEDED:ORDER-100:DEMO-TRADE-100", vo.getIdempotencyKey());
     }
 }

@@ -14,8 +14,10 @@ import java.util.List;
 public interface PaymentEventMapper {
 
     @Insert("insert into payment_event " +
-            "(order_id, order_number, provider, event_type, provider_reference, amount, result, raw_payload, created_at) " +
-            "values (#{orderId}, #{orderNumber}, #{provider}, #{eventType}, #{providerReference}, #{amount}, #{result}, #{rawPayload}, #{createdAt})")
+            "(order_id, order_number, provider, event_type, provider_reference, provider_trade_no, idempotency_key, " +
+            "amount, result, raw_payload, created_at) " +
+            "values (#{orderId}, #{orderNumber}, #{provider}, #{eventType}, #{providerReference}, #{providerTradeNo}, " +
+            "#{idempotencyKey}, #{amount}, #{result}, #{rawPayload}, #{createdAt})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     void insert(PaymentEvent paymentEvent);
 

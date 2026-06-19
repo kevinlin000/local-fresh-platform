@@ -163,7 +163,7 @@ Order status transitions are centralized in `OrderStatusTransitionPolicy`, which
 
 The backend now includes focused tests for `OrderServiceImpl`, `OrderPaymentServiceImpl`, `OrderCancellationServiceImpl`, `OrderFulfillmentServiceImpl`, and `OrderStatusTransitionPolicy`. These tests cover payment request creation, payment event recording, duplicate payment callbacks, completed orders that cannot be cancelled, member ownership checks, unpaid rejections that should not refund, and gift-box cancellation restoring component product stock. `local-fresh-server` also produces a JaCoCo HTML report with `mvn -pl local-fresh-server -am verify`; see [docs/testing.md](docs/testing.md) for the repeatable command and report path.
 
-Payment processing also writes a provider-neutral `payment_event` trail for `REQUEST_CREATED`, `CALLBACK_SUCCEEDED`, `CALLBACK_DUPLICATE`, and `CALLBACK_REJECTED`. Admins can query that trail through `GET /admin/paymentEvents/page` by order number, provider, event type, result, and time range. The current demo gateway still completes payments immediately for local demos, but the data model already stores provider, provider reference, amount, raw payload, and processing result so a future ECPay sandbox adapter can reuse the same callback and reconciliation evidence.
+Payment processing also writes a provider-neutral `payment_event` trail for `REQUEST_CREATED`, `CALLBACK_SUCCEEDED`, `CALLBACK_DUPLICATE`, and `CALLBACK_REJECTED`. Admins can query that trail through `GET /admin/paymentEvents/page` by order number, provider, event type, result, provider trade number, idempotency key, and time range. The current demo gateway still completes payments immediately for local demos, but the data model already stores provider, provider reference, provider trade number, idempotency key, amount, raw payload, and processing result so a future ECPay sandbox adapter can reuse the same callback and reconciliation evidence.
 
 The admin console also includes a Payment Events page, so demo reviewers can inspect payment requests, successful callbacks, duplicate callbacks, and rejected callbacks without calling the API manually.
 
@@ -385,7 +385,7 @@ The deployment topology is:
 
 ## Known Limitations
 
-- Payment is still backed by a demo gateway; payment request/callback separation and event recording are implemented, but no real ECPay gateway integration is included yet.
+- Payment is still backed by a demo gateway; payment request/callback separation, event recording, provider trade numbers, and idempotency keys are modeled, but no real ECPay gateway integration is included yet.
 - The admin console now has a polished operations-console baseline, but it does not yet include automated visual regression coverage.
 - The user frontend now covers desktop and mobile responsive basics, but does not yet include cross-browser visual regression testing.
 - Legacy databases need a one-time Flyway baseline; fresh databases can apply migrations directly.
