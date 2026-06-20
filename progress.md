@@ -169,3 +169,17 @@
   - Admin frontend `npm run build` passed.
   - Backend `mvn -pl local-fresh-server -am verify` passed with 135 tests, 0 failures, 0 errors, 5 skipped, and JaCoCo report generation.
   - `git diff --check` passed.
+
+## 2026-06-20 15:09 +0800
+
+- Started Phase 10 backend boundary test hardening after the real-image evidence refresh.
+- Reviewed order lifecycle test coverage:
+  - Payment, cancellation, status transition, and audit-log service tests are already strong.
+  - Group-buy expiry behavior already has Redis/Testcontainers integration coverage.
+  - The focused gap is missing-order guard behavior in `OrderFulfillmentServiceImplTest`.
+- Added service tests for missing-order handling in admin confirm, delivery, completion, and member reminder flows.
+- Updated `docs/testing.md` so the existing `GroupBuyExpirationServiceTest` coverage is visible in the portfolio testing evidence.
+- Verification:
+  - Focused `OrderFulfillmentServiceImplTest` passed with 12 tests.
+  - Backend `mvn -pl local-fresh-server -am verify` passed with 139 tests, 0 failures, 0 errors, 5 skipped, and JaCoCo report generation.
+  - `git diff --check` passed.

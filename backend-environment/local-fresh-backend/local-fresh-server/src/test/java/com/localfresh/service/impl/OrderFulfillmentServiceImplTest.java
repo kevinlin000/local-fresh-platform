@@ -63,6 +63,21 @@ class OrderFulfillmentServiceImplTest {
     }
 
     @Test
+    void confirmShouldRejectMissingOrder() {
+        when(orderMapper.getById(12L)).thenReturn(null);
+
+        OrdersConfirmDTO dto = new OrdersConfirmDTO();
+        dto.setId(12L);
+
+        OrderBusinessException exception = assertThrows(OrderBusinessException.class,
+                () -> orderFulfillmentService.confirm(dto));
+
+        assertEquals(MessageConstant.ORDER_STATUS_ERROR, exception.getMessage());
+        verify(orderMapper, never()).update(any(Orders.class));
+        verifyNoInteractions(adminOperationLogService, webSocketServer);
+    }
+
+    @Test
     void confirmShouldUpdateOnlyWhenOrderIsWaitingForAcceptance() {
         Orders order = orderWithStatus(11L, Orders.TO_BE_CONFIRMED);
         when(orderMapper.getById(11L)).thenReturn(order);
@@ -92,6 +107,18 @@ class OrderFulfillmentServiceImplTest {
     }
 
     @Test
+    void deliveryShouldRejectMissingOrder() {
+        when(orderMapper.getById(42L)).thenReturn(null);
+
+        OrderBusinessException exception = assertThrows(OrderBusinessException.class,
+                () -> orderFulfillmentService.delivery(42L));
+
+        assertEquals(MessageConstant.ORDER_STATUS_ERROR, exception.getMessage());
+        verify(orderMapper, never()).update(any(Orders.class));
+        verifyNoInteractions(adminOperationLogService, webSocketServer);
+    }
+
+    @Test
     void deliveryShouldMoveConfirmedOrderToDeliveryInProgress() {
         Orders order = orderWithStatus(41L, Orders.CONFIRMED);
         when(orderMapper.getById(41L)).thenReturn(order);
@@ -118,6 +145,18 @@ class OrderFulfillmentServiceImplTest {
     }
 
     @Test
+    void completeShouldRejectMissingOrder() {
+        when(orderMapper.getById(52L)).thenReturn(null);
+
+        OrderBusinessException exception = assertThrows(OrderBusinessException.class,
+                () -> orderFulfillmentService.complete(52L));
+
+        assertEquals(MessageConstant.ORDER_STATUS_ERROR, exception.getMessage());
+        verify(orderMapper, never()).update(any(Orders.class));
+        verifyNoInteractions(adminOperationLogService, webSocketServer);
+    }
+
+    @Test
     void completeShouldSetCompletedStatusAndDeliveryTime() {
         Orders order = orderWithStatus(51L, Orders.DELIVERY_IN_PROGRESS);
         when(orderMapper.getById(51L)).thenReturn(order);
@@ -140,6 +179,18 @@ class OrderFulfillmentServiceImplTest {
 
         OrderBusinessException exception = assertThrows(OrderBusinessException.class,
                 () -> orderFulfillmentService.reminder(61L));
+
+        assertEquals(MessageConstant.ORDER_NOT_FOUND, exception.getMessage());
+        verifyNoInteractions(webSocketServer);
+    }
+
+    @Test
+    void reminderShouldRejectMissingOrder() {
+        BaseContext.setCurrentId(100L);
+        when(orderMapper.getById(63L)).thenReturn(null);
+
+        OrderBusinessException exception = assertThrows(OrderBusinessException.class,
+                () -> orderFulfillmentService.reminder(63L));
 
         assertEquals(MessageConstant.ORDER_NOT_FOUND, exception.getMessage());
         verifyNoInteractions(webSocketServer);

@@ -86,3 +86,10 @@
 - Browser acceptance found that `GB-DEMO-ACTIVE` had already expired and been marked failed because the original seed used `NOW() + 18 hours` on June 17. The demo journey needs a refresh migration so reviewer-facing screenshots do not decay over time.
 - The fix is a follow-up migration instead of editing V10/V15, preserving Flyway checksum safety while restoring the reviewer-facing active group-buy journey.
 - The screenshots now use 1280x720 viewports and show the restored PNG product imagery in the storefront/product/cart/group-buy evidence.
+
+## Phase 10 Backend Boundary Test Findings
+
+- The backend already has strong order-lifecycle coverage around payment request/callback handling, cancellation/refund metadata, allowed state transitions, and audit-log persistence.
+- `GroupBuyExpirationServiceTest` already proves the scheduled expiry path with real Redis/Testcontainers behavior: expired active groups are failed, pending group-buy orders are canceled, refund intent is logged, and a held Redisson lock prevents duplicate processing.
+- The smaller gap is explicit fulfillment guard coverage for missing orders. Admin confirm/delivery/complete currently share `OrderStatusTransitionPolicy` and return `ORDER_STATUS_ERROR` when the order is missing; member reminder returns `ORDER_NOT_FOUND` for missing or non-owned orders.
+- This is a good interview-readiness slice because it documents behavior at service boundaries without changing the production flow or adding architecture.
