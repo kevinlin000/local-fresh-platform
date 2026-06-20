@@ -146,3 +146,26 @@
   - `npm run build` passes for admin frontend.
   - README screenshot references point to the committed `docs/screenshots/01-09` PNG files.
   - Legacy-term scan found no old course/platform/login/map/cloud provider terms; the only `Fastjson` matches are historical notes saying it was removed.
+
+## 2026-06-20 13:38 +0800
+
+- Started Phase 9 after user asked to push the portfolio toward 100% completeness for interview readiness.
+- Scope for this slice: refresh screenshot evidence and documentation checks after restoring the user's real food PNG assets.
+- Loaded the planning-with-files and Playwright skills.
+- Confirmed `npx` is available for Playwright CLI workflows.
+- Confirmed working tree was clean on `hardening-and-upgrade` before starting Phase 9.
+- Screenshot attempt found a real demo-data freshness issue: `GB-DEMO-ACTIVE` had been marked failed by the scheduled expiry task because the seed was created on 2026-06-17.
+- Added a new migration plan for `V16__refresh_demo_group_buy_window.sql` and a frontend countdown display tweak so longer demo windows render as days instead of hundreds of hours.
+- Added `V16__refresh_demo_group_buy_window.sql`; local Flyway startup applied it successfully and advanced the schema to v16.
+- Refreshed all 9 committed screenshots under `docs/screenshots/` at 1280x720:
+  - member home, product list, product detail, group-buy detail, cart, and orders
+  - admin dashboard, product management, and order management
+- Visual inspection verified:
+  - `01-home.png` is the top storefront view and shows real PNG product cards.
+  - `04-group-buy.png` shows real pork imagery, `揪團中`, `29 天 23 小時`, and `2/3` progress.
+  - `09-admin-orders.png` shows group-buy preorders and admin fulfillment actions without obvious clipping.
+- Verification:
+  - Member frontend `npm run build` passed.
+  - Admin frontend `npm run build` passed.
+  - Backend `mvn -pl local-fresh-server -am verify` passed with 135 tests, 0 failures, 0 errors, 5 skipped, and JaCoCo report generation.
+  - `git diff --check` passed.

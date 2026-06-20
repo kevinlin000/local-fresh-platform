@@ -76,3 +76,13 @@
   - Product story: local fresh-produce storefront, cart/order flow, and group-buy free-shipping mechanism.
   - Backend story: Spring Boot modularity, transaction boundaries, Redisson lock, Redis/Testcontainers evidence, Flyway, JWT/ThreadLocal cleanup, OAuth, and deployment readiness.
   - Full-stack story: Vue 3 member/admin surfaces, Vite builds, API proxy integration, responsive polish, and real browser acceptance evidence.
+
+## Phase 9 Real-Image Evidence Findings
+
+- The user's real PNG food images live at `/Users/kevinlintingwei/Desktop/local-fresh-images`.
+- Commit `61d7edd` restored these images into both frontends under `public/demo-assets` and added Flyway `V15__use_real_food_images.sql`.
+- A complete evidence refresh should verify screenshots now show the PNG food images, not the earlier SVG placeholders.
+- Because product and gift-box list APIs are cached through Redis, browser acceptance should account for possible stale `product_*` and `giftbox_*` keys before screenshot capture.
+- Browser acceptance found that `GB-DEMO-ACTIVE` had already expired and been marked failed because the original seed used `NOW() + 18 hours` on June 17. The demo journey needs a refresh migration so reviewer-facing screenshots do not decay over time.
+- The fix is a follow-up migration instead of editing V10/V15, preserving Flyway checksum safety while restoring the reviewer-facing active group-buy journey.
+- The screenshots now use 1280x720 viewports and show the restored PNG product imagery in the storefront/product/cart/group-buy evidence.

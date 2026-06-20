@@ -350,6 +350,12 @@ function updateCountdown() {
   const hours = Math.floor(totalSeconds / 3600)
   const minutes = Math.floor((totalSeconds % 3600) / 60)
   const seconds = totalSeconds % 60
+  if (hours >= 24) {
+    const days = Math.floor(hours / 24)
+    const remainingHours = hours % 24
+    countdownText.value = `${days} 天 ${remainingHours} 小時`
+    return
+  }
   if (hours >= 1) {
     countdownText.value = `${hours} 小時 ${minutes} 分`
     return
