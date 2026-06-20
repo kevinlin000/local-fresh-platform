@@ -130,3 +130,10 @@
 - README already had a Roadmap section, but it mixed completed milestones, active ideas, and cloud/CD topics without a clear priority model.
 - A durable roadmap document is useful because it separates interview-readiness from true production completeness. This prevents the project from chasing impossible "100%" scope while still showing mature judgment.
 - Current best next implementation slice after this roadmap is inventory idempotency design/testing, not cloud deployment. ECPay sandbox and CD remain valuable but should come after core local flow and evidence stay stable.
+
+## Phase 15 Inventory Idempotency Findings
+
+- `InventoryServiceImpl.restoreProduct` increases stock every time it is called and writes a positive `product_inventory_log` row.
+- Normal controller/service flows usually prevent a second cancellation through order status policy, but a stale service call or retry can still call `OrderCancellationServiceImpl.cancelOrder` with an old paid order object.
+- `product_inventory_log` already records `reference_type`, `reference_id`, and `reason`, which is enough for a lightweight service-level duplicate-cancellation guard without adding a new schema concept.
+- The pragmatic slice is to make order cancellation transactional and skip the cancellation workflow if the order is already cancelled or if an `ORDER_CANCEL_RESTORE` log already exists for that order.

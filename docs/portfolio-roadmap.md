@@ -14,7 +14,7 @@
 | 訂單生命週期 | 狀態轉移集中在 `OrderStatusTransitionPolicy`，付款、取消、婉拒、配送、完成都有 service 測試。 | 強 |
 | 付款邊界 | Demo gateway、ECPay CheckMacValue parser、callback endpoint、付款事件表、前端 POST form 導轉骨架已完成。 | 強，但缺真 sandbox 端到端驗證 |
 | 揪團併發 | Redisson lock、transaction boundary、唯一鍵、Testcontainers Redis、JMeter 證據已具備。 | 強 |
-| 庫存一致性 | 一般訂單與取消還庫存已有測試，商品管理邊界已補強。 | 中強 |
+| 庫存一致性 | 一般訂單、取消還庫存、商品管理邊界與重複取消防線已有測試。 | 強 |
 | 測試證據 | 後端 service/integration/Redis 測試、JaCoCo、前端 build、手動 Playwright 截圖證據已整理。 | 強 |
 | UI/UX | 已完成產品級 polish；不像最初的小 demo，但仍不是設計系統等級產品。 | 足夠面試 |
 | 部署 | 已有 AWS EC2 + Nginx + Docker MySQL/Redis + S3 + CloudFront + DuckDNS 作品級部署敘事。 | 足夠面試 |
@@ -77,20 +77,22 @@
 
 ## Current Next Step Recommendation
 
-下一個最值得做的切面是 **庫存異動 idempotency 設計與最小測試**。
+下一個最值得做的切面是 **可觀測性最小切面**。
 
 理由：
 
-- 付款 callback 與訂單狀態機已經補強。
-- 面試官若繼續追交易一致性，下一個問題通常會是「退款/取消時庫存會不會重複還？」。
-- 這能延續後端深度，又不需要外部服務或雲端環境。
+- 付款 callback、訂單狀態機與取消還庫存防重已經補強。
+- 面試官若繼續追 production thinking，下一個自然問題是「你怎麼知道系統現在健康？怎麼看付款 callback、揪團與訂單狀態流轉是否異常？」。
+- 這能補上營運可見度，又不需要立刻進入完整雲端 CD 或多服務架構。
 
 建議做法：
 
-- 先盤點 `product_inventory_log` 是否已有唯一業務鍵或可推導的防重條件。
-- 補一份小型設計說明，定義哪些操作需要 idempotency：下單 reserve、會員取消 restore、管理端取消 restore、揪團失敗 restore。
-- 若現有 schema 不適合立刻加唯一鍵，先補 service 測試與文件，避免硬改資料模型。
-- 只有在確認不破壞現有流程後，再考慮 migration。
+- 先盤點現有 Actuator 設定，不改部署架構。
+- 補少量業務 metrics，例如付款 callback 成功/拒絕/重複、訂單取消防重命中、揪團成功/失敗。
+- 在 `docs/testing.md` 或 architecture docs 補上如何本機查看這些 metrics。
+- 不急著引入完整 Prometheus/Grafana；先把應用層 metrics 定義清楚。
+
+剛完成的本地切面是取消訂單的 service-level 防重：若訂單已取消，或該訂單已存在 `ORDER_CANCEL_RESTORE` 庫存回補紀錄，取消流程會直接跳過，避免重複退款與重複還庫存。這不是取代資料庫唯一鍵的最終方案，但符合本作品目前的務實範圍。
 
 ## How To Use This Roadmap
 

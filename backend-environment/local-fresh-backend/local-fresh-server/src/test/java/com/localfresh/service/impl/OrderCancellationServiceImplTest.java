@@ -6,6 +6,7 @@ import com.localfresh.entity.Orders;
 import com.localfresh.mapper.GiftBoxProductMapper;
 import com.localfresh.mapper.OrderDetailMapper;
 import com.localfresh.mapper.OrderMapper;
+import com.localfresh.mapper.ProductInventoryLogMapper;
 import com.localfresh.service.InventoryService;
 import com.localfresh.service.payment.PaymentGateway;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,9 @@ class OrderCancellationServiceImplTest {
 
     @Mock
     private GiftBoxProductMapper giftBoxProductMapper;
+
+    @Mock
+    private ProductInventoryLogMapper productInventoryLogMapper;
 
     @Mock
     private InventoryService inventoryService;
@@ -110,5 +114,42 @@ class OrderCancellationServiceImplTest {
 
         verify(inventoryService).restoreProduct(40L, 6, "ORDER_CANCEL_RESTORE", 12L, "MEMBER", 3L);
         verify(inventoryService).restoreProduct(41L, 2, "ORDER_CANCEL_RESTORE", 12L, "MEMBER", 3L);
+    }
+
+    @Test
+    void cancelOrder_skipsDuplicateWhenOrderIsAlreadyCancelled() throws Exception {
+        Orders staleOrder = new Orders();
+        staleOrder.setId(13L);
+        staleOrder.setNumber("ORDER-013");
+        staleOrder.setPayStatus(Orders.PAID);
+        staleOrder.setAmount(new BigDecimal("199.00"));
+        Orders cancelledOrder = new Orders();
+        cancelledOrder.setId(13L);
+        cancelledOrder.setStatus(Orders.CANCELLED);
+        when(orderMapper.getById(13L)).thenReturn(cancelledOrder);
+
+        orderCancellationService.cancelOrder(staleOrder, "重複取消", null, "ADMIN", 4L);
+
+        verify(paymentGateway, never()).refund(staleOrder, "重複取消");
+        verify(orderMapper, never()).update(org.mockito.ArgumentMatchers.any(Orders.class));
+        verify(orderDetailMapper, never()).getByOrderId(13L);
+    }
+
+    @Test
+    void cancelOrder_skipsDuplicateWhenRestoreLogAlreadyExists() throws Exception {
+        Orders order = new Orders();
+        order.setId(14L);
+        order.setNumber("ORDER-014");
+        order.setPayStatus(Orders.PAID);
+        order.setAmount(new BigDecimal("288.00"));
+        when(orderMapper.getById(14L)).thenReturn(order);
+        when(productInventoryLogMapper.countByReferenceAndReason("ORDER", 14L, "ORDER_CANCEL_RESTORE"))
+                .thenReturn(1);
+
+        orderCancellationService.cancelOrder(order, "重複取消", null, "ADMIN", 5L);
+
+        verify(paymentGateway, never()).refund(order, "重複取消");
+        verify(orderMapper, never()).update(org.mockito.ArgumentMatchers.any(Orders.class));
+        verify(orderDetailMapper, never()).getByOrderId(14L);
     }
 }

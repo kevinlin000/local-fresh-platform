@@ -4,6 +4,7 @@ import com.localfresh.entity.ProductInventoryLog;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
@@ -19,4 +20,10 @@ public interface ProductInventoryLogMapper {
 
     @Select("select * from product_inventory_log where product_id = #{productId} order by created_at asc, id asc")
     List<ProductInventoryLog> listByProductId(Long productId);
+
+    @Select("select count(id) from product_inventory_log " +
+            "where reference_type = #{referenceType} and reference_id = #{referenceId} and reason = #{reason}")
+    int countByReferenceAndReason(@Param("referenceType") String referenceType,
+                                  @Param("referenceId") Long referenceId,
+                                  @Param("reason") String reason);
 }

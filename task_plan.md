@@ -30,6 +30,7 @@ Raise `local-fresh-platform` to an interview-ready Java backend/fullstack portfo
 | 12. Frontend first-impression polish | completed | Reduce AI/demo feel by improving grocery merchandising, group-buy decision hierarchy, and admin dashboard demo activity. |
 | 13. Payment lifecycle evidence hardening | completed | Tighten order/payment lifecycle guards, remove stale bypasses, and align docs with the implemented refund model. |
 | 14. Portfolio roadmap and next-step assessment | completed | Add a durable completeness matrix and next-priority roadmap so each future slice has an explicit evaluation basis. |
+| 15. Inventory idempotency guard | completed | Add a small service-level duplicate-cancellation guard so repeated cancellation cannot refund or restore stock twice. |
 
 ## Constraints
 

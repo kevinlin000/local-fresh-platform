@@ -67,7 +67,8 @@ The current coverage emphasis is the order lifecycle:
 - `PaymentEventApiTest`: admin payment-event pagination and filtering through
   the HTTP layer and JWT interceptor, including provider trade number and
   idempotency-key query fields.
-- `OrderCancellationServiceImpl`: refund metadata and inventory restoration.
+- `OrderCancellationServiceImpl`: refund metadata, inventory restoration, and
+  duplicate-cancellation guards that avoid repeated refunds or stock restores.
 - `OrderFulfillmentServiceImpl`: admin confirm, delivery, completion, and member
   reminder behavior, including missing-order guard behavior.
 - `GroupBuyExpirationServiceTest`: expired active groups fail, pending group-buy

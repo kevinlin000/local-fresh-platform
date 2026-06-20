@@ -412,9 +412,9 @@ scripts/check-ecpay-sandbox-readiness.sh
 
 For the current completeness assessment and next-priority plan, see
 [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md). The project is already
-interview-ready for its core Java backend story; the next local slice should
-focus on inventory idempotency before full ECPay sandbox verification or CD
-automation.
+interview-ready for its core Java backend story; after the local inventory
+idempotency guard, the next local slice should focus on minimal business
+observability before full ECPay sandbox verification or CD automation.
 
 ## License
 

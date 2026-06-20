@@ -6,12 +6,14 @@ import com.localfresh.entity.Orders;
 import com.localfresh.mapper.GiftBoxProductMapper;
 import com.localfresh.mapper.OrderDetailMapper;
 import com.localfresh.mapper.OrderMapper;
+import com.localfresh.mapper.ProductInventoryLogMapper;
 import com.localfresh.service.InventoryService;
 import com.localfresh.service.OrderCancellationService;
 import com.localfresh.service.payment.PaymentGateway;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,6 +23,7 @@ import java.util.List;
 public class OrderCancellationServiceImpl implements OrderCancellationService {
 
     private static final String INVENTORY_REASON_ORDER_CANCEL_RESTORE = "ORDER_CANCEL_RESTORE";
+    private static final String INVENTORY_REFERENCE_ORDER = "ORDER";
 
     @Autowired
     private OrderMapper orderMapper;
@@ -32,14 +35,23 @@ public class OrderCancellationServiceImpl implements OrderCancellationService {
     private GiftBoxProductMapper giftBoxProductMapper;
 
     @Autowired
+    private ProductInventoryLogMapper productInventoryLogMapper;
+
+    @Autowired
     private InventoryService inventoryService;
 
     @Autowired
     private PaymentGateway paymentGateway;
 
     @Override
+    @Transactional
     public void cancelOrder(Orders ordersDB, String cancelReason, String rejectionReason,
                             String operatorType, Long operatorId) throws Exception {
+        if (isCancellationAlreadyApplied(ordersDB.getId())) {
+            log.info("Skip duplicate order cancellation: orderId={}", ordersDB.getId());
+            return;
+        }
+
         Orders orders = new Orders();
         orders.setId(ordersDB.getId());
         orders.setStatus(Orders.CANCELLED);
@@ -54,6 +66,15 @@ public class OrderCancellationServiceImpl implements OrderCancellationService {
 
         orderMapper.update(orders);
         restoreProductStock(ordersDB.getId(), operatorType, operatorId);
+    }
+
+    private boolean isCancellationAlreadyApplied(Long orderId) {
+        Orders latestOrder = orderMapper.getById(orderId);
+        if (latestOrder != null && Orders.CANCELLED.equals(latestOrder.getStatus())) {
+            return true;
+        }
+        return productInventoryLogMapper.countByReferenceAndReason(INVENTORY_REFERENCE_ORDER, orderId,
+                INVENTORY_REASON_ORDER_CANCEL_RESTORE) > 0;
     }
 
     private void restoreProductStock(Long orderId, String operatorType, Long operatorId) {

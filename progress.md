@@ -248,3 +248,21 @@
   - Confirmed `docs/portfolio-roadmap.md` is linked from `README.md`, `README.en.md`, and `docs/interview-guide.md`.
   - `git diff --check` passed.
   - No backend/frontend build was run because this slice only changes documentation and planning files.
+
+## 2026-06-20 16:35 +0800
+
+- Started Phase 15 inventory idempotency guard after the roadmap recommended this as the next local backend slice.
+- Inspected `InventoryServiceImpl`, `OrderCancellationServiceImpl`, `ProductInventoryLogMapper`, migration `V8__add_product_inventory_log.sql`, and related order/group-buy inventory tests.
+- Found that inventory logs already carry `reference_type`, `reference_id`, and `reason`, so a small duplicate-cancellation guard can reuse existing data instead of adding a new table or event-sourcing layer.
+- Implemented a service-level duplicate guard:
+  - `OrderCancellationServiceImpl.cancelOrder` is now transactional.
+  - It skips cancellation if the order is already `CANCELLED`.
+  - It also skips if an `ORDER_CANCEL_RESTORE` inventory log already exists for the order reference.
+  - This prevents repeated refunds, order updates, and stock restores for stale duplicate cancellation attempts.
+- Added unit tests for already-cancelled and restore-log-exists duplicate cancellation cases.
+- Verification:
+  - Focused `OrderCancellationServiceImplTest` passed with 5 tests.
+  - Backend `mvn -pl local-fresh-server -am verify` passed with 148 tests, 0 failures, 0 errors, 5 skipped, and JaCoCo report generation.
+- Follow-up assessment:
+  - Inventory idempotency is now covered at the service level for repeated order cancellation.
+  - The next best local slice is minimal business observability: expose or document a few application metrics before moving to ECPay sandbox or deployment automation.

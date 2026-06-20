@@ -466,7 +466,7 @@ scripts/check-ecpay-sandbox-readiness.sh
 
 ### 進行中
 
-- **庫存異動 idempotency 補強**:付款請求與 callback 邊界已補強,下一步可針對下單 reserve、會員取消 restore、管理端取消 restore、揪團失敗 restore 盤點防重條件,避免重複取消或重複回補庫存。
+- **可觀測性最小切面**:核心交易與庫存防重已補強,下一步可補少量業務 metrics,例如付款 callback 結果、訂單取消防重命中、揪團成功/失敗,先建立 production thinking,不急著導入完整 Grafana stack。
 
 ### 規劃中
 
@@ -478,6 +478,7 @@ scripts/check-ecpay-sandbox-readiness.sh
 
 - 揪團分散式鎖壓測證據:100 concurrent join JMeter 壓測,`joinGroupBuy` error rate `0.00%`, P95 `2847.65 ms`, DB 最終 `current_count=101 / participant=100`
 - 訂單生命週期測試證據:`OrderStatusTransitionPolicy` 集中管理狀態轉移,核心 Order service 測試涵蓋付款、取消、婉拒、配送、完成與還庫存,並可用 JaCoCo 產生本地覆蓋率報告
+- 庫存異動防重:取消訂單時若已取消或已有 `ORDER_CANCEL_RESTORE` 庫存回補紀錄,service 會跳過重複退款、訂單更新與庫存回補
 - 管理端操作 Audit Log:訂單確認、婉拒、取消、配送、完成與商品手動庫存調整會寫入 `admin_operation_log`,並提供分頁查詢 API 與後台「操作紀錄」頁,保留操作前後值、原因與操作者
 - 雙端產品級 UI polish:會員端採買流程、商品詳情、購物車、訂單頁與管理端 dashboard / products / orders 已完成新版截圖與 README 同步
 - 揪團發起 / 加入 / 取消 / 過期失敗回滾完整流程
