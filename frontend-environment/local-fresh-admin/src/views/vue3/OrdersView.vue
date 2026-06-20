@@ -1,10 +1,30 @@
 <template>
   <section class="admin-card admin-card-pad">
+    <div class="ops-header">
+      <div>
+        <p class="eyebrow">營運隊列</p>
+        <h2>訂單履約工作台</h2>
+        <span>先處理待確認，再推進配送與完成，避免訂單卡在中間狀態。</span>
+      </div>
+      <div class="ops-header-actions">
+        <el-button @click="clearFilters">清除條件</el-button>
+        <el-button type="primary" plain @click="loadData">重新整理</el-button>
+      </div>
+    </div>
+
     <div class="order-stats">
-      <div v-for="item in statCards" :key="item.label" class="order-stat">
+      <button
+        v-for="item in statCards"
+        :key="item.label"
+        class="order-stat"
+        :class="{ active: query.status === item.status }"
+        type="button"
+        @click="filterByStatus(item.status)"
+      >
         <span>{{ item.label }}</span>
         <strong>{{ item.value }}</strong>
-      </div>
+        <small>{{ item.caption }}</small>
+      </button>
     </div>
 
     <div class="table-toolbar">
@@ -15,20 +35,52 @@
       <el-button type="primary" @click="loadData">查詢</el-button>
     </div>
 
+    <el-alert
+      v-if="activeStatusLabel"
+      class="filter-alert"
+      type="info"
+      show-icon
+      :closable="false"
+      :title="`目前篩選：${activeStatusLabel}。${activeStatusHint}`"
+    />
+
     <el-table v-loading="loading" :data="rows" stripe>
-      <el-table-column prop="number" label="訂單編號" min-width="190" />
-      <el-table-column prop="consignee" label="收件人" min-width="110" />
-      <el-table-column prop="phone" label="電話" min-width="130" />
-      <el-table-column prop="amount" label="金額" width="110" />
-      <el-table-column label="狀態" width="130">
+      <el-table-column label="訂單" min-width="180">
         <template #default="{ row }">
-          <el-tag>{{ statusText(row.status) }}</el-tag>
+          <div class="order-identity">
+            <strong>{{ row.number }}</strong>
+            <span>{{ orderKind(row) }}</span>
+          </div>
         </template>
       </el-table-column>
-      <el-table-column prop="orderTime" label="下單時間" min-width="180" />
-      <el-table-column label="操作" fixed="right" width="280">
+      <el-table-column prop="consignee" label="收件人" width="100" />
+      <el-table-column prop="phone" label="電話" width="118" />
+      <el-table-column label="金額" width="100">
+        <template #default="{ row }">{{ money(row.amount) }}</template>
+      </el-table-column>
+      <el-table-column label="狀態" width="110">
         <template #default="{ row }">
-          <el-button link type="primary" @click="openDetail(row)">詳情</el-button>
+          <el-tag :type="statusType(row.status)">{{ statusText(row.status) }}</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="履約判斷" min-width="170">
+        <template #default="{ row }">
+          <div class="fulfillment-tags">
+            <el-tag
+              v-for="item in fulfillmentTags(row)"
+              :key="item.label"
+              :type="item.type"
+              effect="plain"
+            >
+              {{ item.label }}
+            </el-tag>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column prop="orderTime" label="下單時間" width="160" />
+      <el-table-column label="下一步" fixed="right" width="260">
+        <template #default="{ row }">
+          <el-button link type="primary" @click="openDetail(row)">檢視</el-button>
           <el-button v-if="row.status === 2" link type="success" @click="accept(row)">確認</el-button>
           <el-button v-if="row.status === 2" link type="danger" @click="openReason(row, 'reject')">婉拒</el-button>
           <el-button v-if="[2, 3].includes(row.status)" link type="warning" @click="openReason(row, 'cancel')">取消</el-button>
@@ -118,13 +170,94 @@ const reason = ref('')
 const activeOrder = ref<any>(null)
 
 const statCards = computed(() => [
-  { label: '待確認', value: statistics.value.toBeConfirmed ?? 0 },
-  { label: '已確認', value: statistics.value.confirmed ?? 0 },
-  { label: '配送中', value: statistics.value.deliveryInProgress ?? 0 }
+  { label: '待確認', value: statistics.value.toBeConfirmed ?? 0, status: 2, caption: '需要接單或婉拒' },
+  { label: '已確認', value: statistics.value.confirmed ?? 0, status: 3, caption: '準備出貨配送' },
+  { label: '配送中', value: statistics.value.deliveryInProgress ?? 0, status: 4, caption: '等待完成回報' }
 ])
 
 function statusText(status: number) {
   return statuses.find(item => item.value === status)?.label || '未知'
+}
+
+const activeStatusLabel = computed(() => {
+  return query.status ? statusText(query.status) : ''
+})
+
+const activeStatusHint = computed(() => {
+  const hints: Record<number, string> = {
+    2: '請優先確認是否可履約。',
+    3: '請安排配送或取消例外訂單。',
+    4: '請確認是否已完成送達。',
+    5: '可用於核對今日完成量。',
+    6: '可用於追蹤取消原因。'
+  }
+  return query.status ? hints[query.status] || '請依狀態檢查下一步。' : ''
+})
+
+function money(value: number | string | undefined) {
+  return `$${Number(value || 0).toFixed(2)}`
+}
+
+function statusType(status: number) {
+  const types: Record<number, 'success' | 'warning' | 'info' | 'danger'> = {
+    1: 'warning',
+    2: 'danger',
+    3: 'warning',
+    4: 'warning',
+    5: 'success',
+    6: 'info',
+    7: 'info',
+    8: 'warning'
+  }
+  return types[status] || 'info'
+}
+
+function orderKind(row: any) {
+  if (row.orderType === 2 || row.type === 2 || row.status === 8) {
+    return '揪團預訂'
+  }
+  return '一般配送'
+}
+
+function fulfillmentTags(row: any) {
+  const tags: Array<{ label: string; type: 'success' | 'warning' | 'info' | 'danger' }> = []
+  if (row.status === 2) {
+    tags.push({ label: '優先確認', type: 'danger' })
+  } else if (row.status === 3) {
+    tags.push({ label: '可安排配送', type: 'warning' })
+  } else if (row.status === 4) {
+    tags.push({ label: '待完成回報', type: 'warning' })
+  } else if (row.status === 5) {
+    tags.push({ label: '已履約', type: 'success' })
+  } else if (row.status === 6) {
+    tags.push({ label: '已結案', type: 'info' })
+  } else if (row.status === 8) {
+    tags.push({ label: '等候成團', type: 'warning' })
+  }
+
+  if (!row.phone || !row.consignee) {
+    tags.push({ label: '聯絡資訊不足', type: 'danger' })
+  }
+  if (!row.address) {
+    tags.push({ label: '需核對地址', type: 'warning' })
+  }
+  if (tags.length === 0) {
+    tags.push({ label: '待檢視', type: 'info' })
+  }
+  return tags
+}
+
+function filterByStatus(status: number) {
+  query.status = query.status === status ? undefined : status
+  page.page = 1
+  void loadData()
+}
+
+function clearFilters() {
+  query.number = ''
+  query.status = undefined
+  page.page = 1
+  void loadData()
 }
 
 function getErrorMessage(error: unknown) {
@@ -276,25 +409,121 @@ onMounted(async () => {
   margin-bottom: 18px;
 }
 
+.ops-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.ops-header h2 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+.ops-header span {
+  display: block;
+  margin-top: 6px;
+  color: var(--admin-muted);
+  font-size: 13px;
+}
+
+.ops-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: var(--admin-green);
+  font-weight: 800;
+}
+
 .order-stat {
+  width: 100%;
   padding: 18px;
   border: 1px solid var(--admin-line);
   border-radius: 8px;
   background: #f8faf7;
+  color: var(--admin-ink);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
 }
 
-.order-stat span {
+.order-stat:hover,
+.order-stat.active {
+  border-color: rgba(45, 106, 79, 0.34);
+  background: #f1f6f0;
+}
+
+.order-stat.active {
+  box-shadow: inset 3px 0 0 var(--admin-green);
+}
+
+.order-stat span,
+.order-stat small {
   display: block;
   color: var(--admin-muted);
 }
 
 .order-stat strong {
   display: block;
-  margin-top: 8px;
+  margin: 8px 0 4px;
   font-size: 26px;
+}
+
+.filter-alert {
+  margin-bottom: 14px;
+}
+
+.order-identity {
+  display: grid;
+  gap: 4px;
+}
+
+.order-identity strong {
+  font-weight: 800;
+}
+
+.order-identity span {
+  color: var(--admin-muted);
+  font-size: 12px;
+}
+
+.fulfillment-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .detail-table {
   margin-top: 18px;
+}
+
+@media (max-width: 900px) {
+  .ops-header {
+    display: grid;
+  }
+
+  .ops-header-actions {
+    justify-content: flex-start;
+  }
+
+  .order-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .order-stat {
+    padding: 12px;
+  }
+
+  .order-stat strong {
+    font-size: 22px;
+  }
 }
 </style>

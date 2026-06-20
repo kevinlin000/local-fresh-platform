@@ -313,6 +313,33 @@
   - `npm run smoke:local` passed against backend `8080`, member `5176`, and admin `5177`: 9 checks.
   - `npm run smoke:browser` passed: 2 tests, 0 failures.
 
+## 2026-06-20 23:45 +0800
+
+- Started Phase 21 admin operations polish after the member commerce polish made the storefront stronger than the admin core workflows.
+- Re-read planning files, project context, roadmap, and admin Vue3 dashboard/orders/products pages.
+- Scope decision:
+  - Do not add backend APIs or database changes for this slice.
+  - Use existing order statistics, order list, product stock, product status, and product quality fields.
+  - Improve orders/products first because dashboard already had operations data, while the list pages still felt like CRUD tables.
+- Implemented admin order work-queue polish:
+  - Added an operations header and refresh/clear actions.
+  - Changed status summary cards into clickable queues for pending confirmation, confirmed, and in-delivery orders.
+  - Added row-level fulfillment judgment tags such as priority confirmation, ready for delivery, waiting completion, fulfilled, closed, and group-buy pending.
+  - Reduced table column widths after browser inspection found desktop overflow.
+- Implemented admin product workbench polish:
+  - Added a product health header and refresh/clear actions.
+  - Changed summary cards into filter controls for on-sale, low-stock, content-work, and off-sale products.
+  - Added stock-level display with threshold and progress bar.
+  - Added product description preview and operational tags for stock, image, and description completeness.
+  - Tightened mobile summary cards to reduce vertical sprawl before the table.
+- Verification so far:
+  - Admin frontend `npm run build` passed before browser inspection.
+  - Playwright browser inspection covered admin orders and products on desktop, then products on mobile.
+  - Admin frontend `npm run build` passed again after responsive adjustments.
+  - `npm run smoke:local` passed against backend `8080`, member `5176`, and admin `5177`: 9 checks.
+  - `npm run smoke:browser` passed: 2 tests, 0 failures.
+  - `git diff --check` passed.
+
 ## 2026-06-20 16:05 +0800
 
 - Started Phase 13 payment lifecycle evidence hardening.

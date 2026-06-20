@@ -1,11 +1,30 @@
 <template>
   <section class="admin-card admin-card-pad">
+    <div class="ops-header">
+      <div>
+        <p class="eyebrow">商品健檢</p>
+        <h2>可售狀態與補貨工作台</h2>
+        <span>把低庫存、缺圖文、下架品項先浮上來，降低會員端看到不可售或資訊不足商品的機率。</span>
+      </div>
+      <div class="ops-header-actions">
+        <el-button @click="clearFilters">清除條件</el-button>
+        <el-button type="primary" plain @click="loadData">重新整理</el-button>
+      </div>
+    </div>
+
     <div class="product-summary">
-      <div v-for="item in summaryCards" :key="item.label" class="summary-card">
+      <button
+        v-for="item in summaryCards"
+        :key="item.label"
+        class="summary-card"
+        :class="{ active: activeSummaryKey === item.key }"
+        type="button"
+        @click="applySummaryFilter(item.key)"
+      >
         <span>{{ item.label }}</span>
         <strong>{{ item.value }}</strong>
         <small>{{ item.caption }}</small>
-      </div>
+      </button>
     </div>
 
     <div class="table-toolbar">
@@ -28,13 +47,32 @@
       title="目前只顯示低庫存商品，請優先補貨或調整庫存。"
     />
 
-    <el-table v-loading="loading" :data="rows" stripe>
-      <el-table-column prop="productName" label="商品名稱" min-width="150" />
-      <el-table-column prop="categoryName" label="分類" width="110" />
-      <el-table-column prop="price" label="價格" width="90" />
-      <el-table-column label="庫存" width="100">
+    <el-table v-loading="loading" :data="displayRows" stripe>
+      <el-table-column label="商品" min-width="210">
         <template #default="{ row }">
-          <span :class="{ 'stock-warning': isLowStock(row) }">{{ row.stock ?? 0 }}</span>
+          <div class="product-cell">
+            <strong>{{ row.productName }}</strong>
+            <span>{{ row.description || '尚未補商品描述' }}</span>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column prop="categoryName" label="分類" width="110" />
+      <el-table-column label="價格" width="100">
+        <template #default="{ row }">{{ money(row.price) }}</template>
+      </el-table-column>
+      <el-table-column label="庫存水位" min-width="180">
+        <template #default="{ row }">
+          <div class="stock-cell">
+            <div>
+              <span :class="{ 'stock-warning': isLowStock(row) }">{{ row.stock ?? 0 }}</span>
+              <small>門檻 {{ row.lowStockThreshold ?? 0 }}</small>
+            </div>
+            <el-progress
+              :percentage="stockPercentage(row)"
+              :status="isLowStock(row) ? 'exception' : 'success'"
+              :show-text="false"
+            />
+          </div>
         </template>
       </el-table-column>
       <el-table-column label="狀態" width="100">
@@ -42,7 +80,7 @@
           <el-tag :type="row.status === 1 ? 'success' : 'info'">{{ row.status === 1 ? '上架' : '下架' }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="上架品質" min-width="150">
+      <el-table-column label="營運判斷" min-width="220">
         <template #default="{ row }">
           <div class="quality-tags">
             <el-tag
@@ -244,6 +282,7 @@ const form = reactive({
   lowStockThreshold: 10
 })
 const specs = ref<Array<{ name: string; value: string }>>([])
+const activeSummaryKey = ref<'onSale' | 'lowStock' | 'needsWork' | 'offSale' | ''>('')
 
 const rules: FormRules = {
   productName: [{ required: true, message: '請輸入商品名稱', trigger: 'blur' }],
@@ -259,16 +298,24 @@ const inventoryAdjustRules: FormRules = {
   reason: [{ required: true, message: '請輸入庫存調整原因', trigger: 'blur' }]
 }
 
+const displayRows = computed(() => {
+  if (activeSummaryKey.value !== 'needsWork') {
+    return rows.value
+  }
+  return rows.value.filter((item) => needsContentWork(item))
+})
+
 const summaryCards = computed(() => {
   const onSale = rows.value.filter((item) => item.status === 1).length
   const offSale = rows.value.filter((item) => item.status !== 1).length
-  const needsWork = rows.value.filter((item) => productQuality(item).some((quality) => quality.type === 'warning')).length
+  const needsWork = rows.value.filter((item) => needsContentWork(item)).length
   const lowStock = rows.value.filter((item) => isLowStock(item)).length
 
   return [
-    { label: '本頁上架', value: onSale, caption: '目前可被會員購買' },
-    { label: '低庫存', value: lowStock, caption: '低於警示門檻' },
-    { label: '需補資料', value: needsWork, caption: '缺圖或缺描述' }
+    { key: 'onSale' as const, label: '本頁上架', value: onSale, caption: '目前可被會員購買' },
+    { key: 'lowStock' as const, label: '低庫存', value: lowStock, caption: '低於警示門檻' },
+    { key: 'needsWork' as const, label: '需補資料', value: needsWork, caption: '缺圖或缺描述' },
+    { key: 'offSale' as const, label: '本頁下架', value: offSale, caption: '會員端不可購買' }
   ]
 })
 
@@ -291,10 +338,16 @@ function applyRouteQuery() {
   const routeStatus = Number(route.query.status)
   query.status = Number.isFinite(routeStatus) && routeStatus >= 0 ? routeStatus : undefined
   query.lowStock = route.query.lowStock === '1'
+  activeSummaryKey.value = query.lowStock ? 'lowStock' : query.status === 1 ? 'onSale' : query.status === 0 ? 'offSale' : ''
 }
 
 function productQuality(row: any) {
   const tags: Array<{ label: string; type: 'success' | 'warning' | 'info' }> = []
+  if (isLowStock(row)) {
+    tags.push({ label: '需補貨', type: 'warning' })
+  } else {
+    tags.push({ label: '庫存正常', type: 'success' })
+  }
   if (row.image) {
     tags.push({ label: '有圖片', type: 'success' })
   } else {
@@ -310,6 +363,48 @@ function productQuality(row: any) {
 
 function isLowStock(row: any) {
   return Number(row.stock ?? 0) <= Number(row.lowStockThreshold ?? 0)
+}
+
+function needsContentWork(row: any) {
+  return !row.image || !row.description
+}
+
+function stockPercentage(row: any) {
+  const stock = Number(row.stock ?? 0)
+  const threshold = Math.max(Number(row.lowStockThreshold ?? 0), 1)
+  return Math.min(Math.round((stock / (threshold * 3)) * 100), 100)
+}
+
+function money(value: number | string | undefined) {
+  return `$${Number(value || 0).toFixed(2)}`
+}
+
+function applySummaryFilter(key: 'onSale' | 'lowStock' | 'needsWork' | 'offSale') {
+  activeSummaryKey.value = activeSummaryKey.value === key ? '' : key
+  if (activeSummaryKey.value === 'lowStock') {
+    query.lowStock = true
+    query.status = undefined
+  } else if (activeSummaryKey.value === 'onSale') {
+    query.status = 1
+    query.lowStock = false
+  } else if (activeSummaryKey.value === 'offSale') {
+    query.status = 0
+    query.lowStock = false
+  } else {
+    query.status = undefined
+    query.lowStock = false
+  }
+  page.page = 1
+  void loadData()
+}
+
+function clearFilters() {
+  query.name = ''
+  query.status = undefined
+  query.lowStock = false
+  activeSummaryKey.value = ''
+  page.page = 1
+  void loadData()
 }
 
 async function toggleStatus(row: any) {
@@ -519,16 +614,65 @@ onMounted(async () => {
 <style scoped>
 .product-summary {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 18px;
 }
 
+.ops-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.ops-header h2 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+.ops-header span {
+  display: block;
+  margin-top: 6px;
+  color: var(--admin-muted);
+  font-size: 13px;
+}
+
+.ops-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: var(--admin-green);
+  font-weight: 800;
+}
+
 .summary-card {
+  width: 100%;
   padding: 16px;
   border: 1px solid var(--admin-line);
   border-radius: 8px;
   background: #f8faf7;
+  color: var(--admin-ink);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.summary-card:hover,
+.summary-card.active {
+  border-color: rgba(45, 106, 79, 0.34);
+  background: #f1f6f0;
+}
+
+.summary-card.active {
+  box-shadow: inset 3px 0 0 var(--admin-green);
 }
 
 .summary-card span,
@@ -541,6 +685,41 @@ onMounted(async () => {
   display: block;
   margin: 8px 0 4px;
   font-size: 26px;
+}
+
+.product-cell {
+  display: grid;
+  gap: 4px;
+}
+
+.product-cell strong {
+  font-weight: 800;
+}
+
+.product-cell span {
+  max-width: 360px;
+  overflow: hidden;
+  color: var(--admin-muted);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stock-cell {
+  display: grid;
+  gap: 6px;
+}
+
+.stock-cell > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.stock-cell small {
+  color: var(--admin-muted);
+  font-size: 12px;
 }
 
 .quality-tags {
@@ -582,5 +761,31 @@ onMounted(async () => {
   margin-left: 10px;
   color: var(--admin-muted);
   font-size: 12px;
+}
+
+@media (max-width: 900px) {
+  .ops-header {
+    display: grid;
+  }
+
+  .ops-header-actions {
+    justify-content: flex-start;
+  }
+
+  .product-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .summary-card {
+    padding: 12px;
+  }
+
+  .summary-card strong {
+    font-size: 22px;
+  }
+
+  .product-cell span {
+    max-width: 220px;
+  }
 }
 </style>

@@ -172,3 +172,11 @@
 - Member home audit found the most important commerce gap: product cards looked polished but still behaved like a gallery. They had no direct add-to-cart action and weak decision cues beyond category and price.
 - Mobile home audit showed the first purchasable product was pushed far below the first viewport by hero, recommendation, and fulfillment panels. The fix is to make the first viewport carry a clear "start shopping" action and compress mobile recommendation density without hiding product evidence.
 - Product detail audit showed the purchase actions were present, but the page did not answer enough buyer trust questions. Adding delivery, storage, and group-buy assurance cards makes the page feel closer to a real grocery product page.
+
+## Phase 21 Admin Operations Polish Findings
+
+- Admin dashboard already had useful operations data: pending orders, low-stock products, and offline products. The higher-value gap was not another dashboard widget; it was making the core order/product list pages behave like work queues instead of plain CRUD tables.
+- Orders page needed stronger fulfillment hierarchy: pending confirmation, confirmed orders, and in-delivery orders should be clickable operational queues, and each row should expose the next fulfillment judgment before the operator opens details.
+- Products page needed a similar operational model: stock health, content completeness, sale status, and replenishment actions should be visible on the list page so admins can spot problems without opening every product.
+- Browser inspection caught a concrete layout issue after the first order-page pass: the table still overflowed the desktop content width at 1580px because the combined column widths reached 1400px inside a 1235px content area. Column widths were reduced to keep the main table inside the card.
+- Mobile admin remains table-heavy by nature, but the new summary cards were tightened so the page keeps useful queue controls above the fold instead of pushing the table too far down.

@@ -36,6 +36,7 @@ Raise `local-fresh-platform` to an interview-ready Java backend/fullstack portfo
 | 18. Local UI smoke precheck | completed | Add a dependency-free local smoke script for storefront/admin dev servers, auth APIs, and core demo data APIs. |
 | 19. Browser UI smoke test | completed | Add a Playwright browser smoke that exercises member and admin critical routes against local services. |
 | 20. Fullstack product-grade UX pass | completed | Audit the member and admin UI with a higher fullstack hiring bar, then implement a focused polish slice with repeatable browser evidence. |
+| 21. Admin operations polish | completed | Make admin orders/products feel like operational work queues with risk signals, filters, and repeatable browser verification. |
 
 ## Constraints
 
