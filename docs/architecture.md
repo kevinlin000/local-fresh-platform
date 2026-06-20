@@ -18,6 +18,7 @@
 graph TD
     U[用戶端 local-fresh-user<br/>Vue 3 / Vite / Pinia / Element Plus]
     A[管理端 local-fresh-admin<br/>Vue 3 / Vite / Pinia / Element Plus]
+    NGINX[Nginx HTTPS reverse proxy<br/>EC2 / DuckDNS / Let's Encrypt]
     API[local-fresh-server<br/>Spring Boot 3.5 API]
     POJO[local-fresh-model<br/>Entity / DTO / VO]
     COMMON[local-fresh-common<br/>常量 / 工具 / 攔截器 / 配置]
@@ -29,8 +30,9 @@ graph TD
     WS[WebSocket]
     SCHED[定時任務 Scheduler]
 
-    U -->|HTTP / JWT| API
-    A -->|HTTP / JWT| API
+    U -->|HTTP / JWT| NGINX
+    A -->|HTTP / JWT| NGINX
+    NGINX -->|proxy to 8080| API
 
     API --> POJO
     API --> COMMON

@@ -4,9 +4,9 @@
 
 ## 目前刻意保留的限制
 
-- 支付預設仍是 demo gateway，尚未接真實綠界 ECPay / 信用卡導轉端到端流程。目前已完成付款請求 / 成功回呼分離、`/payment/callback` provider 回呼入口、demo HMAC 驗證、ECPay CheckMacValue parser、會員端 POST form 導轉、`payment_event` 事件紀錄、金流交易編號與 idempotency key；若要正式化，下一步應補真實 ReturnURL / OrderResultURL sandbox 驗證與 reconciliation job。
+- 支付預設仍是 demo gateway，尚未接真實綠界 ECPay / 信用卡導轉端到端流程。目前已完成付款請求 / 成功回呼分離、`/payment/callback` provider 回呼入口、demo HMAC 驗證、ECPay CheckMacValue parser、會員端 POST form 導轉、`payment_event` 事件紀錄、金流交易編號與 idempotency key；若要正式化，下一步應以現有 EC2 + Nginx HTTPS API 網域補真實 ReturnURL / OrderResultURL sandbox 驗證與 reconciliation job。
 - 管理端與會員端已有產品級 demo polish，但目前沒有自動化視覺回歸測試；最新畫面證據以 Playwright 手動截圖保存在 `docs/screenshots/`。
-- Demo 部署是求職作品級 AWS 架構：Vue 靜態站在 S3 + CloudFront，Spring Boot API 在 EC2，資料層為 MySQL / Redis；它不是多區高可用 production 架構。
+- Demo 部署是求職作品級 AWS 架構：Vue 靜態站在 S3 + CloudFront，Spring Boot API 由 EC2 上的 Nginx HTTPS 反向代理轉到本機 Spring Boot，資料層為 MySQL / Redis；它不是多區高可用 production 架構。
 - 開發環境預設關閉 Google Maps 配送範圍檢查，避免本地 demo 被第三方 API key 或地址資料阻塞；正式環境需以環境變數打開並設定有效 API key。
 
 ## 測試環境與生產環境 schema 約束不完全等價

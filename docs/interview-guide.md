@@ -89,7 +89,7 @@ RedisTemplate 用在快取與一般 KV，RedissonClient 用在分散式鎖。這
 
 ### Q: 為什麼沒有真的接金流？
 
-目前支付預設仍是 demo gateway，但付款請求與付款成功回呼已經分離：一般 gateway 只建立付款請求，只有 demo gateway 會宣告 request 後立即完成，方便本機展示。後端也有 `/payment/callback` provider 回呼入口，demo provider 用 HMAC 驗證 payload，ECPay provider 則有 CheckMacValue 驗證與 MerchantTradeNo / TradeNo / RtnCode mapping 測試；會員端收到 ECPay response 時會組 hidden form POST 到綠界付款頁。付款事件已寫入 `payment_event`，可以追蹤 request、success、duplicate 與 rejected callback，並保留金流交易編號與 idempotency key。還沒做的是用 ngrok 或正式網域實測真實 ReturnURL / OrderResultURL 端到端驗證與 reconciliation job。
+目前支付預設仍是 demo gateway，但付款請求與付款成功回呼已經分離：一般 gateway 只建立付款請求，只有 demo gateway 會宣告 request 後立即完成，方便本機展示。後端也有 `/payment/callback` provider 回呼入口，demo provider 用 HMAC 驗證 payload，ECPay provider 則有 CheckMacValue 驗證與 MerchantTradeNo / TradeNo / RtnCode mapping 測試；會員端收到 ECPay response 時會組 hidden form POST 到綠界付款頁。付款事件已寫入 `payment_event`，可以追蹤 request、success、duplicate 與 rejected callback，並保留金流交易編號與 idempotency key。還沒做的是用現有 EC2 + Nginx HTTPS API 網域實測真實 ReturnURL / OrderResultURL 端到端驗證與 reconciliation job。
 
 ### Q: 如果流量更大會怎麼改？
 

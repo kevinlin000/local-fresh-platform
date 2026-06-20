@@ -376,6 +376,7 @@ For the full frontend-side OAuth setup, see:
 The deployment topology is:
 
 - **EC2** for the Spring Boot API
+- **Nginx + Let's Encrypt** on EC2 for HTTPS reverse proxying from the public API domain to Spring Boot `8080`
 - **Dockerized MySQL + Redis on EC2** for products, members, orders, group-buy data, cache, and locking
 - **S3** for hosting frontend static assets
 - **CloudFront** for CDN delivery and HTTPS entry points

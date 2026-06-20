@@ -426,6 +426,7 @@ pnpm dev
 目前上線中的部署架構如下：
 
 - **EC2**：部署 Spring Boot API
+- **Nginx + Let's Encrypt**：在 EC2 上提供 HTTPS 反向代理，將公開 API 網域轉到 Spring Boot `8080`
 - **EC2 內 Docker MySQL + Redis**：儲存商品、會員、訂單、揪團資料與快取 / 鎖協作
 - **S3**：承載前端靜態檔案
 - **CloudFront**：對外提供 CDN 與 HTTPS 存取
@@ -461,7 +462,7 @@ pnpm dev
 
 ### 規劃中
 
-- **綠界 ECPay 沙箱金流串接**:在 ECPay CheckMacValue parser 與會員端 POST form 導轉骨架已補上後,以綠界全方位金流導轉式流程取代現有 demo 付款,補真實 ReturnURL / OrderResultURL sandbox 驗證與 reconciliation job。
+- **綠界 ECPay 沙箱金流串接**:在 ECPay CheckMacValue parser 與會員端 POST form 導轉骨架已補上後,以現有 EC2 + Nginx HTTPS API 網域作為 ReturnURL,補真實 ReturnURL / OrderResultURL sandbox 驗證與 reconciliation job。
 - **可觀測性三件套**:Spring Boot Actuator + Prometheus + Grafana,自訂業務 metric(揪團成團率、支付成功率),搭配結構化 log 與 Trace ID 串穿全鏈路。
 - **CD 自動化**:在現有 GitHub Actions 測試/build 基礎上,加入 Docker image build、推送 ECR,並觸發 EC2 滾動部署。
 
@@ -473,7 +474,7 @@ pnpm dev
 - 雙端產品級 UI polish:會員端採買流程、商品詳情、購物車、訂單頁與管理端 dashboard / products / orders 已完成新版截圖與 README 同步
 - 揪團發起 / 加入 / 取消 / 過期失敗回滾完整流程
 - Google OAuth 2.0 Authorization Code Flow + JWT 雙軌登入(mock login dev 開關)
-- 完整 AWS 部署:EC2 (Spring Boot + Docker MySQL/Redis) + S3 + CloudFront + DuckDNS + Let's Encrypt
+- 完整 AWS 部署:EC2 (Nginx + Spring Boot + Docker MySQL/Redis) + S3 + CloudFront + DuckDNS + Let's Encrypt
 - Spring Boot 3.5 升級 + Flyway migration 檔案版本化(V1~V11)
 - 管理端 Vue 3 + Vite + TypeScript + Pinia + Element Plus 升級
 - Testcontainers Redis 整合測試 + GitHub Actions backend/admin/user frontend checks
