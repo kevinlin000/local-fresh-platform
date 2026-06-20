@@ -123,3 +123,10 @@
   - The member frontend can convert an ECPay response into a hidden POST form redirect.
 - Because this is already in place, the highest-value local slice is not another payment abstraction. It is lifecycle hardening: prove cancelled and pending group-buy orders cannot create a provider payment request, remove stale mapper methods that bypass the guarded update path, and align docs with the real model.
 - The architecture doc had a stale `退款(7)` order-status node. Runtime code does not define status 7; refunds are represented as `pay_status = REFUND` on a cancelled order plus payment/refund event evidence.
+
+## Phase 14 Roadmap Findings
+
+- The user explicitly wants every future round to include a follow-up planning assessment.
+- README already had a Roadmap section, but it mixed completed milestones, active ideas, and cloud/CD topics without a clear priority model.
+- A durable roadmap document is useful because it separates interview-readiness from true production completeness. This prevents the project from chasing impossible "100%" scope while still showing mature judgment.
+- Current best next implementation slice after this roadmap is inventory idempotency design/testing, not cloud deployment. ECPay sandbox and CD remain valuable but should come after core local flow and evidence stay stable.

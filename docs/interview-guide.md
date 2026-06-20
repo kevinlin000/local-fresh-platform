@@ -101,6 +101,8 @@ RedisTemplate 用在快取與一般 KV，RedissonClient 用在分散式鎖。這
 - 管理端操作 audit log 延伸成更完整的營運追蹤報表。
 - 只有在明確瓶頸出現後，再討論服務拆分。
 
+更完整的後續優先順序與完整度評估可以看 `docs/portfolio-roadmap.md`。面試時不要說這是 production 100% 系統；比較好的說法是：核心交易、揪團併發、測試證據與作品級部署已完成，下一步會先補庫存防重與 ECPay sandbox 驗證，再談自動化部署和可觀測性。
+
 ## 可以主動承認的限制
 
 - 支付預設仍是 demo gateway，未接真實綠界 ECPay / 信用卡導轉端到端流程；但 provider callback 入口、demo HMAC 驗證、ECPay CheckMacValue parser、會員端 POST form 導轉、付款事件表、金流交易編號、idempotency key 與 callback 分支測試已完成。

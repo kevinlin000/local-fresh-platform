@@ -232,3 +232,19 @@
   - Focused `OrderServiceImplTest` passed with 21 tests.
   - Backend `mvn -pl local-fresh-server -am verify` passed with 146 tests, 0 failures, 0 errors, 5 skipped, and JaCoCo report generation.
   - `git diff --check` passed.
+
+## 2026-06-20 16:19 +0800
+
+- Started Phase 14 after the user asked that every future round include follow-up planning assessment.
+- Reviewed README roadmap, known issues, interview guide, and current planning files.
+- Decided not to add a frontend test runner just to test the ECPay redirect helper because the user frontend currently has no test framework; adding one here would be tool churn rather than portfolio value.
+- Added `docs/portfolio-roadmap.md` with:
+  - Current completeness assessment by area.
+  - P0/P1 priority model.
+  - Explicit guidance to defer full cloud automation until the end.
+  - Current next-step recommendation: inventory idempotency design and minimal tests.
+- Updated README and interview guide to link to the roadmap and align the Roadmap section with current priorities.
+- Verification:
+  - Confirmed `docs/portfolio-roadmap.md` is linked from `README.md`, `README.en.md`, and `docs/interview-guide.md`.
+  - `git diff --check` passed.
+  - No backend/frontend build was run because this slice only changes documentation and planning files.

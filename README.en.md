@@ -398,6 +398,7 @@ See also:
 
 - [docs/known-issues.md](docs/known-issues.md)
 - [docs/ecpay-sandbox-runbook.md](docs/ecpay-sandbox-runbook.md)
+- [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md)
 - [docs/testing.md](docs/testing.md)
 - [docs/interview-guide.md](docs/interview-guide.md)
 - [frontend-environment/local-fresh-user/README.md](frontend-environment/local-fresh-user/README.md)
@@ -408,6 +409,12 @@ Before switching the deployed API to ECPay sandbox, run:
 ```bash
 scripts/check-ecpay-sandbox-readiness.sh
 ```
+
+For the current completeness assessment and next-priority plan, see
+[docs/portfolio-roadmap.md](docs/portfolio-roadmap.md). The project is already
+interview-ready for its core Java backend story; the next local slice should
+focus on inventory idempotency before full ECPay sandbox verification or CD
+automation.
 
 ## License
 

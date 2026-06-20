@@ -450,6 +450,7 @@ pnpm dev
 - [docs/architecture.md](docs/architecture.md)
 - [docs/ecpay-sandbox-runbook.md](docs/ecpay-sandbox-runbook.md)
 - [docs/interview-guide.md](docs/interview-guide.md)
+- [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md)
 - [docs/testing.md](docs/testing.md)
 - [frontend-environment/local-fresh-user/README.md](frontend-environment/local-fresh-user/README.md)
 
@@ -461,15 +462,15 @@ scripts/check-ecpay-sandbox-readiness.sh
 
 ## Roadmap
 
-本專案目前已完成核心業務閉環,接下來規劃的迭代方向圍繞「展示工程深度」與「貼近真實生產系統」兩個目標進行。
+本專案目前已完成核心業務閉環,接下來規劃的迭代方向圍繞「展示工程深度」與「貼近真實生產系統」兩個目標進行。完整評估矩陣請參考 [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md)。
 
 ### 進行中
 
-- **付款與庫存 idempotency 補強**:目前已把付款請求與付款成功回呼拆開,並新增 provider-neutral `payment_event`、demo HMAC callback 驗證、ECPay CheckMacValue parser、金流交易編號與付款事件 idempotency key;下一步可補庫存異動防重與 reconciliation job 設計。
+- **庫存異動 idempotency 補強**:付款請求與 callback 邊界已補強,下一步可針對下單 reserve、會員取消 restore、管理端取消 restore、揪團失敗 restore 盤點防重條件,避免重複取消或重複回補庫存。
 
 ### 規劃中
 
-- **綠界 ECPay 沙箱金流串接**:在 ECPay CheckMacValue parser 與會員端 POST form 導轉骨架已補上後,以現有 EC2 + Nginx HTTPS API 網域作為 ReturnURL,補真實 ReturnURL / OrderResultURL sandbox 驗證與 reconciliation job。
+- **綠界 ECPay 沙箱金流串接**:在 ECPay CheckMacValue parser 與會員端 POST form 導轉骨架已補上後,以現有 EC2 + Nginx HTTPS API 網域作為 ReturnURL,補真實 ReturnURL / OrderResultURL sandbox 驗證與 reconciliation job。這應留到核心流程與文件穩定後再做。
 - **可觀測性三件套**:Spring Boot Actuator + Prometheus + Grafana,自訂業務 metric(揪團成團率、支付成功率),搭配結構化 log 與 Trace ID 串穿全鏈路。
 - **CD 自動化**:在現有 GitHub Actions 測試/build 基礎上,加入 Docker image build、推送 ECR,並觸發 EC2 滾動部署。
 
