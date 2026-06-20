@@ -27,6 +27,7 @@ Raise `local-fresh-platform` to an interview-ready Java backend/fullstack portfo
 | 9. Real-image evidence refresh | completed | Regenerate screenshot evidence and documentation checks after restoring the user's real food PNG assets. |
 | 10. Backend boundary test hardening | completed | Add focused service-level guard tests and align testing documentation with existing group-buy expiration coverage. |
 | 11. Product admin boundary coverage | completed | Add focused product-management tests for deletion guards, gift-box status cascading, and cache invalidation side effects. |
+| 12. Frontend first-impression polish | completed | Reduce AI/demo feel by improving grocery merchandising, group-buy decision hierarchy, and admin dashboard demo activity. |
 
 ## Constraints
 

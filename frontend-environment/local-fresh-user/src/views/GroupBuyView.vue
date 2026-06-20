@@ -19,6 +19,20 @@
             <span class="countdown">倒數 {{ countdownText }}</span>
           </div>
 
+          <div class="join-progress-panel">
+            <div class="progress-copy">
+              <span>{{ progressEyebrow }}</span>
+              <strong>{{ progressHeadline }}</strong>
+              <p>{{ progressDescription }}</p>
+            </div>
+            <div class="progress-meter" aria-label="揪團進度">
+              <div class="progress-track">
+                <span :style="{ width: `${progressPercent}%` }" />
+              </div>
+              <small>{{ groupBuy.currentCount }} / {{ groupBuy.requiredCount }} 人</small>
+            </div>
+          </div>
+
           <div v-if="groupBuy.status === 3" class="status-alert danger">
             揪團未成立，訂單已取消。
           </div>
@@ -51,7 +65,7 @@
           <div class="actions">
             <template v-if="groupBuy.status === 1 && !joinedByCurrentMember">
               <el-button type="success" size="large" :loading="joining" @click="openJoinDialog">
-                加入揪團
+                加入並湊滿免運
               </el-button>
             </template>
             <template v-else-if="groupBuy.status === 1">
@@ -71,6 +85,11 @@
             >
               取消揪團
             </el-button>
+          </div>
+          <div class="trust-notes">
+            <span>成團後才轉待確認</span>
+            <span>未成團自動取消預訂</span>
+            <span>同區配送一起出貨</span>
           </div>
         </div>
       </div>
@@ -287,6 +306,48 @@ const canCancelGroupBuy = computed(() =>
 const remainingCount = computed(() =>
   Math.max((groupBuy.value?.requiredCount || 0) - (groupBuy.value?.currentCount || 0), 0)
 )
+const progressPercent = computed(() => {
+  if (!groupBuy.value?.requiredCount) {
+    return 0
+  }
+  return Math.min(Math.round((groupBuy.value.currentCount / groupBuy.value.requiredCount) * 100), 100)
+})
+const progressEyebrow = computed(() => {
+  if (groupBuy.value?.status === 2) {
+    return '已達標'
+  }
+  if (groupBuy.value?.status === 1) {
+    return '揪團免運'
+  }
+  return '揪團狀態'
+})
+const progressHeadline = computed(() => {
+  if (!groupBuy.value) {
+    return ''
+  }
+  if (groupBuy.value.status === 2) {
+    return '已成團，等待店家確認'
+  }
+  if (groupBuy.value.status === 1 && remainingCount.value === 1) {
+    return '再 1 人就成團'
+  }
+  if (groupBuy.value.status === 1) {
+    return `還差 ${remainingCount.value} 人成團`
+  }
+  return statusText(groupBuy.value.status)
+})
+const progressDescription = computed(() => {
+  if (!groupBuy.value) {
+    return ''
+  }
+  if (groupBuy.value.status === 1) {
+    return '加入後會建立揪團預訂單，滿員後自動轉給店家確認備貨。'
+  }
+  if (groupBuy.value.status === 2) {
+    return '三位成員都已加入，訂單已進入店家履約流程。'
+  }
+  return '這筆揪團已結束，歷史狀態仍保留方便追蹤。'
+})
 
 function formatDate(value: string) {
   return new Date(value).toLocaleString('zh-TW', {
@@ -700,6 +761,64 @@ h3 {
   font-weight: 700;
 }
 
+.join-progress-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 18px;
+  align-items: end;
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid rgba(47, 111, 78, 0.16);
+  border-radius: 8px;
+  background: linear-gradient(135deg, #f5f8f1 0%, #ffffff 72%);
+}
+
+.progress-copy span {
+  color: var(--farm-accent);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.progress-copy strong {
+  display: block;
+  margin-top: 6px;
+  color: var(--farm-text);
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+.progress-copy p {
+  margin: 8px 0 0;
+  color: var(--farm-muted);
+  line-height: 1.6;
+}
+
+.progress-meter {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.progress-track {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e4e9df;
+}
+
+.progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--farm-primary) 0%, #8aa957 100%);
+}
+
+.progress-meter small {
+  color: var(--farm-muted);
+  font-weight: 800;
+  text-align: right;
+}
+
 .status-alert {
   margin-top: 16px;
   padding: 14px 16px;
@@ -750,6 +869,22 @@ h3 {
   align-items: center;
   margin-top: 28px;
   flex-wrap: wrap;
+}
+
+.trust-notes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+  color: #55645a;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.trust-notes span {
+  padding: 7px 9px;
+  border-radius: 7px;
+  background: #f2f4ef;
 }
 
 .participants-card {
@@ -877,6 +1012,14 @@ h3 {
 
   .groupbuy-layout {
     grid-template-columns: 1fr;
+  }
+
+  .join-progress-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .progress-meter small {
+    text-align: left;
   }
 
   .media-panel {

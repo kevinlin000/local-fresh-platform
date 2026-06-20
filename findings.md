@@ -100,3 +100,15 @@
 - Product deletion is an important admin boundary because active products must not be deleted and products referenced by gift boxes must stay protected.
 - Product disable has a business side effect: related gift boxes are disabled together, preventing admins from selling a box that contains an unavailable product.
 - These tests strengthen the inventory/catalog story without changing runtime behavior or introducing new abstractions.
+
+## Phase 12 Frontend First-Impression Findings
+
+- External reference direction:
+  - Mature grocery commerce patterns emphasize search, categories, fast replenishment shelves, and making the next cart action obvious.
+  - Mature admin tools emphasize actionable metrics, status queues, filters, and dense but calm operational surfaces rather than decorative hero content.
+  - Dashboard design research supports showing metrics in a way that leads to the next operational action, not just displaying numbers.
+- Current UI is not weak for a Java backend portfolio, but a few first-impression issues remain:
+  - The member home page is structured well, but the first product grid can surface a scattered mix such as seafood and condiments before everyday meal-building items.
+  - The group-buy detail page reads more like a data detail page than a consumer decision page.
+  - The admin dashboard visual system is acceptable, but seeded dashboard activity can show all-zero business metrics, making the demo look empty.
+- The right scope is a targeted polish pass: recommendation ordering and quick shelves on the member home page, stronger progress/CTA hierarchy on group-buy detail, and a Flyway refresh for today dashboard activity.

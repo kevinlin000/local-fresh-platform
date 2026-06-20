@@ -12,6 +12,17 @@
           <span>產地直送箱</span>
           <span>台北、新北配送</span>
         </div>
+        <div v-if="featuredShelves.length" class="market-shelves" aria-label="本週推薦補貨清單">
+          <button
+            v-for="item in featuredShelves"
+            :key="item.id"
+            class="shelf-button"
+            @click="openProduct(item.id)"
+          >
+            <span>{{ item.tag }}</span>
+            <strong>{{ item.product.productName }}</strong>
+          </button>
+        </div>
       </div>
       <aside class="fulfillment-panel" :style="{ backgroundImage: heroBackground }">
         <div class="fulfillment-overlay">
@@ -225,6 +236,24 @@ const productPriceCap = ref<number | null>(null)
 const productSort = ref<'recommended' | 'priceAsc' | 'priceDesc' | 'nameAsc'>('recommended')
 let productSearchTimer: ReturnType<typeof setTimeout> | undefined
 
+const heroProductNames = [
+  '有機高麗菜',
+  '雲林溫體豬五花',
+  '本土無毒土雞蛋',
+  '池上越光米'
+]
+
+const heroProductTags = ['今晚青菜', '主菜肉品', '早餐補貨', '主食常備']
+const categoryRank: Record<number, number> = {
+  1: 1,
+  3: 2,
+  5: 3,
+  6: 4,
+  2: 5,
+  4: 6,
+  7: 7
+}
+
 const tabOptions = [
   { label: '當季商品', value: 'product' },
   { label: '產地直送箱', value: 'giftbox' }
@@ -259,8 +288,24 @@ const displayedProductItems = computed(() => {
   if (productSort.value === 'nameAsc') {
     return products.sort((a, b) => a.productName.localeCompare(b.productName, 'zh-Hant'))
   }
-  return products
+  return products.sort((a, b) => recommendedRank(a) - recommendedRank(b))
 })
+
+const featuredShelves = computed(() =>
+  heroProductNames
+    .map((name, index) => {
+      const product = productItems.value.find((item) => item.productName.includes(name))
+      if (!product) {
+        return null
+      }
+      return {
+        id: product.id,
+        tag: heroProductTags[index],
+        product
+      }
+    })
+    .filter((item): item is { id: number; tag: string; product: Product } => item !== null)
+)
 
 const activeItemSummary = computed(() => {
   if (activeTab.value === 'product') {
@@ -282,6 +327,14 @@ function resolveProductCategory(product: Product) {
   return product.categoryName
     || productCategories.value.find((category) => category.id === product.categoryId)?.name
     || '當季鮮選'
+}
+
+function recommendedRank(product: Product) {
+  const heroIndex = heroProductNames.findIndex((name) => product.productName.includes(name))
+  if (heroIndex >= 0) {
+    return heroIndex
+  }
+  return 100 + (categoryRank[product.categoryId] ?? 9) * 100 + product.id
 }
 
 function selectCategory(categoryId: number | null) {
@@ -500,6 +553,50 @@ onBeforeUnmount(() => {
   margin-right: 4px;
   color: var(--farm-primary-deep);
   font-size: 16px;
+}
+
+.market-shelves {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+  max-width: 760px;
+}
+
+.shelf-button {
+  display: flex;
+  min-height: 78px;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid rgba(41, 59, 49, 0.12);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--farm-text);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.shelf-button:hover,
+.shelf-button:focus-visible {
+  outline: none;
+  border-color: rgba(47, 111, 78, 0.34);
+  box-shadow: 0 12px 26px rgba(28, 39, 32, 0.08);
+  transform: translateY(-1px);
+}
+
+.shelf-button span {
+  color: var(--farm-accent);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.shelf-button strong {
+  color: var(--farm-text);
+  font-size: 14px;
+  line-height: 1.45;
 }
 
 .fulfillment-panel {
@@ -885,6 +982,11 @@ onBeforeUnmount(() => {
     grid-template-columns: 1fr;
   }
 
+  .market-shelves {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: none;
+  }
+
   .category-panel {
     position: static;
   }
@@ -921,6 +1023,10 @@ onBeforeUnmount(() => {
   .catalog-search,
   .sort-select {
     width: 100%;
+  }
+
+  .market-shelves {
+    grid-template-columns: 1fr;
   }
 
   .product-grid,

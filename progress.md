@@ -196,3 +196,24 @@
   - Focused `ProductServiceImplTest` passed with 6 tests.
   - Backend `mvn -pl local-fresh-server -am verify` passed with 144 tests, 0 failures, 0 errors, 5 skipped, and JaCoCo report generation.
   - `git diff --check` passed.
+
+## 2026-06-20 15:29 +0800
+
+- Started Phase 12 frontend first-impression polish after the user asked whether the UI/UX still feels weak or too AI-generated.
+- Reviewed current plan/progress/findings and confirmed the branch was clean before this phase.
+- Used external reference direction from mature grocery commerce, admin tooling, and dashboard design patterns:
+  - Grocery storefronts should make search, category browsing, replenishment shelves, and next cart action obvious.
+  - Admin dashboards should prioritize actionable queues and meaningful operational metrics.
+  - Metrics should lead to a next action rather than exist as decorative numbers.
+- Implemented the first polish pass:
+  - Member home now has a weekly replenishment shelf and recommended sorting that prioritizes everyday meal-building items.
+  - Group-buy detail now emphasizes progress, remaining members, and the join/share decision path.
+  - Added `V17__refresh_demo_dashboard_activity.sql` so seeded dashboard activity shows today's completed, confirmed, pending, canceled, and new-member data through existing APIs.
+- Verification:
+  - Member frontend `npm run build` passed.
+  - Admin frontend `npm run build` passed.
+  - Backend `mvn -pl local-fresh-server -am verify` passed with 144 tests, 0 failures, 0 errors, 5 skipped, and JaCoCo report generation.
+  - Local backend startup applied Flyway v17 successfully.
+  - Browser acceptance verified member home, group-buy detail, admin dashboard, and admin orders with clean latest console output.
+  - Refreshed `docs/screenshots/01-home.png`, `02-product-list.png`, `04-group-buy.png`, and `07-admin-dashboard.png`.
+  - `git diff --check` passed.
