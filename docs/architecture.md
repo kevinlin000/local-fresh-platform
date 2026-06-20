@@ -281,6 +281,7 @@ erDiagram
         bigint reference_id
         string operator_type
         bigint operator_id
+        string idempotency_key
     }
 
     ADMIN_OPERATION_LOG {
@@ -470,6 +471,9 @@ erDiagram
 - `product_inventory_log.idx_inventory_log_reference(reference_type, reference_id)`
   讓取消訂單或其他業務 reference 可以快速查是否已經還庫存。
 
+- `product_inventory_log.uk_inventory_log_idempotency_key(idempotency_key)`
+  只對有冪等鍵的庫存事件生效；目前用於取消還庫存，作為 service precheck 之外的 DB 最後防線。
+
 - `admin_operation_log.idx_admin_operation_target_time(target_type, target_id, created_at)`
   用於管理端追查某筆訂單或商品的操作歷程。
 
@@ -520,6 +524,7 @@ erDiagram
         string reason
         string reference_type
         bigint reference_id
+        string idempotency_key
     }
 
     ADMIN_OPERATION_LOG {
@@ -540,10 +545,10 @@ erDiagram
     ORDERS ||--o{ ADMIN_OPERATION_LOG : operational_audit
 ```
 
-實作上目前仍是單體 service-level consistency：
+實作上目前仍是單體 service-level consistency，但取消還庫存已補上 DB-level 冪等鍵：
 
 - 付款成功透過 guarded update 推進訂單狀態，所有 callback 分支都寫入 `payment_event`。
-- 取消訂單會先檢查訂單狀態與 `ORDER_CANCEL_RESTORE` 庫存紀錄，避免重複退款與還庫存。
+- 取消訂單會先檢查訂單狀態與 `ORDER_CANCEL_RESTORE` 庫存紀錄，並以 `product_inventory_log.idempotency_key` unique constraint 作為重複還庫存的最後防線。
 - 管理端履約與商品庫存調整寫入 `admin_operation_log`，支援後台查詢「誰在什麼時候改了什麼」。
 
 ---

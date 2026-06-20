@@ -93,7 +93,7 @@
 - 新增 `docs/observability.md` 說明本機查詢方式與目前邊界。
 - 不導入完整 Prometheus/Grafana；先把應用層 metrics 定義清楚。
 
-剛完成的本地切面是取消訂單的 service-level 防重：若訂單已取消，或該訂單已存在 `ORDER_CANCEL_RESTORE` 庫存回補紀錄，取消流程會直接跳過，避免重複退款與重複還庫存。這不是取代資料庫唯一鍵的最終方案，但符合本作品目前的務實範圍。
+剛完成的本地切面是取消訂單防重：若訂單已取消，或該訂單已存在 `ORDER_CANCEL_RESTORE` 庫存回補紀錄，取消流程會直接跳過；真正寫入庫存流水時，`product_inventory_log.idempotency_key` 也有 unique constraint 作為 DB 最後防線，避免重複退款與重複還庫存。
 
 剛完成的本地切面是 **ECPay sandbox readiness gate，不急著正式上線**。
 

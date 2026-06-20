@@ -73,8 +73,9 @@ The current coverage emphasis is the order lifecycle:
 - `BusinessMetricsServiceImplTest`: custom Micrometer business counters for
   payment callback outcomes, duplicate/applied order cancellations, and
   group-buy transitions.
-- `OrderCancellationServiceImpl`: refund metadata, inventory restoration, and
-  duplicate-cancellation guards that avoid repeated refunds or stock restores.
+- `OrderCancellationServiceImpl`: refund metadata, inventory restoration,
+  product-level restore aggregation, and duplicate-cancellation guards that
+  avoid repeated refunds or stock restores.
 - `OrderFulfillmentServiceImpl`: admin confirm, delivery, completion, and member
   reminder behavior, including missing-order guard behavior.
 - `GroupBuyExpirationServiceTest`: expired active groups fail, pending group-buy
@@ -83,6 +84,9 @@ The current coverage emphasis is the order lifecycle:
 - `ProductServiceImpl`: product deletion guards, successful product/spec
   deletion side effects, product disable cascading to related gift boxes, manual
   inventory adjustment audit logging, and product cache invalidation.
+- `ProductInventoryOrderTest`: order reserve/restore inventory logs and the
+  nullable `product_inventory_log.idempotency_key` unique constraint used as a
+  DB-level duplicate-restore guard.
 - `AdminOperationLogServiceImpl`: admin order and inventory operation audit
   entries plus paginated query mapping.
 - `AdminOperationLogApiTest`: HTTP-level audit-log pagination, filtering, and

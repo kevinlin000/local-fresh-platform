@@ -38,7 +38,7 @@
 | 為什麼揪團不直接共用一張訂單？ | 每位 participant 有自己的 pre-order、地址、金額與狀態，成團後批次轉正式履約。 | `group_buy_participant.pre_order_id`、`GroupBuyServiceImpl` |
 | callback 重複或 race 怎麼辦？ | 付款成功用 conditional update，重複 callback 記錄為 ignored。 | `OrderPaymentServiceImpl`、`OrderPaymentServiceImplTest` |
 | 100 人同時 join 會不會超賣？ | Redisson lock + transaction + DB unique constraint，並有 Redis/Testcontainers 和 JMeter 證據。 | `GroupBuyRedisIntegrationTest`、`docs/perf/README.md` |
-| 取消重試會不會重複退款或還庫存？ | 已用 order status 與 `ORDER_CANCEL_RESTORE` inventory log 做 service-level guard。 | `OrderCancellationServiceImpl`、`OrderCancellationServiceImplTest` |
+| 取消重試會不會重複退款或還庫存？ | 先用 order status 與 `ORDER_CANCEL_RESTORE` inventory log 做 service precheck，再用 `product_inventory_log.idempotency_key` unique constraint 當 DB 最後防線。 | `OrderCancellationServiceImpl`、`ProductInventoryOrderTest` |
 | 系統跑起來後怎麼看異常？ | Actuator + business counters，可看付款 callback、取消防重、揪團狀態轉換。 | `docs/observability.md` |
 | 這是不是只是 CRUD？ | 不是只做 CRUD，重點在狀態機、交易邊界、分散式鎖、callback idempotency、庫存與 audit log。 | `docs/testing.md`、service tests |
 
@@ -200,8 +200,8 @@
 - `reserveProduct` 透過 mapper conditional decrease 防止負庫存。
 - 一般下單在 transaction 內建立訂單與扣庫存。
 - 取消在 transaction 內取消訂單、退款、還庫存。
-- `product_inventory_log` 記錄 reason、reference、before/after stock、operator。
-- 重複取消先查 order status 與 `ORDER_CANCEL_RESTORE` log。
+- `product_inventory_log` 記錄 reason、reference、before/after stock、operator 與取消還庫存的 idempotency key。
+- 重複取消先查 order status 與 `ORDER_CANCEL_RESTORE` log，真正寫入時再由 `uk_inventory_log_idempotency_key` 擋掉重複 key。
 
 ### 對應程式碼
 
@@ -219,11 +219,7 @@
 
 ### 不要吹過頭
 
-目前是 service-level idempotency。若未來有 async worker 或多服務寫庫存，應該補 DB unique constraint，例如：
-
-```text
-(reference_type, reference_id, reason, product_id)
-```
+目前是 service precheck + DB unique idempotency key。這仍不是完整事件溯源；若未來有 async worker 或多服務寫庫存，下一步應該把庫存異動統一成 command/event 模型，並補 retry/outbox。
 
 ## 5. 可觀測性與營運留痕
 
@@ -311,7 +307,7 @@ Actuator counters 只是起點，不是完整 SRE stack。
 | P0 | 重跑 README screenshots。 | 作品第一印象要跟最新 UI 一致。 |
 | P1 | Prometheus + Grafana + alert thresholds。 | 補 production operations story。 |
 | P1 | Group-buy benchmark matrix。 | 從單一 100-user case 升級成容量分析。 |
-| P1 | Inventory restore unique constraint design。 | 把 service-level idempotency 推到 DB boundary。 |
+| P1 | Inventory restore retry/outbox design。 | 取消還庫存已補 DB 冪等鍵，下一步才需要處理非同步重試與跨服務寫入。 |
 | P2 | CI/CD image build + EC2 rollout。 | 改善部署可靠性，但不應早於 callback 同步。 |
 
 ## 面試時的 5 分鐘後端深挖順序

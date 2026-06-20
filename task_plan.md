@@ -39,6 +39,7 @@ Raise `local-fresh-platform` to an interview-ready Java backend/fullstack portfo
 | 21. Admin operations polish | completed | Make admin orders/products feel like operational work queues with risk signals, filters, and repeatable browser verification. |
 | 22. Backend deep-dive prep notes | completed | Consolidate correctness, concurrency, payment, inventory, observability, and residual-risk evidence into Kevin-facing interview prep notes. |
 | 23. Backend design diagram evidence | completed | Add ER, state, and payment callback diagrams that support backend interview deep dives without turning the public README into a pitch deck. |
+| 24. Inventory restore DB idempotency | completed | Add a nullable inventory-log idempotency key, aggregate same-product restores, and prove duplicate restore keys are rejected by the database. |
 
 ## Constraints
 

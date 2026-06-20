@@ -372,6 +372,24 @@
 - Updated `docs/backend-deep-dive-prep.md` with a "how to use the diagrams" section and an ER-model answer row.
 - Updated `docs/interview-guide.md` with a concise ER/state/callback display path and an ER-model FAQ answer.
 
+## 2026-06-21 00:17 +0800
+
+- Started Phase 24 inventory restore DB idempotency after the diagram evidence showed inventory restore as the next backend boundary worth hardening.
+- Design decision:
+  - Do not add a broad unique key over all inventory reference fields.
+  - Add nullable `product_inventory_log.idempotency_key` and generate it only for cancel-restore events.
+  - Aggregate same-product restores within one order cancellation before writing inventory logs, so direct product + gift-box component overlaps do not create duplicate restore rows.
+- Implemented:
+  - Added Flyway migration `V18__add_inventory_log_idempotency_key.sql`.
+  - Updated H2 test schema, `ProductInventoryLog`, `ProductInventoryLogVO`, and `ProductInventoryLogMapper`.
+  - Updated `InventoryServiceImpl` to generate idempotency keys for `*_CANCEL_RESTORE` reasons only.
+  - Updated `OrderCancellationServiceImpl` to aggregate restore quantities by product.
+  - Added tests for same-product aggregation and DB rejection of duplicate idempotency keys.
+- Verification so far:
+  - First focused Maven run exposed the known reactor issue when `-Dtest` is used with modules that have no matching tests.
+  - Focused rerun with `-Dsurefire.failIfNoSpecifiedTests=false` passed: 12 tests, 0 failures, 0 errors.
+  - Full backend `mvn -pl local-fresh-server -am verify` passed: 155 tests, 0 failures, 0 errors, 5 skipped, with JaCoCo report generation.
+
 ## 2026-06-20 16:05 +0800
 
 - Started Phase 13 payment lifecycle evidence hardening.

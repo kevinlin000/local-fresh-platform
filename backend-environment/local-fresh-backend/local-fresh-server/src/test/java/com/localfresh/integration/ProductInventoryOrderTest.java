@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -44,6 +45,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -178,7 +180,44 @@ class ProductInventoryOrderTest {
                 .andExpect(jsonPath("$.data[1].changeQuantity").value(2))
                 .andExpect(jsonPath("$.data[1].stockBefore").value(1))
                 .andExpect(jsonPath("$.data[1].stockAfter").value(3))
-                .andExpect(jsonPath("$.data[1].reason").value("ORDER_CANCEL_RESTORE"));
+                .andExpect(jsonPath("$.data[1].reason").value("ORDER_CANCEL_RESTORE"))
+                .andExpect(jsonPath("$.data[1].idempotencyKey")
+                        .value("ORDER_CANCEL_RESTORE:ORDER:" + orderId + ":PRODUCT:" + product.getId()));
+    }
+
+    @Test
+    void inventoryRestoreIdempotencyKeyShouldBeUniqueWhenPresent() {
+        ProductInventoryLog firstLog = ProductInventoryLog.builder()
+                .productId(product.getId())
+                .changeQuantity(2)
+                .stockBefore(1)
+                .stockAfter(3)
+                .reason("ORDER_CANCEL_RESTORE")
+                .referenceType("ORDER")
+                .referenceId(900L)
+                .operatorType("MEMBER")
+                .operatorId(loginResult.userId())
+                .idempotencyKey("ORDER_CANCEL_RESTORE:ORDER:900:PRODUCT:" + product.getId())
+                .createdAt(LocalDateTime.now())
+                .build();
+        ProductInventoryLog duplicateLog = ProductInventoryLog.builder()
+                .productId(product.getId())
+                .changeQuantity(2)
+                .stockBefore(1)
+                .stockAfter(3)
+                .reason("ORDER_CANCEL_RESTORE")
+                .referenceType("ORDER")
+                .referenceId(900L)
+                .operatorType("MEMBER")
+                .operatorId(loginResult.userId())
+                .idempotencyKey(firstLog.getIdempotencyKey())
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        productInventoryLogMapper.insert(firstLog);
+
+        assertThrows(DataIntegrityViolationException.class,
+                () -> productInventoryLogMapper.insert(duplicateLog));
     }
 
     @Test

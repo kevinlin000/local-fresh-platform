@@ -17,7 +17,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -85,23 +87,31 @@ public class OrderCancellationServiceImpl implements OrderCancellationService {
 
     private void restoreProductStock(Long orderId, String operatorType, Long operatorId) {
         List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orderId);
+        Map<Long, Integer> restoredQuantities = new LinkedHashMap<>();
         for (OrderDetail orderDetail : orderDetailList) {
             if (orderDetail.getProductId() != null && orderDetail.getNumber() != null && orderDetail.getNumber() > 0) {
-                inventoryService.restoreProduct(orderDetail.getProductId(), orderDetail.getNumber(),
-                        INVENTORY_REASON_ORDER_CANCEL_RESTORE, orderId, operatorType, operatorId);
+                addRestoredQuantity(restoredQuantities, orderDetail.getProductId(), orderDetail.getNumber());
             }
             if (orderDetail.getGiftBoxId() != null && orderDetail.getNumber() != null && orderDetail.getNumber() > 0) {
-                restoreGiftBoxStock(orderDetail.getGiftBoxId(), orderDetail.getNumber(), orderId, operatorType, operatorId);
+                collectGiftBoxStock(restoredQuantities, orderDetail.getGiftBoxId(), orderDetail.getNumber());
             }
         }
+        restoredQuantities.forEach((productId, quantity) -> inventoryService.restoreProduct(productId, quantity,
+                INVENTORY_REASON_ORDER_CANCEL_RESTORE, orderId, operatorType, operatorId));
     }
 
-    private void restoreGiftBoxStock(Long giftBoxId, Integer giftBoxQuantity, Long orderId, String operatorType, Long operatorId) {
+    private void collectGiftBoxStock(Map<Long, Integer> restoredQuantities, Long giftBoxId, Integer giftBoxQuantity) {
         List<GiftBoxProduct> giftBoxProducts = giftBoxProductMapper.getBySetmealId(giftBoxId);
         for (GiftBoxProduct giftBoxProduct : giftBoxProducts) {
             int restoredQuantity = giftBoxQuantity * giftBoxProduct.getCopies();
-            inventoryService.restoreProduct(giftBoxProduct.getProductId(), restoredQuantity,
-                    INVENTORY_REASON_ORDER_CANCEL_RESTORE, orderId, operatorType, operatorId);
+            addRestoredQuantity(restoredQuantities, giftBoxProduct.getProductId(), restoredQuantity);
         }
+    }
+
+    private void addRestoredQuantity(Map<Long, Integer> restoredQuantities, Long productId, Integer quantity) {
+        if (productId == null || quantity == null || quantity <= 0) {
+            return;
+        }
+        restoredQuantities.merge(productId, quantity, Integer::sum);
     }
 }

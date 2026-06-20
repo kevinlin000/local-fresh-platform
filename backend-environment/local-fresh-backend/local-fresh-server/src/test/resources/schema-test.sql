@@ -95,8 +95,12 @@ CREATE TABLE product_inventory_log (
     reference_id    BIGINT,
     operator_type   VARCHAR(32) NOT NULL,
     operator_id     BIGINT,
+    idempotency_key VARCHAR(255),
     created_at      DATETIME    NOT NULL
 );
+
+CREATE UNIQUE INDEX uk_inventory_log_idempotency_key
+    ON product_inventory_log (idempotency_key);
 
 CREATE TABLE admin_operation_log (
     id            BIGINT AUTO_INCREMENT PRIMARY KEY,

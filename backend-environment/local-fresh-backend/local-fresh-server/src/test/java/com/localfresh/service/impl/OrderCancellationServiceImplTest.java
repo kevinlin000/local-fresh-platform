@@ -23,6 +23,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -120,6 +121,34 @@ class OrderCancellationServiceImplTest {
 
         verify(inventoryService).restoreProduct(40L, 6, "ORDER_CANCEL_RESTORE", 12L, "MEMBER", 3L);
         verify(inventoryService).restoreProduct(41L, 2, "ORDER_CANCEL_RESTORE", 12L, "MEMBER", 3L);
+        verify(businessMetricsService).recordOrderCancellation("applied");
+    }
+
+    @Test
+    void cancelOrder_aggregatesSameProductBeforeRestoringStock() throws Exception {
+        Orders order = new Orders();
+        order.setId(15L);
+        order.setNumber("ORDER-015");
+        order.setPayStatus(Orders.UN_PAID);
+        when(orderDetailMapper.getByOrderId(15L)).thenReturn(List.of(
+                OrderDetail.builder()
+                        .productId(40L)
+                        .number(2)
+                        .build(),
+                OrderDetail.builder()
+                        .giftBoxId(30L)
+                        .number(1)
+                        .build()
+        ));
+        when(giftBoxProductMapper.getBySetmealId(30L)).thenReturn(List.of(
+                GiftBoxProduct.builder().productId(40L).copies(3).build(),
+                GiftBoxProduct.builder().productId(41L).copies(1).build()
+        ));
+
+        orderCancellationService.cancelOrder(order, "會員取消", null, "MEMBER", 3L);
+
+        verify(inventoryService, times(1)).restoreProduct(40L, 5, "ORDER_CANCEL_RESTORE", 15L, "MEMBER", 3L);
+        verify(inventoryService, times(1)).restoreProduct(41L, 1, "ORDER_CANCEL_RESTORE", 15L, "MEMBER", 3L);
         verify(businessMetricsService).recordOrderCancellation("applied");
     }
 

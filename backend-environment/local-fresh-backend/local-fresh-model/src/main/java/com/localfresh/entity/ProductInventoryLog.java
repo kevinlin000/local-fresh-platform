@@ -27,5 +27,6 @@ public class ProductInventoryLog implements Serializable {
     private Long referenceId;
     private String operatorType;
     private Long operatorId;
+    private String idempotencyKey;
     private LocalDateTime createdAt;
 }

@@ -203,3 +203,10 @@
   - payment callback sequence to explain provider callback idempotency.
   - payment/inventory/admin evidence ER to explain auditability and troubleshooting.
 - These diagrams should be presented as implementation evidence and tradeoff discussion, not as a claim that the project is production-complete.
+
+## Phase 24 Inventory Restore DB Idempotency Findings
+
+- A direct unique key on `(reference_type, reference_id, reason, product_id)` would be too blunt without changing restore behavior first: a single order can include the same underlying product through a direct item and a gift box component.
+- The safer boundary is a nullable `product_inventory_log.idempotency_key`, generated only for `*_CANCEL_RESTORE` events. Normal reserve logs and manual adjustments keep `NULL`, so repeated legitimate stock movements are not blocked.
+- Order cancellation now aggregates restored quantities by product before calling `InventoryService.restoreProduct`, so one cancelled order writes at most one restore log per product and can safely use a per-order/per-product idempotency key.
+- This is still a single-service consistency model, but it is stronger than service precheck alone because duplicate restore keys are now rejected by the database.

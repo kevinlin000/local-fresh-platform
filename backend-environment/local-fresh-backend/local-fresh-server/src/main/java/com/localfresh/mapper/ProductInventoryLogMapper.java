@@ -13,8 +13,8 @@ import java.util.List;
 public interface ProductInventoryLogMapper {
 
     @Insert("insert into product_inventory_log " +
-            "(product_id, change_quantity, stock_before, stock_after, reason, remark, reference_type, reference_id, operator_type, operator_id, created_at) " +
-            "values (#{productId}, #{changeQuantity}, #{stockBefore}, #{stockAfter}, #{reason}, #{remark}, #{referenceType}, #{referenceId}, #{operatorType}, #{operatorId}, #{createdAt})")
+            "(product_id, change_quantity, stock_before, stock_after, reason, remark, reference_type, reference_id, operator_type, operator_id, idempotency_key, created_at) " +
+            "values (#{productId}, #{changeQuantity}, #{stockBefore}, #{stockAfter}, #{reason}, #{remark}, #{referenceType}, #{referenceId}, #{operatorType}, #{operatorId}, #{idempotencyKey}, #{createdAt})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     void insert(ProductInventoryLog productInventoryLog);
 

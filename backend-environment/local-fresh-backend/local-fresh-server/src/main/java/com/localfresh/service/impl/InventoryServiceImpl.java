@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 public class InventoryServiceImpl implements InventoryService {
 
     private static final String INVENTORY_REFERENCE_ORDER = "ORDER";
+    private static final String IDEMPOTENT_RESTORE_SUFFIX = "_CANCEL_RESTORE";
 
     @Autowired
     private ProductMapper productMapper;
@@ -100,9 +101,17 @@ public class InventoryServiceImpl implements InventoryService {
 
         if (referenceId != null) {
             builder.referenceType(INVENTORY_REFERENCE_ORDER)
-                    .referenceId(referenceId);
+                    .referenceId(referenceId)
+                    .idempotencyKey(buildIdempotencyKey(reason, referenceId, productId));
         }
 
         productInventoryLogMapper.insert(builder.build());
+    }
+
+    private String buildIdempotencyKey(String reason, Long referenceId, Long productId) {
+        if (reason == null || !reason.endsWith(IDEMPOTENT_RESTORE_SUFFIX)) {
+            return null;
+        }
+        return reason + ":" + INVENTORY_REFERENCE_ORDER + ":" + referenceId + ":PRODUCT:" + productId;
     }
 }
