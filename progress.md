@@ -183,3 +183,16 @@
   - Focused `OrderFulfillmentServiceImplTest` passed with 12 tests.
   - Backend `mvn -pl local-fresh-server -am verify` passed with 139 tests, 0 failures, 0 errors, 5 skipped, and JaCoCo report generation.
   - `git diff --check` passed.
+
+## 2026-06-20 15:15 +0800
+
+- Started Phase 11 product admin boundary coverage.
+- Reviewed product/order submission service tests and found the highest-value gap in `ProductServiceImplTest`:
+  - Existing coverage proved manual inventory adjustment audit logging.
+  - Missing coverage: product deletion guards, successful delete side effects, product-disable gift-box cascading, and cache invalidation.
+- Added unit tests for enabled-product deletion rejection, gift-box reference deletion rejection, successful disabled-product deletion, disabling related gift boxes, and enabling a product without touching gift boxes.
+- Updated `docs/testing.md` and planning findings to include the product-management boundary coverage.
+- Verification:
+  - Focused `ProductServiceImplTest` passed with 6 tests.
+  - Backend `mvn -pl local-fresh-server -am verify` passed with 144 tests, 0 failures, 0 errors, 5 skipped, and JaCoCo report generation.
+  - `git diff --check` passed.

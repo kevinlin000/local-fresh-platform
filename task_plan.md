@@ -26,6 +26,7 @@ Raise `local-fresh-platform` to an interview-ready Java backend/fullstack portfo
 | 8. Portfolio evidence and interview package | completed | Refresh screenshots and documentation so the repository presents the latest product-grade UI, backend strengths, and interview demo path clearly. |
 | 9. Real-image evidence refresh | completed | Regenerate screenshot evidence and documentation checks after restoring the user's real food PNG assets. |
 | 10. Backend boundary test hardening | completed | Add focused service-level guard tests and align testing documentation with existing group-buy expiration coverage. |
+| 11. Product admin boundary coverage | completed | Add focused product-management tests for deletion guards, gift-box status cascading, and cache invalidation side effects. |
 
 ## Constraints
 

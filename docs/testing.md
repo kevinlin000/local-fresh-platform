@@ -71,6 +71,9 @@ The current coverage emphasis is the order lifecycle:
 - `GroupBuyExpirationServiceTest`: expired active groups fail, pending group-buy
   orders are canceled, refund intent is logged, and a held Redisson lock skips
   duplicate processing.
+- `ProductServiceImpl`: product deletion guards, successful product/spec
+  deletion side effects, product disable cascading to related gift boxes, manual
+  inventory adjustment audit logging, and product cache invalidation.
 - `AdminOperationLogServiceImpl`: admin order and inventory operation audit
   entries plus paginated query mapping.
 - `AdminOperationLogApiTest`: HTTP-level audit-log pagination, filtering, and

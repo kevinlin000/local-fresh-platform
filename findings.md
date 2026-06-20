@@ -93,3 +93,10 @@
 - `GroupBuyExpirationServiceTest` already proves the scheduled expiry path with real Redis/Testcontainers behavior: expired active groups are failed, pending group-buy orders are canceled, refund intent is logged, and a held Redisson lock prevents duplicate processing.
 - The smaller gap is explicit fulfillment guard coverage for missing orders. Admin confirm/delivery/complete currently share `OrderStatusTransitionPolicy` and return `ORDER_STATUS_ERROR` when the order is missing; member reminder returns `ORDER_NOT_FOUND` for missing or non-owned orders.
 - This is a good interview-readiness slice because it documents behavior at service boundaries without changing the production flow or adding architecture.
+
+## Phase 11 Product Admin Boundary Findings
+
+- `ProductServiceImplTest` previously covered manual inventory adjustment audit logging, but did not pin down product deletion guard behavior or product-disable side effects.
+- Product deletion is an important admin boundary because active products must not be deleted and products referenced by gift boxes must stay protected.
+- Product disable has a business side effect: related gift boxes are disabled together, preventing admins from selling a box that contains an unavailable product.
+- These tests strengthen the inventory/catalog story without changing runtime behavior or introducing new abstractions.
