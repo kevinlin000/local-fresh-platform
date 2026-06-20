@@ -153,6 +153,22 @@ payment response creates a hidden POST form targeting the stage checkout URL
 with provider fields such as `MerchantID`, `MerchantTradeNo`, and
 `CheckMacValue`.
 
+Before a screenshot refresh or live demo, run the local smoke precheck against
+the running services:
+
+```bash
+USER_BASE_URL=http://127.0.0.1:5176 \
+ADMIN_BASE_URL=http://127.0.0.1:5177 \
+scripts/check-ui-smoke-local.mjs
+```
+
+The script intentionally has no third-party dependency. It verifies that the
+backend health endpoint is up, both Vue app shells are served, member mock login
+works, admin login works, product/order APIs return data, and admin dashboard /
+order APIs are reachable. It is not a visual-regression test; it catches broken
+local services, proxy/auth regressions, and empty demo data before manual
+browser acceptance.
+
 This is intentionally lighter than full E2E automation. The current project
 goal is to prove the backend workflow and provide credible UI evidence; a future
 production-facing slice should add automated smoke tests for login, checkout,

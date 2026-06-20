@@ -150,3 +150,10 @@
 - Public preflight on 2026-06-20 reached `https://localfresh-demo.duckdns.org/actuator/health` and confirmed Nginx, but `/payment/callback` returned HTTP 404. The deployed EC2 backend is not yet on the version containing the callback endpoint.
 - Because the public callback endpoint is missing, `PAYMENT_PROVIDER=ecpay` must not be enabled on the deployed demo yet; ECPay ReturnURL would fail before Spring Boot can verify CheckMacValue or write payment events.
 - The remaining local readiness gap is provider-selection proof: when `localfresh.payment.provider=ecpay` is set, Spring should select `EcpayPaymentGateway` instead of the demo gateway and generate a signed checkout payload with the deployed ReturnURL and OrderResultURL.
+
+## Phase 18 Local UI Smoke Precheck Findings
+
+- The two frontends do not currently have Playwright or a shared E2E test framework. Adding one only for a small smoke check would increase tool churn.
+- `npx --yes playwright --version` failed under the current sandbox due DNS/network access to `registry.npmjs.org`, so a Playwright-based smoke runner is not a reliable local gate in this environment.
+- The most useful low-cost smoke gate is dependency-free Node: verify local services, auth, and core data APIs before manual browser acceptance and screenshot refresh.
+- This smoke precheck is deliberately not a visual-regression replacement. It catches service/proxy/auth/demo-data failures quickly, while human Playwright/browser inspection remains the visual quality gate.

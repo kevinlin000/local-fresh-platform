@@ -244,6 +244,26 @@
   - Focused ECPay readiness tests passed: 10 tests, 0 failures, 0 errors.
   - Backend `mvn -pl local-fresh-server -am verify` passed with 153 tests, 0 failures, 0 errors, 5 skipped, and JaCoCo report generation.
 
+## 2026-06-20 19:46 +0800
+
+- Started Phase 18 local UI smoke precheck after deciding not to touch EC2/cloud deployment yet.
+- Checked frontend packages:
+  - User frontend has no test script beyond build/preview.
+  - Admin frontend has unit specs but no browser smoke runner.
+  - Neither frontend currently carries Playwright as a dependency.
+- Tried `npx --yes playwright --version`; it failed because the sandbox cannot resolve `registry.npmjs.org`.
+- Added dependency-free `scripts/check-ui-smoke-local.mjs`:
+  - Checks backend `/actuator/health`.
+  - Checks user/admin Vite app shells.
+  - Logs in as mock member and admin.
+  - Checks product list, user order history, admin business data, and admin order search APIs.
+- Updated README, testing docs, roadmap, findings, and progress with the smoke precheck scope and boundary.
+- Verification:
+  - `node --check scripts/check-ui-smoke-local.mjs` passed.
+  - First smoke run found a real script bug: user product list requires the `authentication` header after member login.
+  - Fixed the script to reuse the mock member token for member data APIs.
+  - Local smoke precheck passed against backend `8080`, member frontend `5176`, and admin frontend `5177`: 9 checks passed.
+
 ## 2026-06-20 16:05 +0800
 
 - Started Phase 13 payment lifecycle evidence hardening.

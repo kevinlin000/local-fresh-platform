@@ -413,6 +413,12 @@ Before switching the deployed API to ECPay sandbox, run:
 scripts/check-ecpay-sandbox-readiness.sh
 ```
 
+Before refreshing local screenshots or giving a live demo, run:
+
+```bash
+scripts/check-ui-smoke-local.mjs
+```
+
 For the current completeness assessment and next-priority plan, see
 [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md). The project is already
 interview-ready for its core Java backend story; after the local observability
