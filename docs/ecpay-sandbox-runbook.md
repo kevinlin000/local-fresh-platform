@@ -67,19 +67,27 @@ The callback endpoint is a server-to-server form POST, so browser CORS is not in
 
 ## Verification Steps
 
-1. Switch EC2 env to `PAYMENT_PROVIDER=ecpay` and restart Spring Boot.
-2. Confirm backend health:
+1. Run the public preflight before changing provider:
+
+   ```bash
+   scripts/check-ecpay-sandbox-readiness.sh
+   ```
+
+   The callback check must return HTTP `200` with `0|FAIL` for an intentionally invalid signature. If it returns `404`, the EC2 backend has not yet deployed the version containing `/payment/callback`.
+
+2. Switch EC2 env to `PAYMENT_PROVIDER=ecpay` and restart Spring Boot.
+3. Confirm backend health:
 
    ```bash
    curl -s https://localfresh-demo.duckdns.org/actuator/health
    ```
 
-3. Open the CloudFront storefront and create or use a pending order.
-4. Click `付款`; the frontend should submit a hidden POST form to ECPay stage checkout.
-5. Complete the sandbox payment on ECPay.
-6. Confirm ECPay receives `1|OK` from ReturnURL.
-7. Confirm the order moves from pending payment to pending confirmation.
-8. Confirm `payment_event` contains:
+4. Open the CloudFront storefront and create or use a pending order.
+5. Click `付款`; the frontend should submit a hidden POST form to ECPay stage checkout.
+6. Complete the sandbox payment on ECPay.
+7. Confirm ECPay receives `1|OK` from ReturnURL.
+8. Confirm the order moves from pending payment to pending confirmation.
+9. Confirm `payment_event` contains:
 
    - `REQUEST_CREATED`
    - `CALLBACK_SUCCEEDED`
@@ -87,7 +95,7 @@ The callback endpoint is a server-to-server form POST, so browser CORS is not in
    - `provider_trade_no = TradeNo`
    - `idempotency_key` populated
 
-9. Send or replay the same callback once to confirm duplicate handling records `CALLBACK_DUPLICATE` without changing the order again.
+10. Send or replay the same callback once to confirm duplicate handling records `CALLBACK_DUPLICATE` without changing the order again.
 
 ## Rollback
 

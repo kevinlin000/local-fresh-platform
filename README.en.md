@@ -403,6 +403,12 @@ See also:
 - [frontend-environment/local-fresh-user/README.md](frontend-environment/local-fresh-user/README.md)
 - `docs/architecture.md` (system architecture and sequence diagrams)
 
+Before switching the deployed API to ECPay sandbox, run:
+
+```bash
+scripts/check-ecpay-sandbox-readiness.sh
+```
+
 ## License
 
 This project is released under the MIT License. You are free to use, modify, and distribute it under the terms of the MIT License.

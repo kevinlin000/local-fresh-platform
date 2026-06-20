@@ -453,6 +453,12 @@ pnpm dev
 - [docs/testing.md](docs/testing.md)
 - [frontend-environment/local-fresh-user/README.md](frontend-environment/local-fresh-user/README.md)
 
+ECPay sandbox 切換前可先執行：
+
+```bash
+scripts/check-ecpay-sandbox-readiness.sh
+```
+
 ## Roadmap
 
 本專案目前已完成核心業務閉環,接下來規劃的迭代方向圍繞「展示工程深度」與「貼近真實生產系統」兩個目標進行。
