@@ -144,3 +144,9 @@
 - `/actuator/**` is outside the existing `/admin/**` and `/user/**` JWT interceptor scopes. Exposing `metrics` is useful for local review, but production exposure should remain configurable through `MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE`.
 - The highest-signal counters for the current domain are payment callback results, duplicate/applied order cancellations, and group-buy transitions. These connect directly to the most interviewable backend risks: payment correctness, idempotency, and group-buy lifecycle health.
 - Prometheus, Grafana, alerting, and tracing are valid later work, but adding them now would be more infrastructure than the project needs for this phase.
+
+## Phase 17 ECPay Sandbox Readiness Findings
+
+- Public preflight on 2026-06-20 reached `https://localfresh-demo.duckdns.org/actuator/health` and confirmed Nginx, but `/payment/callback` returned HTTP 404. The deployed EC2 backend is not yet on the version containing the callback endpoint.
+- Because the public callback endpoint is missing, `PAYMENT_PROVIDER=ecpay` must not be enabled on the deployed demo yet; ECPay ReturnURL would fail before Spring Boot can verify CheckMacValue or write payment events.
+- The remaining local readiness gap is provider-selection proof: when `localfresh.payment.provider=ecpay` is set, Spring should select `EcpayPaymentGateway` instead of the demo gateway and generate a signed checkout payload with the deployed ReturnURL and OrderResultURL.

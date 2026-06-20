@@ -231,6 +231,19 @@
   - Backend `mvn -pl local-fresh-server -am verify` passed with 151 tests, 0 failures, 0 errors, 5 skipped, and JaCoCo report generation.
   - `git diff --check` passed.
 
+## 2026-06-20 19:37 +0800
+
+- Started Phase 17 ECPay sandbox readiness gate.
+- Ran the existing public preflight:
+  - Backend health passed.
+  - Public API is served through Nginx.
+  - `/payment/callback` returned HTTP 404, so the deployed EC2 backend is not yet ready for `PAYMENT_PROVIDER=ecpay`.
+- Added a provider-selection readiness test to prove the Spring context selects `EcpayPaymentGateway` under `localfresh.payment.provider=ecpay` and generates a signed checkout payload with the deployed ReturnURL and OrderResultURL.
+- Updated the ECPay runbook, testing docs, interview guide, roadmap, and README to make the current deployed blocker explicit.
+- Verification:
+  - Focused ECPay readiness tests passed: 10 tests, 0 failures, 0 errors.
+  - Backend `mvn -pl local-fresh-server -am verify` passed with 153 tests, 0 failures, 0 errors, 5 skipped, and JaCoCo report generation.
+
 ## 2026-06-20 16:05 +0800
 
 - Started Phase 13 payment lifecycle evidence hardening.

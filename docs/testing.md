@@ -58,6 +58,9 @@ The current coverage emphasis is the order lifecycle:
   CheckMacValue exclusion, and case-insensitive verification.
 - `EcpayPaymentGatewayTest`: ECPay callback CheckMacValue verification,
   MerchantTradeNo / TradeNo / RtnCode mapping, and signed redirect payload shape.
+- `PaymentGatewayProviderSelectionTest`: Spring conditional provider selection
+  for default demo payments and ECPay readiness, including deployed ReturnURL /
+  OrderResultURL in the signed checkout payload.
 - `PaymentCallbackControllerTest`: provider callback HTTP response contract
   (`1|OK` / `0|FAIL`) without requiring member or admin JWT, including
   form-url-encoded ECPay callback payload handling.

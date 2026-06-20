@@ -12,7 +12,7 @@
 | 會員端流程 | 商品瀏覽、購物車、下單、付款、訂單查詢、揪團頁已可展示，並使用真實食物圖片。 | 作品層級完整 |
 | 管理端流程 | Dashboard、商品、訂單、付款事件、操作紀錄已能支撐營運 demo。 | 作品層級完整 |
 | 訂單生命週期 | 狀態轉移集中在 `OrderStatusTransitionPolicy`，付款、取消、婉拒、配送、完成都有 service 測試。 | 強 |
-| 付款邊界 | Demo gateway、ECPay CheckMacValue parser、callback endpoint、付款事件表、前端 POST form 導轉骨架已完成。 | 強，但缺真 sandbox 端到端驗證 |
+| 付款邊界 | Demo gateway、ECPay CheckMacValue parser、callback endpoint、付款事件表、前端 POST form 導轉骨架與 provider-switch readiness test 已完成；公開 EC2 preflight 目前顯示 `/payment/callback` 尚未部署。 | 強，但缺真 sandbox 端到端驗證 |
 | 揪團併發 | Redisson lock、transaction boundary、唯一鍵、Testcontainers Redis、JMeter 證據已具備。 | 強 |
 | 庫存一致性 | 一般訂單、取消還庫存、商品管理邊界與重複取消防線已有測試。 | 強 |
 | 測試證據 | 後端 service/integration/Redis 測試、JaCoCo、前端 build、手動 Playwright 截圖證據已整理。 | 強 |
@@ -94,13 +94,24 @@
 
 剛完成的本地切面是取消訂單的 service-level 防重：若訂單已取消，或該訂單已存在 `ORDER_CANCEL_RESTORE` 庫存回補紀錄，取消流程會直接跳過，避免重複退款與重複還庫存。這不是取代資料庫唯一鍵的最終方案，但符合本作品目前的務實範圍。
 
-下一個建議切面是 **ECPay sandbox readiness 驗證，不急著正式上線**。
+剛完成的本地切面是 **ECPay sandbox readiness gate，不急著正式上線**。
 
 理由：
 
 - 付款事件、callback parser、前端 POST form 與 observability 已具備。
 - 真 sandbox 驗證能把「我有寫金流骨架」推進到「我知道 provider callback、HTTPS、Nginx 與資料落點怎麼串」。
 - 這仍可先用 runbook/preflight 做，不需要現在就做完整 CD 或高可用雲端架構。
+
+目前結論：
+
+- 本機 provider-switch readiness 已用 `PaymentGatewayProviderSelectionTest` 固定住。
+- 公開 preflight 顯示 health 與 Nginx 正常，但 `/payment/callback` 回 HTTP `404`，代表 EC2 backend 尚未部署到含 callback endpoint 的版本。
+- 在這個 blocker 解掉以前，不應切 `PAYMENT_PROVIDER=ecpay`。
+
+下一個建議切面是 **UI smoke test 或部署同步準備二選一**：
+
+- 若繼續留在本機核心品質：先做 login/home/orders/admin dashboard 的最小 UI smoke，降低每次截圖與 polish 的人工驗收成本。
+- 若要往 ECPay sandbox 推進：先做 EC2 backend 部署同步，讓 `/payment/callback` preflight 變成 HTTP `200` + `0|FAIL`，再正式跑 sandbox 付款。
 
 ## How To Use This Roadmap
 

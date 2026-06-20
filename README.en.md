@@ -417,7 +417,9 @@ For the current completeness assessment and next-priority plan, see
 [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md). The project is already
 interview-ready for its core Java backend story; after the local observability
 slice, the next practical step is ECPay sandbox readiness verification before
-full CD automation.
+full CD automation. The current public preflight passes health/Nginx checks but
+still returns HTTP `404` for `/payment/callback`, so the deployed backend must
+be synced before switching `PAYMENT_PROVIDER=ecpay`.
 
 ## License
 
