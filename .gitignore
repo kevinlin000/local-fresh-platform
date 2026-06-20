@@ -29,6 +29,7 @@ frontend-environment/local-fresh-admin/dist/
 frontend-environment/local-fresh-user/dist/
 report.*.json
 .playwright-cli/
+.playwright-mcp/
 playwright-report/
 test-results/
 

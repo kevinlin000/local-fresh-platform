@@ -108,17 +108,19 @@
 - 公開 preflight 顯示 health 與 Nginx 正常，但 `/payment/callback` 回 HTTP `404`，代表 EC2 backend 尚未部署到含 callback endpoint 的版本。
 - 在這個 blocker 解掉以前，不應切 `PAYMENT_PROVIDER=ecpay`。
 
-剛完成的本地切面是 **UI smoke precheck + browser smoke**：
+剛完成的本地切面是 **UI smoke precheck + browser smoke + member commerce polish**：
 
 - 新增 `scripts/check-ui-smoke-local.mjs`，不引入 Playwright 或其他 npm 依賴。
 - 檢查 backend health、會員端/管理端 Vue app shell、會員 mock login、管理端 login、商品列表、會員訂單、管理端 business data 與訂單查詢。
 - 這不是視覺回歸；它用來在手動截圖或 live demo 前快速發現服務沒開、proxy/auth 壞掉、demo data 空掉。
 - 另新增 Playwright Chromium smoke，覆蓋會員端 mock login、home、orders，以及管理端 login、dashboard、orders、products。
+- 會員端首頁商品卡已從展示型卡片升級為 commerce card：直接加入購物車、查看詳情、配送訊號、用途提示與揪團免運訊號；商品詳情也補上配送、保存、揪團信任資訊。
 
-下一個建議切面是 **EC2 backend 部署同步或截圖證據重跑二選一**：
+下一個建議切面是 **管理端 operations polish 或截圖證據重跑二選一**：
 
+- 若要繼續衝全端作品觀感：下一刀做管理端 dashboard/orders/products 的 operations polish，強化優先處理、狀態風險與下一步動作。
+- 若要整理作品證據：用已新增的 local/browser smoke 當前置檢查，重跑 9 張 README 截圖與 demo acceptance，確認真實食物圖片、會員端、管理端畫面都維持最新狀態。
 - 若要往 ECPay sandbox 推進：先做 EC2 backend 部署同步，讓 `/payment/callback` preflight 變成 HTTP `200` + `0|FAIL`，再正式跑 sandbox 付款。
-- 若繼續留在本機核心品質：用已新增的 browser smoke 當前置檢查，重跑 9 張 README 截圖與 demo acceptance，確認真實食物圖片、會員端、管理端畫面都維持最新狀態。
 
 ## How To Use This Roadmap
 

@@ -164,3 +164,11 @@
 - The browser smoke should stay focused on demo-critical routes: member mock login, storefront home, member orders, admin login, dashboard, orders, and products.
 - This complements `scripts/check-ui-smoke-local.mjs`: the Node script proves services/auth/data APIs are alive, while Playwright proves the real browser can render and navigate the critical UI surfaces.
 - The first Playwright run found selector ambiguity, not product breakage: repeated labels such as "全部商品" and "待確認" need role- or first-match selectors in smoke tests.
+
+## Phase 20 Fullstack Product-Grade UX Findings
+
+- Raising the target to fullstack roles changes the scoring standard: backend evidence is no longer enough; member commerce flow, admin operations ergonomics, responsive behavior, and repeatable browser proof need to feel deliberate.
+- Initial browser inspection of the member login page shows it is visually acceptable, but still spends the first viewport on brand/login rather than communicating the product's commerce loop. This is acceptable for now because the higher-impact fullstack signal is the shopping and admin workflow after login.
+- Member home audit found the most important commerce gap: product cards looked polished but still behaved like a gallery. They had no direct add-to-cart action and weak decision cues beyond category and price.
+- Mobile home audit showed the first purchasable product was pushed far below the first viewport by hero, recommendation, and fulfillment panels. The fix is to make the first viewport carry a clear "start shopping" action and compress mobile recommendation density without hiding product evidence.
+- Product detail audit showed the purchase actions were present, but the page did not answer enough buyer trust questions. Adding delivery, storage, and group-buy assurance cards makes the page feel closer to a real grocery product page.

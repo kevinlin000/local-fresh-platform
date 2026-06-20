@@ -288,6 +288,31 @@
   - User frontend `corepack pnpm@10.25.0 run build` passed.
   - `git diff --check` passed.
 
+## 2026-06-20 23:32 +0800
+
+- Started Phase 20 fullstack product-grade UX pass after the user raised the target from backend portfolio to high-standard fullstack portfolio.
+- Working standard for this phase:
+  - Member side should feel like a real grocery commerce product, with clear shopping intent, decision support, and polished responsive behavior.
+  - Admin side should feel like an operations tool, with fast scanning, strong status hierarchy, and clear next actions.
+  - Every visible improvement should keep repeatable verification through build, local smoke, and Playwright browser smoke.
+- Browser audit findings:
+  - Member product cards needed direct purchase actions and stronger decision signals.
+  - Mobile member home needed a faster path from first viewport to shopping.
+  - Product detail needed delivery/storage/group-buy trust information.
+  - Admin dashboard/orders/products are usable, but the next admin-side polish should improve work-priority hierarchy and table decision signals rather than adding new features.
+- Implemented the first focused fullstack UX polish:
+  - Added member home hero actions for "開始採買" and "查看直送箱".
+  - Changed product cards from gallery-like cards into commerce cards with direct add-to-cart, detail action, delivery signal, usage hint, and group-buy signal.
+  - Compressed mobile home recommendation/fulfillment spacing so shopping starts earlier.
+  - Added product-detail assurance cards for delivery, storage, and group-buy behavior.
+- Verification so far:
+  - User frontend `corepack pnpm@10.25.0 run build` passed after the home-page changes.
+  - User frontend `corepack pnpm@10.25.0 run build` passed again after the product-detail assurance changes.
+  - Final user frontend `corepack pnpm@10.25.0 run build` passed.
+  - Admin frontend `npm run build` passed.
+  - `npm run smoke:local` passed against backend `8080`, member `5176`, and admin `5177`: 9 checks.
+  - `npm run smoke:browser` passed: 2 tests, 0 failures.
+
 ## 2026-06-20 16:05 +0800
 
 - Started Phase 13 payment lifecycle evidence hardening.

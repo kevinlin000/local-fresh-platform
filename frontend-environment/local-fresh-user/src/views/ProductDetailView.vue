@@ -20,6 +20,14 @@
           </div>
           <p class="description">{{ product.description || '來自在地產區的當季鮮選，適合日常料理與家庭備菜。' }}</p>
 
+          <div class="assurance-grid" aria-label="購買與配送資訊">
+            <section v-for="item in purchaseAssurance" :key="item.label" class="assurance-item">
+              <span>{{ item.label }}</span>
+              <strong>{{ item.value }}</strong>
+              <p>{{ item.caption }}</p>
+            </section>
+          </div>
+
           <div v-if="specOptions.length" class="specs-panel">
             <h2>商品規格</h2>
             <el-radio-group v-model="selectedSpec">
@@ -257,6 +265,34 @@ const specOptions = computed(() => {
     label: spec.name ? `${spec.name}｜${spec.value}` : spec.value,
     value: spec.value
   }))
+})
+
+const purchaseAssurance = computed(() => {
+  if (!product.value) {
+    return []
+  }
+
+  const category = product.value.categoryName || ''
+  const isColdChain = category.includes('海鮮') || category.includes('肉')
+  const isChilled = isColdChain || category.includes('蛋') || category.includes('奶')
+
+  return [
+    {
+      label: '配送',
+      value: isColdChain ? '冷鏈排單' : isChilled ? '冷藏配送' : '明日可配',
+      caption: '下單後由門市確認備貨與配送時段。'
+    },
+    {
+      label: '保存',
+      value: isColdChain ? '收到後冷凍' : isChilled ? '收到後冷藏' : '陰涼保存',
+      caption: '商品頁保留規格與數量，方便家庭備菜。'
+    },
+    {
+      label: '揪團',
+      value: '3 人免運',
+      caption: '可先建立揪團，滿員後進入訂單確認。'
+    }
+  ]
 })
 
 function formatPrice(value: number) {
@@ -535,6 +571,41 @@ h1 {
   line-height: 1.75;
 }
 
+.assurance-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.assurance-item {
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid rgba(47, 111, 78, 0.14);
+  border-radius: 8px;
+  background: #fbfcf8;
+}
+
+.assurance-item span {
+  color: var(--farm-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.assurance-item strong {
+  display: block;
+  margin-top: 8px;
+  color: var(--farm-text);
+  font-size: 15px;
+}
+
+.assurance-item p {
+  margin: 7px 0 0;
+  color: #68746c;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
 .specs-panel,
 .quantity-panel {
   margin-top: 24px;
@@ -677,6 +748,10 @@ h1 {
 @media (max-width: 560px) {
   .media-panel {
     min-height: 240px;
+  }
+
+  .assurance-grid {
+    grid-template-columns: 1fr;
   }
 
   .actions .el-button {

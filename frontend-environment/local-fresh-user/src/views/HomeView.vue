@@ -12,6 +12,10 @@
           <span>產地直送箱</span>
           <span>台北、新北配送</span>
         </div>
+        <div class="header-actions" aria-label="快速採買操作">
+          <el-button type="success" @click="scrollToCatalog">開始採買</el-button>
+          <el-button plain @click="switchToGiftBoxes">查看直送箱</el-button>
+        </div>
         <div v-if="featuredShelves.length" class="market-shelves" aria-label="本週推薦補貨清單">
           <button
             v-for="item in featuredShelves"
@@ -33,7 +37,7 @@
       </aside>
     </header>
 
-    <section class="catalog-card">
+    <section ref="catalogSectionRef" class="catalog-card">
       <div class="catalog-toolbar">
         <div class="catalog-switch">
           <el-segmented v-model="activeTab" :options="tabOptions" />
@@ -122,27 +126,36 @@
               v-for="product in displayedProductItems"
               :key="product.id"
               class="product-card"
-              role="button"
-              tabindex="0"
-              @click="openProduct(product.id)"
-              @keyup.enter="openProduct(product.id)"
             >
-              <div class="product-image">
+              <button class="product-image product-image-button" type="button" @click="openProduct(product.id)">
                 <img v-if="product.image" :src="product.image" :alt="product.productName" />
                 <div v-else class="image-placeholder">暫無圖片</div>
-              </div>
+              </button>
               <div class="product-body">
                 <div class="product-meta">
                   <span>{{ resolveProductCategory(product) }}</span>
-                  <span>可排單配送</span>
+                  <span>{{ productDeliverySignal(product) }}</span>
                 </div>
                 <div class="product-topline">
                   <h3>{{ product.productName }}</h3>
                 </div>
                 <p class="description">{{ product.description || '當季鮮採，適合家常料理。' }}</p>
+                <div class="product-signals" aria-label="商品採買資訊">
+                  <span>{{ productUsageHint(product) }}</span>
+                  <span>3 人揪團免運</span>
+                </div>
                 <div class="product-footer">
                   <span class="price">NT$ {{ formatPrice(product.price) }}</span>
-                  <span class="detail-link">查看商品</span>
+                  <div class="product-actions">
+                    <el-button text type="success" @click="openProduct(product.id)">查看</el-button>
+                    <el-button
+                      type="success"
+                      :loading="addingProductId === product.id"
+                      @click="quickAddProductToCart(product)"
+                    >
+                      加入
+                    </el-button>
+                  </div>
                 </div>
               </div>
             </article>
@@ -230,10 +243,12 @@ const activeCategoryId = ref<number | null>(null)
 
 const productItems = ref<Product[]>([])
 const giftBoxItems = ref<GiftBoxCard[]>([])
+const catalogSectionRef = ref<HTMLElement | null>(null)
 const productSearchDraft = ref('')
 const productSearchTerm = ref('')
 const productPriceCap = ref<number | null>(null)
 const productSort = ref<'recommended' | 'priceAsc' | 'priceDesc' | 'nameAsc'>('recommended')
+const addingProductId = ref<number | null>(null)
 let productSearchTimer: ReturnType<typeof setTimeout> | undefined
 
 const heroProductNames = [
@@ -329,6 +344,40 @@ function resolveProductCategory(product: Product) {
     || '當季鮮選'
 }
 
+function productDeliverySignal(product: Product) {
+  const category = resolveProductCategory(product)
+  if (category.includes('海鮮') || category.includes('肉')) {
+    return '冷鏈排單'
+  }
+  if (category.includes('蛋') || category.includes('奶')) {
+    return '冷藏配送'
+  }
+  return '明日可配'
+}
+
+function productUsageHint(product: Product) {
+  const category = resolveProductCategory(product)
+  if (category.includes('葉菜')) {
+    return '今晚青菜'
+  }
+  if (category.includes('肉')) {
+    return '主菜備料'
+  }
+  if (category.includes('海鮮')) {
+    return '快煮鮮食'
+  }
+  if (category.includes('蛋') || category.includes('奶')) {
+    return '早餐補貨'
+  }
+  if (category.includes('雜糧')) {
+    return '主食常備'
+  }
+  if (category.includes('調味')) {
+    return '料理增香'
+  }
+  return '家庭備菜'
+}
+
 function recommendedRank(product: Product) {
   const heroIndex = heroProductNames.findIndex((name) => product.productName.includes(name))
   if (heroIndex >= 0) {
@@ -421,6 +470,27 @@ function resetProductFilters() {
   productSearchTerm.value = ''
   productPriceCap.value = null
   productSort.value = 'recommended'
+}
+
+function scrollToCatalog() {
+  catalogSectionRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+function switchToGiftBoxes() {
+  activeTab.value = 'giftbox'
+  requestAnimationFrame(() => scrollToCatalog())
+}
+
+async function quickAddProductToCart(product: Product) {
+  try {
+    addingProductId.value = product.id
+    await addToCart({ productId: product.id })
+    ElMessage.success(`已加入購物車：${product.productName}`)
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '加入購物車失敗')
+  } finally {
+    addingProductId.value = null
+  }
 }
 
 async function addGiftBoxToCart(giftBoxId: number) {
@@ -553,6 +623,13 @@ onBeforeUnmount(() => {
   margin-right: 4px;
   color: var(--farm-primary-deep);
   font-size: 16px;
+}
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
 }
 
 .market-shelves {
@@ -824,7 +901,6 @@ onBeforeUnmount(() => {
 }
 
 .product-card {
-  cursor: pointer;
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
@@ -839,6 +915,14 @@ onBeforeUnmount(() => {
 .giftbox-image {
   height: 168px;
   background: #eef1eb;
+}
+
+.product-image-button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
 }
 
 .product-image img,
@@ -911,6 +995,25 @@ onBeforeUnmount(() => {
   font-size: 14px;
 }
 
+.product-signals {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.product-signals span {
+  min-width: 0;
+  padding: 8px 9px;
+  border: 1px solid rgba(47, 111, 78, 0.12);
+  border-radius: 7px;
+  background: #fbfcf8;
+  color: #405047;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+
 .product-footer {
   display: flex;
   justify-content: space-between;
@@ -920,10 +1023,15 @@ onBeforeUnmount(() => {
   padding-top: 14px;
 }
 
-.detail-link {
-  color: var(--farm-primary);
-  font-size: 13px;
-  font-weight: 800;
+.product-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.product-actions :deep(.el-button) {
+  margin-left: 0;
 }
 
 .giftbox-items {
@@ -998,16 +1106,34 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 640px) {
+  .home-shell {
+    padding-top: 10px;
+  }
+
   .storefront-copy h1 {
-    font-size: 28px;
+    font-size: 26px;
   }
 
   .header-copy {
     font-size: 15px;
+    line-height: 1.65;
+  }
+
+  .header-facts {
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .header-facts span {
+    min-height: 30px;
+  }
+
+  .header-actions {
+    margin-top: 14px;
   }
 
   .fulfillment-panel {
-    min-height: 190px;
+    min-height: 150px;
   }
 
   .catalog-card {
@@ -1026,7 +1152,17 @@ onBeforeUnmount(() => {
   }
 
   .market-shelves {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .shelf-button {
+    min-height: 66px;
+    padding: 10px;
+  }
+
+  .shelf-button strong {
+    font-size: 13px;
   }
 
   .product-grid,
@@ -1037,6 +1173,19 @@ onBeforeUnmount(() => {
   .product-controls :deep(.el-input-number),
   .product-controls .el-button {
     width: 100%;
+  }
+
+  .product-footer {
+    align-items: flex-start;
+  }
+
+  .product-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .product-actions :deep(.el-button:not(.is-text)) {
+    min-width: 92px;
   }
 }
 </style>
