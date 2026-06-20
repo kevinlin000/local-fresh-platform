@@ -416,6 +416,11 @@
   - Admin `npm audit --omit=dev` passed with 0 vulnerabilities.
   - User frontend `corepack pnpm@10.25.0 run build` passed.
   - Full `scripts/check-before-commit.sh` passed end to end: backend verify 155 tests, repository hygiene, admin build/audit, and user build.
+- Remote CI follow-up:
+  - Pushed `b23c0b5 ci: harden portfolio quality gate`.
+  - GitHub Actions started the new CI run and passed repository hygiene plus admin frontend build/audit.
+  - User frontend failed before install because `actions/setup-node` tried to use pnpm cache before Corepack had made pnpm available.
+  - Removed the pnpm cache configuration from the user frontend job so CI uses Corepack-managed `pnpm@10.25.0` consistently.
 
 ## 2026-06-20 16:05 +0800
 
