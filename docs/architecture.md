@@ -2,7 +2,7 @@
 
 ## 文件目的
 
-本文件作為專案根 README 的延伸說明，聚焦於系統內部設計、資料模型、關鍵流程與技術取捨。  
+本文件作為專案根 README 的延伸說明，聚焦於系統內部設計、資料模型、關鍵流程與技術取捨。
 若 README 提供的是產品與功能總覽，這份文件則用來說明系統如何被拆解、如何運作，以及為什麼採用目前的實作方式。
 
 ---
@@ -11,7 +11,7 @@
 
 ### 架構概觀
 
-整體系統由用戶端網站、管理端網站、Spring Boot 後端 API、MySQL、Redis 與第三方服務組成。  
+整體系統由用戶端網站、管理端網站、Spring Boot 後端 API、MySQL、Redis 與第三方服務組成。
 用戶端負責瀏覽商品、購物車、下單與揪團；管理端負責商品、分類、訂單與店鋪營運管理；後端負責身份驗證、業務邏輯、資料存取與整合外部服務。
 
 ```mermaid
@@ -780,7 +780,7 @@ sequenceDiagram
 
 ### 5.1 訂單狀態機
 
-訂單狀態延續一般電商流程，並額外加入揪團期間的 `PENDING_GROUP = 8`。  
+訂單狀態延續一般電商流程，並額外加入揪團期間的 `PENDING_GROUP = 8`。
 退款不是獨立的訂單狀態，而是透過 `pay_status = REFUND` 搭配 `status = CANCELLED` 表達；這讓訂單生命週期保持單一狀態軸，付款/退款痕跡則留在支付狀態與 `payment_event`。
 
 ```mermaid
@@ -867,7 +867,7 @@ stateDiagram-v2
 - 成團條件判斷
 - 提交通知時序
 
-如果把所有事情都塞在一個 `@Transactional` 公開方法內，很容易讓鎖範圍、資料庫交易範圍與通知時機混在一起。  
+如果把所有事情都塞在一個 `@Transactional` 公開方法內，很容易讓鎖範圍、資料庫交易範圍與通知時機混在一起。
 本專案因此採取「先取得鎖，再用 `TransactionTemplate` 包住核心交易邏輯，最後在 commit 後發送通知」的做法，讓責任邊界更清楚。
 
 ---
@@ -910,7 +910,7 @@ stateDiagram-v2
 - 驗證 VO / DTO 映射
 - 驗證某個流程在成功與失敗條件下的行為
 
-這類測試以 H2、`@SpringBootTest`、`@AutoConfigureMockMvc` 為主，必要時用 `@MockBean` 把外部依賴（例如 Google OAuth client）隔離掉。  
+這類測試以 H2、`@SpringBootTest`、`@AutoConfigureMockMvc` 為主，必要時用 `@MockBean` 把外部依賴（例如 Google OAuth client）隔離掉。
 這讓測試維持快速、聚焦且容易除錯。
 
 ### 何時用 Testcontainers
@@ -921,7 +921,7 @@ stateDiagram-v2
 - 驗證多執行緒競爭不會超賣或超額加入
 - 驗證排程與鎖的競爭場景
 
-此時 pure mock 無法提供足夠信心，因此改用 Testcontainers 啟 Redis，讓測試針對真實鎖語意做驗證。  
+此時 pure mock 無法提供足夠信心，因此改用 Testcontainers 啟 Redis，讓測試針對真實鎖語意做驗證。
 這類測試執行較慢，但覆蓋的是系統最具風險的部分。
 
 ### 流程驗證 vs 真實併發驗證
@@ -935,8 +935,8 @@ stateDiagram-v2
 
 ### 測試環境與正式環境差異
 
-目前測試環境使用 H2 schema，正式環境與 dev 使用 MySQL。  
-部分 schema 約束曾出現不完全等價的情況，例如 `orders.pay_method`、`orders.delivery_status` 的 `NOT NULL DEFAULT 1`。  
+目前測試環境使用 H2 schema，正式環境與 dev 使用 MySQL。
+部分 schema 約束曾出現不完全等價的情況，例如 `orders.pay_method`、`orders.delivery_status` 的 `NOT NULL DEFAULT 1`。
 主要 schema 差異已修補，完整對齊規劃於後續 milestone 處理，詳見：
 
 - [known-issues.md](known-issues.md)
@@ -949,7 +949,7 @@ stateDiagram-v2
 
 #### 1. Redis 快取商品與直送箱列表
 
-用戶端瀏覽首頁時，分類切換與商品清單查詢是高頻讀取場景。  
+用戶端瀏覽首頁時，分類切換與商品清單查詢是高頻讀取場景。
 因此系統對單品與直送箱列表加上 Redis 快取，並補上 TTL 作為降級保護，降低 MySQL 重複查詢壓力。
 
 #### 2. Snowflake 訂單號
@@ -963,19 +963,19 @@ stateDiagram-v2
 
 #### 3. ThreadLocal 存登入上下文
 
-在 controller 與 service 間，不需要每次都傳遞 memberId。  
+在 controller 與 service 間，不需要每次都傳遞 memberId。
 這使程式碼更乾淨，但同時透過回歸測試確保請求結束後會清理，避免跨請求污染。
 
 #### 4. 揪團 join 的細粒度鎖
 
-鎖粒度不是全域，而是 `groupNo` 層級。  
+鎖粒度不是全域，而是 `groupNo` 層級。
 這表示不同揪團之間不會互相阻塞，只有同一團的競爭者會被序列化處理。
 
 ### 已知的 N+1 取捨
 
 #### 揪團過期處理中的訂單金額查詢
 
-過期任務在記錄退款 log 時，會逐筆查每位 participant 的對應訂單金額。  
+過期任務在記錄退款 log 時，會逐筆查每位 participant 的對應訂單金額。
 這屬於已知 N+1：
 
 - 每筆過期揪團一次主查詢
@@ -1008,8 +1008,8 @@ stateDiagram-v2
 
 ### 2. ThreadLocal 跨請求清理
 
-ThreadLocal 用來保存當前登入使用者資訊，但 servlet thread pool 會重用執行緒。  
-如果請求結束後不清掉上下文，下一次請求可能讀到錯誤會員資料。  
+ThreadLocal 用來保存當前登入使用者資訊，但 servlet thread pool 會重用執行緒。
+如果請求結束後不清掉上下文，下一次請求可能讀到錯誤會員資料。
 因此攔截器在請求完成時會主動清理，並以回歸測試驗證這個行為。
 
 ### 3. JWT 雙端隔離
@@ -1066,7 +1066,7 @@ Google 登入相關依賴被包在 `GoogleOAuthClient` 中，測試則透過替�
 
 ### 8. Redis 使用責任分離
 
-一般 cache 與店鋪狀態查詢透過 Spring Data Redis 處理；揪團分散式鎖透過 Redisson 處理。  
+一般 cache 與店鋪狀態查詢透過 Spring Data Redis 處理；揪團分散式鎖透過 Redisson 處理。
 這不只是技術風格選擇，也有安全與穩定性層面的意義：避免不同用途混用同一層封裝，降低相容性與誤用風險。
 
 ---

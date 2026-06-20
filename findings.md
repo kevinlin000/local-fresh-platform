@@ -210,3 +210,12 @@
 - The safer boundary is a nullable `product_inventory_log.idempotency_key`, generated only for `*_CANCEL_RESTORE` events. Normal reserve logs and manual adjustments keep `NULL`, so repeated legitimate stock movements are not blocked.
 - Order cancellation now aggregates restored quantities by product before calling `InventoryService.restoreProduct`, so one cancelled order writes at most one restore log per product and can safely use a per-order/per-product idempotency key.
 - This is still a single-service consistency model, but it is stronger than service precheck alone because duplicate restore keys are now rejected by the database.
+
+## Phase 25 CI Quality Gate Findings
+
+- The repo already had GitHub Actions, but backend CI only ran `mvn test`. That missed the JaCoCo report generation path that the README and interview docs now cite as backend evidence.
+- A portfolio-quality gate should stay practical: backend `verify`, admin build/audit, user build, and lightweight repository hygiene. It should not try to boot the whole fullstack demo or run browser smoke without explicit service orchestration.
+- Repository hygiene is useful because this project has curated README screenshots and a history of course-template terminology cleanup. A small script can cheaply assert screenshot references and guard against old platform terms returning.
+- Existing repo files had some trailing whitespace in older docs/admin files, so adding a global whitespace gate required a small mechanical cleanup first.
+- Re-running the full local gate exposed a real local flake: Mockito inline mock maker could not self-attach under the Homebrew JDK after repeated full test runs. Switching test resources to `mock-maker-subclass` is a better fit because the current tests do not use final/static mocking and CI should not depend on JVM attach behavior.
+- Admin `npm audit --omit=dev` was already part of CI and failed on `form-data@4.0.5` through `axios`. Updating the admin lockfile to `form-data@4.0.6` keeps the audit gate meaningful instead of leaving CI red.

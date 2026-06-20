@@ -390,6 +390,33 @@
   - Focused rerun with `-Dsurefire.failIfNoSpecifiedTests=false` passed: 12 tests, 0 failures, 0 errors.
   - Full backend `mvn -pl local-fresh-server -am verify` passed: 155 tests, 0 failures, 0 errors, 5 skipped, with JaCoCo report generation.
 
+## 2026-06-21 00:56 +0800
+
+- Started Phase 25 CI quality gate hardening after the user asked to continue sequentially and requested another strict score.
+- Inspected existing `.github/workflows/ci.yml`, root/admin/user package scripts, lockfiles, and `scripts/check-before-commit.sh`.
+- Findings:
+  - Existing CI already had backend/admin/user jobs.
+  - Backend CI ran `mvn test`, while current portfolio evidence relies on `mvn -pl local-fresh-server -am verify` and JaCoCo.
+  - There was no cheap repository hygiene job for README screenshot references, legacy terms, or trailing whitespace.
+- Implemented:
+  - Added `scripts/check-repo-hygiene.mjs`.
+  - Added a GitHub Actions `repo-hygiene` job.
+  - Changed backend CI to run `mvn -pl local-fresh-server -am verify`.
+  - Added JaCoCo report upload as `backend-jacoco-report`.
+  - Updated `scripts/check-before-commit.sh` to use backend `verify` and repository hygiene.
+  - Updated README/testing docs to match the CI gate.
+  - Mechanically removed trailing whitespace from existing docs/admin text files caught by the new gate.
+- Stabilized:
+  - Admin `npm audit --omit=dev` initially failed on `form-data@4.0.5`; `npm audit fix --omit=dev` updated the lockfile to a non-vulnerable version.
+  - Full local gate initially failed because Mockito inline Byte Buddy mock maker could not self-attach under the local Homebrew JDK.
+  - Added `src/test/resources/mockito-extensions/org.mockito.plugins.MockMaker` with `mock-maker-subclass`, which fits the current test suite and removes the attach dependency.
+- Verification:
+  - `node scripts/check-repo-hygiene.mjs` passed.
+  - Admin frontend `npm run build` passed.
+  - Admin `npm audit --omit=dev` passed with 0 vulnerabilities.
+  - User frontend `corepack pnpm@10.25.0 run build` passed.
+  - Full `scripts/check-before-commit.sh` passed end to end: backend verify 155 tests, repository hygiene, admin build/audit, and user build.
+
 ## 2026-06-20 16:05 +0800
 
 - Started Phase 13 payment lifecycle evidence hardening.

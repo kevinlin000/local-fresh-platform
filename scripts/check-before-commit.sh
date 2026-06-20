@@ -11,7 +11,10 @@ run_step() {
 }
 
 run_step "Backend Maven tests" \
-  sh -c "cd '$ROOT_DIR/backend-environment/local-fresh-backend' && mvn test"
+  sh -c "cd '$ROOT_DIR/backend-environment/local-fresh-backend' && mvn -pl local-fresh-server -am verify"
+
+run_step "Repository hygiene" \
+  sh -c "cd '$ROOT_DIR' && node scripts/check-repo-hygiene.mjs"
 
 if [ -f "$ROOT_DIR/frontend-environment/local-fresh-admin/package-lock.json" ]; then
   run_step "Admin frontend build" \
@@ -20,7 +23,7 @@ fi
 
 if [ -f "$ROOT_DIR/frontend-environment/local-fresh-user/pnpm-lock.yaml" ]; then
   run_step "User frontend build" \
-    sh -c "cd '$ROOT_DIR/frontend-environment/local-fresh-user' && corepack pnpm@10.25.0 install --frozen-lockfile && corepack pnpm@10.25.0 run build"
+    sh -c "cd '$ROOT_DIR/frontend-environment/local-fresh-user' && CI=true corepack pnpm@10.25.0 install --frozen-lockfile && corepack pnpm@10.25.0 run build"
 fi
 
 printf "\nAll pre-commit checks passed.\n"

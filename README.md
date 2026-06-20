@@ -511,6 +511,7 @@ npm run smoke:browser
 - Spring Boot 3.5 升級 + Flyway migration 檔案版本化(V1~V11)
 - 管理端 Vue 3 + Vite + TypeScript + Pinia + Element Plus 升級
 - Testcontainers Redis 整合測試 + GitHub Actions backend/admin/user frontend checks
+- CI quality gate：GitHub Actions 會跑 repository hygiene、後端 `verify` + JaCoCo artifact、管理端 build / audit、會員端 build
 
 ## License
 

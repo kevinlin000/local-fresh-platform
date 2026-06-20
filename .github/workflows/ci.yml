@@ -7,9 +7,27 @@ on:
       - hardening-and-upgrade
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
+  repo-hygiene:
+    name: Repository hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check docs and repository hygiene
+        run: node scripts/check-repo-hygiene.mjs
+
   backend:
-    name: Backend tests
+    name: Backend verify
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -25,8 +43,15 @@ jobs:
           java-version: '17'
           cache: maven
 
-      - name: Test
-        run: mvn test
+      - name: Verify
+        run: mvn -pl local-fresh-server -am verify
+
+      - name: Upload JaCoCo report
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-jacoco-report
+          path: backend-environment/local-fresh-backend/local-fresh-server/target/site/jacoco
+          if-no-files-found: error
 
   admin-frontend:
     name: Admin frontend build

@@ -20,9 +20,9 @@
         </el-form-item>
         <div class="subBox">
           <el-button type="primary" @click="submitForm('ruleForm',false)">儲存</el-button>
-          <el-button 
-            v-if="this.optType === 'add'" 
-            type="primary" 
+          <el-button
+            v-if="this.optType === 'add'"
+            type="primary"
             @click="submitForm('ruleForm',true)">儲存並繼續新增員工
           </el-button>
           <el-button @click="() => this.$router.push('/employee')">回到</el-button>
@@ -61,7 +61,7 @@ export default {
                 }else{
                   callback()
                 }
-              } 
+              }
             }
           ],
           idNumber: [
@@ -71,7 +71,7 @@ export default {
                 }else{
                   callback()
                 }
-              } 
+              }
             }
           ]
         }

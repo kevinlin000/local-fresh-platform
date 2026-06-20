@@ -419,6 +419,12 @@ Before refreshing local screenshots or giving a live demo, run:
 scripts/check-ui-smoke-local.mjs
 ```
 
+For repository hygiene and portfolio evidence checks, run:
+
+```bash
+node scripts/check-repo-hygiene.mjs
+```
+
 For a real browser smoke pass, start the backend, user storefront, and admin
 console, then run:
 

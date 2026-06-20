@@ -14,16 +14,18 @@ backend portfolio project.
 
 ## Default Backend Test Command
 
-The default command is CI-safe and does not require local Redis or Docker:
+The default backend quality gate is:
 
 ```bash
 cd backend-environment/local-fresh-backend
-mvn test
+mvn -pl local-fresh-server -am verify
 ```
 
-`local-fresh-server` configures Maven Surefire with `excludedGroups=redis`, so Redis
-Testcontainers tests are skipped by default. This keeps ordinary local review
-and GitHub Actions runs deterministic.
+This runs the backend test suite and generates the JaCoCo HTML report used as
+portfolio evidence. `local-fresh-server` configures Maven Surefire with
+`excludedGroups=redis`, so Redis Testcontainers tests are skipped unless they
+are explicitly requested. This keeps ordinary local review and GitHub Actions
+runs deterministic.
 
 ## Backend Coverage Report
 
@@ -96,6 +98,8 @@ The current coverage emphasis is the order lifecycle:
 
 Run the Redis-tagged concurrency tests when Docker is available:
 
+## Redis / Testcontainers Command
+
 ```bash
 cd backend-environment/local-fresh-backend
 mvn -pl local-fresh-server -DexcludedGroups= -Dgroups=redis test
@@ -105,6 +109,15 @@ These tests intentionally use real Redis instead of pure mocks because the risk
 being tested is distributed lock behavior under concurrent group-buy joins.
 
 ## Frontend Checks
+
+Repository-level hygiene is checked in CI with:
+
+```bash
+node scripts/check-repo-hygiene.mjs
+```
+
+This verifies README screenshot references, legacy course/platform terminology,
+and trailing whitespace in tracked text files.
 
 The admin frontend is checked in CI with:
 

@@ -37,7 +37,6 @@ declare module 'vue' {
     ElTable: typeof import('element-plus/es')['ElTable']
     ElTableColumn: typeof import('element-plus/es')['ElTableColumn']
     ElTag: typeof import('element-plus/es')['ElTag']
-    ElTooltip: typeof import('element-plus/es')['ElTooltip']
     Empty: typeof import('./src/components/Empty/index.vue')['default']
     Hamburger: typeof import('./src/components/Hamburger/index.vue')['default']
     HeadLable: typeof import('./src/components/HeadLable/index.vue')['default']

@@ -11,7 +11,7 @@ cache:
   key: ${CI_BUILD_REF_NAME}
   paths:
     - node_modules/
-    
+
 install-staging:dep: # Jobs 表示构建工作，表示某个 Stage 里面执行的工作。
   stage: install
   tags:
@@ -26,7 +26,7 @@ install-staging:dep: # Jobs 表示构建工作，表示某个 Stage 里面执行
     expire_in: 60 mins   # artifacets 的过期时间，因为这些数据都是直接保存在 Gitlab 机器上的，过于久远的资源就可以删除掉了
     paths:  # 需要被传递给下一个job的目录。
     - node_modules/
-    
+
 deploy-staging:dep:
   stage: deploy
   tags:
@@ -39,7 +39,7 @@ deploy-staging:dep:
   - echo "=====start deploy======"
   - sudo cp -rf ./dist/  /usr/share/nginx/html/reggie
   - echo "=====end deploy!!!!!!======"
-  
 
 
-  
+
+

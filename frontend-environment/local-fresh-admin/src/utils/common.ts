@@ -15,7 +15,7 @@ export const debounce=(fn, time)=> {
       fn.apply(_this, args)
     }, time)
   }
-  
+
 };
 //节流
 export const throttle = (fn, time)=> {
