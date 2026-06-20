@@ -46,7 +46,9 @@ backend-environment/local-fresh-backend/local-fresh-server/target/site/jacoco/in
 The current coverage emphasis is the order lifecycle:
 
 - `OrderStatusTransitionPolicy`: legal order-state transitions.
-- `OrderServiceImpl`: member/admin ownership and status guard behavior.
+- `OrderServiceImpl`: member/admin ownership and status guard behavior,
+  including payment request guards that reject cancelled orders and pending
+  group-buy pre-orders before any provider request is created.
 - `OrderPaymentServiceImpl`: provider-neutral payment request creation, demo
   immediate success strategy, payment callback command handling, payment event
   recording, duplicate callback, concurrent callback race, and invalid

@@ -217,3 +217,18 @@
   - Browser acceptance verified member home, group-buy detail, admin dashboard, and admin orders with clean latest console output.
   - Refreshed `docs/screenshots/01-home.png`, `02-product-list.png`, `04-group-buy.png`, and `07-admin-dashboard.png`.
   - `git diff --check` passed.
+
+## 2026-06-20 16:05 +0800
+
+- Started Phase 13 payment lifecycle evidence hardening.
+- Re-read the planning files, ADR, order/payment services, payment gateways, callback controller, and current tests.
+- Found that ECPay scaffolding already exists: provider switch, ECPay signed checkout payload, callback parser, CheckMacValue tests, member POST-form redirect, and payment-event admin evidence.
+- Implemented a small hardening slice:
+  - Removed unused `OrderMapper.updateStatus`, which could bypass the guarded `markPaymentSucceededByNumber` transition path.
+  - Added `OrderServiceImplTest` cases proving cancelled unpaid orders and pending group-buy pre-orders cannot create a provider payment request.
+  - Corrected the order-status documentation so refunds are described as `pay_status=REFUND` on cancelled orders, not a nonexistent order status 7.
+- Verification:
+  - First focused test attempt without `-am` exposed the known stale sibling-module issue; the correct reactor command was used afterward.
+  - Focused `OrderServiceImplTest` passed with 21 tests.
+  - Backend `mvn -pl local-fresh-server -am verify` passed with 146 tests, 0 failures, 0 errors, 5 skipped, and JaCoCo report generation.
+  - `git diff --check` passed.

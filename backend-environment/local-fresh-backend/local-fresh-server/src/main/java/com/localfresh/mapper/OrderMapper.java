@@ -36,13 +36,6 @@ public interface OrderMapper {
      */
     void update(Orders orders);
 
-    /**
-     * 依訂單號更新付款後的訂單狀態。
-     */
-    @Update("update orders set status = #{orderStatus},pay_status = #{orderPaidStatus} ,checkout_time = #{check_out_time} " +
-            "where number = #{orderNumber}")
-    void updateStatus(Integer orderStatus, Integer orderPaidStatus, LocalDateTime check_out_time, String orderNumber);
-
     @Update("update orders set status = #{toStatus}, pay_status = #{toPayStatus}, checkout_time = #{checkoutTime} " +
             "where number = #{orderNumber} and status = #{fromStatus} and pay_status = #{fromPayStatus}")
     int markPaymentSucceededByNumber(@Param("orderNumber") String orderNumber,

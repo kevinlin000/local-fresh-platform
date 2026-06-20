@@ -43,7 +43,7 @@ public class Orders implements Serializable {
     // 訂單編號
     private String number;
 
-    //訂單狀態 1待付款 2待確認 3已確認 4配送中 5已完成 6已取消 7退款 8揪團中
+    //訂單狀態 1待付款 2待確認 3已確認 4配送中 5已完成 6已取消 8揪團中
     private Integer status;
 
     //下單會員id
@@ -58,7 +58,7 @@ public class Orders implements Serializable {
     // 結帳時間
     private LocalDateTime checkoutTime;
 
-    // 支付方式 1 Demo payment
+    // 支付方式 1 Demo payment / ECPay credit card
     private Integer payMethod;
 
     // 支付狀態 0 未支付 1 已支付 2 退款

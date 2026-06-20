@@ -113,6 +113,38 @@ class OrderServiceImplTest {
     }
 
     @Test
+    void paymentShouldRejectCanceledUnpaidOrder() {
+        BaseContext.setCurrentId(100L);
+        Orders order = orderWithStatus(3L, Orders.CANCELLED);
+        order.setUserId(100L);
+        order.setNumber("ORDER-CANCELLED");
+        order.setPayStatus(Orders.UN_PAID);
+        when(orderMapper.getByNumber("ORDER-CANCELLED")).thenReturn(order);
+
+        OrderBusinessException exception = assertThrows(OrderBusinessException.class,
+                () -> orderService.payment(paymentDTO("ORDER-CANCELLED")));
+
+        assertEquals(MessageConstant.ORDER_STATUS_ERROR, exception.getMessage());
+        verifyNoInteractions(orderPaymentService);
+    }
+
+    @Test
+    void paymentShouldRejectPendingGroupOrder() {
+        BaseContext.setCurrentId(100L);
+        Orders order = orderWithStatus(4L, Orders.PENDING_GROUP);
+        order.setUserId(100L);
+        order.setNumber("ORDER-GROUP");
+        order.setPayStatus(Orders.UN_PAID);
+        when(orderMapper.getByNumber("ORDER-GROUP")).thenReturn(order);
+
+        OrderBusinessException exception = assertThrows(OrderBusinessException.class,
+                () -> orderService.payment(paymentDTO("ORDER-GROUP")));
+
+        assertEquals(MessageConstant.ORDER_STATUS_ERROR, exception.getMessage());
+        verifyNoInteractions(orderPaymentService);
+    }
+
+    @Test
     void paymentShouldMovePendingUnpaidOrderToWaitingForAcceptance() throws Exception {
         BaseContext.setCurrentId(100L);
         Orders order = orderWithStatus(1L, Orders.PENDING_PAYMENT);

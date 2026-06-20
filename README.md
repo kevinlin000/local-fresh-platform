@@ -169,7 +169,7 @@ erDiagram
 - 購物車與下單流程：支援加入購物車、數量調整、地址選擇、備註填寫與歷史訂單查詢。
 - 揪團湊免運：會員可建立揪團、分享連結邀請他人加入，3 人成團後轉為正式訂單。
 - 雙軌登入機制：前端支援 Google OAuth 2.0，開發環境保留 mock login 方便測試與 demo。
-- 訂單狀態流轉：涵蓋待付款、待確認、配送中、已完成、已取消，以及揪團中的預訂單狀態。
+- 訂單狀態流轉：涵蓋待付款、待確認、已確認、配送中、已完成、已取消，以及揪團中的預訂單狀態；退款以 `pay_status=REFUND` 搭配已取消訂單表示。
 - 店鋪與營運管理：管理端可維護商品、分類、訂單與營業狀態。
 - 快取與排程協作：以 Redis 快取熱門查詢、以排程處理過期揪團與退款模擬流程。
 
@@ -208,9 +208,9 @@ erDiagram
 
 ### 3. 訂單生命週期規則與 Service 測試證據
 
-訂單狀態轉移集中在 `OrderStatusTransitionPolicy`，明確列出付款、會員取消、管理端確認 / 婉拒 / 取消、配送與完成等操作的合法來源狀態與目標狀態。這讓 service 層不需要散落判斷規則，也讓「待付款 → 待確認 → 已確認 → 配送中 → 已完成」與取消路徑能被單元測試直接驗證。
+訂單狀態轉移集中在 `OrderStatusTransitionPolicy`，明確列出付款、會員取消、管理端確認 / 婉拒 / 取消、配送與完成等操作的合法來源狀態與目標狀態。退款不是額外訂單狀態，而是由取消後的 `pay_status=REFUND` 與 `payment_event` / refund log 表達。這讓 service 層不需要散落判斷規則，也讓「待付款 → 待確認 → 已確認 → 配送中 → 已完成」與取消路徑能被單元測試直接驗證。
 
-目前已補上 `OrderServiceImpl`、`OrderPaymentServiceImpl`、`DemoPaymentGateway`、`EcpayPaymentGateway`、`OrderCancellationServiceImpl`、`OrderFulfillmentServiceImpl` 與 `OrderStatusTransitionPolicy` 的核心測試，涵蓋付款請求與付款成功回呼分離、demo HMAC callback 驗證、ECPay CheckMacValue 驗證與 callback mapping、付款事件紀錄、重複付款 callback、concurrent callback race、已完成訂單不可取消、會員不可操作他人訂單、未付款拒單不退款、直送箱取消時還原組成商品庫存等案例。`local-fresh-server` 已接入 JaCoCo，可用 `mvn -pl local-fresh-server -am verify` 產生 HTML 報告，完整測試策略見 [docs/testing.md](docs/testing.md)。
+目前已補上 `OrderServiceImpl`、`OrderPaymentServiceImpl`、`DemoPaymentGateway`、`EcpayPaymentGateway`、`OrderCancellationServiceImpl`、`OrderFulfillmentServiceImpl` 與 `OrderStatusTransitionPolicy` 的核心測試，涵蓋付款請求與付款成功回呼分離、已取消 / 揪團中訂單不可付款、demo HMAC callback 驗證、ECPay CheckMacValue 驗證與 callback mapping、付款事件紀錄、重複付款 callback、concurrent callback race、已完成訂單不可取消、會員不可操作他人訂單、未付款拒單不退款、直送箱取消時還原組成商品庫存等案例。`local-fresh-server` 已接入 JaCoCo，可用 `mvn -pl local-fresh-server -am verify` 產生 HTML 報告，完整測試策略見 [docs/testing.md](docs/testing.md)。
 
 付款流程另外新增 `payment_event` 事件表，紀錄 `REQUEST_CREATED`、`CALLBACK_SUCCEEDED`、`CALLBACK_DUPLICATE` 與 `CALLBACK_REJECTED`，並提供 `GET /admin/paymentEvents/page` 依訂單編號、provider、事件類型、結果、金流交易編號、冪等鍵與時間範圍查詢。目前 demo gateway 仍維持本機立即付款成功，方便展示；但後端已新增 `/payment/callback` provider 回呼入口、demo HMAC 驗證與可切換的 ECPay CheckMacValue parser，會員端也能把 ECPay 付款請求組成 POST form 導轉。資料模型保留 provider、provider reference、provider trade no、idempotency key、amount、raw payload 與處理結果。後續接綠界 ECPay sandbox 時，主要剩真實 ReturnURL / OrderResultURL callback 驗證與對帳紀錄。
 

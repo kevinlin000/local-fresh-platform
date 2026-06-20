@@ -112,3 +112,14 @@
   - The group-buy detail page reads more like a data detail page than a consumer decision page.
   - The admin dashboard visual system is acceptable, but seeded dashboard activity can show all-zero business metrics, making the demo look empty.
 - The right scope is a targeted polish pass: recommendation ordering and quick shelves on the member home page, stronger progress/CTA hierarchy on group-buy detail, and a Flyway refresh for today dashboard activity.
+
+## Phase 13 Payment Lifecycle Findings
+
+- The project already has more payment readiness than the next-step discussion assumed:
+  - `PaymentGateway` abstracts provider behavior.
+  - `DemoPaymentGateway` supports signed local callbacks and immediate demo success.
+  - `EcpayPaymentGateway` builds signed ECPay stage checkout payloads and verifies callback CheckMacValue.
+  - `/payment/callback` accepts provider form callbacks and records payment events through `OrderPaymentServiceImpl`.
+  - The member frontend can convert an ECPay response into a hidden POST form redirect.
+- Because this is already in place, the highest-value local slice is not another payment abstraction. It is lifecycle hardening: prove cancelled and pending group-buy orders cannot create a provider payment request, remove stale mapper methods that bypass the guarded update path, and align docs with the real model.
+- The architecture doc had a stale `退款(7)` order-status node. Runtime code does not define status 7; refunds are represented as `pay_status = REFUND` on a cancelled order plus payment/refund event evidence.
