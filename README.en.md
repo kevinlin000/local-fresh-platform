@@ -419,6 +419,17 @@ Before refreshing local screenshots or giving a live demo, run:
 scripts/check-ui-smoke-local.mjs
 ```
 
+For a real browser smoke pass, start the backend, user storefront, and admin
+console, then run:
+
+```bash
+npm install
+npx playwright install chromium
+USER_BASE_URL=http://127.0.0.1:5176 \
+ADMIN_BASE_URL=http://127.0.0.1:5177 \
+npm run smoke:browser
+```
+
 For the current completeness assessment and next-priority plan, see
 [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md). The project is already
 interview-ready for its core Java backend story; after the local observability

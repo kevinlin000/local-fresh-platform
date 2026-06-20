@@ -169,6 +169,22 @@ order APIs are reachable. It is not a visual-regression test; it catches broken
 local services, proxy/auth regressions, and empty demo data before manual
 browser acceptance.
 
+The browser smoke test adds a real Chromium pass over the most important local
+UI routes:
+
+```bash
+npm install
+npx playwright install chromium
+USER_BASE_URL=http://127.0.0.1:5176 \
+ADMIN_BASE_URL=http://127.0.0.1:5177 \
+npm run smoke:browser
+```
+
+This Playwright check logs into the member storefront with the mock account,
+verifies the home and order-history pages, logs into the admin console, and
+verifies the dashboard, order-management, and product-management pages. It is
+still a smoke test, not a pixel-level visual regression suite.
+
 This is intentionally lighter than full E2E automation. The current project
 goal is to prove the backend workflow and provide credible UI evidence; a future
 production-facing slice should add automated smoke tests for login, checkout,

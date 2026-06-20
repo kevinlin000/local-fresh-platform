@@ -108,16 +108,17 @@
 - 公開 preflight 顯示 health 與 Nginx 正常，但 `/payment/callback` 回 HTTP `404`，代表 EC2 backend 尚未部署到含 callback endpoint 的版本。
 - 在這個 blocker 解掉以前，不應切 `PAYMENT_PROVIDER=ecpay`。
 
-剛完成的本地切面是 **UI smoke precheck**：
+剛完成的本地切面是 **UI smoke precheck + browser smoke**：
 
 - 新增 `scripts/check-ui-smoke-local.mjs`，不引入 Playwright 或其他 npm 依賴。
 - 檢查 backend health、會員端/管理端 Vue app shell、會員 mock login、管理端 login、商品列表、會員訂單、管理端 business data 與訂單查詢。
 - 這不是視覺回歸；它用來在手動截圖或 live demo 前快速發現服務沒開、proxy/auth 壞掉、demo data 空掉。
+- 另新增 Playwright Chromium smoke，覆蓋會員端 mock login、home、orders，以及管理端 login、dashboard、orders、products。
 
-下一個建議切面是 **EC2 backend 部署同步或真瀏覽器 smoke 二選一**：
+下一個建議切面是 **EC2 backend 部署同步或截圖證據重跑二選一**：
 
 - 若要往 ECPay sandbox 推進：先做 EC2 backend 部署同步，讓 `/payment/callback` preflight 變成 HTTP `200` + `0|FAIL`，再正式跑 sandbox 付款。
-- 若繼續留在本機核心品質：等網路可用或明確允許新增依賴後，再導入 Playwright browser smoke，覆蓋 login/home/orders/admin dashboard 的真瀏覽器互動。
+- 若繼續留在本機核心品質：用已新增的 browser smoke 當前置檢查，重跑 9 張 README 截圖與 demo acceptance，確認真實食物圖片、會員端、管理端畫面都維持最新狀態。
 
 ## How To Use This Roadmap
 

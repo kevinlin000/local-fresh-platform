@@ -1,0 +1,12 @@
+{
+  "name": "local-fresh-platform",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "smoke:local": "node scripts/check-ui-smoke-local.mjs",
+    "smoke:browser": "playwright test scripts/ui-smoke-browser.spec.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.61.0"
+  }
+}

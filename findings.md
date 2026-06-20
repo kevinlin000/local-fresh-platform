@@ -157,3 +157,10 @@
 - `npx --yes playwright --version` failed under the current sandbox due DNS/network access to `registry.npmjs.org`, so a Playwright-based smoke runner is not a reliable local gate in this environment.
 - The most useful low-cost smoke gate is dependency-free Node: verify local services, auth, and core data APIs before manual browser acceptance and screenshot refresh.
 - This smoke precheck is deliberately not a visual-regression replacement. It catches service/proxy/auth/demo-data failures quickly, while human Playwright/browser inspection remains the visual quality gate.
+
+## Phase 19 Browser UI Smoke Findings
+
+- After explicit approval to use Playwright, the right scope is a small root-level browser smoke instead of separate frontend E2E frameworks.
+- The browser smoke should stay focused on demo-critical routes: member mock login, storefront home, member orders, admin login, dashboard, orders, and products.
+- This complements `scripts/check-ui-smoke-local.mjs`: the Node script proves services/auth/data APIs are alive, while Playwright proves the real browser can render and navigate the critical UI surfaces.
+- The first Playwright run found selector ambiguity, not product breakage: repeated labels such as "全部商品" and "待確認" need role- or first-match selectors in smoke tests.

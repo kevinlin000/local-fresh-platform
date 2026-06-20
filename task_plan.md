@@ -34,6 +34,7 @@ Raise `local-fresh-platform` to an interview-ready Java backend/fullstack portfo
 | 16. Minimal business observability | completed | Add Actuator-backed business counters for payment callbacks, cancellation idempotency, and group-buy transitions, then document how to inspect them. |
 | 17. ECPay sandbox readiness gate | completed | Add a repeatable provider-switch readiness test, run the public preflight, and document the current blocker before any sandbox switch. |
 | 18. Local UI smoke precheck | completed | Add a dependency-free local smoke script for storefront/admin dev servers, auth APIs, and core demo data APIs. |
+| 19. Browser UI smoke test | completed | Add a Playwright browser smoke that exercises member and admin critical routes against local services. |
 
 ## Constraints
 

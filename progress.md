@@ -264,6 +264,30 @@
   - Fixed the script to reuse the mock member token for member data APIs.
   - Local smoke precheck passed against backend `8080`, member frontend `5176`, and admin frontend `5177`: 9 checks passed.
 
+## 2026-06-20 23:18 +0800
+
+- Started Phase 19 browser UI smoke after the user explicitly approved using Playwright.
+- Confirmed Playwright CLI can report version `1.61.0`, but one-off `npx --package playwright` imports do not expose `@playwright/test` to local specs.
+- Added a root smoke runner with `@playwright/test`:
+  - `npm run smoke:browser`
+  - `playwright.config.mjs`
+  - `scripts/ui-smoke-browser.spec.mjs`
+- Browser smoke scope:
+  - Member login with mock account, home page, and order-history page.
+  - Admin login, dashboard, order-management page, and product-management page.
+- Updated README/testing/roadmap/planning notes to explain the difference between dependency-free API smoke and real-browser smoke.
+- Verification:
+  - `npm install` passed and generated the root `package-lock.json`.
+  - `node --check scripts/check-ui-smoke-local.mjs` passed.
+  - `node --check scripts/ui-smoke-browser.spec.mjs` passed.
+  - First `npm run smoke:local` failed in the sandbox because Node `fetch` could not reach localhost; rerunning outside the sandbox passed 9 checks.
+  - First `npm run smoke:browser` failed because Playwright Chromium was not installed locally; `npx playwright install chromium` installed the runtime.
+  - Second browser run reached the pages but found strict selector ambiguity; selectors were tightened.
+  - Final `npm run smoke:browser` passed: 2 tests, 0 failures.
+  - Admin frontend `npm run build` passed.
+  - User frontend `corepack pnpm@10.25.0 run build` passed.
+  - `git diff --check` passed.
+
 ## 2026-06-20 16:05 +0800
 
 - Started Phase 13 payment lifecycle evidence hardening.
