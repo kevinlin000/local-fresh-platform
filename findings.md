@@ -137,3 +137,10 @@
 - Normal controller/service flows usually prevent a second cancellation through order status policy, but a stale service call or retry can still call `OrderCancellationServiceImpl.cancelOrder` with an old paid order object.
 - `product_inventory_log` already records `reference_type`, `reference_id`, and `reason`, which is enough for a lightweight service-level duplicate-cancellation guard without adding a new schema concept.
 - The pragmatic slice is to make order cancellation transactional and skip the cancellation workflow if the order is already cancelled or if an `ORDER_CANCEL_RESTORE` log already exists for that order.
+
+## Phase 16 Minimal Business Observability Findings
+
+- `local-fresh-server` already depends on Spring Boot Actuator, so the right portfolio-sized observability slice is to add business counters rather than a new monitoring stack.
+- `/actuator/**` is outside the existing `/admin/**` and `/user/**` JWT interceptor scopes. Exposing `metrics` is useful for local review, but production exposure should remain configurable through `MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE`.
+- The highest-signal counters for the current domain are payment callback results, duplicate/applied order cancellations, and group-buy transitions. These connect directly to the most interviewable backend risks: payment correctness, idempotency, and group-buy lifecycle health.
+- Prometheus, Grafana, alerting, and tracing are valid later work, but adding them now would be more infrastructure than the project needs for this phase.

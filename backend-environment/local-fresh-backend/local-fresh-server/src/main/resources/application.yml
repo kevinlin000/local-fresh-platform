@@ -34,6 +34,12 @@ logging:
     com.localfresh.service: info
     com.localfresh.controller: info
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: ${MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE:health,info,metrics}
+
 localfresh:
   cors:
     allowed-origin-patterns:

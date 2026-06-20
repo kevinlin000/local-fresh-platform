@@ -218,6 +218,19 @@
   - Refreshed `docs/screenshots/01-home.png`, `02-product-list.png`, `04-group-buy.png`, and `07-admin-dashboard.png`.
   - `git diff --check` passed.
 
+## 2026-06-20 16:28 +0800
+
+- Started Phase 16 minimal business observability after the inventory idempotency and roadmap slices.
+- Scope: add Actuator-backed counters for payment callback outcomes, order cancellation idempotency results, and group-buy state transitions without adding Prometheus/Grafana or changing deployment architecture.
+- Added `BusinessMetricsService` and Micrometer-backed implementation.
+- Wired counters into `OrderPaymentServiceImpl`, `OrderCancellationServiceImpl`, and `GroupBuyServiceImpl`.
+- Added focused unit coverage for metric tagging and updated payment/cancellation service tests to verify the business metrics are recorded on key paths.
+- Added `docs/observability.md` and updated README, testing, interview, and roadmap docs so the new observability boundary is explicit.
+- Verification:
+  - Focused metrics/payment/cancellation tests passed: 17 tests, 0 failures, 0 errors.
+  - Backend `mvn -pl local-fresh-server -am verify` passed with 151 tests, 0 failures, 0 errors, 5 skipped, and JaCoCo report generation.
+  - `git diff --check` passed.
+
 ## 2026-06-20 16:05 +0800
 
 - Started Phase 13 payment lifecycle evidence hardening.

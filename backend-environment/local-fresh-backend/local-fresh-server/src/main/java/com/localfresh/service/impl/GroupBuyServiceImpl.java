@@ -21,6 +21,7 @@ import com.localfresh.mapper.OrderMapper;
 import com.localfresh.mapper.ProductMapper;
 import com.localfresh.mapper.ShippingAddressMapper;
 import com.localfresh.service.GroupBuyService;
+import com.localfresh.service.BusinessMetricsService;
 import com.localfresh.service.InventoryService;
 import com.localfresh.utils.JsonUtil;
 import com.localfresh.vo.GroupBuyParticipantVO;
@@ -88,6 +89,9 @@ public class GroupBuyServiceImpl implements GroupBuyService {
 
     @Autowired
     private InventoryService inventoryService;
+
+    @Autowired
+    private BusinessMetricsService businessMetricsService;
 
     @Value("${localfresh.group-buy.expire-hours}")
     private Long groupBuyExpireHours;
@@ -315,6 +319,7 @@ public class GroupBuyServiceImpl implements GroupBuyService {
         groupBuy.setStatus(GROUP_BUY_CANCELED);
         groupBuy.setUpdatedAt(now);
         groupBuyMapper.update(groupBuy);
+        businessMetricsService.recordGroupBuyTransition("canceled");
 
         GroupBuyParticipant initiatorParticipant = participants.get(0);
         if (cancelPendingGroupOrder(initiatorParticipant.getPreOrderId(), CANCEL_REASON_INITIATOR, now)) {
@@ -334,6 +339,7 @@ public class GroupBuyServiceImpl implements GroupBuyService {
         groupBuy.setStatus(GROUP_BUY_COMPLETED);
         groupBuy.setUpdatedAt(LocalDateTime.now());
         groupBuyMapper.update(groupBuy);
+        businessMetricsService.recordGroupBuyTransition("completed");
 
         if (!preOrderIds.isEmpty()) {
             orderMapper.updateStatusBatch(preOrderIds, Orders.PENDING_GROUP, Orders.TO_BE_CONFIRMED);
@@ -355,6 +361,7 @@ public class GroupBuyServiceImpl implements GroupBuyService {
         groupBuy.setStatus(GROUP_BUY_FAILED);
         groupBuy.setUpdatedAt(now);
         groupBuyMapper.update(groupBuy);
+        businessMetricsService.recordGroupBuyTransition("failed");
 
         for (GroupBuyParticipant participant : participants) {
             if (cancelPendingGroupOrder(participant.getPreOrderId(), CANCEL_REASON_EXPIRED, now)) {

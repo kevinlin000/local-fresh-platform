@@ -67,6 +67,9 @@ The current coverage emphasis is the order lifecycle:
 - `PaymentEventApiTest`: admin payment-event pagination and filtering through
   the HTTP layer and JWT interceptor, including provider trade number and
   idempotency-key query fields.
+- `BusinessMetricsServiceImplTest`: custom Micrometer business counters for
+  payment callback outcomes, duplicate/applied order cancellations, and
+  group-buy transitions.
 - `OrderCancellationServiceImpl`: refund metadata, inventory restoration, and
   duplicate-cancellation guards that avoid repeated refunds or stock restores.
 - `OrderFulfillmentServiceImpl`: admin confirm, delivery, completion, and member

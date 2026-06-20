@@ -6,6 +6,7 @@ import com.localfresh.entity.PaymentEvent;
 import com.localfresh.exception.OrderBusinessException;
 import com.localfresh.mapper.OrderMapper;
 import com.localfresh.mapper.PaymentEventMapper;
+import com.localfresh.service.BusinessMetricsService;
 import com.localfresh.service.OrderPaymentService;
 import com.localfresh.service.payment.PaymentCallbackCommand;
 import com.localfresh.service.payment.PaymentGateway;
@@ -37,6 +38,9 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
     @Autowired
     private PaymentEventMapper paymentEventMapper;
 
+    @Autowired
+    private BusinessMetricsService businessMetricsService;
+
     @Override
     public OrderPaymentVO requestPayment(Orders order) {
         OrderPaymentVO paymentRequest = paymentGateway.createPaymentRequest(order);
@@ -64,6 +68,7 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
                     PaymentEvent.EVENT_CALLBACK_REJECTED, PaymentEvent.RESULT_REJECTED,
                     callbackCommand.getProviderReference(), callbackCommand.getProviderTradeNo(),
                     callbackCommand.getRawPayload());
+            businessMetricsService.recordPaymentCallback(callbackCommand.getProvider(), PaymentEvent.RESULT_REJECTED);
             throw new OrderBusinessException(MessageConstant.PAYMENT_CALLBACK_FAILED);
         }
         handlePaymentSuccess(callbackCommand);
@@ -77,12 +82,14 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
                     PaymentEvent.EVENT_CALLBACK_REJECTED, PaymentEvent.RESULT_REJECTED,
                     callbackCommand.getProviderReference(), callbackCommand.getProviderTradeNo(),
                     callbackCommand.getRawPayload());
+            businessMetricsService.recordPaymentCallback(callbackCommand.getProvider(), PaymentEvent.RESULT_REJECTED);
             throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
         }
         if (Orders.PAID.equals(ordersDB.getPayStatus())) {
             recordPaymentEvent(ordersDB, callbackCommand.getProvider(), PaymentEvent.EVENT_CALLBACK_DUPLICATE,
                     PaymentEvent.RESULT_IGNORED, callbackCommand.getProviderReference(),
                     callbackCommand.getProviderTradeNo(), callbackCommand.getRawPayload());
+            businessMetricsService.recordPaymentCallback(callbackCommand.getProvider(), PaymentEvent.RESULT_IGNORED);
             return;
         }
         try {
@@ -90,17 +97,20 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
                 recordPaymentEvent(ordersDB, callbackCommand.getProvider(), PaymentEvent.EVENT_CALLBACK_DUPLICATE,
                         PaymentEvent.RESULT_IGNORED, callbackCommand.getProviderReference(),
                         callbackCommand.getProviderTradeNo(), callbackCommand.getRawPayload());
+                businessMetricsService.recordPaymentCallback(callbackCommand.getProvider(), PaymentEvent.RESULT_IGNORED);
                 return;
             }
         } catch (OrderBusinessException ex) {
             recordPaymentEvent(ordersDB, callbackCommand.getProvider(), PaymentEvent.EVENT_CALLBACK_REJECTED,
                     PaymentEvent.RESULT_REJECTED, callbackCommand.getProviderReference(),
                     callbackCommand.getProviderTradeNo(), callbackCommand.getRawPayload());
+            businessMetricsService.recordPaymentCallback(callbackCommand.getProvider(), PaymentEvent.RESULT_REJECTED);
             throw ex;
         }
         recordPaymentEvent(ordersDB, callbackCommand.getProvider(), PaymentEvent.EVENT_CALLBACK_SUCCEEDED,
                 PaymentEvent.RESULT_SUCCEEDED, callbackCommand.getProviderReference(),
                 callbackCommand.getProviderTradeNo(), callbackCommand.getRawPayload());
+        businessMetricsService.recordPaymentCallback(callbackCommand.getProvider(), PaymentEvent.RESULT_SUCCEEDED);
 
         Map<String, Object> payload = new HashMap<>();
         payload.put("type", 1);

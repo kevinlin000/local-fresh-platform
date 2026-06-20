@@ -6,6 +6,7 @@ import com.localfresh.entity.PaymentEvent;
 import com.localfresh.exception.OrderBusinessException;
 import com.localfresh.mapper.OrderMapper;
 import com.localfresh.mapper.PaymentEventMapper;
+import com.localfresh.service.BusinessMetricsService;
 import com.localfresh.service.payment.PaymentCallbackCommand;
 import com.localfresh.service.payment.PaymentGateway;
 import com.localfresh.vo.OrderPaymentVO;
@@ -45,6 +46,9 @@ class OrderPaymentServiceImplTest {
 
     @Mock
     private PaymentEventMapper paymentEventMapper;
+
+    @Mock
+    private BusinessMetricsService businessMetricsService;
 
     @InjectMocks
     private OrderPaymentServiceImpl orderPaymentService;
@@ -104,6 +108,7 @@ class OrderPaymentServiceImplTest {
         assertEquals(PaymentEvent.EVENT_CALLBACK_SUCCEEDED, events.get(1).getEventType());
         assertEquals(PaymentEvent.RESULT_SUCCEEDED, events.get(1).getResult());
         assertEquals("DEMO:CALLBACK_SUCCEEDED:ORDER-005", events.get(1).getIdempotencyKey());
+        verify(businessMetricsService).recordPaymentCallback("DEMO", PaymentEvent.RESULT_SUCCEEDED);
         verify(webSocketServer).sendToAllClient(anyString());
     }
 
@@ -125,6 +130,7 @@ class OrderPaymentServiceImplTest {
         assertEquals(PaymentEvent.RESULT_SUCCEEDED, event.getResult());
         assertEquals("ORDER-002", event.getOrderNumber());
         assertEquals("UNKNOWN:CALLBACK_SUCCEEDED:ORDER-002", event.getIdempotencyKey());
+        verify(businessMetricsService).recordPaymentCallback(PaymentEvent.PROVIDER_UNKNOWN, PaymentEvent.RESULT_SUCCEEDED);
         verify(webSocketServer).sendToAllClient(anyString());
     }
 
@@ -156,6 +162,7 @@ class OrderPaymentServiceImplTest {
         assertEquals("DEMO-TRADE-007", event.getProviderTradeNo());
         assertEquals("DEMO:CALLBACK_SUCCEEDED:ORDER-007:DEMO-TRADE-007", event.getIdempotencyKey());
         assertEquals("{\"orderNumber\":\"ORDER-007\"}", event.getRawPayload());
+        verify(businessMetricsService).recordPaymentCallback("DEMO", PaymentEvent.RESULT_SUCCEEDED);
         verify(webSocketServer).sendToAllClient(anyString());
     }
 
@@ -179,6 +186,7 @@ class OrderPaymentServiceImplTest {
         assertEquals(PaymentEvent.EVENT_CALLBACK_REJECTED, event.getEventType());
         assertEquals(PaymentEvent.RESULT_REJECTED, event.getResult());
         assertEquals("DEMO:CALLBACK_REJECTED:ORDER-FAILED:DEMO-TRADE-FAILED", event.getIdempotencyKey());
+        verify(businessMetricsService).recordPaymentCallback("DEMO", PaymentEvent.RESULT_REJECTED);
         verifyNoInteractions(webSocketServer);
     }
 
@@ -196,6 +204,7 @@ class OrderPaymentServiceImplTest {
         assertEquals(PaymentEvent.EVENT_CALLBACK_DUPLICATE, event.getEventType());
         assertEquals(PaymentEvent.RESULT_IGNORED, event.getResult());
         assertEquals("UNKNOWN:CALLBACK_DUPLICATE:ORDER-003", event.getIdempotencyKey());
+        verify(businessMetricsService).recordPaymentCallback(PaymentEvent.PROVIDER_UNKNOWN, PaymentEvent.RESULT_IGNORED);
         verifyNoInteractions(webSocketServer);
     }
 
@@ -219,6 +228,7 @@ class OrderPaymentServiceImplTest {
         assertEquals(PaymentEvent.EVENT_CALLBACK_DUPLICATE, event.getEventType());
         assertEquals(PaymentEvent.RESULT_IGNORED, event.getResult());
         assertEquals("UNKNOWN:CALLBACK_DUPLICATE:ORDER-006", event.getIdempotencyKey());
+        verify(businessMetricsService).recordPaymentCallback(PaymentEvent.PROVIDER_UNKNOWN, PaymentEvent.RESULT_IGNORED);
         verifyNoInteractions(webSocketServer);
     }
 
@@ -235,6 +245,7 @@ class OrderPaymentServiceImplTest {
         assertEquals(PaymentEvent.RESULT_REJECTED, event.getResult());
         assertEquals("ORDER-MISSING", event.getOrderNumber());
         assertEquals("UNKNOWN:CALLBACK_REJECTED:ORDER-MISSING", event.getIdempotencyKey());
+        verify(businessMetricsService).recordPaymentCallback(PaymentEvent.PROVIDER_UNKNOWN, PaymentEvent.RESULT_REJECTED);
         verifyNoInteractions(webSocketServer);
     }
 
@@ -255,6 +266,7 @@ class OrderPaymentServiceImplTest {
         assertEquals(PaymentEvent.EVENT_CALLBACK_REJECTED, event.getEventType());
         assertEquals(PaymentEvent.RESULT_REJECTED, event.getResult());
         assertEquals("UNKNOWN:CALLBACK_REJECTED:ORDER-004", event.getIdempotencyKey());
+        verify(businessMetricsService).recordPaymentCallback(PaymentEvent.PROVIDER_UNKNOWN, PaymentEvent.RESULT_REJECTED);
         verifyNoInteractions(webSocketServer);
     }
 

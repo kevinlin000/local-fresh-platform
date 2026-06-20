@@ -7,6 +7,7 @@ import com.localfresh.mapper.GiftBoxProductMapper;
 import com.localfresh.mapper.OrderDetailMapper;
 import com.localfresh.mapper.OrderMapper;
 import com.localfresh.mapper.ProductInventoryLogMapper;
+import com.localfresh.service.BusinessMetricsService;
 import com.localfresh.service.InventoryService;
 import com.localfresh.service.payment.PaymentGateway;
 import org.junit.jupiter.api.Test;
@@ -46,6 +47,9 @@ class OrderCancellationServiceImplTest {
     @Mock
     private PaymentGateway paymentGateway;
 
+    @Mock
+    private BusinessMetricsService businessMetricsService;
+
     @InjectMocks
     private OrderCancellationServiceImpl orderCancellationService;
 
@@ -73,6 +77,7 @@ class OrderCancellationServiceImplTest {
         assertEquals("店家取消", updated.getCancelReason());
         assertNotNull(updated.getCancelTime());
         verify(inventoryService).restoreProduct(20L, 2, "ORDER_CANCEL_RESTORE", 10L, "ADMIN", 1L);
+        verify(businessMetricsService).recordOrderCancellation("applied");
     }
 
     @Test
@@ -93,6 +98,7 @@ class OrderCancellationServiceImplTest {
         assertEquals(Orders.CANCELLED, updated.getStatus());
         assertEquals("商品售完", updated.getRejectionReason());
         assertNotNull(updated.getCancelTime());
+        verify(businessMetricsService).recordOrderCancellation("applied");
     }
 
     @Test
@@ -114,6 +120,7 @@ class OrderCancellationServiceImplTest {
 
         verify(inventoryService).restoreProduct(40L, 6, "ORDER_CANCEL_RESTORE", 12L, "MEMBER", 3L);
         verify(inventoryService).restoreProduct(41L, 2, "ORDER_CANCEL_RESTORE", 12L, "MEMBER", 3L);
+        verify(businessMetricsService).recordOrderCancellation("applied");
     }
 
     @Test
@@ -133,6 +140,7 @@ class OrderCancellationServiceImplTest {
         verify(paymentGateway, never()).refund(staleOrder, "重複取消");
         verify(orderMapper, never()).update(org.mockito.ArgumentMatchers.any(Orders.class));
         verify(orderDetailMapper, never()).getByOrderId(13L);
+        verify(businessMetricsService).recordOrderCancellation("duplicate");
     }
 
     @Test
@@ -151,5 +159,6 @@ class OrderCancellationServiceImplTest {
         verify(paymentGateway, never()).refund(order, "重複取消");
         verify(orderMapper, never()).update(org.mockito.ArgumentMatchers.any(Orders.class));
         verify(orderDetailMapper, never()).getByOrderId(14L);
+        verify(businessMetricsService).recordOrderCancellation("duplicate");
     }
 }

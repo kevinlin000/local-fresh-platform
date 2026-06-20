@@ -7,6 +7,7 @@ import com.localfresh.mapper.GiftBoxProductMapper;
 import com.localfresh.mapper.OrderDetailMapper;
 import com.localfresh.mapper.OrderMapper;
 import com.localfresh.mapper.ProductInventoryLogMapper;
+import com.localfresh.service.BusinessMetricsService;
 import com.localfresh.service.InventoryService;
 import com.localfresh.service.OrderCancellationService;
 import com.localfresh.service.payment.PaymentGateway;
@@ -43,12 +44,16 @@ public class OrderCancellationServiceImpl implements OrderCancellationService {
     @Autowired
     private PaymentGateway paymentGateway;
 
+    @Autowired
+    private BusinessMetricsService businessMetricsService;
+
     @Override
     @Transactional
     public void cancelOrder(Orders ordersDB, String cancelReason, String rejectionReason,
                             String operatorType, Long operatorId) throws Exception {
         if (isCancellationAlreadyApplied(ordersDB.getId())) {
             log.info("Skip duplicate order cancellation: orderId={}", ordersDB.getId());
+            businessMetricsService.recordOrderCancellation("duplicate");
             return;
         }
 
@@ -66,6 +71,7 @@ public class OrderCancellationServiceImpl implements OrderCancellationService {
 
         orderMapper.update(orders);
         restoreProductStock(ordersDB.getId(), operatorType, operatorId);
+        businessMetricsService.recordOrderCancellation("applied");
     }
 
     private boolean isCancellationAlreadyApplied(Long orderId) {

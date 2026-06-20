@@ -18,7 +18,7 @@
 | 測試證據 | 後端 service/integration/Redis 測試、JaCoCo、前端 build、手動 Playwright 截圖證據已整理。 | 強 |
 | UI/UX | 已完成產品級 polish；不像最初的小 demo，但仍不是設計系統等級產品。 | 足夠面試 |
 | 部署 | 已有 AWS EC2 + Nginx + Docker MySQL/Redis + S3 + CloudFront + DuckDNS 作品級部署敘事。 | 足夠面試 |
-| 可觀測性 | 有 Actuator 基礎，但沒有 Prometheus/Grafana、業務 metrics、結構化 trace。 | 下一階段可補 |
+| 可觀測性 | 已有 Actuator health/info/metrics 與少量業務 metrics，涵蓋付款 callback、取消防重與揪團狀態轉換；尚未接 Prometheus/Grafana 與 trace。 | 作品層級足夠 |
 | 自動化交付 | 有 GitHub Actions checks，但尚未做 image build / ECR / EC2 自動部署。 | 後期再做 |
 
 ## Recommended Priority
@@ -46,10 +46,10 @@
    - 範圍：先做設計與一兩個 service 測試，不急著加大型 event sourcing。
    - 風險：過度設計會讓作品偏離基本功展示。
 
-3. **可觀測性最小切面**
-   - 目的：補 production thinking，但不改架構。
-   - 範圍：Actuator health/info、少量業務 metrics，例如付款 callback 結果、揪團成功/失敗計數、訂單狀態轉移計數。
-   - 風險：需要避免為了展示 Grafana 而把部署變複雜。
+3. **可觀測性下一階段**
+   - 目的：把現有 Actuator + 業務 counters 接到更完整的營運觀測。
+   - 範圍：Prometheus registry、Grafana dashboard、告警門檻、trace/log correlation。
+   - 風險：需要避免為了展示 Grafana 而把部署變複雜，建議晚於 sandbox 金流與雲端環境穩定化。
 
 4. **UI smoke test 或 screenshot checklist 自動化**
    - 目的：降低每次 polish 後靠人工截圖驗證的成本。
@@ -77,7 +77,7 @@
 
 ## Current Next Step Recommendation
 
-下一個最值得做的切面是 **可觀測性最小切面**。
+剛完成的本地切面是 **可觀測性最小切面**。
 
 理由：
 
@@ -85,14 +85,22 @@
 - 面試官若繼續追 production thinking，下一個自然問題是「你怎麼知道系統現在健康？怎麼看付款 callback、揪團與訂單狀態流轉是否異常？」。
 - 這能補上營運可見度，又不需要立刻進入完整雲端 CD 或多服務架構。
 
-建議做法：
+已完成做法：
 
-- 先盤點現有 Actuator 設定，不改部署架構。
-- 補少量業務 metrics，例如付款 callback 成功/拒絕/重複、訂單取消防重命中、揪團成功/失敗。
-- 在 `docs/testing.md` 或 architecture docs 補上如何本機查看這些 metrics。
-- 不急著引入完整 Prometheus/Grafana；先把應用層 metrics 定義清楚。
+- Actuator exposure 納入 `health,info,metrics`，並可用 `MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE` 覆蓋。
+- 補少量業務 metrics：付款 callback 成功/拒絕/重複、訂單取消防重命中、揪團成功/失敗/取消。
+- 新增 `docs/observability.md` 說明本機查詢方式與目前邊界。
+- 不導入完整 Prometheus/Grafana；先把應用層 metrics 定義清楚。
 
 剛完成的本地切面是取消訂單的 service-level 防重：若訂單已取消，或該訂單已存在 `ORDER_CANCEL_RESTORE` 庫存回補紀錄，取消流程會直接跳過，避免重複退款與重複還庫存。這不是取代資料庫唯一鍵的最終方案，但符合本作品目前的務實範圍。
+
+下一個建議切面是 **ECPay sandbox readiness 驗證，不急著正式上線**。
+
+理由：
+
+- 付款事件、callback parser、前端 POST form 與 observability 已具備。
+- 真 sandbox 驗證能把「我有寫金流骨架」推進到「我知道 provider callback、HTTPS、Nginx 與資料落點怎麼串」。
+- 這仍可先用 runbook/preflight 做，不需要現在就做完整 CD 或高可用雲端架構。
 
 ## How To Use This Roadmap
 

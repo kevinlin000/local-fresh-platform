@@ -167,6 +167,8 @@ Payment processing also writes a provider-neutral `payment_event` trail for `REQ
 
 The admin console also includes a Payment Events page, so demo reviewers can inspect payment requests, successful callbacks, duplicate callbacks, and rejected callbacks without calling the API manually.
 
+The backend also exposes a minimal business-metrics slice through Actuator. It tracks payment callback outcomes, duplicate/applied order cancellations, and group-buy state transitions. This is intentionally lighter than a Prometheus/Grafana stack; see [docs/observability.md](docs/observability.md) for local query examples and current boundaries.
+
 ### 4. Admin operation audit log
 
 Admin order confirmation, rejection, cancellation, delivery, completion, and manual product inventory adjustments now write to `admin_operation_log`. The log records the action, target type and id, before/after values, reason, operator, and timestamp, so the backend can answer who changed which business object and why. The admin API also exposes `GET /admin/operationLogs/page` for paginated filtering by action, target, operator, and time range; the admin console includes an Operation Logs page for direct review, and `AdminOperationLogApiTest` verifies pagination, filtering, and newest-first ordering from the HTTP layer. This is separate from `product_inventory_log`: inventory logs explain stock movement, while audit logs explain admin accountability.
@@ -398,6 +400,7 @@ See also:
 
 - [docs/known-issues.md](docs/known-issues.md)
 - [docs/ecpay-sandbox-runbook.md](docs/ecpay-sandbox-runbook.md)
+- [docs/observability.md](docs/observability.md)
 - [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md)
 - [docs/testing.md](docs/testing.md)
 - [docs/interview-guide.md](docs/interview-guide.md)
@@ -412,9 +415,9 @@ scripts/check-ecpay-sandbox-readiness.sh
 
 For the current completeness assessment and next-priority plan, see
 [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md). The project is already
-interview-ready for its core Java backend story; after the local inventory
-idempotency guard, the next local slice should focus on minimal business
-observability before full ECPay sandbox verification or CD automation.
+interview-ready for its core Java backend story; after the local observability
+slice, the next practical step is ECPay sandbox readiness verification before
+full CD automation.
 
 ## License
 

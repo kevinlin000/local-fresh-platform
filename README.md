@@ -216,6 +216,8 @@ erDiagram
 
 管理端也新增「付款事件」頁，可直接查 demo 訂單的付款請求、成功回呼、重複回呼與拒絕回呼，作為未來金流對帳與客服查單的前台證據。
 
+Actuator 也補上最小業務 metrics，可查付款 callback 結果、訂單取消防重命中與揪團狀態轉換，用來回答「系統跑起來後怎麼看異常」。目前先保留在應用層 counters，不急著導入完整 Prometheus/Grafana stack；查詢方式見 [docs/observability.md](docs/observability.md)。
+
 ### 4. 管理端操作 Audit Log
 
 管理端的訂單確認、婉拒、取消、配送、完成，以及商品手動庫存調整，現在會寫入 `admin_operation_log`。這張表記錄 `action`、目標類型與 id、操作前後值、原因、操作者與操作時間，用來回答「誰在什麼時候對哪個業務物件做了什麼變更」。管理端也提供 `GET /admin/operationLogs/page` 分頁查詢，可依 action、target、operator 與時間範圍篩選；後台「操作紀錄」頁可直接查閱這些紀錄，`AdminOperationLogApiTest` 也會從 HTTP 層驗證分頁、篩選與 newest-first 排序。這和 `product_inventory_log` 的庫存流水分工不同：庫存流水專注商品數量變化，Audit Log 則專注後台操作責任與追蹤。
@@ -450,6 +452,7 @@ pnpm dev
 - [docs/architecture.md](docs/architecture.md)
 - [docs/ecpay-sandbox-runbook.md](docs/ecpay-sandbox-runbook.md)
 - [docs/interview-guide.md](docs/interview-guide.md)
+- [docs/observability.md](docs/observability.md)
 - [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md)
 - [docs/testing.md](docs/testing.md)
 - [frontend-environment/local-fresh-user/README.md](frontend-environment/local-fresh-user/README.md)
@@ -466,7 +469,7 @@ scripts/check-ecpay-sandbox-readiness.sh
 
 ### 進行中
 
-- **可觀測性最小切面**:核心交易與庫存防重已補強,下一步可補少量業務 metrics,例如付款 callback 結果、訂單取消防重命中、揪團成功/失敗,先建立 production thinking,不急著導入完整 Grafana stack。
+- **ECPay sandbox readiness 驗證**:付款事件、callback parser、會員端 POST form 與最小業務 metrics 已補上後,下一步適合用現有 runbook/preflight 驗證環境變數、ReturnURL、OrderResultURL、Nginx HTTPS callback 路徑與事件落點,但不急著做正式金流上線。
 
 ### 規劃中
 
@@ -478,6 +481,7 @@ scripts/check-ecpay-sandbox-readiness.sh
 
 - 揪團分散式鎖壓測證據:100 concurrent join JMeter 壓測,`joinGroupBuy` error rate `0.00%`, P95 `2847.65 ms`, DB 最終 `current_count=101 / participant=100`
 - 訂單生命週期測試證據:`OrderStatusTransitionPolicy` 集中管理狀態轉移,核心 Order service 測試涵蓋付款、取消、婉拒、配送、完成與還庫存,並可用 JaCoCo 產生本地覆蓋率報告
+- 最小業務可觀測性:Actuator metrics 暴露付款 callback、訂單取消防重與揪團狀態轉換 counters,並保留環境變數覆蓋 exposure 範圍
 - 庫存異動防重:取消訂單時若已取消或已有 `ORDER_CANCEL_RESTORE` 庫存回補紀錄,service 會跳過重複退款、訂單更新與庫存回補
 - 管理端操作 Audit Log:訂單確認、婉拒、取消、配送、完成與商品手動庫存調整會寫入 `admin_operation_log`,並提供分頁查詢 API 與後台「操作紀錄」頁,保留操作前後值、原因與操作者
 - 雙端產品級 UI polish:會員端採買流程、商品詳情、購物車、訂單頁與管理端 dashboard / products / orders 已完成新版截圖與 README 同步
