@@ -180,3 +180,15 @@
 - Products page needed a similar operational model: stock health, content completeness, sale status, and replenishment actions should be visible on the list page so admins can spot problems without opening every product.
 - Browser inspection caught a concrete layout issue after the first order-page pass: the table still overflowed the desktop content width at 1580px because the combined column widths reached 1400px inside a 1235px content area. Column widths were reduced to keep the main table inside the card.
 - Mobile admin remains table-heavy by nature, but the new summary cards were tightened so the page keeps useful queue controls above the fold instead of pushing the table too far down.
+
+## Phase 22 Backend Deep-Dive Prep Findings
+
+- The repository already had strong backend evidence, but it was spread across README, architecture, testing, observability, perf docs, and implementation tests. Kevin needs a self-facing prep note to rehearse that story, not a public document that looks written for interviewers.
+- The best next local slice is candidate prep material, not another feature. It should explicitly connect core risks to implementation and tests: order lifecycle, payment callback idempotency, group-buy concurrency, inventory consistency, observability, security boundaries, and capacity limits.
+- The prep note should be honest about residual risks. For Shopee / Binance / Google-style interviews, overclaiming production completeness is weaker than showing precise tradeoffs and a credible next-step plan.
+- Current strongest evidence anchors:
+  - `OrderStatusTransitionPolicy` plus order/payment/cancellation/fulfillment service tests.
+  - `OrderPaymentServiceImpl` guarded update plus payment-event and callback tests.
+  - `GroupBuyServiceImpl` Redisson lock, DB unique participant constraint, Redis/Testcontainers tests, and JMeter evidence.
+  - `OrderCancellationServiceImpl` duplicate guard and inventory logs.
+  - Actuator business counters and admin operation/payment event views.

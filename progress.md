@@ -340,6 +340,22 @@
   - `npm run smoke:browser` passed: 2 tests, 0 failures.
   - `git diff --check` passed.
 
+## 2026-06-21 00:05 +0800
+
+- Started Phase 22 backend deep-dive prep notes after the user raised the target to Shopee / Binance / Google-style evaluation.
+- Scope decision:
+  - Do not add speculative microservices, CQRS, Kubernetes, or broad production infrastructure.
+  - Consolidate existing implementation and test evidence into Kevin-facing interview prep notes.
+  - Be explicit about residual risks instead of overclaiming production completeness.
+- Re-read planning files, findings, interview guide, architecture docs, testing docs, observability docs, perf docs, and backend service/test inventory.
+- Added `docs/backend-deep-dive-prep.md`:
+  - Kevin-facing answer matrix for likely deep-dive questions.
+  - Prep sections for order lifecycle, payment callback/idempotency, group-buy concurrency, inventory consistency, observability/operations, security boundaries, and scaling position.
+  - Each section maps what to say to code evidence, test evidence, and "do not overclaim" notes.
+  - Includes a 5-minute backend deep-dive sequence for interview preparation.
+- Removed awkward public README / README.en links after user feedback; the public README should remain a natural portfolio overview, not a document asking interviewers to evaluate it.
+- Kept the prep note linked from the interview guide and roadmap as self-preparation material.
+
 ## 2026-06-20 16:05 +0800
 
 - Started Phase 13 payment lifecycle evidence hardening.

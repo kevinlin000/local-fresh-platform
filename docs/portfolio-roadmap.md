@@ -16,6 +16,7 @@
 | 揪團併發 | Redisson lock、transaction boundary、唯一鍵、Testcontainers Redis、JMeter 證據已具備。 | 強 |
 | 庫存一致性 | 一般訂單、取消還庫存、商品管理邊界與重複取消防線已有測試。 | 強 |
 | 測試證據 | 後端 service/integration/Redis 測試、JaCoCo、前端 build、手動 Playwright 截圖證據已整理。 | 強 |
+| 系統設計答辯 | 已整理自用後端深挖筆記，涵蓋 correctness、idempotency、concurrency、payment、inventory、observability 與 residual risk。 | 強 |
 | UI/UX | 已完成產品級 polish；不像最初的小 demo，但仍不是設計系統等級產品。 | 足夠面試 |
 | 部署 | 已有 AWS EC2 + Nginx + Docker MySQL/Redis + S3 + CloudFront + DuckDNS 作品級部署敘事。 | 足夠面試 |
 | 可觀測性 | 已有 Actuator health/info/metrics 與少量業務 metrics，涵蓋付款 callback、取消防重與揪團狀態轉換；尚未接 Prometheus/Grafana 與 trace。 | 作品層級足夠 |
@@ -117,6 +118,12 @@
 - 會員端首頁商品卡已從展示型卡片升級為 commerce card：直接加入購物車、查看詳情、配送訊號、用途提示與揪團免運訊號；商品詳情也補上配送、保存、揪團信任資訊。
 - 管理端訂單頁已從 CRUD table 升級為履約工作台：待確認、已確認、配送中可作為隊列入口，列表列出履約判斷與下一步動作。
 - 管理端商品頁已從商品清單升級為商品健檢工作台：上架、低庫存、需補資料、下架都可作為操作入口，列表列出庫存水位、門檻與圖文完整度。
+
+剛完成的文件切面是 **backend deep-dive prep notes**：
+
+- 新增 [docs/backend-deep-dive-prep.md](backend-deep-dive-prep.md)，作為 Kevin 面試前自用的後端深挖筆記。
+- 筆記將訂單狀態機、付款 callback、揪團併發、庫存一致性、observability、security boundary、capacity position 分開整理。
+- 每個區塊都列出要怎麼講、對應程式碼/測試、不要吹過頭的地方，避免把作品包裝成 production 100%。
 
 下一個建議切面是 **截圖證據重跑，然後再決定是否進 ECPay/雲端同步**：
 

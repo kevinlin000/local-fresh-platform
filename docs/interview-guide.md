@@ -37,6 +37,10 @@
 
 ## 後端亮點講法
 
+### 大廠深挖路線
+
+如果面試官開始追問 correctness、idempotency、concurrency、observability 或 scalability，不要只停在 demo 畫面。你可以照 [backend deep-dive prep notes](backend-deep-dive-prep.md) 裡的順序準備：訂單生命週期、付款 callback、揪團併發、庫存一致性、可觀測性、資安邊界。這份筆記是給你面試前複習用的，不需要主動拿給面試官看。
+
 ### 揪團併發控制
 
 揪團最容易出問題的是多人同時加入同一團，可能造成超賣或重複加入。這個專案用 Redisson `RLock` 以 `groupNo` 做細粒度鎖，將檢查狀態、建立預訂單、寫入 participant、更新人數與成團判斷放在同一個交易邊界內。這不是只寫流程，而是有 Redis/Testcontainers 與 JMeter 壓測證據支撐。
