@@ -8,6 +8,7 @@ import com.localfresh.service.payment.PaymentGateway;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -17,6 +18,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 import static org.springframework.http.MediaType.TEXT_PLAIN;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -62,6 +65,41 @@ class PaymentCallbackControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(TEXT_PLAIN))
                 .andExpect(content().string("1|OK"));
 
+        verify(orderPaymentService).handlePaymentCallback(command);
+    }
+
+    @Test
+    void callbackShouldAcceptEcpayFormUrlencodedPayload() throws Exception {
+        PaymentCallbackCommand command = PaymentCallbackCommand.builder()
+                .provider("ECPAY")
+                .orderNumber("ORDER-CB-002")
+                .providerTradeNo("250620000000001")
+                .providerReference("2026/06/20 12:00:00")
+                .paymentSucceeded(true)
+                .build();
+        when(paymentGateway.parsePaymentCallback(ArgumentMatchers.<Map<String, String>>any())).thenReturn(command);
+
+        mockMvc.perform(post("/payment/callback")
+                        .contentType(APPLICATION_FORM_URLENCODED)
+                        .param("MerchantID", "2000132")
+                        .param("MerchantTradeNo", "ORDER-CB-002")
+                        .param("RtnCode", "1")
+                        .param("TradeNo", "250620000000001")
+                        .param("PaymentDate", "2026/06/20 12:00:00")
+                        .param("CheckMacValue", "VALID_SIGNATURE"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(TEXT_PLAIN))
+                .andExpect(content().string("1|OK"));
+
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Map<String, String>> payloadCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(paymentGateway).parsePaymentCallback(payloadCaptor.capture());
+        Map<String, String> payload = payloadCaptor.getValue();
+        assertEquals("2000132", payload.get("MerchantID"));
+        assertEquals("ORDER-CB-002", payload.get("MerchantTradeNo"));
+        assertEquals("1", payload.get("RtnCode"));
+        assertEquals("250620000000001", payload.get("TradeNo"));
+        assertEquals("VALID_SIGNATURE", payload.get("CheckMacValue"));
         verify(orderPaymentService).handlePaymentCallback(command);
     }
 

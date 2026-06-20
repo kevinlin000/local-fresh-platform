@@ -57,7 +57,8 @@ The current coverage emphasis is the order lifecycle:
 - `EcpayPaymentGatewayTest`: ECPay callback CheckMacValue verification,
   MerchantTradeNo / TradeNo / RtnCode mapping, and signed redirect payload shape.
 - `PaymentCallbackControllerTest`: provider callback HTTP response contract
-  (`1|OK` / `0|FAIL`) without requiring member or admin JWT.
+  (`1|OK` / `0|FAIL`) without requiring member or admin JWT, including
+  form-url-encoded ECPay callback payload handling.
 - `PaymentEventMapperTest`: payment-event insert, order-number lookup, provider
   trade number filtering, and idempotency-key filtering through the real mapper
   and H2 schema.
