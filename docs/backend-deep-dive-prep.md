@@ -18,10 +18,23 @@
 
 > 目前是單體 Spring Boot 系統，已把高風險交易邊界做出可重跑證據；下一階段會優先補 ECPay sandbox 端到端、部署同步、監控告警與更正式的容量分析。
 
+## 面試時圖怎麼用
+
+不要主動把所有圖一次打開。比較自然的用法：
+
+1. 先用 README 截圖講會員購物、揪團、管理端履約的完整流程。
+2. 被問「資料怎麼設計」時，打開 `docs/architecture.md` 的揪團核心 ER，說明 `group_buy`、`group_buy_participant`、`orders`、`order_detail` 的責任分工。
+3. 被問「這會不會只是 CRUD」時，打開訂單狀態機，說明合法狀態轉移集中在 `OrderStatusTransitionPolicy` 和 service tests。
+4. 被問「付款重複 callback 怎麼辦」時，打開付款 callback sequence，說明 guarded update、`payment_event` 與 duplicate/rejected event。
+5. 被問「出事怎麼追」時，再補付款、庫存與管理留痕模型，講 `payment_event`、`product_inventory_log`、`admin_operation_log`。
+
+重點是把圖當作輔助證據，不是讓面試變成逐表背誦。
+
 ## 面試深挖對照表
 
 | 面試官追問 | 你要回答的方向 | 可展示證據 |
 |---|---|---|
+| ER model 怎麼設計？ | 交易主線用 `orders/order_detail`，揪團用 `group_buy/group_buy_participant` 連到每人的 pre-order；付款、庫存、管理操作用 append-style evidence table 留痕。 | `docs/architecture.md` ER diagrams、Flyway migrations |
 | 為什麼揪團不直接共用一張訂單？ | 每位 participant 有自己的 pre-order、地址、金額與狀態，成團後批次轉正式履約。 | `group_buy_participant.pre_order_id`、`GroupBuyServiceImpl` |
 | callback 重複或 race 怎麼辦？ | 付款成功用 conditional update，重複 callback 記錄為 ignored。 | `OrderPaymentServiceImpl`、`OrderPaymentServiceImplTest` |
 | 100 人同時 join 會不會超賣？ | Redisson lock + transaction + DB unique constraint，並有 Redis/Testcontainers 和 JMeter 證據。 | `GroupBuyRedisIntegrationTest`、`docs/perf/README.md` |
@@ -303,11 +316,12 @@ Actuator counters 只是起點，不是完整 SRE stack。
 
 ## 面試時的 5 分鐘後端深挖順序
 
-1. 先開 `OrderStatusTransitionPolicy`：證明狀態流轉集中管理。
-2. 再開 `OrderPaymentServiceImpl`：講 guarded update、duplicate callback、payment_event。
-3. 再開 `GroupBuyServiceImpl.joinGroupBuy`：講 Redisson lock + transaction。
-4. 再開 `OrderCancellationServiceImpl`：講取消防重與還庫存。
-5. 最後開 `docs/testing.md` / `docs/perf/README.md`：證明不是只靠口頭說。
+1. 先開 `docs/architecture.md` 的揪團核心 ER：證明資料模型不是把多人塞進同一張訂單。
+2. 再開 `OrderStatusTransitionPolicy`：證明狀態流轉集中管理。
+3. 再開 `OrderPaymentServiceImpl` 與付款 callback sequence：講 guarded update、duplicate callback、payment_event。
+4. 再開 `GroupBuyServiceImpl.joinGroupBuy`：講 Redisson lock + transaction。
+5. 再開 `OrderCancellationServiceImpl`：講取消防重與還庫存。
+6. 最後開 `docs/testing.md` / `docs/perf/README.md`：證明不是只靠口頭說。
 
 ## 最後提醒
 

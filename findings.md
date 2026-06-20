@@ -192,3 +192,14 @@
   - `GroupBuyServiceImpl` Redisson lock, DB unique participant constraint, Redis/Testcontainers tests, and JMeter evidence.
   - `OrderCancellationServiceImpl` duplicate guard and inventory logs.
   - Actuator business counters and admin operation/payment event views.
+
+## Phase 23 Backend Design Diagram Findings
+
+- Adding ER diagrams is useful, but the public README should not become an interviewer-facing design packet. The right place for deeper diagrams is `docs/architecture.md`, with `docs/backend-deep-dive-prep.md` explaining how Kevin should use them in conversation.
+- The existing architecture document already had a core ER and state machine, but it underrepresented the backend evidence tables added later: `payment_event`, `product_inventory_log`, and `admin_operation_log`.
+- The most interviewable diagram sequence is:
+  - group-buy/core ER to explain data ownership.
+  - order state machine to explain legal status transitions.
+  - payment callback sequence to explain provider callback idempotency.
+  - payment/inventory/admin evidence ER to explain auditability and troubleshooting.
+- These diagrams should be presented as implementation evidence and tradeoff discussion, not as a claim that the project is production-complete.

@@ -147,14 +147,18 @@ graph TD
 4. **訂單**
    - `orders`
    - `order_detail`
+   - `payment_event`
+   - `product_inventory_log`
+   - `admin_operation_log`
 
 5. **揪團**
    - `group_buy`
    - `group_buy_participant`
 
-### ER Diagram
+### 核心交易 ER Diagram
 
 以下 ER 圖以系統核心資料表為主，標出主要關聯、外鍵方向與關鍵 unique key。
+付款事件、庫存異動與管理操作留痕屬於 append-style evidence table；部分 `reference_id` / `operator_id` 是邏輯關聯，不一定是資料庫層級外鍵。
 
 ```mermaid
 erDiagram
@@ -253,6 +257,44 @@ erDiagram
         datetime joined_at
     }
 
+    PAYMENT_EVENT {
+        bigint id PK
+        bigint order_id FK
+        string order_number
+        string provider
+        string event_type
+        string provider_reference
+        string provider_trade_no
+        string idempotency_key
+        decimal amount
+        string result
+    }
+
+    PRODUCT_INVENTORY_LOG {
+        bigint id PK
+        bigint product_id FK
+        int change_quantity
+        int stock_before
+        int stock_after
+        string reason
+        string reference_type
+        bigint reference_id
+        string operator_type
+        bigint operator_id
+    }
+
+    ADMIN_OPERATION_LOG {
+        bigint id PK
+        string action
+        string target_type
+        bigint target_id
+        string before_value
+        string after_value
+        string reason
+        string operator_type
+        bigint operator_id
+    }
+
     MEMBER ||--o{ SHIPPING_ADDRESS : has
     MEMBER ||--o{ CART : owns
     MEMBER ||--o{ ORDERS : places
@@ -270,9 +312,23 @@ erDiagram
     GIFT_BOX ||--o{ GIFT_BOX_PRODUCT : contains
 
     ORDERS ||--o{ ORDER_DETAIL : contains
+    ORDERS ||--o{ PAYMENT_EVENT : records
+    PRODUCT ||--o{ PRODUCT_INVENTORY_LOG : tracks
+    EMPLOYEE ||--o{ ADMIN_OPERATION_LOG : performs
     GROUP_BUY ||--o{ GROUP_BUY_PARTICIPANT : has
     ORDERS ||--o{ GROUP_BUY_PARTICIPANT : linked_preorder
 ```
+
+### 面試時怎麼切資料模型
+
+不要一開始就丟完整 ER 圖。比較好的順序是：
+
+1. 先用 README 截圖或揪團核心資料模型說明使用者流程。
+2. 被追問資料表設計時，再打開本節完整 ER 圖。
+3. 接著用訂單狀態機說明狀態轉移不是散落在各 controller。
+4. 最後用付款 callback sequence 說明 idempotency 與 payment evidence。
+
+這樣可以避免把作品介紹變成背資料表，也能把面試官的問題導回後端 correctness。
 
 ### 揪團核心資料模型
 
@@ -399,6 +455,96 @@ erDiagram
 
 - `group_buy_participant.idx_group(group_buy_id)`
   用於查詢某團 participant 清單與成團後批次更新預訂單。
+
+與付款、庫存、營運留痕相關的索引有：
+
+- `payment_event.idx_payment_event_order_time(order_number, created_at)`
+  依訂單追查付款請求、成功 callback、重複 callback 或 rejected callback。
+
+- `payment_event.idx_payment_event_trade_no(provider, provider_trade_no)`
+  保留未來依金流交易編號做 reconciliation 的入口。
+
+- `payment_event.idx_payment_event_idempotency_key(idempotency_key)`
+  目前是查詢與診斷用索引，尚未升級成 unique constraint。
+
+- `product_inventory_log.idx_inventory_log_reference(reference_type, reference_id)`
+  讓取消訂單或其他業務 reference 可以快速查是否已經還庫存。
+
+- `admin_operation_log.idx_admin_operation_target_time(target_type, target_id, created_at)`
+  用於管理端追查某筆訂單或商品的操作歷程。
+
+### 付款、庫存與管理留痕模型
+
+如果面試官追問「付款、取消、庫存異動怎麼查證」，可以用下圖回答。這張圖的重點不是新加很多表，而是把高風險操作都留下可追溯證據。
+
+```mermaid
+erDiagram
+    ORDERS {
+        bigint id PK
+        string number UK
+        bigint user_id FK
+        int status
+        int pay_status
+        decimal amount
+    }
+
+    ORDER_DETAIL {
+        bigint id PK
+        bigint order_id FK
+        bigint product_id FK
+        int number
+        decimal amount
+    }
+
+    PRODUCT {
+        bigint id PK
+        string product_name
+        int stock
+        int status
+    }
+
+    PAYMENT_EVENT {
+        bigint id PK
+        string order_number
+        string provider
+        string event_type
+        string provider_trade_no
+        string idempotency_key
+        string result
+    }
+
+    PRODUCT_INVENTORY_LOG {
+        bigint id PK
+        bigint product_id FK
+        int change_quantity
+        string reason
+        string reference_type
+        bigint reference_id
+    }
+
+    ADMIN_OPERATION_LOG {
+        bigint id PK
+        string action
+        string target_type
+        bigint target_id
+        string before_value
+        string after_value
+        string reason
+    }
+
+    ORDERS ||--o{ ORDER_DETAIL : contains
+    ORDERS ||--o{ PAYMENT_EVENT : has_payment_evidence
+    PRODUCT ||--o{ ORDER_DETAIL : sold_as_snapshot
+    PRODUCT ||--o{ PRODUCT_INVENTORY_LOG : has_stock_evidence
+    ORDERS ||--o{ PRODUCT_INVENTORY_LOG : logical_reference
+    ORDERS ||--o{ ADMIN_OPERATION_LOG : operational_audit
+```
+
+實作上目前仍是單體 service-level consistency：
+
+- 付款成功透過 guarded update 推進訂單狀態，所有 callback 分支都寫入 `payment_event`。
+- 取消訂單會先檢查訂單狀態與 `ORDER_CANCEL_RESTORE` 庫存紀錄，避免重複退款與還庫存。
+- 管理端履約與商品庫存調整寫入 `admin_operation_log`，支援後台查詢「誰在什麼時候改了什麼」。
 
 ---
 
@@ -581,6 +727,47 @@ sequenceDiagram
         end
     end
 ```
+
+### 4.6 付款 callback 與事件紀錄流程
+
+付款流程刻意不把「前端看到成功」當成最終事實，而是以 provider callback 推進訂單付款狀態。
+所有結果都會寫入 `payment_event`，讓成功、重複、拒絕或錯誤 callback 都能追溯。
+
+```mermaid
+sequenceDiagram
+    participant Provider as Payment Provider
+    participant Callback as PaymentCallbackController
+    participant Gateway as PaymentGateway
+    participant Payment as OrderPaymentService
+    participant DB as MySQL
+    participant Metrics as Business Metrics
+    participant Admin as Admin Console
+
+    Provider->>Callback: POST /payment/callback
+    Callback->>Gateway: parsePaymentCallback(payload)
+    Gateway-->>Callback: PaymentCallbackCommand
+    Callback->>Payment: handlePaymentCallback(command)
+
+    alt callback rejected
+        Payment->>DB: insert payment_event CALLBACK_REJECTED
+        Payment->>Metrics: record rejected callback
+        Callback-->>Provider: 0|FAIL
+    else payment succeeded
+        Payment->>DB: conditional update pending/unpaid order
+        alt updated
+            Payment->>DB: insert payment_event CALLBACK_SUCCEEDED
+            Payment->>Metrics: record succeeded callback
+        else already paid or no longer payable
+            Payment->>DB: insert payment_event CALLBACK_DUPLICATE
+            Payment->>Metrics: record ignored callback
+        end
+        Callback-->>Provider: 1|OK
+    end
+
+    Admin->>DB: query payment_event by order/provider
+```
+
+目前這條路徑已具備 demo provider HMAC 與 ECPay CheckMacValue parsing / verification 測試；尚未完成的是公開 EC2 callback endpoint 部署後的 ECPay sandbox 端到端驗證與 reconciliation job。
 
 ---
 

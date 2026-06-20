@@ -356,6 +356,22 @@
 - Removed awkward public README / README.en links after user feedback; the public README should remain a natural portfolio overview, not a document asking interviewers to evaluate it.
 - Kept the prep note linked from the interview guide and roadmap as self-preparation material.
 
+## 2026-06-21 00:34 +0800
+
+- Started Phase 23 after the user asked whether ER model / design images should be added.
+- Scope decision:
+  - Keep public README natural and avoid writing diagram sections as if they are addressed to interviewers.
+  - Put deeper ER/state/callback diagrams in `docs/architecture.md`.
+  - Put the speaking order and interview usage in Kevin-facing prep docs.
+- Updated `docs/architecture.md`:
+  - Expanded the core ER with `payment_event`, `product_inventory_log`, and `admin_operation_log`.
+  - Added guidance on how to cut the data-model explanation during an interview.
+  - Added a focused payment/inventory/admin evidence ER diagram.
+  - Added payment callback sequence showing provider callback parsing, guarded update, duplicate/rejected events, metrics, and admin query evidence.
+  - Added indexes for payment events, inventory references, and admin operation logs.
+- Updated `docs/backend-deep-dive-prep.md` with a "how to use the diagrams" section and an ER-model answer row.
+- Updated `docs/interview-guide.md` with a concise ER/state/callback display path and an ER-model FAQ answer.
+
 ## 2026-06-20 16:05 +0800
 
 - Started Phase 13 payment lifecycle evidence hardening.

@@ -41,6 +41,8 @@
 
 如果面試官開始追問 correctness、idempotency、concurrency、observability 或 scalability，不要只停在 demo 畫面。你可以照 [backend deep-dive prep notes](backend-deep-dive-prep.md) 裡的順序準備：訂單生命週期、付款 callback、揪團併發、庫存一致性、可觀測性、資安邊界。這份筆記是給你面試前複習用的，不需要主動拿給面試官看。
 
+如果被追問 ER model 或系統設計，可以打開 [architecture.md](architecture.md) 裡三張最有用的圖：揪團核心 ER、訂單狀態機、付款 callback sequence。順序是先講資料責任分工，再講狀態合法轉移，最後講 callback idempotency 與 payment evidence。
+
 ### 揪團併發控制
 
 揪團最容易出問題的是多人同時加入同一團，可能造成超賣或重複加入。這個專案用 Redisson `RLock` 以 `groupNo` 做細粒度鎖，將檢查狀態、建立預訂單、寫入 participant、更新人數與成團判斷放在同一個交易邊界內。這不是只寫流程，而是有 Redis/Testcontainers 與 JMeter 壓測證據支撐。
@@ -90,6 +92,10 @@ RedisTemplate 用在快取與一般 KV，RedissonClient 用在分散式鎖。這
 ### Q: 你最想讓我看哪段程式？
 
 優先看揪團 service、group-buy migration、Redisson/Testcontainers 測試、`OrderStatusTransitionPolicy`、核心 Order service 測試、`AdminOperationLogServiceImpl`，以及 JWT interceptor/ThreadLocal cleanup 測試。這些比單純 CRUD 更能展示後端基本功。
+
+### Q: ER model 可以怎麼講？
+
+先講 `orders/order_detail` 是交易快照，`group_buy/group_buy_participant` 是揪團活動與參與者關係，participant 會指到每個人的 `pre_order_id`，所以不需要多人共用同一張訂單。接著補充 `payment_event`、`product_inventory_log`、`admin_operation_log` 是高風險操作的留痕表，分別支援付款 callback 追查、取消還庫存防重與管理端操作 audit。
 
 ### Q: 為什麼沒有真的接金流？
 

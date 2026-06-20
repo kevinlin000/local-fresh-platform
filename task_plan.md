@@ -38,6 +38,7 @@ Raise `local-fresh-platform` to an interview-ready Java backend/fullstack portfo
 | 20. Fullstack product-grade UX pass | completed | Audit the member and admin UI with a higher fullstack hiring bar, then implement a focused polish slice with repeatable browser evidence. |
 | 21. Admin operations polish | completed | Make admin orders/products feel like operational work queues with risk signals, filters, and repeatable browser verification. |
 | 22. Backend deep-dive prep notes | completed | Consolidate correctness, concurrency, payment, inventory, observability, and residual-risk evidence into Kevin-facing interview prep notes. |
+| 23. Backend design diagram evidence | completed | Add ER, state, and payment callback diagrams that support backend interview deep dives without turning the public README into a pitch deck. |
 
 ## Constraints
 
