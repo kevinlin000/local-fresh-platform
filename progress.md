@@ -690,3 +690,32 @@
   - Commit and push the CORS fallback fix.
   - Wait for CI to publish a new `backend-release-package` artifact.
   - Redeploy the new artifact through SSM and then re-run public `/actuator/info` plus ECPay callback preflight.
+
+## 2026-06-21 18:34 +0800
+
+- Committed and pushed CORS fallback fix as `47a85b1 fix: add prod cors fallback`.
+- CI run `27901353930` completed successfully:
+  - Repository hygiene passed.
+  - Admin frontend build/audit passed.
+  - User frontend build passed.
+  - Backend verify, JaCoCo upload, release packaging, package verification, and artifact upload passed.
+- Second deploy attempt:
+  - Downloaded CI `backend-release-package` artifact `7774374396`.
+  - Deployed jar for commit `47a85b1c3445`.
+  - Verified jar SHA256 `734dc5d85ac77c4ee1b28cc1bc9f320ee670648bcc359f6e69f0d814c2c1b931`.
+  - Service did not expose `127.0.0.1:8080` within the 90-second health window.
+  - Rolled back again to `/home/ubuntu/local-fresh/sky-server-1.0-SNAPSHOT.jar.bak.20260621101246`.
+  - Rollback health returned `{"status":"UP"}`.
+- Root cause of the second blocker:
+  - EC2 log showed Flyway/MySQL startup failure caused by `UnknownHostException: ${DB_HOST}`.
+  - This means prod `spring.datasource.*` still required raw `DB_HOST` style env variables that the current EC2 runtime does not define.
+  - The existing runtime appears aligned with the older `localfresh.datasource.*` config contract.
+- Fix implemented locally:
+  - Updated prod `spring.datasource.*` to reference `localfresh.datasource.*` properties, matching base `application.yml`.
+  - Kept env support through the `localfresh.datasource.*` section for newer deployments.
+- Verification:
+  - `mvn -pl local-fresh-server -am verify` passed again with 159 tests, 0 failures, 0 errors, 5 skipped, and JaCoCo report generation.
+- Next action:
+  - Commit and push the datasource compatibility fix.
+  - Wait for CI to publish the next backend release artifact.
+  - Attempt the SSM deploy again and verify `/actuator/info` plus `/payment/callback`.
