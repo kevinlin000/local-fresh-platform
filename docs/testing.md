@@ -45,6 +45,12 @@ The generated HTML report is written to:
 backend-environment/local-fresh-backend/local-fresh-server/target/site/jacoco/index.html
 ```
 
+In GitHub Actions, the backend job uploads two artifacts:
+
+- `backend-jacoco-report`: the JaCoCo HTML report from the verified backend run.
+- `backend-release-package`: the repackaged Spring Boot jar plus `release.env`,
+  EC2 deploy commands, and `deploy-templates/` copied from `deploy/ec2/`.
+
 The current coverage emphasis is the order lifecycle:
 
 - `OrderStatusTransitionPolicy`: legal order-state transitions.

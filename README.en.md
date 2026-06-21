@@ -416,6 +416,9 @@ EXPECTED_DEPLOY_COMMIT=<deployed-commit> \
 scripts/check-ecpay-sandbox-readiness.sh
 ```
 
+The backend CI job also uploads a `backend-release-package` artifact containing
+the verified jar, release metadata, EC2 deploy commands, and runtime templates.
+
 Before refreshing local screenshots or giving a live demo, run:
 
 ```bash

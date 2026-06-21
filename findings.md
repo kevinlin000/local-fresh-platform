@@ -251,3 +251,10 @@
 - The runtime contract should match the code paths already implemented: Spring Boot runs with the `prod` profile, Nginx proxies HTTPS traffic to `127.0.0.1:8080`, and `SOURCE_COMMIT` / `SOURCE_BRANCH` are set so `/actuator/info` can prove the deployed version.
 - The release package should include these templates alongside the jar and deploy commands so a future EC2 sync has one reviewable artifact instead of scattered notes.
 - Repository hygiene should scan `.service`, `.conf`, and `.example` files so deployment templates cannot silently reintroduce legacy terminology or trailing whitespace.
+
+## Phase 30 CI Backend Release Artifact Findings
+
+- The backend CI job already runs `mvn -pl local-fresh-server -am verify`, so it creates the repackaged Spring Boot jar needed by the release packaging script.
+- Running `scripts/package-backend-release.sh` again with full verification inside the same CI job would duplicate the Maven gate. The better CI path is `SKIP_VERIFY=true` after the verified jar exists.
+- The release artifact should be uploaded from `output/backend-release`, not from `target/`, because it carries deploy metadata, EC2 deploy commands, and `deploy-templates/` in addition to the jar.
+- This is still not full CD. It is a safer intermediate step: every green backend CI run now has a deployable package that can be downloaded and manually synced to EC2.

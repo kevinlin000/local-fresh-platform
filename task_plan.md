@@ -45,6 +45,7 @@ Raise `local-fresh-platform` to an interview-ready Java backend/fullstack portfo
 | 27. Deployment version observability | completed | Expose non-sensitive deployment identity through Actuator info and make ECPay preflight detect stale backend deployments before sandbox switching. |
 | 28. Backend release packaging runbook | completed | Add a repeatable backend release packaging script and EC2 deploy handoff runbook before doing any real sandbox switch. |
 | 29. EC2 runtime templates | completed | Add non-secret systemd, Nginx, and environment templates so the release package contains a reviewable EC2 runtime contract. |
+| 30. CI backend release artifact | completed | Package the verified backend jar and EC2 runtime templates as a GitHub Actions artifact for deploy handoff evidence. |
 
 ## Constraints
 

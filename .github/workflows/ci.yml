@@ -53,6 +53,17 @@ jobs:
           path: backend-environment/local-fresh-backend/local-fresh-server/target/site/jacoco
           if-no-files-found: error
 
+      - name: Package backend release
+        working-directory: .
+        run: SKIP_VERIFY=true scripts/package-backend-release.sh
+
+      - name: Upload backend release package
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-release-package
+          path: output/backend-release
+          if-no-files-found: error
+
   admin-frontend:
     name: Admin frontend build
     runs-on: ubuntu-latest

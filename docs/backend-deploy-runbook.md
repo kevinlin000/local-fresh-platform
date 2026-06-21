@@ -37,6 +37,11 @@ exists:
 ALLOW_DIRTY=true SKIP_VERIFY=true scripts/package-backend-release.sh
 ```
 
+GitHub Actions also publishes the same deployable package from the backend CI
+job as the `backend-release-package` artifact. Use that artifact when you want
+the jar and deploy templates to come from a verified remote CI run instead of a
+local workstation.
+
 ## EC2 Runtime Metadata
 
 Set these variables on the Spring Boot process:

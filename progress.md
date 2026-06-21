@@ -551,3 +551,20 @@
   - `git diff --check` passed.
   - `ALLOW_DIRTY=true SKIP_VERIFY=true scripts/package-backend-release.sh` passed and produced `deploy-templates/` under `output/backend-release/49f6e11a8f12/`.
   - Full `scripts/check-before-commit.sh` passed end to end: backend verify 159 tests, repository hygiene, admin build/audit, and user build.
+
+## 2026-06-21 15:35 +0800
+
+- Started and completed Phase 30 CI backend release artifact after the user asked to continue carefully and keep scoring.
+- Scope decision:
+  - Do not attempt real EC2 SSH deployment without confirmed host credentials.
+  - Add a CI artifact that packages the verified backend jar, release metadata, deploy commands, and EC2 runtime templates.
+- Implemented:
+  - Updated `.github/workflows/ci.yml` backend job to run `SKIP_VERIFY=true scripts/package-backend-release.sh` after Maven `verify`.
+  - Uploaded `output/backend-release` as the `backend-release-package` artifact.
+  - Updated backend deploy runbook, testing docs, README, README.en, and roadmap to document the CI artifact path.
+- Verification:
+  - Ruby YAML parse of `.github/workflows/ci.yml` passed.
+  - `node scripts/check-repo-hygiene.mjs` passed.
+  - `git diff --check` passed.
+  - `ALLOW_DIRTY=true SKIP_VERIFY=true scripts/package-backend-release.sh` passed and produced `output/backend-release/e523a4a17b38/`.
+  - Full `scripts/check-before-commit.sh` passed end to end: backend verify 159 tests, repository hygiene, admin build/audit, and user build.
