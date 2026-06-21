@@ -399,6 +399,7 @@ See also:
 ## Related Documents
 
 - [docs/known-issues.md](docs/known-issues.md)
+- [docs/backend-deploy-runbook.md](docs/backend-deploy-runbook.md)
 - [docs/ecpay-sandbox-runbook.md](docs/ecpay-sandbox-runbook.md)
 - [docs/observability.md](docs/observability.md)
 - [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md)
@@ -410,6 +411,8 @@ See also:
 Before switching the deployed API to ECPay sandbox, run:
 
 ```bash
+scripts/package-backend-release.sh
+EXPECTED_DEPLOY_COMMIT=<deployed-commit> \
 scripts/check-ecpay-sandbox-readiness.sh
 ```
 

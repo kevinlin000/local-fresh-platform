@@ -450,6 +450,7 @@ pnpm dev
 
 - [docs/known-issues.md](docs/known-issues.md)
 - [docs/architecture.md](docs/architecture.md)
+- [docs/backend-deploy-runbook.md](docs/backend-deploy-runbook.md)
 - [docs/ecpay-sandbox-runbook.md](docs/ecpay-sandbox-runbook.md)
 - [docs/interview-guide.md](docs/interview-guide.md)
 - [docs/observability.md](docs/observability.md)
@@ -460,6 +461,8 @@ pnpm dev
 ECPay sandbox 切換前可先執行：
 
 ```bash
+scripts/package-backend-release.sh
+EXPECTED_DEPLOY_COMMIT=<deployed-commit> \
 scripts/check-ecpay-sandbox-readiness.sh
 ```
 

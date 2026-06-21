@@ -236,3 +236,10 @@
 - A lightweight Actuator `InfoContributor` is enough for this portfolio stage: it exposes only non-sensitive deployment identity such as application name, active profiles, commit, branch, and the payment callback path.
 - `SOURCE_COMMIT` and `SOURCE_BRANCH` give the EC2 process a simple deployment identity without adding image build automation, ECR, or a new deployment platform.
 - The ECPay readiness script should support `EXPECTED_DEPLOY_COMMIT` so a future deploy cannot accidentally pass health checks while running an older backend.
+
+## Phase 28 Backend Release Packaging Findings
+
+- Because there is still no checked-in EC2 credential or systemd deployment contract, the right next slice is a release package handoff rather than an opaque "deploy" command.
+- A backend release should be built from a clean worktree, run backend `verify` by default, copy the repackaged Spring Boot jar into an ignored output directory, and record the commit/branch metadata that `/actuator/info` expects.
+- The release package should produce editable EC2 commands instead of executing SSH automatically. This avoids hiding hostnames, service names, or secrets in the repo while still making the manual deployment repeatable.
+- `scripts/package-backend-release.sh` dry run confirmed it can reuse the existing jar and write `release.env` plus `ec2-deploy-commands.txt` under `output/backend-release/<commit>/`, which is ignored by git.

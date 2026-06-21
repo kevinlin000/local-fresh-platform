@@ -303,7 +303,7 @@ Actuator counters 只是起點，不是完整 SRE stack。
 
 | 優先級 | 行動 | 原因 |
 |---|---|---|
-| P0 | 同步 EC2 backend，讓 `/payment/callback` public preflight 正常。 | ECPay sandbox 前置條件。 |
+| P0 | 用 `scripts/package-backend-release.sh` 打包 backend release，同步 EC2 backend，讓 `/actuator/info` 顯示預期 commit，並讓 `/payment/callback` public preflight 正常。 | ECPay sandbox 前置條件。 |
 | P0 | 重跑 README screenshots。 | 作品第一印象要跟最新 UI 一致。 |
 | P1 | Prometheus + Grafana + alert thresholds。 | 補 production operations story。 |
 | P1 | Group-buy benchmark matrix。 | 從單一 100-user case 升級成容量分析。 |

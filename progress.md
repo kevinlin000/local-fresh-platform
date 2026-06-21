@@ -464,6 +464,24 @@
   - `node scripts/check-repo-hygiene.mjs` passed.
   - `git diff --check` passed.
 
+## 2026-06-21 15:05 +0800
+
+- Started Phase 28 backend release packaging runbook after the user asked to continue sequentially and requested the next part plus scoring.
+- Scope decision:
+  - Do not SSH into EC2 or invent credentials.
+  - Add a repeatable local release package and EC2 handoff commands so the next real cloud step can be executed and audited.
+- Implemented:
+  - Added `scripts/package-backend-release.sh`.
+  - The script requires a clean worktree by default, runs backend `verify` unless `SKIP_VERIFY=true`, copies the Spring Boot jar into `output/backend-release/<commit>/`, and writes `release.env`.
+  - The script also writes `ec2-deploy-commands.txt` with editable `scp`, `ssh`, `SOURCE_COMMIT`, service restart, `/actuator/info`, and ECPay preflight commands.
+  - Added `docs/backend-deploy-runbook.md` with the package, deploy, verify, and rollback flow.
+  - Linked the deploy runbook from README/README.en and connected the ECPay runbook to the package/preflight flow.
+  - Updated roadmap and backend deep-dive prep to point to the new release packaging step before ECPay sandbox.
+- Verification so far:
+  - `sh -n scripts/package-backend-release.sh` passed.
+  - `ALLOW_DIRTY=true SKIP_VERIFY=true scripts/package-backend-release.sh` passed and generated ignored release files under `output/backend-release/46c0f6d5a1ed/`.
+  - Full `scripts/check-before-commit.sh` passed end to end: backend verify 159 tests, repository hygiene, admin build/audit, and user build.
+
 ## 2026-06-20 16:05 +0800
 
 - Started Phase 13 payment lifecycle evidence hardening.

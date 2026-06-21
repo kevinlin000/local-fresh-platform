@@ -20,7 +20,7 @@
 | UI/UX | 已完成產品級 polish；不像最初的小 demo，但仍不是設計系統等級產品。 | 足夠面試 |
 | 部署 | 已有 AWS EC2 + Nginx + Docker MySQL/Redis + S3 + CloudFront + DuckDNS 作品級部署敘事。 | 足夠面試 |
 | 可觀測性 | 已有 Actuator health/info/metrics 與少量業務 metrics，涵蓋付款 callback、取消防重與揪團狀態轉換；尚未接 Prometheus/Grafana 與 trace。 | 作品層級足夠 |
-| 自動化交付 | 有 GitHub Actions checks；backend 現在可透過 `/actuator/info` 暴露部署 commit/branch，但尚未做 image build / ECR / EC2 自動部署。 | 後期再做 |
+| 自動化交付 | 有 GitHub Actions checks；backend 現在可透過 `/actuator/info` 暴露部署 commit/branch，並有 release packaging 腳本與 EC2 deploy runbook；尚未做 image build / ECR / EC2 自動部署。 | 後期再做 |
 
 ## Recommended Priority
 
@@ -130,7 +130,7 @@
 
 - 若要整理作品證據：用已新增的 local/browser smoke 當前置檢查，重跑 9 張 README 截圖與 demo acceptance，確認真實食物圖片、會員端、管理端畫面都維持最新狀態。
 - 若要繼續衝全端觀感：下一刀可做管理端 dashboard 的更細緻優先級排序，但目前 orders/products 的操作面已足夠支撐面試 demo。
-- 若要往 ECPay sandbox 推進：先做 EC2 backend 部署同步，讓 `/actuator/info` 回傳預期 commit，並讓 `/payment/callback` preflight 變成 HTTP `200` + `0|FAIL`，再正式跑 sandbox 付款。
+- 若要往 ECPay sandbox 推進：先用 `scripts/package-backend-release.sh` 打包 release，依 `docs/backend-deploy-runbook.md` 同步 EC2 backend，讓 `/actuator/info` 回傳預期 commit，並讓 `/payment/callback` preflight 變成 HTTP `200` + `0|FAIL`，再正式跑 sandbox 付款。
 
 ## How To Use This Roadmap
 
