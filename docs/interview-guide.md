@@ -57,7 +57,7 @@
 
 ### 付款事件紀錄
 
-付款流程新增 `payment_event`，將建立付款請求、成功 callback、重複 callback 與非法 callback 都寫成事件，並提供 `GET /admin/paymentEvents/page` 與管理端「付款事件」頁查詢。這讓 demo gateway 不只是「假付款」，而是先具備真實金流會需要的 provider callback 入口、demo HMAC 驗證、ECPay CheckMacValue parser、會員端 POST form 導轉、reference、provider trade no、idempotency key、amount、raw payload、處理結果與查詢入口。面試時可以說：目前沒有硬接 SDK 或真 sandbox 端到端，但已先把 callback 驗證邊界、導轉資料處理、idempotency 與未來對帳需要的資料痕跡建立起來。
+付款流程新增 `payment_event`，將建立付款請求、成功 callback、重複 callback 與非法 callback 都寫成事件，並提供 `GET /admin/paymentEvents/page` 與管理端「付款事件」頁查詢。這讓 demo gateway 不只是「假付款」，而是先具備真實金流會需要的 provider callback 入口、demo HMAC 驗證、ECPay CheckMacValue parser、會員端 POST form 導轉、reference、provider trade no、idempotency key、amount、raw payload、處理結果與查詢入口。面試時可以說：目前 EC2 已可透過 SSM 切到 ECPay sandbox provider，public callback preflight 也已通過；還沒做的是用真人瀏覽器完整跑 ECPay stage checkout、確認 ReturnURL / OrderResultURL 成功回流與 reconciliation job。
 
 ### 管理端操作 Audit Log
 
@@ -99,7 +99,7 @@ RedisTemplate 用在快取與一般 KV，RedissonClient 用在分散式鎖。這
 
 ### Q: 為什麼沒有真的接金流？
 
-目前支付預設仍是 demo gateway，但付款請求與付款成功回呼已經分離：一般 gateway 只建立付款請求，只有 demo gateway 會宣告 request 後立即完成，方便本機展示。後端也有 `/payment/callback` provider 回呼入口，demo provider 用 HMAC 驗證 payload，ECPay provider 則有 CheckMacValue 驗證與 MerchantTradeNo / TradeNo / RtnCode mapping 測試；會員端收到 ECPay response 時會組 hidden form POST 到綠界付款頁。付款事件已寫入 `payment_event`，可以追蹤 request、success、duplicate 與 rejected callback，並保留金流交易編號與 idempotency key。還沒做的是用現有 EC2 + Nginx HTTPS API 網域實測真實 ReturnURL / OrderResultURL 端到端驗證與 reconciliation job。
+本機 demo 可以回到 demo gateway，付款請求與付款成功回呼已經分離：一般 gateway 只建立付款請求，只有 demo gateway 會宣告 request 後立即完成，方便本機展示。後端也有 `/payment/callback` provider 回呼入口，demo provider 用 HMAC 驗證 payload，ECPay provider 則有 CheckMacValue 驗證與 MerchantTradeNo / TradeNo / RtnCode mapping 測試；會員端收到 ECPay response 時會組 hidden form POST 到綠界付款頁。付款事件已寫入 `payment_event`，可以追蹤 request、success、duplicate 與 rejected callback，並保留金流交易編號與 idempotency key。EC2 目前已透過 SSM 切到 `PAYMENT_PROVIDER=ecpay`，剩下的是用真人瀏覽器實測 stage checkout、ReturnURL / OrderResultURL 與 reconciliation job。
 
 ### Q: 如果流量更大會怎麼改？
 
@@ -111,11 +111,11 @@ RedisTemplate 用在快取與一般 KV，RedissonClient 用在分散式鎖。這
 - 管理端操作 audit log 延伸成更完整的營運追蹤報表。
 - 只有在明確瓶頸出現後，再討論服務拆分。
 
-更完整的後續優先順序與完整度評估可以看 `docs/portfolio-roadmap.md`。面試時不要說這是 production 100% 系統；比較好的說法是：核心交易、揪團併發、庫存防重、測試證據、最小業務 metrics 與作品級部署已完成；ECPay 本機 provider-switch readiness 已可測，公開 sandbox 切換前還需要先把 EC2 backend 部署到含 `/payment/callback` 的版本，再談自動化部署和完整監控平台。
+更完整的後續優先順序與完整度評估可以看 `docs/portfolio-roadmap.md`。面試時不要說這是 production 100% 系統；比較好的說法是：核心交易、揪團併發、庫存防重、測試證據、最小業務 metrics、作品級部署與 ECPay sandbox provider switch 已完成；下一步是補真人瀏覽器 checkout、reconciliation、自動化部署和完整監控平台。
 
 ## 可以主動承認的限制
 
-- 支付預設仍是 demo gateway，未接真實綠界 ECPay / 信用卡導轉端到端流程；但 provider callback 入口、demo HMAC 驗證、ECPay CheckMacValue parser、會員端 POST form 導轉、付款事件表、金流交易編號、idempotency key、provider-switch readiness test 與 callback 分支測試已完成。公開 sandbox 切換目前被 EC2 callback endpoint 尚未部署阻擋。
+- 本機 demo 可回到 demo gateway；EC2 已可切到 ECPay sandbox provider 並通過 public callback preflight，但尚未完成真人瀏覽器 ECPay stage checkout、ReturnURL / OrderResultURL 成功回流與 reconciliation job。
 - 管理端已有產品級基礎，但還沒有完整自動化視覺回歸。
 - 部署是作品級單機 EC2 + Docker MySQL/Redis，不是高可用 production 架構。
 - 前端 UI 已 polish，但主要價值仍是後端流程與工程證據。

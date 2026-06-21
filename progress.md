@@ -853,3 +853,33 @@
   - `curl -sS https://localfresh-demo.duckdns.org/actuator/info` returned commit `a8948ddb0a93`.
   - `EXPECTED_DEPLOY_COMMIT=a8948ddb0a93 scripts/check-ecpay-sandbox-readiness.sh` passed backend health, Nginx public serving, actuator info, commit match, callback invalid-signature `0|FAIL`, and storefront HTTP 200.
 - Phase 34 completed. The deployed backend is now synced to the code containing `/payment/callback`; the next phase should be a reversible ECPay sandbox runtime switch or deployment runbook cleanup.
+
+## 2026-06-21 20:02 +0800
+
+- Started Phase 35 reversible ECPay sandbox switch.
+- Re-read planning files, ECPay runbook, readiness script, prod config, and `EcpayPaymentGateway`.
+- Current judgment:
+  - Code already supports `PAYMENT_PROVIDER=ecpay`, ECPay signed checkout payloads, ReturnURL callback parsing, and invalid-signature `0|FAIL`.
+  - The remaining work is operational: verify whether EC2 has the sandbox variables, add a guarded SSM switch/rollback path, and avoid printing secrets.
+  - Directly switching the deployed process without rollback evidence would be too risky because it changes demo payment behavior.
+- Audited EC2 runtime through SSM without printing secrets:
+  - `local-fresh-backend.service` was active.
+  - `/actuator/info` returned commit `a8948ddb0a93`.
+  - No payment-provider drop-in existed yet, so runtime was still on default demo provider.
+- Added `scripts/switch-ecpay-sandbox-ssm.sh`:
+  - `status` inspects service state, actuator info, payment drop-in, and effective payment env with HashKey/HashIV redacted.
+  - `enable` runs public readiness before and after switching, writes a dedicated systemd payment drop-in, restarts Spring Boot, and verifies health/info.
+  - `rollback` removes only the payment drop-in and restarts Spring Boot, returning to demo provider without changing the deployed jar or release identity.
+- Verified the script:
+  - `sh -n scripts/switch-ecpay-sandbox-ssm.sh` passed.
+  - `scripts/switch-ecpay-sandbox-ssm.sh status` succeeded through SSM and showed no payment env before the switch.
+- Switched EC2 to ECPay sandbox:
+  - Ran `EXPECTED_DEPLOY_COMMIT=a8948ddb0a93 scripts/switch-ecpay-sandbox-ssm.sh enable`.
+  - Public readiness before the switch passed health, Nginx, actuator info, commit match, callback invalid-signature `0|FAIL`, and storefront HTTP 200.
+  - SSM command wrote `/etc/systemd/system/local-fresh-backend.service.d/payment-provider.conf`, restarted Spring Boot, and verified health `UP`.
+  - Effective runtime env showed `PAYMENT_PROVIDER=ecpay`, MerchantID `2000132`, stage checkout URL, ReturnURL, and OrderResultURL; HashKey/HashIV were redacted.
+  - Public readiness after the switch passed again.
+- Re-ran `scripts/switch-ecpay-sandbox-ssm.sh status`:
+  - Confirmed the payment drop-in remains present.
+  - Confirmed effective `PAYMENT_PROVIDER=ecpay`.
+- Updated ECPay runbook, backend deploy runbook, EC2 runtime README, README/README.en, known issues, portfolio roadmap, backend deep-dive prep, and interview guide to remove the old public 404 blocker and record the remaining gap: real browser ECPay stage checkout plus ReturnURL / OrderResultURL evidence.

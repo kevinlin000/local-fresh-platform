@@ -121,11 +121,27 @@ Only after those pass should the deployed process be switched to:
 PAYMENT_PROVIDER=ecpay
 ```
 
+The current SSM helper performs the preflight, writes a dedicated payment
+provider drop-in, restarts the backend, and verifies the runtime again:
+
+```bash
+EXPECTED_DEPLOY_COMMIT=<deployed git commit> scripts/switch-ecpay-sandbox-ssm.sh enable
+scripts/switch-ecpay-sandbox-ssm.sh status
+```
+
 ## Rollback
 
 Keep the previous jar under `/opt/local-fresh/releases/<previous-commit>/`.
 Rollback should restore the `current.jar` symlink, set `SOURCE_COMMIT` back to
 the previous commit, restart the service, and rerun the same preflight.
 
-Do not switch to ECPay sandbox during rollback validation. Keep
-`PAYMENT_PROVIDER=demo` until the public callback path is verified again.
+To rollback only the payment provider while keeping the deployed jar and
+deployment identity intact:
+
+```bash
+scripts/switch-ecpay-sandbox-ssm.sh rollback
+```
+
+Do not run ECPay sandbox checkout during backend jar rollback validation. Keep
+or restore `PAYMENT_PROVIDER=demo` until the public callback path is verified
+again.

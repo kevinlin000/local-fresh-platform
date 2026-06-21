@@ -388,7 +388,7 @@ The deployment topology is:
 
 ## Known Limitations
 
-- Payment is still backed by a demo gateway by default; payment request/callback separation, demo HMAC verification, ECPay CheckMacValue parsing, member-side POST redirect, event recording, provider trade numbers, and idempotency keys are modeled, but no real ECPay sandbox end-to-end flow is included yet.
+- Local demos can still use the demo gateway by default. The EC2 demo runtime can now be switched to the ECPay sandbox provider through SSM, with public callback readiness verified; a real browser checkout through the ECPay stage flow is still the remaining end-to-end gap.
 - The admin console now has a polished operations-console baseline, but it does not yet include automated visual regression coverage.
 - The user frontend now covers desktop and mobile responsive basics, but does not yet include cross-browser visual regression testing.
 - Legacy databases need a one-time Flyway baseline; fresh databases can apply migrations directly.
@@ -408,12 +408,15 @@ See also:
 - [frontend-environment/local-fresh-user/README.md](frontend-environment/local-fresh-user/README.md)
 - `docs/architecture.md` (system architecture and sequence diagrams)
 
-Before switching the deployed API to ECPay sandbox, run:
+Before or while switching the deployed API to ECPay sandbox, run:
 
 ```bash
 scripts/package-backend-release.sh
 EXPECTED_DEPLOY_COMMIT=<deployed-commit> \
 scripts/check-ecpay-sandbox-readiness.sh
+EXPECTED_DEPLOY_COMMIT=<deployed-commit> \
+scripts/switch-ecpay-sandbox-ssm.sh enable
+scripts/switch-ecpay-sandbox-ssm.sh status
 ```
 
 The backend CI job also uploads a `backend-release-package` artifact containing
@@ -446,15 +449,12 @@ npm run smoke:browser
 
 For the current completeness assessment and next-priority plan, see
 [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md). The project is already
-interview-ready for its core Java backend story; after the local observability
-and payment hardening slices, the next practical step is ECPay sandbox readiness
-verification before full CD automation. The local
-`PaymentCallbackControllerEcpayContractTest` now proves the real ECPay gateway
-and `/payment/callback` contract for both `1|OK` and `0|FAIL` responses. The
-backend can also expose non-sensitive deployment commit/branch data through
-`/actuator/info`. The 2026-06-21 public preflight passes health/Nginx checks
-but still returns HTTP `404` for both `/actuator/info` and `/payment/callback`,
-so the EC2 backend must be synced before switching `PAYMENT_PROVIDER=ecpay`.
+interview-ready for its core Java backend story. The EC2 backend is now synced
+to commit `a8948ddb0a93`, public `/actuator/info` and `/payment/callback`
+readiness pass, and the runtime has been switched to `PAYMENT_PROVIDER=ecpay`
+through the SSM switch script. The remaining payment gap is a real browser
+checkout through ECPay stage, followed by ReturnURL / OrderResultURL evidence
+and payment-event reconciliation.
 
 ## License
 

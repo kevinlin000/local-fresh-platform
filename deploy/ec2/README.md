@@ -42,5 +42,14 @@ curl -s https://localfresh-demo.duckdns.org/actuator/info
 EXPECTED_DEPLOY_COMMIT=<deployed-commit> scripts/check-ecpay-sandbox-readiness.sh
 ```
 
-Keep `PAYMENT_PROVIDER=demo` until the public callback preflight returns
-HTTP `200` with body `0|FAIL` for the intentionally invalid ECPay payload.
+Switch or inspect the ECPay sandbox provider through SSM:
+
+```bash
+EXPECTED_DEPLOY_COMMIT=<deployed-commit> scripts/switch-ecpay-sandbox-ssm.sh enable
+scripts/switch-ecpay-sandbox-ssm.sh status
+scripts/switch-ecpay-sandbox-ssm.sh rollback
+```
+
+The switch script writes a dedicated payment-provider drop-in and leaves the
+deployment identity drop-in untouched. HashKey and HashIV are redacted in
+status output.

@@ -315,3 +315,20 @@
   - Public `https://localfresh-demo.duckdns.org/actuator/info` returned deployment commit `a8948ddb0a93`, branch `hardening-and-upgrade`, and callback path `/payment/callback`.
   - `EXPECTED_DEPLOY_COMMIT=a8948ddb0a93 scripts/check-ecpay-sandbox-readiness.sh` passed backend health, Nginx public serving, actuator info, deployed commit match, callback invalid-signature response `0|FAIL`, and CloudFront storefront HTTP 200.
 - The production backend is now synced to the code containing `/payment/callback`; the previous public 404 blocker is resolved. The project is ready for a controlled ECPay sandbox switch, but the switch should still be done as a separate reversible phase because it changes runtime payment behavior.
+
+## Phase 35 Reversible ECPay Sandbox Switch Findings
+
+- EC2 had no existing payment provider override before Phase 35. The backend was still using packaged defaults, which means `PAYMENT_PROVIDER=demo` by default.
+- The safest runtime boundary is a dedicated systemd drop-in:
+  - `/etc/systemd/system/local-fresh-backend.service.d/payment-provider.conf`
+  - This keeps payment provider switching separate from deployment identity and the legacy external application config.
+- `scripts/switch-ecpay-sandbox-ssm.sh` now provides three SSM actions:
+  - `status`: inspect service health, `/actuator/info`, payment drop-in, and effective payment environment with HashKey/HashIV redacted.
+  - `enable`: run public readiness, write ECPay sandbox environment variables, restart Spring Boot, verify local health/info, then rerun public readiness.
+  - `rollback`: remove only the payment-provider drop-in and restart Spring Boot, returning to the default demo provider without changing the deployed jar.
+- The EC2 runtime was switched successfully to ECPay sandbox on 2026-06-21:
+  - Effective environment showed `PAYMENT_PROVIDER=ecpay`.
+  - ECPay MerchantID, checkout URL, ReturnURL, and OrderResultURL were visible; HashKey and HashIV were redacted.
+  - Backend health stayed `UP`.
+  - Public readiness still passed backend health, Nginx, actuator info commit `a8948ddb0a93`, invalid callback `0|FAIL`, and CloudFront storefront HTTP 200.
+- This is not the same as full payment production readiness. The remaining high-value payment work is a real browser checkout through ECPay stage, verifying ReturnURL / OrderResultURL success, `payment_event` `CALLBACK_SUCCEEDED`, duplicate callback replay, and reconciliation behavior.

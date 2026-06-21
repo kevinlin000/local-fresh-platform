@@ -438,7 +438,7 @@ pnpm dev
 
 ## 已知限制
 
-- 支付流程仍為 demo gateway，尚未串接真實綠界金流
+- 本機支付流程仍可使用 demo gateway；EC2 demo 已可透過 SSM 切到 ECPay sandbox provider，但尚未完成真人瀏覽器付款端到端驗證
 - 管理端已完成核心營運台與表格頁 polish，但尚未加入完整 E2E 視覺回歸
 - 用戶端已完成桌面與手機版 RWD 基礎體驗，尚未加入跨瀏覽器視覺回歸測試
 - 舊資料庫第一次導入 Flyway 時需要 baseline；全新資料庫可直接套用 migration
@@ -458,12 +458,15 @@ pnpm dev
 - [docs/testing.md](docs/testing.md)
 - [frontend-environment/local-fresh-user/README.md](frontend-environment/local-fresh-user/README.md)
 
-ECPay sandbox 切換前可先執行：
+ECPay sandbox 檢查與 EC2 provider 切換可執行：
 
 ```bash
 scripts/package-backend-release.sh
 EXPECTED_DEPLOY_COMMIT=<deployed-commit> \
 scripts/check-ecpay-sandbox-readiness.sh
+EXPECTED_DEPLOY_COMMIT=<deployed-commit> \
+scripts/switch-ecpay-sandbox-ssm.sh enable
+scripts/switch-ecpay-sandbox-ssm.sh status
 ```
 
 本機 demo 或截圖前可先執行：
@@ -488,13 +491,12 @@ npm run smoke:browser
 
 ### 進行中
 
-- **ECPay sandbox readiness 驗證**:付款事件、callback parser、會員端 POST form 與最小業務 metrics 已補上後,下一步適合用現有 runbook/preflight 驗證環境變數、ReturnURL、OrderResultURL、Nginx HTTPS callback 路徑與事件落點,但不急著做正式金流上線。
-  - 目前本機已用 `PaymentCallbackControllerEcpayContractTest` 證明真 ECPay gateway 串 `/payment/callback` 的 `1|OK` / `0|FAIL` contract；backend 也已可透過 `/actuator/info` 暴露非敏感的部署 commit/branch。2026-06-21 public preflight 結論仍是 health / Nginx 正常，但 deployed `/actuator/info` 與 `/payment/callback` 尚回 HTTP `404`，切 `PAYMENT_PROVIDER=ecpay` 前必須先同步 EC2 backend。
+- **ECPay sandbox 端到端驗證**: EC2 backend 已同步到 commit `a8948ddb0a93`，public `/actuator/info` 與 `/payment/callback` preflight 已通過，並已用 `scripts/switch-ecpay-sandbox-ssm.sh enable` 將 EC2 runtime 切到 `PAYMENT_PROVIDER=ecpay`。下一步是用真實瀏覽器走 ECPay stage checkout，確認 ReturnURL / OrderResultURL 與 `payment_event` 的 `CALLBACK_SUCCEEDED` 落點。
 - **Browser UI smoke**:在 dependency-free local precheck 之外，新增 Playwright Chromium smoke，覆蓋會員登入/home/orders 與管理端登入/dashboard/orders/products。
 
 ### 規劃中
 
-- **綠界 ECPay 沙箱金流串接**:在 ECPay CheckMacValue parser 與會員端 POST form 導轉骨架已補上後,以現有 EC2 + Nginx HTTPS API 網域作為 ReturnURL,補真實 ReturnURL / OrderResultURL sandbox 驗證與 reconciliation job。這應留到核心流程與文件穩定後再做。
+- **綠界 ECPay reconciliation**:在 EC2 sandbox provider 已可切換後,補真實 ReturnURL / OrderResultURL 成功付款證據、重複 callback replay、付款事件對帳與 reconciliation job。
 - **可觀測性三件套**:Spring Boot Actuator + Prometheus + Grafana,自訂業務 metric(揪團成團率、支付成功率),搭配結構化 log 與 Trace ID 串穿全鏈路。
 - **CD 自動化**:在現有 GitHub Actions 測試/build 基礎上,加入 Docker image build、推送 ECR,並觸發 EC2 滾動部署。
 
@@ -507,6 +509,7 @@ npm run smoke:browser
 - 真瀏覽器 UI smoke:以 Playwright Chromium 檢查會員端與管理端關鍵頁面可登入、可載入、可互動
 - 庫存異動防重:取消訂單時若已取消或已有 `ORDER_CANCEL_RESTORE` 庫存回補紀錄,service 會跳過重複退款、訂單更新與庫存回補；庫存流水另有 nullable `idempotency_key` unique constraint 作為 DB 最後防線
 - 管理端操作 Audit Log:訂單確認、婉拒、取消、配送、完成與商品手動庫存調整會寫入 `admin_operation_log`,並提供分頁查詢 API 與後台「操作紀錄」頁,保留操作前後值、原因與操作者
+- EC2 ECPay sandbox runtime switch:透過 SSM 寫入獨立 systemd payment drop-in，已驗證 public readiness、`PAYMENT_PROVIDER=ecpay` effective env、health 與 rollback 腳本入口
 - 雙端產品級 UI polish:會員端採買流程、商品詳情、購物車、訂單頁與管理端 dashboard / products / orders 已完成新版截圖與 README 同步
 - 揪團發起 / 加入 / 取消 / 過期失敗回滾完整流程
 - Google OAuth 2.0 Authorization Code Flow + JWT 雙軌登入(mock login dev 開關)

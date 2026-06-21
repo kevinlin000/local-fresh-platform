@@ -4,7 +4,9 @@ This runbook documents the next payment hardening slice: verifying the existing 
 
 ## Current Boundary
 
-The default payment provider remains `demo` so portfolio demos still complete locally without third-party dependency.
+The deployed EC2 backend is currently switched to ECPay sandbox through a
+systemd drop-in. Local development and fallback demos can still use the default
+`demo` provider.
 
 Already implemented:
 
@@ -13,6 +15,14 @@ Already implemented:
 - `/payment/callback` provider callback endpoint returning `1|OK` or `0|FAIL`
 - Member frontend POST-form redirect when `signType` is `ECPAY_SHA256`
 - Payment event trail for request, success, duplicate, and rejected callbacks
+
+Verified on the deployed EC2 runtime on 2026-06-21:
+
+- `/actuator/info` publicly exposes deployed commit `a8948ddb0a93`.
+- `scripts/check-ecpay-sandbox-readiness.sh` passes health, Nginx, actuator
+  info, callback invalid-signature response `0|FAIL`, and storefront reachability.
+- `scripts/switch-ecpay-sandbox-ssm.sh status` shows effective
+  `PAYMENT_PROVIDER=ecpay` with ECPay HashKey/HashIV redacted.
 
 Not yet verified:
 
@@ -23,19 +33,22 @@ Not yet verified:
 
 ## Current Preflight Status
 
-As of 2026-06-21, the public preflight result is:
+As of 2026-06-21 20:10 +0800, the public preflight result is:
 
 - `https://localfresh-demo.duckdns.org/actuator/health`: passed
 - Public API `Server` header: Nginx detected
-- `https://localfresh-demo.duckdns.org/actuator/info`: HTTP `404`
-- `POST https://localfresh-demo.duckdns.org/payment/callback`: HTTP `404`
+- `https://localfresh-demo.duckdns.org/actuator/info`: passed, commit
+  `a8948ddb0a93`
+- `POST https://localfresh-demo.duckdns.org/payment/callback`: passed with
+  HTTP `200` and body `0|FAIL` for an intentionally invalid ECPay payload
 
-Do not switch the deployed Spring Boot process to `PAYMENT_PROVIDER=ecpay` until the EC2 backend is redeployed with the version containing `/payment/callback`. If ECPay sends ReturnURL callbacks while the endpoint returns `404`, the payment cannot be verified or recorded in `payment_event`.
+The previous deployed `404` blocker is resolved. The remaining gap is a real
+sandbox browser checkout that reaches ECPay and returns to the CloudFront
+storefront.
 
 ## Local Contract Evidence
 
-The public endpoint is still blocked by the deployed backend version, but the
-application-level callback contract is covered locally:
+The application-level callback contract is covered locally:
 
 ```bash
 cd backend-environment/local-fresh-backend
@@ -53,8 +66,7 @@ and proves both branches:
   service.
 
 This is not a replacement for real sandbox checkout. It is the repeatable local
-evidence that the deployed preflight should return HTTP `200` + `0|FAIL` once
-EC2 runs the backend version containing `/payment/callback`.
+evidence behind the deployed HTTP `200` + `0|FAIL` preflight.
 
 ## Deployed URL Plan
 
@@ -79,11 +91,18 @@ ECPAY_HASH_IV=v77hoKGq4kWxNNIS
 ECPAY_CHECKOUT_URL=https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5
 ECPAY_RETURN_URL=https://localfresh-demo.duckdns.org/payment/callback
 ECPAY_ORDER_RESULT_URL=https://d3hqnux25iirgl.cloudfront.net/orders
-SOURCE_COMMIT=<deployed git commit, for example 42c12ce>
+SOURCE_COMMIT=<deployed git commit, for example a8948ddb0a93>
 SOURCE_BRANCH=hardening-and-upgrade
 ```
 
-Keep `PAYMENT_PROVIDER=demo` for normal portfolio demos.
+The current EC2 instance uses a dedicated systemd payment drop-in at:
+
+```text
+/etc/systemd/system/local-fresh-backend.service.d/payment-provider.conf
+```
+
+Do not store production payment credentials in git. The values above are ECPay
+stage values used for sandbox verification.
 
 `SOURCE_COMMIT` and `SOURCE_BRANCH` are not secrets. They are exposed through
 `/actuator/info` so the public preflight can distinguish "backend is healthy"
@@ -106,6 +125,31 @@ location / {
 
 The callback endpoint is a server-to-server form POST, so browser CORS is not involved.
 
+## SSM Switch Commands
+
+Check the current EC2 payment provider without exposing HashKey/HashIV:
+
+```bash
+scripts/switch-ecpay-sandbox-ssm.sh status
+```
+
+Enable ECPay sandbox through SSM:
+
+```bash
+EXPECTED_DEPLOY_COMMIT=a8948ddb0a93 \
+scripts/switch-ecpay-sandbox-ssm.sh enable
+```
+
+Rollback to the default demo provider by removing the payment drop-in:
+
+```bash
+scripts/switch-ecpay-sandbox-ssm.sh rollback
+```
+
+The enable command runs public readiness before and after the restart. The
+rollback command restarts the backend and leaves the existing deployment
+identity drop-in untouched.
+
 ## Verification Steps
 
 1. Package the backend release and deploy it using
@@ -124,12 +168,13 @@ The callback endpoint is a server-to-server form POST, so browser CORS is not in
    To require a specific backend commit:
 
    ```bash
-   EXPECTED_DEPLOY_COMMIT=42c12ce scripts/check-ecpay-sandbox-readiness.sh
+   EXPECTED_DEPLOY_COMMIT=a8948ddb0a93 scripts/check-ecpay-sandbox-readiness.sh
    ```
 
    The callback check must return HTTP `200` with `0|FAIL` for an intentionally invalid signature. If it returns `404`, stop here and deploy the backend version containing `/payment/callback` before changing `PAYMENT_PROVIDER`.
 
-3. Switch EC2 env to `PAYMENT_PROVIDER=ecpay` and restart Spring Boot.
+3. Switch EC2 env to `PAYMENT_PROVIDER=ecpay` and restart Spring Boot, or use
+   `scripts/switch-ecpay-sandbox-ssm.sh enable`.
 4. Confirm backend health:
 
    ```bash
@@ -153,10 +198,11 @@ The callback endpoint is a server-to-server form POST, so browser CORS is not in
 
 ## Rollback
 
-Set:
+Use:
 
 ```bash
-PAYMENT_PROVIDER=demo
+scripts/switch-ecpay-sandbox-ssm.sh rollback
 ```
 
-Then restart Spring Boot. The member frontend will return to immediate demo payment behavior.
+This removes only the payment-provider drop-in and restarts Spring Boot. The
+member frontend will return to immediate demo payment behavior.

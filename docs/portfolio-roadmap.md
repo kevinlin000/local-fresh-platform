@@ -12,7 +12,7 @@
 | 會員端流程 | 商品瀏覽、購物車、下單、付款、訂單查詢、揪團頁已可展示，並使用真實食物圖片。 | 作品層級完整 |
 | 管理端流程 | Dashboard、商品、訂單、付款事件、操作紀錄已能支撐營運 demo。 | 作品層級完整 |
 | 訂單生命週期 | 狀態轉移集中在 `OrderStatusTransitionPolicy`，付款、取消、婉拒、配送、完成都有 service 測試。 | 強 |
-| 付款邊界 | Demo gateway、ECPay CheckMacValue parser、callback endpoint、付款事件表、前端 POST form 導轉骨架、provider-switch readiness test 與真 ECPay gateway/controller contract test 已完成；公開 EC2 preflight 目前顯示 `/payment/callback` 尚未部署。 | 強，但缺真 sandbox 端到端驗證 |
+| 付款邊界 | Demo gateway、ECPay CheckMacValue parser、callback endpoint、付款事件表、前端 POST form 導轉骨架、provider-switch readiness test、真 ECPay gateway/controller contract test、公開 EC2 callback preflight 與 SSM sandbox provider switch 已完成。 | 強，但缺真瀏覽器 sandbox checkout 與 reconciliation |
 | 揪團併發 | Redisson lock、transaction boundary、唯一鍵、Testcontainers Redis、JMeter 證據已具備。 | 強 |
 | 庫存一致性 | 一般訂單、取消還庫存、商品管理邊界與重複取消防線已有測試。 | 強 |
 | 測試證據 | 後端 service/integration/Redis 測試、JaCoCo、前端 build、手動 Playwright 截圖證據已整理。 | 強 |
@@ -37,10 +37,10 @@
 
 ### P1 - Best Next Slices
 
-1. **ECPay sandbox 端到端驗證**
-   - 目的：把「已建好骨架」推進到「真的跑過 sandbox」。
-   - 範圍：部署環境切 `PAYMENT_PROVIDER=ecpay`、確認 ReturnURL 經 Nginx 進 Spring Boot、付款事件寫入 `ECPAY / CALLBACK_SUCCEEDED`。
-   - 風險：需要可用雲端環境與公開 HTTPS callback；適合放在專案尾段。
+1. **ECPay sandbox 瀏覽器 checkout 驗證**
+   - 目的：把「EC2 已切 sandbox provider」推進到「真的用瀏覽器跑過 ECPay stage checkout」。
+   - 範圍：建立或使用待付款訂單、前端導向 ECPay stage、確認 ReturnURL 經 Nginx 進 Spring Boot、付款事件寫入 `ECPAY / CALLBACK_SUCCEEDED`。
+   - 風險：需要可用 sandbox 測試卡流程與公開 HTTPS callback；完成後仍要保留 `scripts/switch-ecpay-sandbox-ssm.sh rollback`。
 
 2. **庫存異動 idempotency 設計**
    - 目的：回答「取消、退款、重複 callback、重複還庫存怎麼防？」。
@@ -95,20 +95,21 @@
 
 剛完成的本地切面是取消訂單防重：若訂單已取消，或該訂單已存在 `ORDER_CANCEL_RESTORE` 庫存回補紀錄，取消流程會直接跳過；真正寫入庫存流水時，`product_inventory_log.idempotency_key` 也有 unique constraint 作為 DB 最後防線，避免重複退款與重複還庫存。
 
-剛完成的本地切面是 **ECPay sandbox readiness gate，不急著正式上線**。
+剛完成的雲端切面是 **ECPay sandbox runtime switch，不急著正式上線**。
 
 理由：
 
-- 付款事件、callback parser、前端 POST form 與 observability 已具備。
-- 真 sandbox 驗證能把「我有寫金流骨架」推進到「我知道 provider callback、HTTPS、Nginx 與資料落點怎麼串」。
-- 這仍可先用 runbook/preflight 做，不需要現在就做完整 CD 或高可用雲端架構。
+- 付款事件、callback parser、前端 POST form、observability 與 public callback preflight 已具備。
+- EC2 backend 已同步到 commit `a8948ddb0a93`，`/actuator/info` 與 `/payment/callback` public preflight 已通過。
+- 已新增 `scripts/switch-ecpay-sandbox-ssm.sh`，並用 SSM 寫入獨立 systemd payment drop-in，確認 effective `PAYMENT_PROVIDER=ecpay`。
+- 這仍不等於正式金流上線；還缺真瀏覽器 ECPay stage checkout、成功 ReturnURL / OrderResultURL 證據與 reconciliation job。
 
 目前結論：
 
 - 本機 provider-switch readiness 已用 `PaymentGatewayProviderSelectionTest` 固定住。
 - 本機 ECPay callback contract 已用 `PaymentCallbackControllerEcpayContractTest` 固定住：有效簽章進 service，無效簽章回 `0|FAIL`。
-- 2026-06-21 公開 preflight 顯示 health 與 Nginx 正常，但 `/actuator/info` 與 `/payment/callback` 都回 HTTP `404`，代表 EC2 backend 尚未部署到含版本辨識與 callback endpoint 的版本。
-- 在這個 blocker 解掉以前，不應切 `PAYMENT_PROVIDER=ecpay`。
+- 2026-06-21 公開 preflight 已通過 health、Nginx、`/actuator/info`、`/payment/callback` invalid-signature `0|FAIL` 與 CloudFront storefront。
+- 2026-06-21 已透過 SSM 切到 `PAYMENT_PROVIDER=ecpay`，HashKey/HashIV 只在 status 輸出中遮罩顯示。
 
 剛完成的本地切面是 **UI smoke precheck + browser smoke + member/admin commerce polish**：
 
@@ -130,7 +131,7 @@
 
 - 若要整理作品證據：用已新增的 local/browser smoke 當前置檢查，重跑 9 張 README 截圖與 demo acceptance，確認真實食物圖片、會員端、管理端畫面都維持最新狀態。
 - 若要繼續衝全端觀感：下一刀可做管理端 dashboard 的更細緻優先級排序，但目前 orders/products 的操作面已足夠支撐面試 demo。
-- 若要往 ECPay sandbox 推進：先使用 CI 的 `backend-release-package` artifact 或本機 `scripts/package-backend-release.sh` 打包 release，執行 `scripts/verify-backend-release-package.sh` 確認 jar、manifest、checksums 與 `deploy-templates/` 完整，依 `docs/backend-deploy-runbook.md` 同步 EC2 backend，讓 `/actuator/info` 回傳預期 commit，並讓 `/payment/callback` preflight 變成 HTTP `200` + `0|FAIL`，再正式跑 sandbox 付款。
+- 若要往 ECPay sandbox 推進：目前 EC2 已切 sandbox provider，下一步是用真瀏覽器建立/選擇待付款訂單，導向 ECPay stage checkout，完成付款後確認訂單狀態、`payment_event`、callback metrics 與重複 callback replay。
 
 ## How To Use This Roadmap
 

@@ -16,7 +16,7 @@
 
 不要說這是 production 100% 電商系統。比較成熟的說法是：
 
-> 目前是單體 Spring Boot 系統，已把高風險交易邊界做出可重跑證據；下一階段會優先補 ECPay sandbox 端到端、部署同步、監控告警與更正式的容量分析。
+> 目前是單體 Spring Boot 系統，已把高風險交易邊界做出可重跑證據；ECPay sandbox provider 已可在 EC2 透過 SSM 切換，下一階段會優先補真瀏覽器 checkout、監控告警與更正式的容量分析。
 
 ## 面試時圖怎麼用
 
@@ -114,14 +114,14 @@
 
 ### 不要吹過頭
 
-目前還沒有完成真實 ECPay sandbox 端到端。你可以說：
+目前還沒有完成真瀏覽器 ECPay sandbox checkout 端到端。你可以說：
 
-> provider abstraction、callback endpoint、demo HMAC、ECPay CheckMacValue、payment_event、provider-switch readiness 都已完成；但公開 EC2 backend 需要先部署到含 `/payment/callback` 的版本，才能跑 sandbox ReturnURL / OrderResultURL 端到端。
+> provider abstraction、callback endpoint、demo HMAC、ECPay CheckMacValue、payment_event、provider-switch readiness、public callback preflight 與 EC2 SSM sandbox provider switch 都已完成；但還需要用瀏覽器實際跑 ECPay stage checkout，確認 ReturnURL / OrderResultURL 成功回流與 `CALLBACK_SUCCEEDED` 落點。
 
 下一步：
 
-- 同步 EC2 backend。
-- 跑 ECPay sandbox callback。
+- 跑真瀏覽器 ECPay stage checkout。
+- 驗證 ReturnURL / OrderResultURL 與 `payment_event`。
 - 補 reconciliation job。
 - 考慮 payment_event idempotency key unique constraint。
 
@@ -303,12 +303,12 @@ Actuator counters 只是起點，不是完整 SRE stack。
 
 | 優先級 | 行動 | 原因 |
 |---|---|---|
-| P0 | 用 `scripts/package-backend-release.sh` 打包 backend release，同步 EC2 backend，讓 `/actuator/info` 顯示預期 commit，並讓 `/payment/callback` public preflight 正常。 | ECPay sandbox 前置條件。 |
+| P0 | 用真瀏覽器跑 ECPay stage checkout，確認 ReturnURL / OrderResultURL、訂單狀態與 `payment_event`。 | 把已切換的 sandbox provider 變成完整端到端證據。 |
 | P0 | 重跑 README screenshots。 | 作品第一印象要跟最新 UI 一致。 |
 | P1 | Prometheus + Grafana + alert thresholds。 | 補 production operations story。 |
 | P1 | Group-buy benchmark matrix。 | 從單一 100-user case 升級成容量分析。 |
 | P1 | Inventory restore retry/outbox design。 | 取消還庫存已補 DB 冪等鍵，下一步才需要處理非同步重試與跨服務寫入。 |
-| P2 | CI/CD image build + EC2 rollout。 | 改善部署可靠性，但不應早於 callback 同步。 |
+| P2 | CI/CD image build + EC2 rollout。 | 改善部署可靠性，但不應早於金流端到端證據穩定。 |
 
 ## 面試時的 5 分鐘後端深挖順序
 
