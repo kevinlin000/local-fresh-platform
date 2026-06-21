@@ -7,6 +7,9 @@ spring:
     url: "${SPRING_DATASOURCE_URL:${spring.datasource.druid.url}}"
     username: "${SPRING_DATASOURCE_USERNAME:${spring.datasource.druid.username}}"
     password: "${SPRING_DATASOURCE_PASSWORD:${spring.datasource.druid.password}}"
+  flyway:
+    baseline-on-migrate: ${FLYWAY_BASELINE_ON_MIGRATE:true}
+    baseline-version: ${FLYWAY_BASELINE_VERSION:1}
 
 management:
   endpoints:

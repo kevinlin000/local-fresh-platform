@@ -747,3 +747,35 @@
   - Commit and push the legacy runtime compatibility layer.
   - Wait for CI artifact.
   - Redeploy through SSM and verify public endpoints.
+
+## 2026-06-21 18:59 +0800
+
+- Committed and pushed legacy runtime compatibility as `b87dbc8 fix: support legacy prod config keys`.
+- CI run `27901887419` failed only at repository hygiene because the compatibility fallback referenced a blocked legacy payment term. Backend verify/package still passed, but the red CI artifact was not used for deployment.
+- Removed that legacy payment fallback and committed `87c55ca fix: remove legacy payment fallback term`.
+- CI run `27901978998` completed successfully:
+  - Repository hygiene passed.
+  - Admin frontend build/audit passed.
+  - User frontend build passed.
+  - Backend verify, JaCoCo upload, release packaging, package verification, and artifact upload passed.
+- Fourth deploy attempt:
+  - Downloaded CI artifact `7774560219`.
+  - Deployed jar for commit `87c55ca2b218`.
+  - Verified jar SHA256 `e7cca3734ca38fff427c5f169f77c20b34c97bcc16f3ccfc8b46c6eb9425d588`.
+  - Service did not expose `127.0.0.1:8080` before the health window ended.
+  - Rolled back to `/home/ubuntu/local-fresh/sky-server-1.0-SNAPSHOT.jar.bak.20260621101246`.
+  - Rollback health returned `{"status":"UP"}`.
+- Diagnosis:
+  - The new jar now connected to MySQL successfully.
+  - Flyway failed because the existing `sky_take_out` schema is non-empty but has no `flyway_schema_history`.
+- Fix implemented locally:
+  - Added prod defaults `spring.flyway.baseline-on-migrate=true` and `baseline-version=1`.
+  - This treats the existing EC2 schema as the V1 baseline and lets later migrations apply.
+- Verification:
+  - `node scripts/check-repo-hygiene.mjs` passed.
+  - `git diff --check` passed.
+  - `mvn -pl local-fresh-server -am verify` passed with 159 tests, 0 failures, 0 errors, 5 skipped, and JaCoCo report generation.
+- Next action:
+  - Commit and push the Flyway baseline prod handoff fix.
+  - Wait for green CI artifact.
+  - Redeploy through SSM and verify public endpoints.
