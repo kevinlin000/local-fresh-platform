@@ -719,3 +719,31 @@
   - Commit and push the datasource compatibility fix.
   - Wait for CI to publish the next backend release artifact.
   - Attempt the SSM deploy again and verify `/actuator/info` plus `/payment/callback`.
+
+## 2026-06-21 18:45 +0800
+
+- Committed and pushed datasource compatibility fix as `17fca7a fix: align prod datasource config`.
+- CI run `27901637704` completed successfully:
+  - Repository hygiene passed.
+  - User frontend build passed.
+  - Admin frontend build/audit passed.
+  - Backend verify, JaCoCo upload, release packaging, package verification, and artifact upload passed.
+- Third deploy attempt:
+  - Downloaded CI artifact `7774460641`.
+  - Deployed jar for commit `17fca7a0ca55`.
+  - Verified jar SHA256 `af8ceb465279fd1b0c8f45a861565b27fbcaa15ad3feb1ed2a0334febf63936a`.
+  - Service still did not expose `127.0.0.1:8080` within the health window.
+  - Rolled back to `/home/ubuntu/local-fresh/sky-server-1.0-SNAPSHOT.jar.bak.20260621101246`.
+  - Rollback health returned `{"status":"UP"}`.
+- Deeper diagnosis:
+  - Masked EC2 config inspection showed the external file still uses the legacy keys `spring.datasource.druid.*`, `spring.redis.*`, and `sky.*`.
+  - The previous fix was not enough because `localfresh.datasource.*` is not present in that EC2 file.
+- Fix implemented locally:
+  - Added prod compatibility fallbacks from `spring.datasource.druid.*`, `spring.redis.*`, and legacy `sky.*` keys to the new `spring.datasource.*` / `localfresh.*` runtime properties.
+  - Kept the new env/localfresh contract intact for future cleaner deployments.
+- Verification:
+  - `mvn -pl local-fresh-server -am verify` passed with 159 tests, 0 failures, 0 errors, 5 skipped, and JaCoCo report generation.
+- Next action:
+  - Commit and push the legacy runtime compatibility layer.
+  - Wait for CI artifact.
+  - Redeploy through SSM and verify public endpoints.

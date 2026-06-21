@@ -3,10 +3,10 @@ server:
 
 spring:
   datasource:
-    driver-class-name: ${localfresh.datasource.driver-class-name}
-    url: jdbc:mysql://${localfresh.datasource.host}:${localfresh.datasource.port}/${localfresh.datasource.database}?serverTimezone=Asia/Taipei&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=${localfresh.datasource.use-ssl:true}&allowPublicKeyRetrieval=true
-    username: ${localfresh.datasource.username}
-    password: ${localfresh.datasource.password}
+    driver-class-name: "${SPRING_DATASOURCE_DRIVER_CLASS_NAME:${spring.datasource.druid.driver-class-name:com.mysql.cj.jdbc.Driver}}"
+    url: "${SPRING_DATASOURCE_URL:${spring.datasource.druid.url}}"
+    username: "${SPRING_DATASOURCE_USERNAME:${spring.datasource.druid.username}}"
+    password: "${SPRING_DATASOURCE_PASSWORD:${spring.datasource.druid.password}}"
 
 management:
   endpoints:
@@ -41,38 +41,38 @@ localfresh:
     password: ${DB_PASSWORD}
     use-ssl: true
   redis:
-    host: ${REDIS_HOST}
-    port: ${REDIS_PORT:6379}
-    database: ${REDIS_DATABASE:0}
+    host: ${REDIS_HOST:${spring.redis.host:localhost}}
+    port: ${REDIS_PORT:${spring.redis.port:6379}}
+    database: ${REDIS_DATABASE:${spring.redis.database:0}}
   cors:
-    allowed-origin-patterns: "${CORS_ALLOWED_ORIGIN_PATTERNS:http://localhost:*,http://127.0.0.1:*}"
+    allowed-origin-patterns: "${CORS_ALLOWED_ORIGIN_PATTERNS:${sky.cors.allowed-origin-patterns:http://localhost:*,http://127.0.0.1:*}}"
   auth:
     mock-login-enabled: false
   jwt:
-    admin-secret-key: ${JWT_ADMIN_SECRET}
-    admin-ttl: ${JWT_ADMIN_TTL_MS:28800000}
-    user-secret-key: ${JWT_USER_SECRET}
-    user-ttl: ${JWT_USER_TTL_MS:604800000}
+    admin-secret-key: ${JWT_ADMIN_SECRET:${sky.jwt.admin-secret-key}}
+    admin-ttl: ${JWT_ADMIN_TTL_MS:${sky.jwt.admin-ttl:28800000}}
+    user-secret-key: ${JWT_USER_SECRET:${sky.jwt.user-secret-key}}
+    user-ttl: ${JWT_USER_TTL_MS:${sky.jwt.user-ttl:604800000}}
   aws:
     s3:
-      region: ${AWS_REGION}
-      access-key-id: ${AWS_ACCESS_KEY_ID}
-      secret-access-key: ${AWS_SECRET_ACCESS_KEY}
-      bucket-name: ${S3_BUCKET_NAME}
+      region: ${AWS_REGION:${sky.aws.s3.region}}
+      access-key-id: ${AWS_ACCESS_KEY_ID:${sky.aws.s3.access-key-id}}
+      secret-access-key: ${AWS_SECRET_ACCESS_KEY:${sky.aws.s3.secret-access-key}}
+      bucket-name: ${S3_BUCKET_NAME:${sky.aws.s3.bucket-name}}
   google:
-    api-key: ${GOOGLE_MAPS_API_KEY}
+    api-key: ${GOOGLE_MAPS_API_KEY:${sky.google.api-key}}
   shop:
-    address: ${SHOP_ADDRESS}
+    address: ${SHOP_ADDRESS:${sky.shop.address}}
   oauth:
     google:
-      client-id: ${GOOGLE_OAUTH_CLIENT_ID}
-      client-secret: ${GOOGLE_OAUTH_CLIENT_SECRET}
-      redirect-uri: ${GOOGLE_OAUTH_REDIRECT_URI}
+      client-id: ${GOOGLE_OAUTH_CLIENT_ID:${sky.oauth.google.client-id}}
+      client-secret: ${GOOGLE_OAUTH_CLIENT_SECRET:${sky.oauth.google.client-secret}}
+      redirect-uri: ${GOOGLE_OAUTH_REDIRECT_URI:${sky.oauth.google.redirect-uri}}
   group-buy:
-    share-base-url: ${GROUP_BUY_SHARE_BASE_URL}
+    share-base-url: ${GROUP_BUY_SHARE_BASE_URL:${sky.group-buy.share-base-url}}
   payment:
     provider: ${PAYMENT_PROVIDER:demo}
-    callback-secret: ${PAYMENT_CALLBACK_SECRET}
+    callback-secret: ${PAYMENT_CALLBACK_SECRET:${sky.wechat.apiV3Key:local-fresh-demo-callback-secret}}
     ecpay:
       merchant-id: ${ECPAY_MERCHANT_ID:}
       hash-key: ${ECPAY_HASH_KEY:}
