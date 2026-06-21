@@ -49,7 +49,7 @@ Raise `local-fresh-platform` to an interview-ready Java backend/fullstack portfo
 | 31. Release package integrity checks | completed | Add manifest, SHA256 checksums, and a verifier for backend release packages before EC2 deployment. |
 | 32. EC2 deployment access audit | completed | Attempt direct EC2 backend sync, identify the exact SSH/IAM blockers, and document the access prerequisites for the real deploy. |
 | 33. SSM Session Manager access setup | completed | Configure or verify EC2 Session Manager access so future backend deployments can run through AWS CLI without fixed IP or public SSH. |
-| 34. SSM backend deployment sync | in_progress | Deploy the verified backend release through SSM, preserve EC2 runtime secrets, and prove `/actuator/info` plus payment callback readiness publicly. |
+| 34. SSM backend deployment sync | completed | Deploy the verified backend release through SSM, preserve EC2 runtime secrets, and prove `/actuator/info` plus payment callback readiness publicly. |
 
 ## Constraints
 

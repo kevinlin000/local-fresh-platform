@@ -809,3 +809,47 @@
   - Commit and push the prod MyBatis override.
   - Wait for green CI artifact.
   - Redeploy through SSM and verify public endpoints.
+
+## 2026-06-21 19:34 +0800
+
+- Committed and pushed prod MyBatis override as `f03ad96 fix: own prod mybatis aliases`.
+- CI run `27902501977` completed successfully:
+  - Repository hygiene passed.
+  - Admin frontend build/audit passed.
+  - User frontend build passed.
+  - Backend verify, JaCoCo upload, release packaging, package verification, and artifact upload passed.
+- Sixth deploy attempt:
+  - Downloaded CI artifact `7774720669`.
+  - Deployed jar for commit `f03ad969f151`.
+  - Verified jar SHA256 `4c7a8a6f0225c3adff484b205790b156844e89f262c1925d6230ce6df88a5c34`.
+  - Service still did not expose `127.0.0.1:8080` before the health window ended.
+  - Rolled back to `/home/ubuntu/local-fresh/sky-server-1.0-SNAPSHOT.jar.bak.20260621101246`.
+  - Rollback health returned `{"status":"UP"}`.
+- Diagnosis:
+  - New jar connected to MySQL.
+  - Flyway validated 20 migrations and considered the schema up to date.
+  - Startup still failed on `Category` alias resolution because the EC2 external config had higher precedence than packaged `application-prod.yml`.
+- Fix implemented:
+  - Added `MyBatisConfiguration` to register `com.localfresh.entity` aliases with MyBatis at application startup.
+  - Added `MyBatisConfigurationTest` to prove the short alias `Category` resolves to `com.localfresh.entity.Category`.
+- Verification before deploy:
+  - `node scripts/check-repo-hygiene.mjs` passed.
+  - `git diff --check` passed.
+  - `mvn -pl local-fresh-server -am -Dtest=MyBatisConfigurationTest -Dsurefire.failIfNoSpecifiedTests=false test` passed.
+  - `mvn -pl local-fresh-server -am verify` passed with 160 tests, 0 failures, 0 errors, 5 skipped, and JaCoCo report generation.
+- Committed and pushed alias registration fix as `a8948dd fix: register mybatis entity aliases`.
+- CI run `27902813923` completed successfully:
+  - Repository hygiene passed.
+  - Admin frontend build/audit passed.
+  - User frontend build passed.
+  - Backend verify, JaCoCo upload, release packaging, package verification, and artifact upload passed.
+- Final deploy:
+  - Downloaded CI artifact `7774817521` directly on EC2 through a short-lived GitHub artifact redirect URL.
+  - Deployed jar for commit `a8948ddb0a93`.
+  - Verified jar SHA256 `3e4a13f621c7826aaba7247827a434b4571ff9743c549e58900fe6e9a0ed9461`.
+  - Service started successfully and returned `{"status":"UP","groups":["liveness","readiness"]}`.
+  - Fixed the systemd release drop-in formatting and restarted once more so `/actuator/info` exposes `commit=a8948ddb0a93` and `branch=hardening-and-upgrade`.
+- Public verification:
+  - `curl -sS https://localfresh-demo.duckdns.org/actuator/info` returned commit `a8948ddb0a93`.
+  - `EXPECTED_DEPLOY_COMMIT=a8948ddb0a93 scripts/check-ecpay-sandbox-readiness.sh` passed backend health, Nginx public serving, actuator info, commit match, callback invalid-signature `0|FAIL`, and storefront HTTP 200.
+- Phase 34 completed. The deployed backend is now synced to the code containing `/payment/callback`; the next phase should be a reversible ECPay sandbox runtime switch or deployment runbook cleanup.
