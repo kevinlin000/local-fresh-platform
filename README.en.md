@@ -439,10 +439,13 @@ npm run smoke:browser
 For the current completeness assessment and next-priority plan, see
 [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md). The project is already
 interview-ready for its core Java backend story; after the local observability
-slice, the next practical step is ECPay sandbox readiness verification before
-full CD automation. The current public preflight passes health/Nginx checks but
-still returns HTTP `404` for `/payment/callback`, so the deployed backend must
-be synced before switching `PAYMENT_PROVIDER=ecpay`.
+and payment hardening slices, the next practical step is ECPay sandbox readiness
+verification before full CD automation. The local
+`PaymentCallbackControllerEcpayContractTest` now proves the real ECPay gateway
+and `/payment/callback` contract for both `1|OK` and `0|FAIL` responses. The
+2026-06-21 public preflight passes health/Nginx checks but still returns HTTP
+`404` for `/payment/callback`, so the deployed backend must be synced before
+switching `PAYMENT_PROVIDER=ecpay`.
 
 ## License
 

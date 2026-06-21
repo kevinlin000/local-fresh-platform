@@ -63,6 +63,10 @@ The current coverage emphasis is the order lifecycle:
 - `PaymentGatewayProviderSelectionTest`: Spring conditional provider selection
   for default demo payments and ECPay readiness, including deployed ReturnURL /
   OrderResultURL in the signed checkout payload.
+- `PaymentCallbackControllerEcpayContractTest`: the real ECPay gateway wired
+  into `/payment/callback`, proving signed form callbacks return `1|OK` and
+  invalid `CheckMacValue` callbacks return `0|FAIL` without reaching payment
+  handling.
 - `PaymentCallbackControllerTest`: provider callback HTTP response contract
   (`1|OK` / `0|FAIL`) without requiring member or admin JWT, including
   form-url-encoded ECPay callback payload handling.

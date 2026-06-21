@@ -12,7 +12,7 @@
 | 會員端流程 | 商品瀏覽、購物車、下單、付款、訂單查詢、揪團頁已可展示，並使用真實食物圖片。 | 作品層級完整 |
 | 管理端流程 | Dashboard、商品、訂單、付款事件、操作紀錄已能支撐營運 demo。 | 作品層級完整 |
 | 訂單生命週期 | 狀態轉移集中在 `OrderStatusTransitionPolicy`，付款、取消、婉拒、配送、完成都有 service 測試。 | 強 |
-| 付款邊界 | Demo gateway、ECPay CheckMacValue parser、callback endpoint、付款事件表、前端 POST form 導轉骨架與 provider-switch readiness test 已完成；公開 EC2 preflight 目前顯示 `/payment/callback` 尚未部署。 | 強，但缺真 sandbox 端到端驗證 |
+| 付款邊界 | Demo gateway、ECPay CheckMacValue parser、callback endpoint、付款事件表、前端 POST form 導轉骨架、provider-switch readiness test 與真 ECPay gateway/controller contract test 已完成；公開 EC2 preflight 目前顯示 `/payment/callback` 尚未部署。 | 強，但缺真 sandbox 端到端驗證 |
 | 揪團併發 | Redisson lock、transaction boundary、唯一鍵、Testcontainers Redis、JMeter 證據已具備。 | 強 |
 | 庫存一致性 | 一般訂單、取消還庫存、商品管理邊界與重複取消防線已有測試。 | 強 |
 | 測試證據 | 後端 service/integration/Redis 測試、JaCoCo、前端 build、手動 Playwright 截圖證據已整理。 | 強 |
@@ -106,7 +106,8 @@
 目前結論：
 
 - 本機 provider-switch readiness 已用 `PaymentGatewayProviderSelectionTest` 固定住。
-- 公開 preflight 顯示 health 與 Nginx 正常，但 `/payment/callback` 回 HTTP `404`，代表 EC2 backend 尚未部署到含 callback endpoint 的版本。
+- 本機 ECPay callback contract 已用 `PaymentCallbackControllerEcpayContractTest` 固定住：有效簽章進 service，無效簽章回 `0|FAIL`。
+- 2026-06-21 公開 preflight 顯示 health 與 Nginx 正常，但 `/payment/callback` 回 HTTP `404`，代表 EC2 backend 尚未部署到含 callback endpoint 的版本。
 - 在這個 blocker 解掉以前，不應切 `PAYMENT_PROVIDER=ecpay`。
 
 剛完成的本地切面是 **UI smoke precheck + browser smoke + member/admin commerce polish**：

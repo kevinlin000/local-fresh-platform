@@ -220,3 +220,11 @@
 - Re-running the full local gate exposed a real local flake: Mockito inline mock maker could not self-attach under the Homebrew JDK after repeated full test runs. Switching test resources to `mock-maker-subclass` is a better fit because the current tests do not use final/static mocking and CI should not depend on JVM attach behavior.
 - Admin `npm audit --omit=dev` was already part of CI and failed on `form-data@4.0.5` through `axios`. Updating the admin lockfile to `form-data@4.0.6` keeps the audit gate meaningful instead of leaving CI red.
 - The first remote CI run after hardening exposed a CI-only ordering bug: `actions/setup-node` cannot use pnpm cache before pnpm is available through Corepack. The correct fix is to remove that cache shortcut for the user frontend job and let Corepack provide the pinned pnpm version used by the actual install/build steps.
+
+## Phase 26 ECPay Callback Contract Findings
+
+- The 2026-06-21 public ECPay preflight still reaches `https://localfresh-demo.duckdns.org/actuator/health` through Nginx, but `POST /payment/callback` returns HTTP `404`. The deployed backend is still not synced to the version containing the callback endpoint.
+- Because ReturnURL would currently miss Spring Boot entirely, it is still incorrect to switch the deployed process to `PAYMENT_PROVIDER=ecpay`.
+- The local application contract was weaker than the unit-test inventory suggested: existing tests covered the controller with a mocked gateway and the ECPay gateway parser independently, but not the real ECPay gateway wired through the callback controller.
+- `PaymentCallbackControllerEcpayContractTest` closes that gap without requiring a database or real sandbox credentials: a signed ECPay form payload returns `1|OK` and reaches `OrderPaymentService`, while an invalid `CheckMacValue` returns `0|FAIL` and does not call payment handling.
+- The remaining blocker is operational deployment sync, not backend parsing logic. After EC2 is redeployed, the same public preflight should change from HTTP `404` to HTTP `200` with body `0|FAIL`.

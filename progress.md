@@ -422,6 +422,28 @@
   - User frontend failed before install because `actions/setup-node` tried to use pnpm cache before Corepack had made pnpm available.
   - Removed the pnpm cache configuration from the user frontend job so CI uses Corepack-managed `pnpm@10.25.0` consistently.
 
+## 2026-06-21 13:13 +0800
+
+- Started Phase 26 ECPay callback contract evidence after the user asked to continue sequentially and requested another score.
+- Re-read planning files, ECPay runbook, readiness script, callback controller, ECPay gateway, payment service, and existing payment tests.
+- Ran the public ECPay readiness preflight:
+  - `https://localfresh-demo.duckdns.org/actuator/health`: passed.
+  - Public API `Server` header: Nginx detected.
+  - `POST https://localfresh-demo.duckdns.org/payment/callback`: failed with HTTP `404`.
+- Decision:
+  - Do not switch deployed `PAYMENT_PROVIDER=ecpay` while public ReturnURL would still miss the Spring Boot callback endpoint.
+  - Add local contract evidence instead of pretending real sandbox checkout is complete.
+- Implemented:
+  - Added `PaymentCallbackControllerEcpayContractTest`, wiring the real `EcpayPaymentGateway` into `PaymentCallbackController`.
+  - The test proves a signed ECPay form callback returns `1|OK` and reaches `OrderPaymentService`.
+  - It also proves an invalid `CheckMacValue` returns `0|FAIL` without calling payment handling.
+  - Updated the ECPay runbook, testing docs, README, README.en, and roadmap to reflect the new local evidence and the still-open public 404 blocker.
+- Verification so far:
+  - Focused Maven run passed: `PaymentCallbackControllerEcpayContractTest`, 2 tests, 0 failures, 0 errors.
+  - Full backend `mvn -pl local-fresh-server -am verify` passed: 157 tests, 0 failures, 0 errors, 5 skipped, with JaCoCo report generation.
+  - `node scripts/check-repo-hygiene.mjs` passed.
+  - `git diff --check` passed.
+
 ## 2026-06-20 16:05 +0800
 
 - Started Phase 13 payment lifecycle evidence hardening.

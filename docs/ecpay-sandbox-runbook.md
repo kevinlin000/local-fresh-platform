@@ -23,13 +23,37 @@ Not yet verified:
 
 ## Current Preflight Status
 
-As of 2026-06-20, the public preflight result is:
+As of 2026-06-21, the public preflight result is:
 
 - `https://localfresh-demo.duckdns.org/actuator/health`: passed
 - Public API `Server` header: Nginx detected
 - `POST https://localfresh-demo.duckdns.org/payment/callback`: HTTP `404`
 
 Do not switch the deployed Spring Boot process to `PAYMENT_PROVIDER=ecpay` until the EC2 backend is redeployed with the version containing `/payment/callback`. If ECPay sends ReturnURL callbacks while the endpoint returns `404`, the payment cannot be verified or recorded in `payment_event`.
+
+## Local Contract Evidence
+
+The public endpoint is still blocked by the deployed backend version, but the
+application-level callback contract is covered locally:
+
+```bash
+cd backend-environment/local-fresh-backend
+mvn -pl local-fresh-server -am \
+  -Dtest=PaymentCallbackControllerEcpayContractTest \
+  -Dsurefire.failIfNoSpecifiedTests=false test
+```
+
+This test wires the real `EcpayPaymentGateway` into `PaymentCallbackController`
+and proves both branches:
+
+- a signed ECPay form callback returns `1|OK` and reaches `OrderPaymentService`
+  with provider `ECPAY`, order number, `TradeNo`, `PaymentDate`, and raw payload.
+- an invalid `CheckMacValue` returns `0|FAIL` and does not call the payment
+  service.
+
+This is not a replacement for real sandbox checkout. It is the repeatable local
+evidence that the deployed preflight should return HTTP `200` + `0|FAIL` once
+EC2 runs the backend version containing `/payment/callback`.
 
 ## Deployed URL Plan
 
