@@ -34,6 +34,12 @@ logging:
     com.localfresh.service: info
     com.localfresh.controller: info
 
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.localfresh.entity
+  configuration:
+    map-underscore-to-camel-case: true
+
 localfresh:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver

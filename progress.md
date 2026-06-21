@@ -779,3 +779,33 @@
   - Commit and push the Flyway baseline prod handoff fix.
   - Wait for green CI artifact.
   - Redeploy through SSM and verify public endpoints.
+
+## 2026-06-21 19:12 +0800
+
+- Committed and pushed Flyway baseline fix as `64341fb fix: baseline flyway for prod handoff`.
+- CI run `27902201114` completed successfully:
+  - Repository hygiene passed.
+  - Admin frontend build/audit passed.
+  - User frontend build passed.
+  - Backend verify, JaCoCo upload, release packaging, package verification, and artifact upload passed.
+- Fifth deploy attempt:
+  - Downloaded CI artifact `7774624960`.
+  - Deployed jar for commit `64341fb6c3d9`.
+  - Verified jar SHA256 `c1af46c2a3b702f642a1f64b1a821df68707f9c39a652efa89d92c88497b47ae`.
+  - Service did not expose `127.0.0.1:8080` before the health window ended.
+  - Rolled back to `/home/ubuntu/local-fresh/sky-server-1.0-SNAPSHOT.jar.bak.20260621101246`.
+  - Rollback health returned `{"status":"UP"}`.
+- Diagnosis:
+  - New jar connected to MySQL.
+  - Flyway validated 20 migrations and reported the schema up to date.
+  - Startup then failed because EC2 external config still overrides MyBatis `type-aliases-package` with the old package, so mapper aliases such as `Category` cannot resolve.
+- Fix implemented locally:
+  - Added prod MyBatis override for `mapper-locations`, `type-aliases-package: com.localfresh.entity`, and `map-underscore-to-camel-case`.
+- Verification:
+  - `node scripts/check-repo-hygiene.mjs` passed.
+  - `git diff --check` passed.
+  - `mvn -pl local-fresh-server -am verify` passed with 159 tests, 0 failures, 0 errors, 5 skipped, and JaCoCo report generation.
+- Next action:
+  - Commit and push the prod MyBatis override.
+  - Wait for green CI artifact.
+  - Redeploy through SSM and verify public endpoints.
