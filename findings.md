@@ -266,3 +266,12 @@
 - The pragmatic integrity layer is a human-readable `release-manifest.txt`, a portable `SHA256SUMS`, and a small verifier script that checks required files, template presence, commit/jar consistency, callback path metadata, and checksums.
 - The verifier should accept both the exact commit package directory and the parent `output/backend-release` directory, because GitHub artifact extraction often creates a parent folder before the commit folder.
 - CI should run the verifier before uploading the artifact so `backend-release-package` is not just built, but structurally validated.
+
+## Phase 32 EC2 Deployment Access Audit Findings
+
+- The AWS CLI default profile is configured for `ap-northeast-1` and can discover the running `local-fresh-platform` EC2 instance.
+- The instance uses key pair `local-fresh-key`, but this workstation has no `~/.ssh/config`, no private key file in `~/.ssh`, and no SSH identities loaded in `ssh-agent`.
+- EC2 Instance Connect can successfully push a temporary public key to the instance, but direct SSH to TCP `22` times out from the current workstation network path.
+- The AWS profile does not have `ssm:DescribeInstanceInformation`, so Session Manager cannot currently be used or even confirmed.
+- The AWS profile does not have `ec2:DescribeSecurityGroups`, `ec2:DescribeInstanceConnectEndpoints`, or `ec2:AuthorizeSecurityGroupIngress`, so this agent cannot inspect the SSH ingress rule, use a private EIC endpoint, or temporarily open port `22` to the current operator IP.
+- The backend release package for commit `5f9c5e1b5857` is locally packaged and verified; deployment is blocked only by EC2 command-channel access, not by build/package readiness.

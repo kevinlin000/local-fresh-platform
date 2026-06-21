@@ -47,6 +47,7 @@ Raise `local-fresh-platform` to an interview-ready Java backend/fullstack portfo
 | 29. EC2 runtime templates | completed | Add non-secret systemd, Nginx, and environment templates so the release package contains a reviewable EC2 runtime contract. |
 | 30. CI backend release artifact | completed | Package the verified backend jar and EC2 runtime templates as a GitHub Actions artifact for deploy handoff evidence. |
 | 31. Release package integrity checks | completed | Add manifest, SHA256 checksums, and a verifier for backend release packages before EC2 deployment. |
+| 32. EC2 deployment access audit | completed | Attempt direct EC2 backend sync, identify the exact SSH/IAM blockers, and document the access prerequisites for the real deploy. |
 
 ## Constraints
 

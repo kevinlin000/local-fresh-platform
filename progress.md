@@ -590,3 +590,23 @@
   - `scripts/verify-backend-release-package.sh output/backend-release/a9f2f523e638` passed.
   - `scripts/verify-backend-release-package.sh output/backend-release` also passed, matching CI artifact parent-directory usage.
   - Full `scripts/check-before-commit.sh` passed end to end: backend verify 159 tests, repository hygiene, admin build/audit, and user build.
+
+## 2026-06-21 16:05 +0800
+
+- Started and completed Phase 32 EC2 deployment access audit after the user asked why I could not directly deploy.
+- Attempted direct deployment path discovery:
+  - Public ECPay readiness preflight still passes health/Nginx but fails `/actuator/info` and `/payment/callback` with HTTP `404`.
+  - Workspace search found no checked-in EC2 host, SSH alias, private key path, or deploy credential.
+  - Ignored backend `.env` only exposes local MySQL variable names; no deploy host key was present.
+  - `~/.ssh` has no config and no private key; `ssh-agent` has no identities.
+  - AWS CLI default profile found the running `local-fresh-platform` EC2 instance in `ap-northeast-1d`, public IP `35.78.44.49`, key pair `local-fresh-key`.
+  - AWS SSM describe was denied, so Session Manager cannot currently be used.
+  - EC2 Instance Connect successfully sent a temporary SSH public key, but SSH to `35.78.44.49:22` timed out.
+  - Security group describe and authorize-ingress were denied, so I could not inspect or temporarily open SSH access.
+- Release readiness:
+  - `SKIP_VERIFY=true scripts/package-backend-release.sh` produced the latest local release package for commit `5f9c5e1b5857`.
+  - `scripts/verify-backend-release-package.sh output/backend-release/5f9c5e1b5857` passed.
+  - Remote GitHub Actions artifacts for the latest CI run include `backend-release-package` and `backend-jacoco-report`.
+- Outcome:
+  - The deploy package is ready.
+  - Actual EC2 sync is blocked by command-channel access: provide the `local-fresh-key` private key, open SSH `22` for the current operator IP, or grant SSM / security group permissions.

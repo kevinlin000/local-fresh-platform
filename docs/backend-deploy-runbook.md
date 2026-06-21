@@ -13,6 +13,22 @@ Deploy a verified backend jar to EC2, expose its commit through
 `/actuator/info`, and prove the public payment callback path is running the
 expected backend version before any ECPay sandbox switch.
 
+## Access Prerequisites
+
+Direct deployment requires one working EC2 command channel:
+
+- SSH with the private key for the instance key pair, or
+- EC2 Instance Connect plus security-group access to TCP `22` from the current
+  operator IP, or
+- AWS Systems Manager Session Manager with the required instance profile and
+  IAM permissions.
+
+The local `local-fresh-cli` AWS profile can discover the EC2 instance and can
+send an EC2 Instance Connect public key, but it currently cannot complete the
+deploy from this workstation because SSH to TCP `22` times out and the profile
+does not have permission to inspect or update the security group. Fix one of
+the access paths above before running the copy/restart steps below.
+
 ## Package A Release
 
 From the repository root:
