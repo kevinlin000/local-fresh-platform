@@ -444,6 +444,26 @@
   - `node scripts/check-repo-hygiene.mjs` passed.
   - `git diff --check` passed.
 
+## 2026-06-21 14:50 +0800
+
+- Started Phase 27 deployment version observability after the user asked to continue sequentially and asked for the next part plus a score.
+- Re-read planning files, deployment/runbook references, Actuator configuration, ECPay readiness script, and current documentation.
+- Found:
+  - The repo has no checked-in EC2 deployment script or safe local SSH/systemd workflow to run directly.
+  - The current public API still passes `/actuator/health`, but the updated preflight shows `/actuator/info` and `/payment/callback` both return HTTP `404`.
+  - This means the deployed API cannot yet prove which backend commit is running.
+- Implemented:
+  - Added `DeploymentInfoContributor` to expose non-sensitive deployment identity through `/actuator/info`.
+  - Added `DeploymentInfoContributorTest` for configured commit/branch and fallback behavior.
+  - Updated `scripts/check-ecpay-sandbox-readiness.sh` to request `/actuator/info`, print the returned info, and optionally enforce `EXPECTED_DEPLOY_COMMIT`.
+  - Updated ECPay runbook, observability docs, testing docs, README, README.en, and roadmap to explain the new deployment identity check and the still-open public 404 blocker.
+- Verification so far:
+  - Focused Maven run passed: `DeploymentInfoContributorTest`, 2 tests, 0 failures, 0 errors.
+  - Updated public preflight still correctly blocks ECPay switch: backend health and Nginx pass, but `/actuator/info` and `/payment/callback` return HTTP `404`.
+  - Full backend `mvn -pl local-fresh-server -am verify` passed: 159 tests, 0 failures, 0 errors, 5 skipped, with JaCoCo report generation.
+  - `node scripts/check-repo-hygiene.mjs` passed.
+  - `git diff --check` passed.
+
 ## 2026-06-20 16:05 +0800
 
 - Started Phase 13 payment lifecycle evidence hardening.

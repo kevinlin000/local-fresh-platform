@@ -228,3 +228,11 @@
 - The local application contract was weaker than the unit-test inventory suggested: existing tests covered the controller with a mocked gateway and the ECPay gateway parser independently, but not the real ECPay gateway wired through the callback controller.
 - `PaymentCallbackControllerEcpayContractTest` closes that gap without requiring a database or real sandbox credentials: a signed ECPay form payload returns `1|OK` and reaches `OrderPaymentService`, while an invalid `CheckMacValue` returns `0|FAIL` and does not call payment handling.
 - The remaining blocker is operational deployment sync, not backend parsing logic. After EC2 is redeployed, the same public preflight should change from HTTP `404` to HTTP `200` with body `0|FAIL`.
+
+## Phase 27 Deployment Version Observability Findings
+
+- The repository does not currently include an EC2 deployment script or checked-in SSH/systemd workflow, so the safe local slice is to make deployment sync verifiable rather than attempting an opaque cloud change.
+- The updated public preflight shows `/actuator/info` also returns HTTP `404` on the deployed API. This means the public environment cannot yet prove which backend commit is running.
+- A lightweight Actuator `InfoContributor` is enough for this portfolio stage: it exposes only non-sensitive deployment identity such as application name, active profiles, commit, branch, and the payment callback path.
+- `SOURCE_COMMIT` and `SOURCE_BRANCH` give the EC2 process a simple deployment identity without adding image build automation, ECR, or a new deployment platform.
+- The ECPay readiness script should support `EXPECTED_DEPLOY_COMMIT` so a future deploy cannot accidentally pass health checks while running an older backend.

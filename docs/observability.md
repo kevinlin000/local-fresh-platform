@@ -16,6 +16,34 @@ The exposed endpoint list can be overridden without changing code:
 MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info
 ```
 
+## Deployment Identity
+
+`/actuator/info` includes a small non-sensitive `deployment` block:
+
+```json
+{
+  "deployment": {
+    "application": "local-fresh-server",
+    "profiles": ["prod"],
+    "commit": "42c12ce",
+    "branch": "hardening-and-upgrade",
+    "paymentCallbackPath": "/payment/callback"
+  }
+}
+```
+
+Set these environment variables on EC2 when starting the Spring Boot process:
+
+```bash
+SOURCE_COMMIT=<deployed git commit>
+SOURCE_BRANCH=hardening-and-upgrade
+```
+
+The app also accepts `localfresh.deployment.commit` and
+`localfresh.deployment.branch` if you prefer Spring properties. If neither is
+set, the values fall back to `unknown`. This endpoint does not expose secrets;
+it exists so public preflight checks can prove which backend version is running.
+
 ## Business Metrics
 
 | Metric | Tags | Meaning |

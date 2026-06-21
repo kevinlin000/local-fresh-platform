@@ -79,6 +79,9 @@ The current coverage emphasis is the order lifecycle:
 - `BusinessMetricsServiceImplTest`: custom Micrometer business counters for
   payment callback outcomes, duplicate/applied order cancellations, and
   group-buy transitions.
+- `DeploymentInfoContributorTest`: `/actuator/info` deployment identity,
+  including commit, branch, active profiles, and the payment callback path used
+  by public readiness checks.
 - `OrderCancellationServiceImpl`: refund metadata, inventory restoration,
   product-level restore aggregation, and duplicate-cancellation guards that
   avoid repeated refunds or stock restores.

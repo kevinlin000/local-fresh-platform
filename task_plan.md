@@ -42,6 +42,7 @@ Raise `local-fresh-platform` to an interview-ready Java backend/fullstack portfo
 | 24. Inventory restore DB idempotency | completed | Add a nullable inventory-log idempotency key, aggregate same-product restores, and prove duplicate restore keys are rejected by the database. |
 | 25. CI quality gate hardening | completed | Promote backend CI from test to verify, upload JaCoCo evidence, and add a repeatable repository hygiene gate. |
 | 26. ECPay callback contract evidence | completed | Re-run public preflight, add a real ECPay callback controller contract test, and keep docs honest about the deployed 404 blocker. |
+| 27. Deployment version observability | completed | Expose non-sensitive deployment identity through Actuator info and make ECPay preflight detect stale backend deployments before sandbox switching. |
 
 ## Constraints
 

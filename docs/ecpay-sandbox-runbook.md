@@ -27,6 +27,7 @@ As of 2026-06-21, the public preflight result is:
 
 - `https://localfresh-demo.duckdns.org/actuator/health`: passed
 - Public API `Server` header: Nginx detected
+- `https://localfresh-demo.duckdns.org/actuator/info`: HTTP `404`
 - `POST https://localfresh-demo.duckdns.org/payment/callback`: HTTP `404`
 
 Do not switch the deployed Spring Boot process to `PAYMENT_PROVIDER=ecpay` until the EC2 backend is redeployed with the version containing `/payment/callback`. If ECPay sends ReturnURL callbacks while the endpoint returns `404`, the payment cannot be verified or recorded in `payment_event`.
@@ -78,9 +79,15 @@ ECPAY_HASH_IV=v77hoKGq4kWxNNIS
 ECPAY_CHECKOUT_URL=https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5
 ECPAY_RETURN_URL=https://localfresh-demo.duckdns.org/payment/callback
 ECPAY_ORDER_RESULT_URL=https://d3hqnux25iirgl.cloudfront.net/orders
+SOURCE_COMMIT=<deployed git commit, for example 42c12ce>
+SOURCE_BRANCH=hardening-and-upgrade
 ```
 
 Keep `PAYMENT_PROVIDER=demo` for normal portfolio demos.
+
+`SOURCE_COMMIT` and `SOURCE_BRANCH` are not secrets. They are exposed through
+`/actuator/info` so the public preflight can distinguish "backend is healthy"
+from "backend is running the expected version".
 
 ## Nginx Requirements
 
@@ -105,6 +112,12 @@ The callback endpoint is a server-to-server form POST, so browser CORS is not in
 
    ```bash
    scripts/check-ecpay-sandbox-readiness.sh
+   ```
+
+   To require a specific backend commit:
+
+   ```bash
+   EXPECTED_DEPLOY_COMMIT=42c12ce scripts/check-ecpay-sandbox-readiness.sh
    ```
 
    The callback check must return HTTP `200` with `0|FAIL` for an intentionally invalid signature. If it returns `404`, stop here and deploy the backend version containing `/payment/callback` before changing `PAYMENT_PROVIDER`.

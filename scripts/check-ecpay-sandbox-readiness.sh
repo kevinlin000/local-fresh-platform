@@ -46,6 +46,20 @@ case "$server_header" in
   *) printf "WARN: Server header does not mention Nginx: %s\n" "${server_header:-<missing>}" ;;
 esac
 
+request info "$API_BASE_URL/actuator/info"
+info_status="$(cat "$TMP_DIR/info.status")"
+info_body="$(cat "$TMP_DIR/info.body")"
+if [ "$info_status" = "200" ]; then
+  pass "actuator info endpoint is reachable"
+  printf "INFO: actuator info: %s\n" "$info_body"
+  if [ -n "${EXPECTED_DEPLOY_COMMIT:-}" ]; then
+    printf "%s" "$info_body" | grep -q "$EXPECTED_DEPLOY_COMMIT" || fail "actuator info does not contain EXPECTED_DEPLOY_COMMIT=$EXPECTED_DEPLOY_COMMIT"
+    pass "deployed commit matches EXPECTED_DEPLOY_COMMIT=$EXPECTED_DEPLOY_COMMIT"
+  fi
+else
+  printf "WARN: actuator info endpoint returned HTTP %s\n" "$info_status"
+fi
+
 request callback \
   -X POST "$API_BASE_URL/payment/callback" \
   -H 'Content-Type: application/x-www-form-urlencoded' \

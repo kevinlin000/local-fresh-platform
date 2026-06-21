@@ -443,9 +443,10 @@ and payment hardening slices, the next practical step is ECPay sandbox readiness
 verification before full CD automation. The local
 `PaymentCallbackControllerEcpayContractTest` now proves the real ECPay gateway
 and `/payment/callback` contract for both `1|OK` and `0|FAIL` responses. The
-2026-06-21 public preflight passes health/Nginx checks but still returns HTTP
-`404` for `/payment/callback`, so the deployed backend must be synced before
-switching `PAYMENT_PROVIDER=ecpay`.
+backend can also expose non-sensitive deployment commit/branch data through
+`/actuator/info`. The 2026-06-21 public preflight passes health/Nginx checks
+but still returns HTTP `404` for both `/actuator/info` and `/payment/callback`,
+so the EC2 backend must be synced before switching `PAYMENT_PROVIDER=ecpay`.
 
 ## License
 

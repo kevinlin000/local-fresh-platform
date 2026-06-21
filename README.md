@@ -486,7 +486,7 @@ npm run smoke:browser
 ### 進行中
 
 - **ECPay sandbox readiness 驗證**:付款事件、callback parser、會員端 POST form 與最小業務 metrics 已補上後,下一步適合用現有 runbook/preflight 驗證環境變數、ReturnURL、OrderResultURL、Nginx HTTPS callback 路徑與事件落點,但不急著做正式金流上線。
-  - 目前本機已用 `PaymentCallbackControllerEcpayContractTest` 證明真 ECPay gateway 串 `/payment/callback` 的 `1|OK` / `0|FAIL` contract；2026-06-21 public preflight 結論仍是 health / Nginx 正常，但 deployed `/payment/callback` 尚回 HTTP `404`，切 `PAYMENT_PROVIDER=ecpay` 前必須先部署含 callback endpoint 的 backend 版本。
+  - 目前本機已用 `PaymentCallbackControllerEcpayContractTest` 證明真 ECPay gateway 串 `/payment/callback` 的 `1|OK` / `0|FAIL` contract；backend 也已可透過 `/actuator/info` 暴露非敏感的部署 commit/branch。2026-06-21 public preflight 結論仍是 health / Nginx 正常，但 deployed `/actuator/info` 與 `/payment/callback` 尚回 HTTP `404`，切 `PAYMENT_PROVIDER=ecpay` 前必須先同步 EC2 backend。
 - **Browser UI smoke**:在 dependency-free local precheck 之外，新增 Playwright Chromium smoke，覆蓋會員登入/home/orders 與管理端登入/dashboard/orders/products。
 
 ### 規劃中
