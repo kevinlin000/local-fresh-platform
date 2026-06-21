@@ -74,8 +74,8 @@ class OrderPaymentServiceImplTest {
         assertEquals(PaymentEvent.EVENT_REQUEST_CREATED, event.getEventType());
         assertEquals(PaymentEvent.RESULT_PENDING, event.getResult());
         assertEquals("ECPAY", event.getProvider());
-        assertEquals("ecpay-form:ORDER-001", event.getProviderReference());
-        assertEquals("ECPAY:REQUEST_CREATED:ORDER-001:ecpay-form:ORDER-001", event.getIdempotencyKey());
+        assertEquals("ECPAY:REQUEST:ORDER-001", event.getProviderReference());
+        assertEquals("ECPAY:REQUEST_CREATED:ORDER-001:ECPAY:REQUEST:ORDER-001", event.getIdempotencyKey());
         assertEquals(order.getAmount(), event.getAmount());
         assertNotNull(event.getRawPayload());
         verifyNoInteractions(webSocketServer);
@@ -104,7 +104,8 @@ class OrderPaymentServiceImplTest {
         List<PaymentEvent> events = capturedPaymentEvents();
         assertEquals(2, events.size());
         assertEquals(PaymentEvent.EVENT_REQUEST_CREATED, events.get(0).getEventType());
-        assertEquals("DEMO:REQUEST_CREATED:ORDER-005:demo-paid:ORDER-005", events.get(0).getIdempotencyKey());
+        assertEquals("DEMO:REQUEST:ORDER-005", events.get(0).getProviderReference());
+        assertEquals("DEMO:REQUEST_CREATED:ORDER-005:DEMO:REQUEST:ORDER-005", events.get(0).getIdempotencyKey());
         assertEquals(PaymentEvent.EVENT_CALLBACK_SUCCEEDED, events.get(1).getEventType());
         assertEquals(PaymentEvent.RESULT_SUCCEEDED, events.get(1).getResult());
         assertEquals("DEMO:CALLBACK_SUCCEEDED:ORDER-005", events.get(1).getIdempotencyKey());

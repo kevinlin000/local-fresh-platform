@@ -121,12 +121,12 @@ CREATE TABLE payment_event (
     order_number       VARCHAR(50) NOT NULL,
     provider           VARCHAR(32) NOT NULL,
     event_type         VARCHAR(32) NOT NULL,
-    provider_reference VARCHAR(128),
+    provider_reference VARCHAR(255),
     provider_trade_no  VARCHAR(128),
     idempotency_key    VARCHAR(255),
     amount             DECIMAL(10, 2),
     result             VARCHAR(32) NOT NULL,
-    raw_payload        VARCHAR(1000),
+    raw_payload        TEXT,
     created_at         DATETIME    NOT NULL
 );
 

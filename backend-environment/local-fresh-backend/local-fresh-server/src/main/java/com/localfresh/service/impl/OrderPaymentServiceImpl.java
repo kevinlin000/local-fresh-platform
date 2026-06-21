@@ -44,8 +44,10 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
     @Override
     public OrderPaymentVO requestPayment(Orders order) {
         OrderPaymentVO paymentRequest = paymentGateway.createPaymentRequest(order);
-        recordPaymentEvent(order, PaymentEvent.EVENT_REQUEST_CREATED, PaymentEvent.RESULT_PENDING,
-                paymentRequest.getPackageStr(), JsonUtil.toJson(paymentRequest));
+        String provider = resolveProvider();
+        recordPaymentEvent(order, order.getNumber(), provider, PaymentEvent.EVENT_REQUEST_CREATED,
+                PaymentEvent.RESULT_PENDING, buildPaymentRequestReference(provider, order.getNumber()), null,
+                JsonUtil.toJson(paymentRequest));
         if (paymentGateway.completesPaymentOnRequest()) {
             handlePaymentSuccess(order.getNumber());
         }
@@ -181,6 +183,10 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
             return String.join(":", provider, eventType, orderNumber, providerReference);
         }
         return String.join(":", provider, eventType, orderNumber);
+    }
+
+    private String buildPaymentRequestReference(String provider, String orderNumber) {
+        return String.join(":", provider, "REQUEST", orderNumber);
     }
 
     private String resolveProvider() {

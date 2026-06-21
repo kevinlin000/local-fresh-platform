@@ -883,3 +883,34 @@
   - Confirmed the payment drop-in remains present.
   - Confirmed effective `PAYMENT_PROVIDER=ecpay`.
 - Updated ECPay runbook, backend deploy runbook, EC2 runtime README, README/README.en, known issues, portfolio roadmap, backend deep-dive prep, and interview guide to remove the old public 404 blocker and record the remaining gap: real browser ECPay stage checkout plus ReturnURL / OrderResultURL evidence.
+
+## 2026-06-21 21:37 +0800
+
+- Started Phase 36 ECPay browser checkout evidence after the user confirmed using Playwright.
+- Loaded the Playwright skill and confirmed `npx` is available.
+- Scope for this phase:
+  - Use the deployed CloudFront storefront, not only API calls.
+  - Verify the current EC2 runtime is still `PAYMENT_PROVIDER=ecpay`.
+  - Drive the member order payment flow until it either reaches ECPay stage checkout or exposes a concrete blocker.
+  - If ECPay requires manual CAPTCHA/card entry, stop at that boundary and record the exact screen/state instead of faking success.
+
+## 2026-06-21 21:51 +0800
+
+- Continued Phase 36 with Playwright against the deployed CloudFront storefront.
+- Browser flow reached the member login page and confirmed production mock login was disabled, so a temporary SSM systemd drop-in enabled `LOCALFRESH_AUTH_MOCK_LOGIN_ENABLED=true` only for this browser checkout validation.
+- After demo login, the member orders page loaded as `林品安`; clicking the first pending order payment button called `PUT https://localfresh-demo.duckdns.org/user/order/payment` with order `DEMO-20260617-001`.
+- Playwright exposed a real deployed backend blocker:
+  - The payment API returned HTTP 500 instead of redirecting to ECPay stage checkout.
+  - EC2 backend logs showed `Data too long for column 'provider_reference'`.
+  - Root cause: the ECPay checkout request JSON was being stored in `payment_event.provider_reference`, which is meant for compact provider references.
+- Implemented the backend fix locally:
+  - `OrderPaymentServiceImpl.requestPayment` now stores a compact request reference such as `ECPAY:REQUEST:<orderNumber>` in `provider_reference`.
+  - The full checkout request stays in `payment_event.raw_payload`.
+  - Added Flyway migration `V19__widen_payment_event_payload.sql` to widen `provider_reference` to `VARCHAR(255)` and `raw_payload` to `TEXT`.
+  - Updated H2 test schema and payment service tests to lock the compact reference and idempotency key behavior.
+- Verification:
+  - `mvn -pl local-fresh-server -am -Dtest=OrderPaymentServiceImplTest,PaymentEventMapperTest -Dsurefire.failIfNoSpecifiedTests=false test` passed with 10 tests.
+  - `mvn -pl local-fresh-server -am verify` passed with 160 tests, 0 failures, 0 errors, 5 skipped, and JaCoCo report generation.
+  - `node scripts/check-repo-hygiene.mjs` passed.
+  - `git diff --check` passed.
+- Next step: commit, push, wait for CI, deploy the new backend jar through SSM, then rerun the same Playwright checkout path and remove the temporary demo-login drop-in.
