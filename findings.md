@@ -218,6 +218,7 @@
 - Repository hygiene is useful because this project has curated README screenshots and a history of course-template terminology cleanup. A small script can cheaply assert screenshot references and guard against old platform terms returning.
 - Existing repo files had some trailing whitespace in older docs/admin files, so adding a global whitespace gate required a small mechanical cleanup first.
 - Re-running the full local gate exposed a real local flake: Mockito inline mock maker could not self-attach under the Homebrew JDK after repeated full test runs. Switching test resources to `mock-maker-subclass` is a better fit because the current tests do not use final/static mocking and CI should not depend on JVM attach behavior.
+
 - Admin `npm audit --omit=dev` was already part of CI and failed on `form-data@4.0.5` through `axios`. Updating the admin lockfile to `form-data@4.0.6` keeps the audit gate meaningful instead of leaving CI red.
 - The first remote CI run after hardening exposed a CI-only ordering bug: `actions/setup-node` cannot use pnpm cache before pnpm is available through Corepack. The correct fix is to remove that cache shortcut for the user frontend job and let Corepack provide the pinned pnpm version used by the actual install/build steps.
 
@@ -275,3 +276,29 @@
 - The AWS profile does not have `ssm:DescribeInstanceInformation`, so Session Manager cannot currently be used or even confirmed.
 - The AWS profile does not have `ec2:DescribeSecurityGroups`, `ec2:DescribeInstanceConnectEndpoints`, or `ec2:AuthorizeSecurityGroupIngress`, so this agent cannot inspect the SSH ingress rule, use a private EIC endpoint, or temporarily open port `22` to the current operator IP.
 - The backend release package for commit `5f9c5e1b5857` is locally packaged and verified; deployment is blocked only by EC2 command-channel access, not by build/package readiness.
+
+## Phase 33 SSM Session Manager Findings
+
+- The user's EC2 SSH access problem is caused by dynamic operator IP plus security group ingress that does not allow this machine's current source IP.
+- Permanent SSH `0.0.0.0/0` is the wrong long-term fix for this portfolio and would weaken the deployment/security story.
+- The preferred command channel is AWS Systems Manager Session Manager:
+  - EC2 instance needs an attached IAM instance profile with `AmazonSSMManagedInstanceCore`.
+  - The instance must have SSM Agent running and outbound HTTPS access to SSM endpoints.
+  - The CLI user needs SSM read/session/command permissions plus basic EC2 describe permissions.
+- Once the instance appears as an online managed node, deployment can proceed through `aws ssm send-command` without opening port 22 or depending on a fixed local IP.
+- EC2 instance `i-0a21d1fff310e3168` originally had no IAM instance profile. A new EC2 role/profile `local-fresh-ec2-ssm-role` was created through AWS Console with AWS managed policy `AmazonSSMManagedInstanceCore` and attached to the instance.
+- The local CLI user `local-fresh-cli` originally lacked `ssm:DescribeInstanceInformation` and `ssm:SendCommand` permissions. An inline policy `LocalFreshSsmDeployAccess` was added through CloudShell so local AWS CLI can describe SSM nodes, send `AWS-RunShellScript` commands to this instance, read command results, and start/terminate Session Manager sessions for this instance.
+- Ubuntu already had `amazon-ssm-agent` installed as a snap (`3.3.4121.0`), but it was not registered until the EC2 instance profile was attached and the snap service was started. `snap services amazon-ssm-agent` reported `enabled active`.
+- Final SSM verification succeeded:
+  - `aws ssm describe-instance-information` returned instance `i-0a21d1fff310e3168` with `PingStatus=Online`, `PlatformName=Ubuntu`, and `AgentVersion=3.3.4121.0`.
+  - `aws ssm send-command` using `AWS-RunShellScript` returned `Status=Success`, `ResponseCode=0`, stdout `ssm-ok`, `root`, and hostname `ip-172-31-28-239`.
+
+## Phase 34 SSM Backend Deployment Findings
+
+- The existing EC2 runtime contract is legacy but stable: systemd service `local-fresh-backend.service` runs `/home/ubuntu/local-fresh/sky-server-1.0-SNAPSHOT.jar` with `prod` profile and an external `/home/ubuntu/local-fresh/application-prod.yml`.
+- Local-to-S3 upload of the 95 MB backend jar is unreliable from this workstation. Both `aws s3 cp` multipart upload and small-object fallback attempts hit S3 request/socket timeouts, so the safer deploy path is to let EC2 download the GitHub Actions release artifact directly.
+- EC2 cannot clone the private GitHub repository without credentials, which is the correct security posture. A short-lived GitHub artifact redirect URL avoids placing a GitHub token on EC2.
+- The CI `backend-release-package` artifact for commit `a817bd3a5f2e` downloaded successfully on EC2, extracted correctly, and contained `local-fresh-server-a817bd3a5f2e.jar` with SHA256 `cf1daef2dd6695dee9cabbd29df88b4727f5b9aab3a52bf4dd1832b340711111`.
+- The first SSM deployment attempt correctly backed up the old jar, replaced the runtime jar, and restarted the service, but the new Spring Boot 3.5 jar entered a restart loop. The EC2 service was rolled back to `/home/ubuntu/local-fresh/sky-server-1.0-SNAPSHOT.jar.bak.20260621101246`, and `/actuator/health` returned `UP` again.
+- Root cause was not DB, Redis, Nginx, or SSM. The new jar failed because `application-prod.yml` required `CORS_ALLOWED_ORIGIN_PATTERNS`; the current EC2 runtime does not define that non-secret variable, so `WebMvcConfiguration` failed during placeholder resolution.
+- The code fix is to give `localfresh.cors.allowed-origin-patterns` a production-safe fallback in `application-prod.yml`, matching the existing `WebMvcConfiguration` default intent. Backend `mvn -pl local-fresh-server -am verify` passed afterward with 159 tests, 0 failures, 0 errors, 5 skipped.

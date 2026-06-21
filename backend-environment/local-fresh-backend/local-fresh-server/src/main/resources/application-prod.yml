@@ -45,7 +45,7 @@ localfresh:
     port: ${REDIS_PORT:6379}
     database: ${REDIS_DATABASE:0}
   cors:
-    allowed-origin-patterns: ${CORS_ALLOWED_ORIGIN_PATTERNS}
+    allowed-origin-patterns: "${CORS_ALLOWED_ORIGIN_PATTERNS:http://localhost:*,http://127.0.0.1:*}"
   auth:
     mock-login-enabled: false
   jwt:

@@ -610,3 +610,83 @@
 - Outcome:
   - The deploy package is ready.
   - Actual EC2 sync is blocked by command-channel access: provide the `local-fresh-key` private key, open SSH `22` for the current operator IP, or grant SSM / security group permissions.
+
+## 2026-06-21 16:32 +0800
+
+- Started Phase 33 SSM Session Manager access setup after the user approved using Playwright to configure AWS Console.
+- Scope decision:
+  - Use Playwright to inspect and guide AWS Console changes.
+  - Do not ask the user to expose passwords, MFA, private keys, or access keys.
+  - Do not permanently open SSH to the internet; target SSM Session Manager as the stable deployment channel.
+- Current intent:
+  - Verify whether EC2 instance `i-0a21d1fff310e3168` has an IAM instance profile.
+  - Attach or create an EC2 role with `AmazonSSMManagedInstanceCore` if missing.
+  - Verify Systems Manager managed-node online status before attempting SSM-based deploy.
+
+## 2026-06-21 17:25 +0800
+
+- Completed Phase 33 SSM Session Manager access setup.
+- AWS changes made:
+  - Created IAM role / instance profile `local-fresh-ec2-ssm-role` in AWS Console.
+  - Attached AWS managed policy `AmazonSSMManagedInstanceCore` to that EC2 role.
+  - Attached the instance profile to EC2 instance `i-0a21d1fff310e3168`.
+  - Added inline IAM user policy `LocalFreshSsmDeployAccess` to CLI user `local-fresh-cli` through CloudShell so local AWS CLI can use SSM against this instance.
+- EC2 changes made:
+  - Connected once through browser-based EC2 Instance Connect as `ubuntu`.
+  - Confirmed `amazon-ssm-agent` snap is installed at version `3.3.4121.0`.
+  - Started the snap service and confirmed it is `enabled active`.
+- Verification:
+  - `aws ec2 describe-instances` now reports instance profile `arn:aws:iam::049705856957:instance-profile/local-fresh-ec2-ssm-role`.
+  - `aws ssm describe-instance-information` now reports `PingStatus=Online` for `i-0a21d1fff310e3168`.
+  - `aws ssm send-command` with `AWS-RunShellScript` succeeded and returned `ssm-ok`, `root`, and hostname `ip-172-31-28-239`.
+- Outcome:
+  - Future backend deploys can use SSM CLI instead of public SSH or fixed operator IP.
+  - Next best step is an SSM-based backend release sync from the verified package, followed by `/actuator/info` and ECPay callback preflight verification.
+
+## 2026-06-21 17:25 +0800
+
+- Started Phase 34 SSM backend deployment sync after SSM command access was verified.
+- Scope decision:
+  - Use SSM `AWS-RunShellScript` rather than public SSH.
+  - Inspect the existing EC2 runtime before changing any jar, systemd unit, environment file, or Nginx config.
+  - Preserve existing EC2 secrets and production environment values; do not print or copy secret file contents into chat or docs.
+  - Deploy only after confirming the current service path and a rollback path.
+- Intended verification:
+  - `/actuator/info` should expose the deployed commit.
+  - `/payment/callback` should no longer return public HTTP `404`.
+  - `scripts/check-ecpay-sandbox-readiness.sh` should progress past the stale-deploy blocker before any ECPay provider switch.
+
+## 2026-06-21 18:21 +0800
+
+- Continued Phase 34 with the first real SSM deployment attempt.
+- EC2 runtime discovered:
+  - Service: `local-fresh-backend.service`.
+  - Runtime jar: `/home/ubuntu/local-fresh/sky-server-1.0-SNAPSHOT.jar`.
+  - External prod config: `/home/ubuntu/local-fresh/application-prod.yml`.
+  - Backend proxy remains Nginx to `127.0.0.1:8080`.
+- Deployment transport attempts:
+  - Direct local upload of the 95 MB jar to S3 failed repeatedly with S3 request/socket timeouts.
+  - Split-object S3 upload also proved unreliable from this workstation.
+  - EC2-side Git clone was rejected because the GitHub repository is private.
+  - GitHub Actions artifact download via short-lived redirect succeeded from EC2 without exposing a GitHub token to EC2.
+- First deploy attempt:
+  - Downloaded and extracted CI `backend-release-package` for commit `a817bd3a5f2e`.
+  - Verified jar SHA256 `cf1daef2dd6695dee9cabbd29df88b4727f5b9aab3a52bf4dd1832b340711111`.
+  - Backed up the previous runtime jar and replaced `/home/ubuntu/local-fresh/sky-server-1.0-SNAPSHOT.jar`.
+  - Added a temporary systemd release drop-in for `SOURCE_COMMIT=a817bd3a5f2e` and `SOURCE_BRANCH=hardening-and-upgrade`.
+- Result:
+  - New jar entered a restart loop and never served `127.0.0.1:8080`.
+  - Rolled back to `/home/ubuntu/local-fresh/sky-server-1.0-SNAPSHOT.jar.bak.20260621101246`.
+  - Removed the temporary release drop-in.
+  - Verified rollback health: `curl http://127.0.0.1:8080/actuator/health` returned `{"status":"UP"}`.
+- Root cause:
+  - EC2 backend log showed `Could not resolve placeholder 'CORS_ALLOWED_ORIGIN_PATTERNS'`.
+  - `application-prod.yml` required this non-secret env var, but the current EC2 runtime does not define it.
+- Fix implemented locally:
+  - Updated `application-prod.yml` to default `localfresh.cors.allowed-origin-patterns` to `http://localhost:*,http://127.0.0.1:*` when `CORS_ALLOWED_ORIGIN_PATTERNS` is absent.
+- Verification:
+  - `mvn -pl local-fresh-server -am verify` passed with 159 tests, 0 failures, 0 errors, 5 skipped, and JaCoCo report generation.
+- Next action:
+  - Commit and push the CORS fallback fix.
+  - Wait for CI to publish a new `backend-release-package` artifact.
+  - Redeploy the new artifact through SSM and then re-run public `/actuator/info` plus ECPay callback preflight.
