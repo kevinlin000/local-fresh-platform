@@ -1,0 +1,25 @@
+[Unit]
+Description=Local Fresh Spring Boot API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=localfresh
+Group=localfresh
+WorkingDirectory=/opt/local-fresh
+EnvironmentFile=/etc/local-fresh/local-fresh-server.env
+ExecStart=/usr/bin/java -jar /opt/local-fresh/current.jar
+SuccessExitStatus=143
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=30
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/opt/local-fresh
+
+[Install]
+WantedBy=multi-user.target

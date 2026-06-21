@@ -10,6 +10,7 @@ BRANCH="$(git -C "$ROOT_DIR" rev-parse --abbrev-ref HEAD)"
 OUTPUT_DIR="${OUTPUT_DIR:-$ROOT_DIR/output/backend-release/$COMMIT}"
 ALLOW_DIRTY="${ALLOW_DIRTY:-false}"
 SKIP_VERIFY="${SKIP_VERIFY:-false}"
+DEPLOY_TEMPLATE_DIR="$ROOT_DIR/deploy/ec2"
 
 if [ "$ALLOW_DIRTY" != "true" ] && [ -n "$(git -C "$ROOT_DIR" status --porcelain)" ]; then
   printf "FAIL: worktree has uncommitted changes. Commit first, or set ALLOW_DIRTY=true for a local dry run.\n" >&2
@@ -37,6 +38,12 @@ if [ ! -f "$SOURCE_JAR" ]; then
 fi
 
 cp "$SOURCE_JAR" "$RELEASE_JAR"
+
+if [ -d "$DEPLOY_TEMPLATE_DIR" ]; then
+  rm -rf "$OUTPUT_DIR/deploy-templates"
+  mkdir -p "$OUTPUT_DIR/deploy-templates"
+  cp "$DEPLOY_TEMPLATE_DIR"/* "$OUTPUT_DIR/deploy-templates/"
+fi
 
 cat > "$RELEASE_ENV" <<EOF
 SOURCE_COMMIT=$COMMIT
@@ -69,3 +76,6 @@ printf "  branch: %s\n" "$BRANCH"
 printf "  jar: %s\n" "$RELEASE_JAR"
 printf "  metadata: %s\n" "$RELEASE_ENV"
 printf "  deploy commands: %s\n" "$DEPLOY_COMMANDS"
+if [ -d "$OUTPUT_DIR/deploy-templates" ]; then
+  printf "  deploy templates: %s\n" "$OUTPUT_DIR/deploy-templates"
+fi

@@ -21,6 +21,7 @@ const ignoredFiles = new Set([
 ])
 const textExtensions = new Set([
   '.css',
+  '.conf',
   '.html',
   '.java',
   '.js',
@@ -29,6 +30,7 @@ const textExtensions = new Set([
   '.mjs',
   '.properties',
   '.scss',
+  '.service',
   '.sh',
   '.sql',
   '.ts',
@@ -57,6 +59,9 @@ function isTextFile(filePath) {
   const basename = path.basename(filePath)
   if (ignoredFiles.has(basename)) {
     return false
+  }
+  if (basename.endsWith('.example')) {
+    return true
   }
   return textExtensions.has(path.extname(filePath))
 }

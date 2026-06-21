@@ -44,6 +44,7 @@ Raise `local-fresh-platform` to an interview-ready Java backend/fullstack portfo
 | 26. ECPay callback contract evidence | completed | Re-run public preflight, add a real ECPay callback controller contract test, and keep docs honest about the deployed 404 blocker. |
 | 27. Deployment version observability | completed | Expose non-sensitive deployment identity through Actuator info and make ECPay preflight detect stale backend deployments before sandbox switching. |
 | 28. Backend release packaging runbook | completed | Add a repeatable backend release packaging script and EC2 deploy handoff runbook before doing any real sandbox switch. |
+| 29. EC2 runtime templates | completed | Add non-secret systemd, Nginx, and environment templates so the release package contains a reviewable EC2 runtime contract. |
 
 ## Constraints
 

@@ -530,3 +530,24 @@
 - Follow-up assessment:
   - Inventory idempotency is now covered at the service level for repeated order cancellation.
   - The next best local slice is minimal business observability: expose or document a few application metrics before moving to ECPay sandbox or deployment automation.
+
+## 2026-06-21 15:22 +0800
+
+- Started and completed Phase 29 EC2 runtime templates after the user asked to continue sequentially and requested the next part plus scoring.
+- Scope decision:
+  - Do not attempt SSH deployment without checked credentials or a confirmed host/service contract.
+  - Add non-secret EC2 runtime templates and package them with each backend release.
+- Implemented:
+  - Added `deploy/ec2/README.md`.
+  - Added `deploy/ec2/local-fresh-server.env.example` with placeholder prod profile, database, Redis, frontend origin, JWT, S3, Google, and payment settings.
+  - Added `deploy/ec2/local-fresh-server.service` for `/opt/local-fresh/current.jar` under systemd.
+  - Added `deploy/ec2/nginx-localfresh-demo.conf` to proxy HTTPS traffic to the Spring Boot backend on `127.0.0.1:8080`.
+  - Updated `scripts/package-backend-release.sh` to copy `deploy/ec2/` into each release package as `deploy-templates/`.
+  - Updated backend deploy runbook, observability docs, and roadmap to mention the runtime templates.
+  - Expanded repository hygiene so `.service`, `.conf`, and `.example` files are scanned.
+- Verification:
+  - `sh -n scripts/package-backend-release.sh` passed.
+  - `node scripts/check-repo-hygiene.mjs` passed.
+  - `git diff --check` passed.
+  - `ALLOW_DIRTY=true SKIP_VERIFY=true scripts/package-backend-release.sh` passed and produced `deploy-templates/` under `output/backend-release/49f6e11a8f12/`.
+  - Full `scripts/check-before-commit.sh` passed end to end: backend verify 159 tests, repository hygiene, admin build/audit, and user build.

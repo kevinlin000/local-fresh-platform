@@ -39,6 +39,9 @@ SOURCE_COMMIT=<deployed git commit>
 SOURCE_BRANCH=hardening-and-upgrade
 ```
 
+The checked-in `deploy/ec2/local-fresh-server.env.example` template includes
+these variables so the release package and runtime metadata stay aligned.
+
 The app also accepts `localfresh.deployment.commit` and
 `localfresh.deployment.branch` if you prefer Spring properties. If neither is
 set, the values fall back to `unknown`. This endpoint does not expose secrets;

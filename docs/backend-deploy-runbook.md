@@ -26,6 +26,7 @@ The script:
 - requires a clean worktree by default.
 - runs `mvn -pl local-fresh-server -am verify`.
 - copies the Spring Boot jar into `output/backend-release/<commit>/`.
+- copies `deploy/ec2/` runtime templates into `deploy-templates/`.
 - writes `release.env` with `SOURCE_COMMIT` and `SOURCE_BRANCH`.
 - writes `ec2-deploy-commands.txt` with an editable EC2 command template.
 
@@ -46,6 +47,24 @@ SOURCE_BRANCH=hardening-and-upgrade
 ```
 
 They are intentionally non-secret and are exposed through `/actuator/info`.
+
+## Runtime Templates
+
+The repository includes non-secret EC2 runtime templates under `deploy/ec2/`:
+
+- `local-fresh-server.env.example`: placeholder environment variables for the
+  Spring Boot `prod` profile.
+- `local-fresh-server.service`: systemd service for `/opt/local-fresh/current.jar`.
+- `nginx-localfresh-demo.conf`: HTTPS reverse proxy to `127.0.0.1:8080`.
+
+Copy these templates to EC2, replace placeholders outside git, then validate:
+
+```bash
+sudo nginx -t
+sudo systemctl daemon-reload
+sudo systemctl restart local-fresh-server
+sudo systemctl status local-fresh-server --no-pager
+```
 
 ## Verify The Deployment
 

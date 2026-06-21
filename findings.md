@@ -243,3 +243,11 @@
 - A backend release should be built from a clean worktree, run backend `verify` by default, copy the repackaged Spring Boot jar into an ignored output directory, and record the commit/branch metadata that `/actuator/info` expects.
 - The release package should produce editable EC2 commands instead of executing SSH automatically. This avoids hiding hostnames, service names, or secrets in the repo while still making the manual deployment repeatable.
 - `scripts/package-backend-release.sh` dry run confirmed it can reuse the existing jar and write `release.env` plus `ec2-deploy-commands.txt` under `output/backend-release/<commit>/`, which is ignored by git.
+
+## Phase 29 EC2 Runtime Template Findings
+
+- The repository had an EC2 deploy runbook, but no checked-in runtime contract for systemd, Nginx, or the production environment variable surface.
+- The safe portfolio-sized improvement is to version non-secret templates under `deploy/ec2/`, not real EC2 hostnames, SSH paths, DB passwords, JWT secrets, AWS keys, or ECPay credentials.
+- The runtime contract should match the code paths already implemented: Spring Boot runs with the `prod` profile, Nginx proxies HTTPS traffic to `127.0.0.1:8080`, and `SOURCE_COMMIT` / `SOURCE_BRANCH` are set so `/actuator/info` can prove the deployed version.
+- The release package should include these templates alongside the jar and deploy commands so a future EC2 sync has one reviewable artifact instead of scattered notes.
+- Repository hygiene should scan `.service`, `.conf`, and `.example` files so deployment templates cannot silently reintroduce legacy terminology or trailing whitespace.
