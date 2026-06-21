@@ -29,6 +29,7 @@ The script:
 - copies `deploy/ec2/` runtime templates into `deploy-templates/`.
 - writes `release.env` with `SOURCE_COMMIT` and `SOURCE_BRANCH`.
 - writes `ec2-deploy-commands.txt` with an editable EC2 command template.
+- writes `release-manifest.txt` and `SHA256SUMS` for deploy-package integrity.
 
 Use `SKIP_VERIFY=true` only for a local dry run when a current jar already
 exists:
@@ -41,6 +42,17 @@ GitHub Actions also publishes the same deployable package from the backend CI
 job as the `backend-release-package` artifact. Use that artifact when you want
 the jar and deploy templates to come from a verified remote CI run instead of a
 local workstation.
+
+Before copying a package to EC2, verify it locally:
+
+```bash
+scripts/verify-backend-release-package.sh output/backend-release/<commit>
+```
+
+The verifier checks the expected jar, `release.env`, manifest, deploy commands,
+runtime templates, and all SHA256 checksums. It also accepts the parent
+`output/backend-release` directory when exactly one package should be selected
+from a downloaded artifact.
 
 ## EC2 Runtime Metadata
 

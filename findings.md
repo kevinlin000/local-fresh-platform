@@ -258,3 +258,11 @@
 - Running `scripts/package-backend-release.sh` again with full verification inside the same CI job would duplicate the Maven gate. The better CI path is `SKIP_VERIFY=true` after the verified jar exists.
 - The release artifact should be uploaded from `output/backend-release`, not from `target/`, because it carries deploy metadata, EC2 deploy commands, and `deploy-templates/` in addition to the jar.
 - This is still not full CD. It is a safer intermediate step: every green backend CI run now has a deployable package that can be downloaded and manually synced to EC2.
+
+## Phase 31 Release Package Integrity Findings
+
+- A deployable artifact is more credible if it can prove both identity and file integrity before copying to EC2.
+- The package already has `release.env`, but that is not enough to catch a truncated jar, missing runtime template, or artifact extracted from the wrong directory.
+- The pragmatic integrity layer is a human-readable `release-manifest.txt`, a portable `SHA256SUMS`, and a small verifier script that checks required files, template presence, commit/jar consistency, callback path metadata, and checksums.
+- The verifier should accept both the exact commit package directory and the parent `output/backend-release` directory, because GitHub artifact extraction often creates a parent folder before the commit folder.
+- CI should run the verifier before uploading the artifact so `backend-release-package` is not just built, but structurally validated.

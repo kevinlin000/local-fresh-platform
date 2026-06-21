@@ -417,7 +417,9 @@ scripts/check-ecpay-sandbox-readiness.sh
 ```
 
 The backend CI job also uploads a `backend-release-package` artifact containing
-the verified jar, release metadata, EC2 deploy commands, and runtime templates.
+the verified jar, release metadata, SHA256 checksums, EC2 deploy commands, and
+runtime templates. Verify it before EC2 sync with
+`scripts/verify-backend-release-package.sh <downloaded-package-dir>`.
 
 Before refreshing local screenshots or giving a live demo, run:
 

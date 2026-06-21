@@ -57,6 +57,10 @@ jobs:
         working-directory: .
         run: SKIP_VERIFY=true scripts/package-backend-release.sh
 
+      - name: Verify backend release package
+        working-directory: .
+        run: scripts/verify-backend-release-package.sh output/backend-release
+
       - name: Upload backend release package
         uses: actions/upload-artifact@v4
         with:

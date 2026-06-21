@@ -568,3 +568,25 @@
   - `git diff --check` passed.
   - `ALLOW_DIRTY=true SKIP_VERIFY=true scripts/package-backend-release.sh` passed and produced `output/backend-release/e523a4a17b38/`.
   - Full `scripts/check-before-commit.sh` passed end to end: backend verify 159 tests, repository hygiene, admin build/audit, and user build.
+
+## 2026-06-21 15:44 +0800
+
+- Started and completed Phase 31 release package integrity checks after the user asked to continue carefully and keep scoring.
+- Scope decision:
+  - Do not attempt EC2 SSH deployment without host credentials.
+  - Strengthen the deploy handoff package so a downloaded CI artifact can be verified before EC2 sync.
+- Implemented:
+  - Updated `scripts/package-backend-release.sh` to emit `release-manifest.txt` and `SHA256SUMS`.
+  - Added `scripts/verify-backend-release-package.sh`.
+  - Updated CI to run the verifier after packaging and before artifact upload.
+  - Updated backend deploy runbook, testing docs, README, README.en, and roadmap to document package verification.
+- Verification:
+  - `sh -n scripts/package-backend-release.sh` passed.
+  - `sh -n scripts/verify-backend-release-package.sh` passed.
+  - `.github/workflows/ci.yml` parsed successfully with Ruby YAML.
+  - `node scripts/check-repo-hygiene.mjs` passed.
+  - `git diff --check` passed.
+  - `ALLOW_DIRTY=true SKIP_VERIFY=true scripts/package-backend-release.sh` passed and generated `release-manifest.txt` plus `SHA256SUMS` under `output/backend-release/a9f2f523e638/`.
+  - `scripts/verify-backend-release-package.sh output/backend-release/a9f2f523e638` passed.
+  - `scripts/verify-backend-release-package.sh output/backend-release` also passed, matching CI artifact parent-directory usage.
+  - Full `scripts/check-before-commit.sh` passed end to end: backend verify 159 tests, repository hygiene, admin build/audit, and user build.
