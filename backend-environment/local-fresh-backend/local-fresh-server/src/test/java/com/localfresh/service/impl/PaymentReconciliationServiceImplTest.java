@@ -4,6 +4,7 @@ import com.github.pagehelper.Page;
 import com.localfresh.entity.PaymentEvent;
 import com.localfresh.exception.OrderBusinessException;
 import com.localfresh.mapper.PaymentEventMapper;
+import com.localfresh.service.BusinessMetricsService;
 import com.localfresh.service.OrderPaymentService;
 import com.localfresh.service.payment.PaymentGateway;
 import com.localfresh.service.payment.PaymentQueryResult;
@@ -37,6 +38,9 @@ class PaymentReconciliationServiceImplTest {
     @Mock
     private OrderPaymentService orderPaymentService;
 
+    @Mock
+    private BusinessMetricsService businessMetricsService;
+
     @InjectMocks
     private PaymentReconciliationServiceImpl paymentReconciliationService;
 
@@ -66,6 +70,7 @@ class PaymentReconciliationServiceImplTest {
         assertEquals("ECPAY", commandCaptor.getValue().getProvider());
         assertEquals("ORDER-RECON-1", commandCaptor.getValue().getOrderNumber());
         assertEquals("260622181000001", commandCaptor.getValue().getProviderTradeNo());
+        verify(businessMetricsService).recordPaymentReconciliation("ECPAY", "APPLIED");
     }
 
     @Test
@@ -87,6 +92,7 @@ class PaymentReconciliationServiceImplTest {
         assertEquals(0, summary.getApplied());
         assertEquals(1, summary.getStillPending());
         verify(orderPaymentService, never()).handlePaymentCallback(any());
+        verify(businessMetricsService).recordPaymentReconciliation("ECPAY", "PENDING");
     }
 
     @Test
@@ -111,6 +117,23 @@ class PaymentReconciliationServiceImplTest {
         assertEquals(1, summary.getRejected());
         assertEquals(0, summary.getQueryErrors());
         verify(orderPaymentService).handlePaymentCallback(any());
+        verify(businessMetricsService).recordPaymentReconciliation("ECPAY", "REJECTED");
+    }
+
+    @Test
+    void reconcilePendingRequestsShouldRecordQueryErrorMetric() {
+        when(paymentGateway.provider()).thenReturn("ECPAY");
+        Page<PaymentEvent> page = new Page<>();
+        page.add(pendingRequest("ORDER-RECON-4"));
+        when(paymentEventMapper.pagePendingRequestsWithoutTerminalCallback(any())).thenReturn(page);
+        when(paymentGateway.queryPaymentStatus("ORDER-RECON-4")).thenThrow(new IllegalStateException("timeout"));
+
+        PaymentReconciliationSummary summary = paymentReconciliationService.reconcilePendingRequests(20);
+
+        assertEquals(1, summary.getCandidates());
+        assertEquals(1, summary.getQueryErrors());
+        verify(orderPaymentService, never()).handlePaymentCallback(any());
+        verify(businessMetricsService).recordPaymentReconciliation("ECPAY", "QUERY_ERROR");
     }
 
     private PaymentEvent pendingRequest(String orderNumber) {

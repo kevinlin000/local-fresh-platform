@@ -216,7 +216,7 @@ erDiagram
 
 管理端也新增「付款事件」頁，可直接查 demo 訂單的付款請求、成功回呼、重複回呼與拒絕回呼，作為未來金流對帳與客服查單的前台證據。
 
-Actuator 也補上最小業務 metrics，可查付款 callback 結果、訂單取消防重命中與揪團狀態轉換，用來回答「系統跑起來後怎麼看異常」。目前先保留在應用層 counters，不急著導入完整 Prometheus/Grafana stack；查詢方式見 [docs/observability.md](docs/observability.md)。
+Actuator 也補上最小業務 metrics，可查付款 callback 結果、付款 reconciliation 結果、訂單取消防重命中與揪團狀態轉換，用來回答「系統跑起來後怎麼看異常」。目前先保留在應用層 counters，不急著導入完整 Prometheus/Grafana stack；查詢方式與告警門檻見 [docs/observability.md](docs/observability.md)。
 
 ### 4. 管理端操作 Audit Log
 

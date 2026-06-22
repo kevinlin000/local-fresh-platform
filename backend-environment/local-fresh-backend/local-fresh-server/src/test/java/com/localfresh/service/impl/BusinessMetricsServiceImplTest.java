@@ -23,6 +23,18 @@ class BusinessMetricsServiceImplTest {
     }
 
     @Test
+    void recordPaymentReconciliationShouldTagProviderAndResult() {
+        businessMetricsService.recordPaymentReconciliation("ECPAY", "APPLIED");
+        businessMetricsService.recordPaymentReconciliation("ECPAY", "QUERY_ERROR");
+        businessMetricsService.recordPaymentReconciliation("ECPAY", "QUERY_ERROR");
+
+        assertEquals(1.0, meterRegistry.counter(BusinessMetricsServiceImpl.PAYMENT_RECONCILIATION_TOTAL,
+                "provider", "ecpay", "result", "applied").count());
+        assertEquals(2.0, meterRegistry.counter(BusinessMetricsServiceImpl.PAYMENT_RECONCILIATION_TOTAL,
+                "provider", "ecpay", "result", "query_error").count());
+    }
+
+    @Test
     void recordOrderCancellationShouldTagResult() {
         businessMetricsService.recordOrderCancellation("applied");
         businessMetricsService.recordOrderCancellation("duplicate");

@@ -91,8 +91,8 @@ The current coverage emphasis is the order lifecycle:
   pending payment requests, including succeeded, still-pending, and rejected
   provider query results.
 - `BusinessMetricsServiceImplTest`: custom Micrometer business counters for
-  payment callback outcomes, duplicate/applied order cancellations, and
-  group-buy transitions.
+  payment callback outcomes, payment reconciliation outcomes,
+  duplicate/applied order cancellations, and group-buy transitions.
 - `DeploymentInfoContributorTest`: `/actuator/info` deployment identity,
   including commit, branch, active profiles, and the payment callback path used
   by public readiness checks.

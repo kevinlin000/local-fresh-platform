@@ -19,7 +19,7 @@
 | 系統設計答辯 | 已整理自用後端深挖筆記，涵蓋 correctness、idempotency、concurrency、payment、inventory、observability 與 residual risk。 | 強 |
 | UI/UX | 已完成產品級 polish；不像最初的小 demo，但仍不是設計系統等級產品。 | 足夠面試 |
 | 部署 | 已有 AWS EC2 + Nginx + Docker MySQL/Redis + S3 + CloudFront + DuckDNS 作品級部署敘事。 | 足夠面試 |
-| 可觀測性 | 已有 Actuator health/info/metrics 與少量業務 metrics，涵蓋付款 callback、取消防重與揪團狀態轉換；尚未接 Prometheus/Grafana 與 trace。 | 作品層級足夠 |
+| 可觀測性 | 已有 Actuator health/info/metrics 與少量業務 metrics，涵蓋付款 callback、付款 reconciliation、取消防重與揪團狀態轉換；已整理告警症狀與 first checks，尚未接 Prometheus/Grafana 與 trace。 | 作品層級足夠 |
 | 自動化交付 | 有 GitHub Actions checks；backend 現在可透過 `/actuator/info` 暴露部署 commit/branch；CI 會上傳 backend release package artifact，內含 jar、release metadata、SHA256 checksums、deploy commands、systemd/Nginx/env 範本；尚未做 image build / ECR / EC2 自動部署。 | 後期再做 |
 
 ## Recommended Priority
@@ -37,10 +37,10 @@
 
 ### P1 - Best Next Slices
 
-1. **付款 callback / reconciliation 告警**
-   - 目的：把已完成的 sandbox OTP 成功回流與 reconciliation job 推進到「出問題時看得到」。
-   - 範圍：針對 callback rejected / ignored、pending request 累積、reconciliation query error 設定 metrics 與告警說明。
-   - 風險：不要急著導入過重監控平台；先把指標、門檻與 runbook 講清楚。
+1. **Prometheus/Grafana 最小接線**
+   - 目的：把已完成的 Actuator metrics 與告警門檻接到可視化 dashboard。
+   - 範圍：先接 payment callback / reconciliation、group-buy transition、cancellation counters，不急著做完整 tracing。
+   - 風險：不要把作品部署複雜度拉太高；保留單機 demo 可穩定重現。
 
 2. **庫存異動 idempotency 設計**
    - 目的：回答「取消、退款、重複 callback、重複還庫存怎麼防？」。

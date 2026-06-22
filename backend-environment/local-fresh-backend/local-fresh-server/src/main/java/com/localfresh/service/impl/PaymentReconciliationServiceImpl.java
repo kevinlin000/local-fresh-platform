@@ -6,6 +6,7 @@ import com.localfresh.dto.PaymentEventPageQueryDTO;
 import com.localfresh.entity.PaymentEvent;
 import com.localfresh.exception.OrderBusinessException;
 import com.localfresh.mapper.PaymentEventMapper;
+import com.localfresh.service.BusinessMetricsService;
 import com.localfresh.service.OrderPaymentService;
 import com.localfresh.service.PaymentReconciliationService;
 import com.localfresh.service.payment.PaymentCallbackCommand;
@@ -23,6 +24,12 @@ public class PaymentReconciliationServiceImpl implements PaymentReconciliationSe
 
     private static final int DEFAULT_LIMIT = 20;
     private static final int MAX_LIMIT = 100;
+    private static final String RESULT_APPLIED = "APPLIED";
+    private static final String RESULT_REJECTED = "REJECTED";
+    private static final String RESULT_PENDING = "PENDING";
+    private static final String RESULT_UNKNOWN = "UNKNOWN";
+    private static final String RESULT_QUERY_ERROR = "QUERY_ERROR";
+    private static final String RESULT_UNSUPPORTED = "UNSUPPORTED";
 
     @Autowired
     private PaymentEventMapper paymentEventMapper;
@@ -32,6 +39,9 @@ public class PaymentReconciliationServiceImpl implements PaymentReconciliationSe
 
     @Autowired
     private OrderPaymentService orderPaymentService;
+
+    @Autowired
+    private BusinessMetricsService businessMetricsService;
 
     @Override
     public PaymentReconciliationSummary reconcilePendingRequests(int limit) {
@@ -51,17 +61,20 @@ public class PaymentReconciliationServiceImpl implements PaymentReconciliationSe
 
     private void reconcileOne(PaymentEvent pendingRequest, PaymentReconciliationCounter counter) {
         PaymentQueryResult queryResult;
+        String provider = paymentGateway.provider();
         try {
             queryResult = paymentGateway.queryPaymentStatus(pendingRequest.getOrderNumber());
         } catch (UnsupportedOperationException ex) {
             log.info("Payment provider does not support reconciliation query: provider={}, orderNumber={}",
-                    paymentGateway.provider(), pendingRequest.getOrderNumber());
+                    provider, pendingRequest.getOrderNumber());
             counter.unsupported++;
+            businessMetricsService.recordPaymentReconciliation(provider, RESULT_UNSUPPORTED);
             return;
         } catch (Exception ex) {
-            log.warn("Payment reconciliation query failed: provider={}, orderNumber={}",
-                    paymentGateway.provider(), pendingRequest.getOrderNumber(), ex);
+            log.warn("Payment reconciliation query failed: provider={}, orderNumber={}, errorType={}, errorMessage={}",
+                    provider, pendingRequest.getOrderNumber(), ex.getClass().getSimpleName(), ex.getMessage());
             counter.queryErrors++;
+            businessMetricsService.recordPaymentReconciliation(provider, RESULT_QUERY_ERROR);
             return;
         }
 
@@ -70,28 +83,37 @@ public class PaymentReconciliationServiceImpl implements PaymentReconciliationSe
             try {
                 orderPaymentService.handlePaymentCallback(toCallbackCommand(queryResult, true));
                 counter.applied++;
+                businessMetricsService.recordPaymentReconciliation(queryResult.getProvider(), RESULT_APPLIED);
             } catch (Exception ex) {
-                log.warn("Payment reconciliation could not apply succeeded provider result: provider={}, orderNumber={}",
-                        queryResult.getProvider(), queryResult.getOrderNumber(), ex);
+                log.warn("Payment reconciliation could not apply succeeded provider result: provider={}, orderNumber={}, errorType={}, errorMessage={}",
+                        queryResult.getProvider(), queryResult.getOrderNumber(), ex.getClass().getSimpleName(),
+                        ex.getMessage());
                 counter.queryErrors++;
+                businessMetricsService.recordPaymentReconciliation(queryResult.getProvider(), RESULT_QUERY_ERROR);
             }
         } else if (PaymentQueryStatus.FAILED.equals(status)) {
             try {
                 orderPaymentService.handlePaymentCallback(toCallbackCommand(queryResult, false));
                 counter.rejected++;
+                businessMetricsService.recordPaymentReconciliation(queryResult.getProvider(), RESULT_REJECTED);
             } catch (OrderBusinessException ex) {
                 log.info("Payment reconciliation recorded rejected payment: provider={}, orderNumber={}",
                         queryResult.getProvider(), queryResult.getOrderNumber());
                 counter.rejected++;
+                businessMetricsService.recordPaymentReconciliation(queryResult.getProvider(), RESULT_REJECTED);
             } catch (Exception ex) {
-                log.warn("Payment reconciliation could not record rejected provider result: provider={}, orderNumber={}",
-                        queryResult.getProvider(), queryResult.getOrderNumber(), ex);
+                log.warn("Payment reconciliation could not record rejected provider result: provider={}, orderNumber={}, errorType={}, errorMessage={}",
+                        queryResult.getProvider(), queryResult.getOrderNumber(), ex.getClass().getSimpleName(),
+                        ex.getMessage());
                 counter.queryErrors++;
+                businessMetricsService.recordPaymentReconciliation(queryResult.getProvider(), RESULT_QUERY_ERROR);
             }
         } else if (PaymentQueryStatus.PENDING.equals(status)) {
             counter.stillPending++;
+            businessMetricsService.recordPaymentReconciliation(queryResult.getProvider(), RESULT_PENDING);
         } else {
             counter.unknown++;
+            businessMetricsService.recordPaymentReconciliation(queryResult.getProvider(), RESULT_UNKNOWN);
         }
     }
 

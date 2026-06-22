@@ -167,7 +167,7 @@ Payment processing also writes a provider-neutral `payment_event` trail for `REQ
 
 The admin console also includes a Payment Events page, so demo reviewers can inspect payment requests, successful callbacks, duplicate callbacks, and rejected callbacks without calling the API manually.
 
-The backend also exposes a minimal business-metrics slice through Actuator. It tracks payment callback outcomes, duplicate/applied order cancellations, and group-buy state transitions. This is intentionally lighter than a Prometheus/Grafana stack; see [docs/observability.md](docs/observability.md) for local query examples and current boundaries.
+The backend also exposes a minimal business-metrics slice through Actuator. It tracks payment callback outcomes, payment reconciliation outcomes, duplicate/applied order cancellations, and group-buy state transitions. This is intentionally lighter than a Prometheus/Grafana stack; see [docs/observability.md](docs/observability.md) for local query examples, alert thresholds, and current boundaries.
 
 ### 4. Admin operation audit log
 
