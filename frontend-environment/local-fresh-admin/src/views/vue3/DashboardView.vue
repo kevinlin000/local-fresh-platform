@@ -117,6 +117,68 @@
       </div>
     </article>
 
+    <article class="admin-card admin-card-pad wide">
+      <div class="section-title">
+        <div>
+          <p class="eyebrow">付款</p>
+          <h2>付款與監控</h2>
+        </div>
+        <div class="section-actions">
+          <el-button @click="goToPaymentEvents()">全部事件</el-button>
+          <el-button @click="goToPaymentEvents({ result: 'PENDING' })">待處理</el-button>
+          <el-button @click="copyPrometheusPath">Prometheus endpoint</el-button>
+        </div>
+      </div>
+
+      <div class="payment-ops-grid">
+        <section class="ops-panel payment-health-panel">
+          <div class="payment-health-grid">
+            <button
+              v-for="item in paymentHealthCards"
+              :key="item.label"
+              class="payment-health-card"
+              type="button"
+              @click="item.onClick"
+            >
+              <span>{{ item.label }}</span>
+              <strong>{{ item.value }}</strong>
+              <small>{{ item.caption }}</small>
+            </button>
+          </div>
+        </section>
+
+        <section class="ops-panel">
+          <div class="ops-panel-title">
+            <div>
+              <span>最近付款事件</span>
+              <strong>{{ recentPaymentEvents.length }} 筆</strong>
+            </div>
+            <el-tag :type="paymentAttentionCount ? 'warning' : 'success'" effect="plain">
+              {{ paymentAttentionCount ? `${paymentAttentionCount} 筆需追蹤` : '狀態正常' }}
+            </el-tag>
+          </div>
+
+          <el-empty v-if="!recentPaymentEvents.length" description="目前沒有付款事件" />
+          <div v-else class="ops-list">
+            <button
+              v-for="event in recentPaymentEvents"
+              :key="event.id || `${event.orderNumber}-${event.createdAt}`"
+              class="ops-row"
+              @click="goToPaymentEvents({ orderNumber: event.orderNumber })"
+            >
+              <span>
+                <strong>{{ eventLabel(event.eventType) }}</strong>
+                <small>{{ event.orderNumber || '無訂單編號' }} · {{ formatDateTime(event.createdAt) }}</small>
+              </span>
+              <b :class="{ 'stock-danger': ['REJECTED', 'IGNORED'].includes(event.result) }">
+                {{ resultLabel(event.result) }}
+              </b>
+            </button>
+          </div>
+        </section>
+      </div>
+    </article>
+
     <article class="admin-card admin-card-pad half">
       <p class="eyebrow">商品</p>
       <h2>商品狀態</h2>
@@ -156,9 +218,11 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import { getBusinessData, getLowStockProducts, getOrderData, getOverviewDishes, getSetMealStatistics } from '@/api'
 import { getDishPage } from '@/api/dish'
 import { getOrderDetailPage } from '@/api/order'
+import { getPaymentEventPage, getPendingPaymentRequests } from '@/api/paymentEvent'
 
 const loading = ref(false)
 const businessData = ref<any>({})
@@ -168,6 +232,8 @@ const giftBoxOverview = ref<any>({})
 const pendingOrders = ref<any[]>([])
 const offlineProducts = ref<any[]>([])
 const lowStockProducts = ref<any[]>([])
+const recentPaymentEvents = ref<any[]>([])
+const pendingPaymentRequests = ref<any[]>([])
 const router = useRouter()
 
 const metricCards = computed(() => [
@@ -184,6 +250,37 @@ const orderCards = computed(() => [
   { label: '已確認', value: orderOverview.value.deliveredOrders ?? 0 },
   { label: '已完成', value: orderOverview.value.completedOrders ?? 0 },
   { label: '已取消', value: orderOverview.value.cancelledOrders ?? 0 }
+])
+
+const paymentAttentionCount = computed(() => {
+  return recentPaymentEvents.value.filter((item) => ['IGNORED', 'REJECTED'].includes(item.result)).length
+})
+
+const paymentHealthCards = computed(() => [
+  {
+    label: '最近事件',
+    value: recentPaymentEvents.value.length,
+    caption: '付款請求與回呼',
+    onClick: () => goToPaymentEvents()
+  },
+  {
+    label: '待對帳',
+    value: pendingPaymentRequests.value.length,
+    caption: '未收到終態回呼',
+    onClick: () => goToPaymentEvents({ result: 'PENDING' })
+  },
+  {
+    label: '需追蹤',
+    value: paymentAttentionCount.value,
+    caption: '重複或拒絕回呼',
+    onClick: () => goToPaymentEvents({ result: 'REJECTED' })
+  },
+  {
+    label: '監控出口',
+    value: '/actuator/prometheus',
+    caption: 'Prometheus scrape',
+    onClick: copyPrometheusPath
+  }
 ])
 
 function money(value: number | undefined) {
@@ -209,28 +306,82 @@ function goToProducts(status?: number, lowStock = false) {
   void router.push({ path: '/products', query })
 }
 
+function goToPaymentEvents(query: Record<string, string | undefined> = {}) {
+  const nextQuery = Object.fromEntries(
+    Object.entries(query).filter(([, value]) => Boolean(value))
+  )
+  void router.push({ path: '/payment-events', query: nextQuery })
+}
+
+function eventLabel(eventType: string) {
+  const labels: Record<string, string> = {
+    REQUEST_CREATED: '建立付款請求',
+    CALLBACK_SUCCEEDED: '付款成功回呼',
+    CALLBACK_DUPLICATE: '重複回呼',
+    CALLBACK_REJECTED: '拒絕回呼'
+  }
+  return labels[eventType] || eventType || '未知事件'
+}
+
+function resultLabel(result: string) {
+  const labels: Record<string, string> = {
+    PENDING: '待處理',
+    SUCCEEDED: '成功',
+    IGNORED: '忽略',
+    REJECTED: '拒絕'
+  }
+  return labels[result] || result || '未知'
+}
+
+function formatDateTime(value?: string) {
+  if (!value) {
+    return '無時間'
+  }
+  return value.replace('T', ' ').slice(0, 16)
+}
+
+async function copyPrometheusPath() {
+  await navigator.clipboard?.writeText('/actuator/prometheus')
+  ElMessage.success('已複製 /actuator/prometheus')
+}
+
 async function loadDashboard() {
   loading.value = true
   try {
-    const [business, orders, products, giftBoxes, pending, offline, lowStock] = await Promise.all([
+    const [business, orders, products, giftBoxes, pending, offline, lowStock, paymentEvents, pendingPayments] = await Promise.allSettled([
       getBusinessData(),
       getOrderData(),
       getOverviewDishes(),
       getSetMealStatistics(),
       getOrderDetailPage({ status: 2, page: 1, pageSize: 5 }),
       getDishPage({ status: 0, page: 1, pageSize: 5 }),
-      getLowStockProducts()
+      getLowStockProducts(),
+      getPaymentEventPage({ page: 1, pageSize: 5 }),
+      getPendingPaymentRequests({ page: 1, pageSize: 5 })
     ])
-    businessData.value = business.data?.data || {}
-    orderOverview.value = orders.data?.data || {}
-    productOverview.value = products.data?.data || {}
-    giftBoxOverview.value = giftBoxes.data?.data || {}
-    pendingOrders.value = pending.data?.data?.records || []
-    offlineProducts.value = offline.data?.data?.records || []
-    lowStockProducts.value = lowStock.data?.data || []
+    businessData.value = readResponseData(business)
+    orderOverview.value = readResponseData(orders)
+    productOverview.value = readResponseData(products)
+    giftBoxOverview.value = readResponseData(giftBoxes)
+    pendingOrders.value = readResponseRecords(pending)
+    offlineProducts.value = readResponseRecords(offline)
+    lowStockProducts.value = readResponseData(lowStock, [])
+    recentPaymentEvents.value = readResponseRecords(paymentEvents)
+    pendingPaymentRequests.value = readResponseRecords(pendingPayments)
   } finally {
     loading.value = false
   }
+}
+
+function readResponseData(result: PromiseSettledResult<any>, fallback: any = {}) {
+  if (result.status !== 'fulfilled') {
+    return fallback
+  }
+  return result.value.data?.data || fallback
+}
+
+function readResponseRecords(result: PromiseSettledResult<any>) {
+  return readResponseData(result, { records: [] }).records || []
 }
 
 onMounted(loadDashboard)
@@ -346,6 +497,13 @@ h2 {
   gap: 12px;
 }
 
+.payment-ops-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.85fr);
+  gap: 12px;
+  align-items: start;
+}
+
 .ops-panel {
   padding: 16px;
   border: 1px solid var(--admin-line);
@@ -413,6 +571,55 @@ h2 {
   color: var(--admin-danger);
 }
 
+.payment-health-panel {
+  display: block;
+}
+
+.payment-health-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.payment-health-card {
+  min-width: 0;
+  min-height: 118px;
+  padding: 14px;
+  border: 1px solid var(--admin-line);
+  border-radius: 7px;
+  background: #f8faf7;
+  color: var(--admin-ink);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background-color 0.18s ease;
+}
+
+.payment-health-card:hover {
+  border-color: rgba(47, 107, 66, 0.35);
+  background: #f5f8f3;
+}
+
+.payment-health-card span,
+.payment-health-card small {
+  display: block;
+  color: var(--admin-muted);
+  line-height: 1.4;
+}
+
+.payment-health-card strong {
+  display: block;
+  min-height: 30px;
+  margin: 8px 0 6px;
+  overflow-wrap: anywhere;
+  font-size: 24px;
+  line-height: 1.15;
+}
+
+.payment-health-card:nth-child(4) strong {
+  font-size: 14px;
+}
+
 @media (max-width: 980px) {
   .metric-card,
   .half {
@@ -424,6 +631,11 @@ h2 {
   }
 
   .ops-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .payment-ops-grid,
+  .payment-health-grid {
     grid-template-columns: 1fr;
   }
 }

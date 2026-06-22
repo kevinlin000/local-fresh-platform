@@ -91,8 +91,11 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { getPaymentEventPage } from '@/api/paymentEvent'
 import { readPage, useLoading, usePage } from './composables'
+
+const route = useRoute()
 
 const providerOptions = [
   { label: 'Demo', value: 'DEMO' },
@@ -180,6 +183,16 @@ async function resetQuery() {
   await loadData()
 }
 
+function applyRouteQuery() {
+  const routeQuery = route.query
+  query.orderNumber = String(routeQuery.orderNumber || '')
+  query.providerTradeNo = String(routeQuery.providerTradeNo || '')
+  query.idempotencyKey = String(routeQuery.idempotencyKey || '')
+  query.provider = String(routeQuery.provider || '')
+  query.eventType = String(routeQuery.eventType || '')
+  query.result = String(routeQuery.result || '')
+}
+
 function eventLabel(eventType: string) {
   return eventOptions.find((item) => item.value === eventType)?.label || eventType || '-'
 }
@@ -232,7 +245,10 @@ function formatDateTime(value?: string) {
   return value.replace('T', ' ').slice(0, 19)
 }
 
-onMounted(loadData)
+onMounted(() => {
+  applyRouteQuery()
+  void loadData()
+})
 </script>
 
 <style scoped>

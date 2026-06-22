@@ -7,3 +7,11 @@ export const getPaymentEventPage = (params: any) => {
     params
   })
 }
+
+export const getPendingPaymentRequests = (params: any) => {
+  return request({
+    url: '/paymentEvents/pendingRequests',
+    method: 'get',
+    params
+  })
+}
