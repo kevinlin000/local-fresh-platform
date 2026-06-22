@@ -438,7 +438,7 @@ pnpm dev
 
 ## 已知限制
 
-- 本機支付流程仍可使用 demo gateway；EC2 demo 已可透過 SSM 切到 ECPay sandbox provider，但尚未完成真人瀏覽器付款端到端驗證
+- 本機支付流程仍可使用 demo gateway；EC2 demo 已可透過 SSM 切到 ECPay sandbox provider，且已用 Playwright 驗證會員端可導向綠界 ECPay stage checkout；尚未完成的是 sandbox 卡號付款成功、ReturnURL / OrderResultURL 回流與 reconciliation
 - 管理端已完成核心營運台與表格頁 polish，但尚未加入完整 E2E 視覺回歸
 - 用戶端已完成桌面與手機版 RWD 基礎體驗，尚未加入跨瀏覽器視覺回歸測試
 - 舊資料庫第一次導入 Flyway 時需要 baseline；全新資料庫可直接套用 migration
@@ -491,7 +491,7 @@ npm run smoke:browser
 
 ### 進行中
 
-- **ECPay sandbox 端到端驗證**: EC2 backend 已同步到 commit `a8948ddb0a93`，public `/actuator/info` 與 `/payment/callback` preflight 已通過，並已用 `scripts/switch-ecpay-sandbox-ssm.sh enable` 將 EC2 runtime 切到 `PAYMENT_PROVIDER=ecpay`。下一步是用真實瀏覽器走 ECPay stage checkout，確認 ReturnURL / OrderResultURL 與 `payment_event` 的 `CALLBACK_SUCCEEDED` 落點。
+- **ECPay sandbox checkout 證據**: EC2 backend 已同步到 commit `5612e4c24601`，public `/actuator/info` 與 `/payment/callback` preflight 已通過，runtime 維持 `PAYMENT_PROVIDER=ecpay`。Playwright 已從 CloudFront 會員端建立待付款訂單並導向綠界 stage checkout，截圖保存在 `docs/screenshots/10-ecpay-stage-checkout.png`；下一步是完成 sandbox 卡號付款，確認 ReturnURL / OrderResultURL 與 `payment_event` 的 `CALLBACK_SUCCEEDED` 落點。
 - **Browser UI smoke**:在 dependency-free local precheck 之外，新增 Playwright Chromium smoke，覆蓋會員登入/home/orders 與管理端登入/dashboard/orders/products。
 
 ### 規劃中

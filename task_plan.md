@@ -51,7 +51,7 @@ Raise `local-fresh-platform` to an interview-ready Java backend/fullstack portfo
 | 33. SSM Session Manager access setup | completed | Configure or verify EC2 Session Manager access so future backend deployments can run through AWS CLI without fixed IP or public SSH. |
 | 34. SSM backend deployment sync | completed | Deploy the verified backend release through SSM, preserve EC2 runtime secrets, and prove `/actuator/info` plus payment callback readiness publicly. |
 | 35. Reversible ECPay sandbox switch | completed | Add a guarded SSM runtime switch for ECPay sandbox, verify required non-secret/runtime settings without exposing secrets, and keep rollback to demo provider one command away. |
-| 36. ECPay browser checkout evidence | in_progress | Use Playwright against the deployed storefront to verify the ECPay stage checkout redirect path, capture blockers, and confirm backend payment evidence where possible. |
+| 36. ECPay browser checkout evidence | completed | Use Playwright against the deployed storefront to verify the ECPay stage checkout redirect path, capture blockers, and confirm backend payment evidence where possible. |
 
 ## Constraints
 

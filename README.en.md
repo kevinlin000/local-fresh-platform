@@ -388,7 +388,7 @@ The deployment topology is:
 
 ## Known Limitations
 
-- Local demos can still use the demo gateway by default. The EC2 demo runtime can now be switched to the ECPay sandbox provider through SSM, with public callback readiness verified; a real browser checkout through the ECPay stage flow is still the remaining end-to-end gap.
+- Local demos can still use the demo gateway by default. The EC2 demo runtime can now be switched to the ECPay sandbox provider through SSM, with public callback readiness verified; Playwright has also verified the deployed storefront redirect into the ECPay stage checkout. The remaining payment gap is sandbox card completion, ReturnURL / OrderResultURL return evidence, and reconciliation.
 - The admin console now has a polished operations-console baseline, but it does not yet include automated visual regression coverage.
 - The user frontend now covers desktop and mobile responsive basics, but does not yet include cross-browser visual regression testing.
 - Legacy databases need a one-time Flyway baseline; fresh databases can apply migrations directly.
@@ -450,11 +450,12 @@ npm run smoke:browser
 For the current completeness assessment and next-priority plan, see
 [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md). The project is already
 interview-ready for its core Java backend story. The EC2 backend is now synced
-to commit `a8948ddb0a93`, public `/actuator/info` and `/payment/callback`
+to commit `5612e4c24601`, public `/actuator/info` and `/payment/callback`
 readiness pass, and the runtime has been switched to `PAYMENT_PROVIDER=ecpay`
-through the SSM switch script. The remaining payment gap is a real browser
-checkout through ECPay stage, followed by ReturnURL / OrderResultURL evidence
-and payment-event reconciliation.
+through the SSM switch script. Playwright has verified the CloudFront storefront
+redirect into ECPay stage checkout; the remaining payment gap is sandbox card
+completion, ReturnURL / OrderResultURL evidence, and payment-event
+reconciliation.
 
 ## License
 

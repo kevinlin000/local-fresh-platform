@@ -114,14 +114,14 @@
 
 ### 不要吹過頭
 
-目前還沒有完成真瀏覽器 ECPay sandbox checkout 端到端。你可以說：
+目前已完成真瀏覽器 ECPay sandbox stage checkout，但還沒有完成付款成功回流。你可以說：
 
-> provider abstraction、callback endpoint、demo HMAC、ECPay CheckMacValue、payment_event、provider-switch readiness、public callback preflight 與 EC2 SSM sandbox provider switch 都已完成；但還需要用瀏覽器實際跑 ECPay stage checkout，確認 ReturnURL / OrderResultURL 成功回流與 `CALLBACK_SUCCEEDED` 落點。
+> provider abstraction、callback endpoint、demo HMAC、ECPay CheckMacValue、payment_event、provider-switch readiness、public callback preflight、EC2 SSM sandbox provider switch 與 Playwright stage checkout 都已完成；但還需要完成 sandbox 卡號付款，確認 ReturnURL / OrderResultURL 成功回流與 `CALLBACK_SUCCEEDED` 落點。
 
 下一步：
 
-- 跑真瀏覽器 ECPay stage checkout。
-- 驗證 ReturnURL / OrderResultURL 與 `payment_event`。
+- 完成 sandbox 卡號付款。
+- 驗證 ReturnURL / OrderResultURL 與 `CALLBACK_SUCCEEDED`。
 - 補 reconciliation job。
 - 考慮 payment_event idempotency key unique constraint。
 
@@ -303,7 +303,7 @@ Actuator counters 只是起點，不是完整 SRE stack。
 
 | 優先級 | 行動 | 原因 |
 |---|---|---|
-| P0 | 用真瀏覽器跑 ECPay stage checkout，確認 ReturnURL / OrderResultURL、訂單狀態與 `payment_event`。 | 把已切換的 sandbox provider 變成完整端到端證據。 |
+| P0 | 完成 ECPay sandbox 卡號付款，確認 ReturnURL / OrderResultURL、訂單狀態與 `CALLBACK_SUCCEEDED`。 | 把已完成的 stage checkout 推進到完整付款成功證據。 |
 | P0 | 重跑 README screenshots。 | 作品第一印象要跟最新 UI 一致。 |
 | P1 | Prometheus + Grafana + alert thresholds。 | 補 production operations story。 |
 | P1 | Group-buy benchmark matrix。 | 從單一 100-user case 升級成容量分析。 |

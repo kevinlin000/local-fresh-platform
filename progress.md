@@ -914,3 +914,38 @@
   - `node scripts/check-repo-hygiene.mjs` passed.
   - `git diff --check` passed.
 - Next step: commit, push, wait for CI, deploy the new backend jar through SSM, then rerun the same Playwright checkout path and remove the temporary demo-login drop-in.
+
+## 2026-06-22 14:55 +0800
+
+- Completed Phase 36 ECPay browser checkout evidence.
+- Committed and pushed the backend fix as `5612e4c fix: keep payment request reference compact`.
+- CI run `27906488328` completed successfully:
+  - Repository hygiene passed.
+  - User frontend build passed.
+  - Admin frontend build and audit passed.
+  - Backend verify, JaCoCo upload, release packaging, package verification, and artifact upload passed.
+- Deployed backend release artifact `7775964689` to EC2 through SSM:
+  - Verified artifact checksums on EC2.
+  - Replaced `/home/ubuntu/local-fresh/sky-server-1.0-SNAPSHOT.jar`.
+  - Updated `SOURCE_COMMIT=5612e4c24601`.
+  - Verified local health `UP` and `/actuator/info` commit `5612e4c24601`.
+  - `EXPECTED_DEPLOY_COMMIT=5612e4c24601 scripts/check-ecpay-sandbox-readiness.sh` passed publicly.
+- Deployed the current member frontend build to S3 bucket `localfresh-platform-frontend` and invalidated CloudFront distribution `E3YPR729OJTZ8`.
+- Playwright browser acceptance:
+  - Confirmed deployed `OrdersView-5WC9vH43.js` contains `ECPAY_SHA256`, `checkoutUrl`, and form submit logic.
+  - Created a real pending order through the deployed member API: `2068949685467095040`, amount `NT$280`.
+  - Clicked the member order payment button in the deployed CloudFront storefront.
+  - Browser reached ECPay stage checkout at `https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5`.
+  - ECPay page displayed order `2068949685467095040`, merchant `綠界測試店家`, item `Local Fresh Order 2068949685467095040`, and amount `NT$280`.
+  - Saved screenshot evidence to `docs/screenshots/10-ecpay-stage-checkout.png`.
+- Backend payment evidence:
+  - Queried the EC2 MySQL container through SSM without printing credentials.
+  - `payment_event` contains `2068949685467095040 / ECPAY / REQUEST_CREATED / PENDING / ECPAY:REQUEST:2068949685467095040 / 280.00`.
+- Cleanup:
+  - Removed the temporary `demo-login.conf` systemd drop-in used only for Playwright browser validation.
+  - Verified effective env no longer includes `LOCALFRESH_AUTH_MOCK_LOGIN_ENABLED`.
+  - Kept `PAYMENT_PROVIDER=ecpay`.
+  - Final public readiness passed.
+- Remaining boundary:
+  - ECPay stage checkout is proven.
+  - Full sandbox card payment, ReturnURL / OrderResultURL success return, `CALLBACK_SUCCEEDED`, duplicate callback replay, and reconciliation job remain next.

@@ -37,9 +37,9 @@
 
 ### P1 - Best Next Slices
 
-1. **ECPay sandbox 瀏覽器 checkout 驗證**
-   - 目的：把「EC2 已切 sandbox provider」推進到「真的用瀏覽器跑過 ECPay stage checkout」。
-   - 範圍：建立或使用待付款訂單、前端導向 ECPay stage、確認 ReturnURL 經 Nginx 進 Spring Boot、付款事件寫入 `ECPAY / CALLBACK_SUCCEEDED`。
+1. **ECPay sandbox 付款成功回流驗證**
+   - 目的：把「已能用瀏覽器進 ECPay stage checkout」推進到「付款成功回流與 callback 落庫」。
+   - 範圍：使用 stage checkout 訂單完成 sandbox 卡號付款、確認 ReturnURL 經 Nginx 進 Spring Boot、付款事件寫入 `ECPAY / CALLBACK_SUCCEEDED`。
    - 風險：需要可用 sandbox 測試卡流程與公開 HTTPS callback；完成後仍要保留 `scripts/switch-ecpay-sandbox-ssm.sh rollback`。
 
 2. **庫存異動 idempotency 設計**
@@ -95,14 +95,14 @@
 
 剛完成的本地切面是取消訂單防重：若訂單已取消，或該訂單已存在 `ORDER_CANCEL_RESTORE` 庫存回補紀錄，取消流程會直接跳過；真正寫入庫存流水時，`product_inventory_log.idempotency_key` 也有 unique constraint 作為 DB 最後防線，避免重複退款與重複還庫存。
 
-剛完成的雲端切面是 **ECPay sandbox runtime switch，不急著正式上線**。
+剛完成的雲端切面是 **ECPay sandbox runtime switch + browser stage checkout，不急著正式上線**。
 
 理由：
 
 - 付款事件、callback parser、前端 POST form、observability 與 public callback preflight 已具備。
-- EC2 backend 已同步到 commit `a8948ddb0a93`，`/actuator/info` 與 `/payment/callback` public preflight 已通過。
+- EC2 backend 已同步到 commit `5612e4c24601`，`/actuator/info` 與 `/payment/callback` public preflight 已通過。
 - 已新增 `scripts/switch-ecpay-sandbox-ssm.sh`，並用 SSM 寫入獨立 systemd payment drop-in，確認 effective `PAYMENT_PROVIDER=ecpay`。
-- 這仍不等於正式金流上線；還缺真瀏覽器 ECPay stage checkout、成功 ReturnURL / OrderResultURL 證據與 reconciliation job。
+- 這仍不等於正式金流上線；stage checkout 已通，還缺 sandbox 卡號付款成功、ReturnURL / OrderResultURL 證據與 reconciliation job。
 
 目前結論：
 
@@ -110,6 +110,7 @@
 - 本機 ECPay callback contract 已用 `PaymentCallbackControllerEcpayContractTest` 固定住：有效簽章進 service，無效簽章回 `0|FAIL`。
 - 2026-06-21 公開 preflight 已通過 health、Nginx、`/actuator/info`、`/payment/callback` invalid-signature `0|FAIL` 與 CloudFront storefront。
 - 2026-06-21 已透過 SSM 切到 `PAYMENT_PROVIDER=ecpay`，HashKey/HashIV 只在 status 輸出中遮罩顯示。
+- 2026-06-22 已用 Playwright 從 CloudFront 會員端建立訂單 `2068949685467095040`，導向 ECPay stage checkout，並確認 `payment_event` 寫入 `ECPAY / REQUEST_CREATED / PENDING`。
 
 剛完成的本地切面是 **UI smoke precheck + browser smoke + member/admin commerce polish**：
 
@@ -131,7 +132,7 @@
 
 - 若要整理作品證據：用已新增的 local/browser smoke 當前置檢查，重跑 9 張 README 截圖與 demo acceptance，確認真實食物圖片、會員端、管理端畫面都維持最新狀態。
 - 若要繼續衝全端觀感：下一刀可做管理端 dashboard 的更細緻優先級排序，但目前 orders/products 的操作面已足夠支撐面試 demo。
-- 若要往 ECPay sandbox 推進：目前 EC2 已切 sandbox provider，下一步是用真瀏覽器建立/選擇待付款訂單，導向 ECPay stage checkout，完成付款後確認訂單狀態、`payment_event`、callback metrics 與重複 callback replay。
+- 若要往 ECPay sandbox 推進：目前 EC2 已切 sandbox provider 且 stage checkout 已通，下一步是完成 sandbox 卡號付款後確認訂單狀態、`payment_event`、callback metrics 與重複 callback replay。
 
 ## How To Use This Roadmap
 
