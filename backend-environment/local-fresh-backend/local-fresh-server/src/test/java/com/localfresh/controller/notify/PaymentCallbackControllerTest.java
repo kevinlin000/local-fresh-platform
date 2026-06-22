@@ -104,6 +104,27 @@ class PaymentCallbackControllerTest {
     }
 
     @Test
+    void callbackShouldIgnoreLegacyProviderAcceptHeader() throws Exception {
+        PaymentCallbackCommand command = PaymentCallbackCommand.builder()
+                .provider("ECPAY")
+                .orderNumber("ORDER-CB-003")
+                .paymentSucceeded(true)
+                .build();
+        when(paymentGateway.parsePaymentCallback(ArgumentMatchers.<Map<String, String>>any())).thenReturn(command);
+
+        mockMvc.perform(post("/payment/callback")
+                        .contentType(APPLICATION_FORM_URLENCODED)
+                        .accept("image/gif")
+                        .param("MerchantTradeNo", "ORDER-CB-003")
+                        .param("RtnCode", "1")
+                        .param("CheckMacValue", "VALID_SIGNATURE"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("1|OK"));
+
+        verify(orderPaymentService).handlePaymentCallback(command);
+    }
+
+    @Test
     void callbackShouldReturnFailWhenProviderRejectsSignature() throws Exception {
         when(paymentGateway.parsePaymentCallback(ArgumentMatchers.<Map<String, String>>any()))
                 .thenThrow(new OrderBusinessException(MessageConstant.PAYMENT_CALLBACK_INVALID));

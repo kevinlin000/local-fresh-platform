@@ -6,7 +6,7 @@ import com.localfresh.service.payment.PaymentCallbackCommand;
 import com.localfresh.service.payment.PaymentGateway;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,15 +25,15 @@ public class PaymentCallbackController {
     @Autowired
     private OrderPaymentService orderPaymentService;
 
-    @PostMapping(produces = MediaType.TEXT_PLAIN_VALUE)
-    public String callback(@RequestParam Map<String, String> payload) {
+    @PostMapping
+    public ResponseEntity<String> callback(@RequestParam Map<String, String> payload) {
         try {
             PaymentCallbackCommand command = paymentGateway.parsePaymentCallback(payload);
             orderPaymentService.handlePaymentCallback(command);
-            return "1|OK";
+            return ResponseEntity.ok("1|OK");
         } catch (OrderBusinessException | UnsupportedOperationException ex) {
             log.warn("Payment callback rejected: {}", ex.getMessage());
-            return "0|FAIL";
+            return ResponseEntity.ok("0|FAIL");
         }
     }
 }
