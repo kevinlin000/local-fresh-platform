@@ -19,7 +19,7 @@
 | 系統設計答辯 | 已整理自用後端深挖筆記，涵蓋 correctness、idempotency、concurrency、payment、inventory、observability 與 residual risk。 | 強 |
 | UI/UX | 已完成產品級 polish；不像最初的小 demo，但仍不是設計系統等級產品。 | 足夠面試 |
 | 部署 | 已有 AWS EC2 + Nginx + Docker MySQL/Redis + S3 + CloudFront + DuckDNS 作品級部署敘事。 | 足夠面試 |
-| 可觀測性 | 已有 Actuator health/info/metrics 與少量業務 metrics，涵蓋付款 callback、付款 reconciliation、取消防重與揪團狀態轉換；已整理告警症狀與 first checks，尚未接 Prometheus/Grafana 與 trace。 | 作品層級足夠 |
+| 可觀測性 | 已有 Actuator health/info/metrics/prometheus 與少量業務 metrics，涵蓋付款 callback、付款 reconciliation、取消防重與揪團狀態轉換；已整理 Prometheus scrape 範例、告警症狀與 first checks，尚未部署 Grafana/Alertmanager 與 trace。 | 作品層級足夠 |
 | 自動化交付 | 有 GitHub Actions checks；backend 現在可透過 `/actuator/info` 暴露部署 commit/branch；CI 會上傳 backend release package artifact，內含 jar、release metadata、SHA256 checksums、deploy commands、systemd/Nginx/env 範本；尚未做 image build / ECR / EC2 自動部署。 | 後期再做 |
 
 ## Recommended Priority
@@ -37,9 +37,9 @@
 
 ### P1 - Best Next Slices
 
-1. **Prometheus/Grafana 最小接線**
-   - 目的：把已完成的 Actuator metrics 與告警門檻接到可視化 dashboard。
-   - 範圍：先接 payment callback / reconciliation、group-buy transition、cancellation counters，不急著做完整 tracing。
+1. **Grafana dashboard 最小證據**
+   - 目的：把已完成的 Prometheus scrape endpoint 與告警門檻接到可視化 dashboard 證據。
+   - 範圍：先做 payment callback / reconciliation、group-buy transition、cancellation counters 的 dashboard JSON 或截圖，不急著做完整 tracing。
    - 風險：不要把作品部署複雜度拉太高；保留單機 demo 可穩定重現。
 
 2. **庫存異動 idempotency 設計**
@@ -47,10 +47,10 @@
    - 範圍：先做設計與一兩個 service 測試，不急著加大型 event sourcing。
    - 風險：過度設計會讓作品偏離基本功展示。
 
-3. **可觀測性下一階段**
-   - 目的：把現有 Actuator + 業務 counters 接到更完整的營運觀測。
-   - 範圍：Prometheus registry、Grafana dashboard、告警門檻、trace/log correlation。
-   - 風險：需要避免為了展示 Grafana 而把部署變複雜，建議晚於 sandbox 金流與雲端環境穩定化。
+3. **Log / trace correlation**
+   - 目的：回答「單一付款或訂單異常時，怎麼從 request 找到 callback、service log 與 DB event？」。
+   - 範圍：先整理 correlation id / order number / provider trade number 的 log 規則，不急著導入分散式 tracing。
+   - 風險：這是加分項，不應該早於 dashboard 證據與核心流程穩定。
 
 4. **UI smoke test 或 screenshot checklist 自動化**
    - 目的：降低每次 polish 後靠人工截圖驗證的成本。
@@ -88,10 +88,11 @@
 
 已完成做法：
 
-- Actuator exposure 納入 `health,info,metrics`，並可用 `MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE` 覆蓋。
+- Actuator exposure 納入 `health,info,metrics,prometheus`，並可用 `MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE` 覆蓋。
+- Prometheus registry 已接入，`/actuator/prometheus` 可輸出 scrape-format metrics，可用 `MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED` 控制。
 - 補少量業務 metrics：付款 callback 成功/拒絕/重複、訂單取消防重命中、揪團成功/失敗/取消。
 - 新增 `docs/observability.md` 說明本機查詢方式與目前邊界。
-- 不導入完整 Prometheus/Grafana；先把應用層 metrics 定義清楚。
+- 不導入完整 Grafana/Alertmanager；先把應用層 metrics 與 Prometheus scrape contract 定義清楚。
 
 剛完成的本地切面是取消訂單防重：若訂單已取消，或該訂單已存在 `ORDER_CANCEL_RESTORE` 庫存回補紀錄，取消流程會直接跳過；真正寫入庫存流水時，`product_inventory_log.idempotency_key` 也有 unique constraint 作為 DB 最後防線，避免重複退款與重複還庫存。
 

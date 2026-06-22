@@ -112,6 +112,7 @@ The expected ECPay readiness state before switching providers is:
 
 - `/actuator/health`: HTTP `200`, status `UP`
 - `/actuator/info`: HTTP `200`, includes the expected commit
+- `/actuator/prometheus`: HTTP `200`, emits Prometheus scrape-format metrics
 - `/payment/callback`: HTTP `200`, body `0|FAIL` for the intentionally invalid
   CheckMacValue preflight payload
 

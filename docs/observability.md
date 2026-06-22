@@ -1,6 +1,6 @@
 # Observability
 
-This project keeps observability intentionally small: Spring Boot Actuator plus a few business counters that explain the most important portfolio workflows. It does not run Prometheus or Grafana yet.
+This project keeps observability intentionally small: Spring Boot Actuator plus a few business counters that explain the most important portfolio workflows. The backend now exposes a Prometheus scrape endpoint, but it does not run a bundled Prometheus server, Grafana dashboard, or alert manager yet.
 
 ## Actuator Endpoints
 
@@ -9,12 +9,17 @@ The backend exposes these endpoints by default:
 - `/actuator/health`
 - `/actuator/info`
 - `/actuator/metrics`
+- `/actuator/prometheus`
 
 The exposed endpoint list can be overridden without changing code:
 
 ```bash
-MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info
+MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,metrics,prometheus
+MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED=true
 ```
+
+`/actuator/metrics` is useful for local inspection of individual meters.
+`/actuator/prometheus` emits the scrape-format payload used by Prometheus.
 
 ## Deployment Identity
 
@@ -74,12 +79,26 @@ curl http://localhost:8080/actuator/metrics/localfresh.payment.callback.total
 curl http://localhost:8080/actuator/metrics/localfresh.payment.reconciliation.total
 curl http://localhost:8080/actuator/metrics/localfresh.order.cancellation.total
 curl http://localhost:8080/actuator/metrics/localfresh.group_buy.transition.total
+curl http://localhost:8080/actuator/prometheus
+```
+
+A minimal external Prometheus scrape job can target the deployed backend like
+this:
+
+```yaml
+scrape_configs:
+  - job_name: "local-fresh-backend"
+    scheme: https
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets: ["localfresh-demo.duckdns.org"]
 ```
 
 ## Alert Thresholds
 
-These are portfolio-grade alert rules rather than a deployed Prometheus setup.
-They define the symptoms to watch when Prometheus/Grafana is added later.
+These are portfolio-grade alert rules rather than a deployed alert manager
+setup. They define the symptoms to watch when a Prometheus/Grafana stack is
+added later.
 
 | Severity | Symptom | Suggested threshold | First check |
 |---|---|---|---|
@@ -103,4 +122,7 @@ Runbook notes:
 
 This is enough to show production thinking in an interview: the system can answer whether payment callbacks are being accepted, rejected, duplicated, whether reconciliation is applying provider results or getting stuck, whether cancellation idempotency guards are being hit, and whether group-buy transitions are moving as expected.
 
-Prometheus scraping, Grafana dashboards, and distributed tracing are intentionally deferred until the core demo and cloud environment are stable. The alert symptoms and first checks above are the contract for that later monitoring stack.
+The scrape endpoint is available, but Grafana dashboards, alert manager wiring,
+and distributed tracing are intentionally deferred until the core demo and cloud
+environment are stable. The alert symptoms and first checks above are the
+contract for that later monitoring stack.
