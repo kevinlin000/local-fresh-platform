@@ -94,6 +94,38 @@ class EcpayPaymentGatewayTest {
     }
 
     @Test
+    void parseTradeQueryResponseShouldMapSucceededTradeStatus() {
+        Map<String, String> payload = tradeQueryPayload("1");
+
+        PaymentQueryResult result = gateway.parseTradeQueryResponse(toQueryString(payload));
+
+        assertEquals("ECPAY", result.getProvider());
+        assertEquals("ORDER1001", result.getOrderNumber());
+        assertEquals(PaymentQueryStatus.SUCCEEDED, result.getStatus());
+        assertEquals("250620000000001", result.getProviderTradeNo());
+        assertEquals("2026/06/20 03:20:00", result.getProviderReference());
+        assertTrue(result.getRawPayload().contains("\"MerchantTradeNo\":\"ORDER1001\""));
+    }
+
+    @Test
+    void parseTradeQueryResponseShouldKeepTradeStatusZeroPending() {
+        Map<String, String> payload = tradeQueryPayload("0");
+
+        PaymentQueryResult result = gateway.parseTradeQueryResponse(toQueryString(payload));
+
+        assertEquals(PaymentQueryStatus.PENDING, result.getStatus());
+    }
+
+    @Test
+    void parseTradeQueryResponseShouldTreatOtherTradeStatusAsFailed() {
+        Map<String, String> payload = tradeQueryPayload("10200095");
+
+        PaymentQueryResult result = gateway.parseTradeQueryResponse(toQueryString(payload));
+
+        assertEquals(PaymentQueryStatus.FAILED, result.getStatus());
+    }
+
+    @Test
     void createPaymentRequestShouldFailWhenProviderIsNotConfigured() {
         ReflectionTestUtils.setField(gateway, "returnUrl", "");
         Orders order = new Orders();
@@ -118,5 +150,25 @@ class EcpayPaymentGatewayTest {
         payload.put("PaymentType", "Credit_CreditCard");
         payload.put("CheckMacValue", calculator.calculate(payload, HASH_KEY, HASH_IV));
         return payload;
+    }
+
+    private Map<String, String> tradeQueryPayload(String tradeStatus) {
+        Map<String, String> payload = new LinkedHashMap<>();
+        payload.put("MerchantID", MERCHANT_ID);
+        payload.put("MerchantTradeNo", "ORDER1001");
+        payload.put("TradeNo", "250620000000001");
+        payload.put("TradeAmt", "560");
+        payload.put("TradeDate", "2026/06/20 03:19:30");
+        payload.put("PaymentDate", "2026/06/20 03:20:00");
+        payload.put("TradeStatus", tradeStatus);
+        payload.put("CheckMacValue", calculator.calculate(payload, HASH_KEY, HASH_IV));
+        return payload;
+    }
+
+    private String toQueryString(Map<String, String> payload) {
+        return payload.entrySet().stream()
+                .map(entry -> entry.getKey() + "=" + entry.getValue().replace(" ", "%20"))
+                .reduce((left, right) -> left + "&" + right)
+                .orElse("");
     }
 }

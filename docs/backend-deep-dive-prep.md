@@ -116,12 +116,12 @@
 
 目前已完成真瀏覽器 ECPay sandbox stage checkout 與 OTP 付款成功回流。你可以說：
 
-> provider abstraction、callback endpoint、demo HMAC、ECPay CheckMacValue、payment_event、provider-switch readiness、public callback preflight、EC2 SSM sandbox provider switch、Playwright stage checkout、OTP 付款成功、ReturnURL HTTP 200、訂單轉已付款、`CALLBACK_SUCCEEDED`、ECPay duplicate callback 單元測試與 pending-request reconciliation 查詢都已完成；但還需要補 provider 查詢式 reconciliation job 與正式監控告警。
+> provider abstraction、callback endpoint、demo HMAC、ECPay CheckMacValue、payment_event、provider-switch readiness、public callback preflight、EC2 SSM sandbox provider switch、Playwright stage checkout、OTP 付款成功、ReturnURL HTTP 200、訂單轉已付款、`CALLBACK_SUCCEEDED`、ECPay duplicate callback 單元測試、pending-request reconciliation 查詢、ECPay 查詢結果 parser 與 provider-query reconciliation job 都已完成；但還需要補正式監控告警與外部查詢排程的長時間運行證據。
 
 下一步：
 
-- 補 provider 查詢式 reconciliation job。
 - 補 callback failure / pending request 告警。
+- 補外部查詢排程長時間運行證據。
 - 考慮 payment_event idempotency key unique constraint。
 
 ## 3. 揪團併發
@@ -302,7 +302,7 @@ Actuator counters 只是起點，不是完整 SRE stack。
 
 | 優先級 | 行動 | 原因 |
 |---|---|---|
-| P0 | 補 ECPay 重複真實 callback replay 與 reconciliation job。 | 把已完成的 OTP 成功回流推進到更完整的金流防重與對帳證據。 |
+| P0 | 補付款 callback / pending request 告警。 | 把已完成的 OTP 成功回流與 reconciliation job 推進到可觀測、可營運的金流證據。 |
 | P0 | 重跑 README screenshots。 | 作品第一印象要跟最新 UI 一致。 |
 | P1 | Prometheus + Grafana + alert thresholds。 | 補 production operations story。 |
 | P1 | Group-buy benchmark matrix。 | 從單一 100-user case 升級成容量分析。 |

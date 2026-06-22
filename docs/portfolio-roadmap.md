@@ -12,7 +12,7 @@
 | 會員端流程 | 商品瀏覽、購物車、下單、付款、訂單查詢、揪團頁已可展示，並使用真實食物圖片。 | 作品層級完整 |
 | 管理端流程 | Dashboard、商品、訂單、付款事件、操作紀錄已能支撐營運 demo。 | 作品層級完整 |
 | 訂單生命週期 | 狀態轉移集中在 `OrderStatusTransitionPolicy`，付款、取消、婉拒、配送、完成都有 service 測試。 | 強 |
-| 付款邊界 | Demo gateway、ECPay CheckMacValue parser、callback endpoint、付款事件表、前端 POST form 導轉、provider-switch readiness test、真 ECPay gateway/controller contract test、公開 EC2 callback preflight、SSM sandbox provider switch、真瀏覽器 stage checkout、sandbox OTP 成功回流、`CALLBACK_SUCCEEDED`、ECPay duplicate callback 測試與 pending-request reconciliation 查詢已完成。 | 強，但仍缺 provider 查詢式 reconciliation job 與正式監控告警 |
+| 付款邊界 | Demo gateway、ECPay CheckMacValue parser、callback endpoint、付款事件表、前端 POST form 導轉、provider-switch readiness test、真 ECPay gateway/controller contract test、公開 EC2 callback preflight、SSM sandbox provider switch、真瀏覽器 stage checkout、sandbox OTP 成功回流、`CALLBACK_SUCCEEDED`、ECPay duplicate callback 測試、pending-request reconciliation 查詢、ECPay 查詢結果 parser 與 provider-query reconciliation job 已完成。 | 強，但仍缺正式監控告警與外部查詢排程的長時間運行證據 |
 | 揪團併發 | Redisson lock、transaction boundary、唯一鍵、Testcontainers Redis、JMeter 證據已具備。 | 強 |
 | 庫存一致性 | 一般訂單、取消還庫存、商品管理邊界與重複取消防線已有測試。 | 強 |
 | 測試證據 | 後端 service/integration/Redis 測試、JaCoCo、前端 build、手動 Playwright 截圖證據已整理。 | 強 |
@@ -37,10 +37,10 @@
 
 ### P1 - Best Next Slices
 
-1. **ECPay duplicate callback replay + reconciliation 設計**
-   - 目的：把「已完成 sandbox OTP 成功回流」推進到「真實 provider 重送 callback 也可追蹤、可對帳」。
-   - 範圍：保留已成功訂單證據，補重複 callback replay、`CALLBACK_DUPLICATE` 查證、reconciliation job 設計與最小實作。
-   - 風險：不要過度做成大型 event sourcing；先補可面試說清楚的防重與對帳切面。
+1. **付款 callback / reconciliation 告警**
+   - 目的：把已完成的 sandbox OTP 成功回流與 reconciliation job 推進到「出問題時看得到」。
+   - 範圍：針對 callback rejected / ignored、pending request 累積、reconciliation query error 設定 metrics 與告警說明。
+   - 風險：不要急著導入過重監控平台；先把指標、門檻與 runbook 講清楚。
 
 2. **庫存異動 idempotency 設計**
    - 目的：回答「取消、退款、重複 callback、重複還庫存怎麼防？」。
@@ -102,7 +102,7 @@
 - 付款事件、callback parser、前端 POST form、observability 與 public callback preflight 已具備。
 - EC2 backend 已同步到 commit `8d7a0d5eeefe`，`/actuator/info` 與 `/payment/callback` public preflight 已通過。
 - 已新增 `scripts/switch-ecpay-sandbox-ssm.sh`，並用 SSM 寫入獨立 systemd payment drop-in，確認 effective `PAYMENT_PROVIDER=ecpay`。
-- 這仍不等於正式金流上線；stage checkout、OTP 成功付款、ReturnURL HTTP 200、訂單轉已付款與 `CALLBACK_SUCCEEDED` 已通，還缺重複真實 callback replay、reconciliation job 與正式監控告警。
+- 這仍不等於正式金流上線；stage checkout、OTP 成功付款、ReturnURL HTTP 200、訂單轉已付款、`CALLBACK_SUCCEEDED`、重複 callback 測試、待對帳候選查詢與 provider-query reconciliation job 已通，還缺正式監控告警與外部查詢排程的長時間運行證據。
 
 目前結論：
 

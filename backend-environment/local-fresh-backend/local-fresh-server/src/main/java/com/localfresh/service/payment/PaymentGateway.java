@@ -22,4 +22,8 @@ public interface PaymentGateway {
     default PaymentCallbackCommand parsePaymentCallback(Map<String, String> payload) {
         throw new UnsupportedOperationException("Payment callback is not supported by this provider");
     }
+
+    default PaymentQueryResult queryPaymentStatus(String orderNumber) {
+        throw new UnsupportedOperationException("Payment status query is not supported by this provider");
+    }
 }

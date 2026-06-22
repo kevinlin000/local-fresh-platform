@@ -55,8 +55,10 @@ As of 2026-06-22 16:55 +0800, the public preflight and success-flow result is:
 
 The previous deployed `404` blocker is resolved, and Playwright has verified
 that the deployed storefront reaches ECPay stage checkout and completes sandbox
-card OTP payment back through ReturnURL. The remaining payment gaps are
-duplicate callback replay evidence and reconciliation.
+card OTP payment back through ReturnURL. The backend also has duplicate
+callback coverage, pending reconciliation candidates, and a provider-query
+reconciliation job. The remaining payment gaps are production monitoring and
+long-running external-query evidence.
 
 ## Local Contract Evidence
 
@@ -101,8 +103,10 @@ ECPAY_MERCHANT_ID=2000132
 ECPAY_HASH_KEY=5294y06JbISpM5x9
 ECPAY_HASH_IV=v77hoKGq4kWxNNIS
 ECPAY_CHECKOUT_URL=https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5
+ECPAY_QUERY_URL=https://payment-stage.ecpay.com.tw/Cashier/QueryTradeInfo/V5
 ECPAY_RETURN_URL=https://localfresh-demo.duckdns.org/payment/callback
 ECPAY_ORDER_RESULT_URL=https://d3hqnux25iirgl.cloudfront.net/orders
+PAYMENT_RECONCILIATION_ENABLED=false
 SOURCE_COMMIT=<deployed git commit, for example 8d7a0d5eeefe>
 SOURCE_BRANCH=hardening-and-upgrade
 ```
@@ -216,10 +220,24 @@ identity drop-in untouched.
      "https://localfresh-demo.duckdns.org/admin/paymentEvents/pendingRequests?page=1&pageSize=20&provider=ECPAY"
    ```
 
-   This endpoint is intentionally a minimal reconciliation work queue: it
-   returns `REQUEST_CREATED / PENDING` events that do not yet have a
+   This endpoint is the reconciliation work queue: it returns
+   `REQUEST_CREATED / PENDING` events that do not yet have a
    `CALLBACK_SUCCEEDED` or `CALLBACK_REJECTED` event for the same provider and
-   order number. It does not call ECPay's query API yet.
+   order number.
+
+14. Enable the provider-query reconciliation job only when intentionally
+    testing external ECPay queries:
+
+   ```bash
+   PAYMENT_RECONCILIATION_ENABLED=true \
+   PAYMENT_RECONCILIATION_CRON="0 */5 * * * ?" \
+   PAYMENT_RECONCILIATION_BATCH_SIZE=20 \
+   EXPECTED_DEPLOY_COMMIT=<deployed-commit> \
+   scripts/switch-ecpay-sandbox-ssm.sh enable
+   ```
+
+   Keep it disabled for ordinary demos unless you are collecting external-query
+   evidence.
 
 ## Rollback
 

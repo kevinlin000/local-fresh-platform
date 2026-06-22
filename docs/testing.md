@@ -68,7 +68,8 @@ The current coverage emphasis is the order lifecycle:
 - `EcpayCheckMacValueCalculatorTest`: ECPay callback checksum sorting,
   CheckMacValue exclusion, and case-insensitive verification.
 - `EcpayPaymentGatewayTest`: ECPay callback CheckMacValue verification,
-  MerchantTradeNo / TradeNo / RtnCode mapping, and signed redirect payload shape.
+  MerchantTradeNo / TradeNo / RtnCode mapping, signed redirect payload shape,
+  and provider query-result status mapping.
 - `PaymentGatewayProviderSelectionTest`: Spring conditional provider selection
   for default demo payments and ECPay readiness, including deployed ReturnURL /
   OrderResultURL in the signed checkout payload.
@@ -86,6 +87,9 @@ The current coverage emphasis is the order lifecycle:
   the HTTP layer and JWT interceptor, including provider trade number,
   idempotency-key query fields, and the minimal pending-request reconciliation
   endpoint.
+- `PaymentReconciliationServiceImplTest`: provider-query reconciliation over
+  pending payment requests, including succeeded, still-pending, and rejected
+  provider query results.
 - `BusinessMetricsServiceImplTest`: custom Micrometer business counters for
   payment callback outcomes, duplicate/applied order cancellations, and
   group-buy transitions.

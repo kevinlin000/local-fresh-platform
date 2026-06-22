@@ -57,7 +57,7 @@
 
 ### 付款事件紀錄
 
-付款流程新增 `payment_event`，將建立付款請求、成功 callback、重複 callback 與非法 callback 都寫成事件，並提供 `GET /admin/paymentEvents/page` 與管理端「付款事件」頁查詢。另有 `GET /admin/paymentEvents/pendingRequests` 可列出已建立付款請求但還沒有成功或拒絕 callback 的待對帳候選。這讓 demo gateway 不只是「假付款」，而是先具備真實金流會需要的 provider callback 入口、demo HMAC 驗證、ECPay CheckMacValue parser、會員端 POST form 導轉、reference、provider trade no、idempotency key、amount、raw payload、處理結果與查詢入口。面試時可以說：目前 EC2 已可透過 SSM 切到 ECPay sandbox provider，public callback preflight 已通過，也已用 Playwright 從 CloudFront 會員端導向綠界 stage checkout，完成 OTP 付款成功、ReturnURL HTTP 200、訂單轉已付款與 `CALLBACK_SUCCEEDED` 落庫；還沒做的是 provider 查詢式 reconciliation job 與正式監控告警。
+付款流程新增 `payment_event`，將建立付款請求、成功 callback、重複 callback 與非法 callback 都寫成事件，並提供 `GET /admin/paymentEvents/page` 與管理端「付款事件」頁查詢。另有 `GET /admin/paymentEvents/pendingRequests` 可列出已建立付款請求但還沒有成功或拒絕 callback 的待對帳候選。這讓 demo gateway 不只是「假付款」，而是先具備真實金流會需要的 provider callback 入口、demo HMAC 驗證、ECPay CheckMacValue parser、會員端 POST form 導轉、reference、provider trade no、idempotency key、amount、raw payload、處理結果與查詢入口。面試時可以說：目前 EC2 已可透過 SSM 切到 ECPay sandbox provider，public callback preflight 已通過，也已用 Playwright 從 CloudFront 會員端導向綠界 stage checkout，完成 OTP 付款成功、ReturnURL HTTP 200、訂單轉已付款與 `CALLBACK_SUCCEEDED` 落庫；後端也已補 ECPay 查詢結果 parser 與 provider-query reconciliation job，排程預設關閉，下一步是正式監控告警與長時間運行證據。
 
 ### 管理端操作 Audit Log
 
@@ -99,7 +99,7 @@ RedisTemplate 用在快取與一般 KV，RedissonClient 用在分散式鎖。這
 
 ### Q: 為什麼沒有真的接金流？
 
-本機 demo 可以回到 demo gateway，付款請求與付款成功回呼已經分離：一般 gateway 只建立付款請求，只有 demo gateway 會宣告 request 後立即完成，方便本機展示。後端也有 `/payment/callback` provider 回呼入口，demo provider 用 HMAC 驗證 payload，ECPay provider 則有 CheckMacValue 驗證與 MerchantTradeNo / TradeNo / RtnCode mapping 測試；會員端收到 ECPay response 時會組 hidden form POST 到綠界付款頁。付款事件已寫入 `payment_event`，可以追蹤 request、success、duplicate 與 rejected callback，並保留金流交易編號與 idempotency key。EC2 目前已透過 SSM 切到 `PAYMENT_PROVIDER=ecpay`，Playwright 已證明能到 ECPay stage checkout 並完成 OTP 成功回流，剩下的是重複真實 callback replay 與 reconciliation job。
+本機 demo 可以回到 demo gateway，付款請求與付款成功回呼已經分離：一般 gateway 只建立付款請求，只有 demo gateway 會宣告 request 後立即完成，方便本機展示。後端也有 `/payment/callback` provider 回呼入口，demo provider 用 HMAC 驗證 payload，ECPay provider 則有 CheckMacValue 驗證與 MerchantTradeNo / TradeNo / RtnCode mapping 測試；會員端收到 ECPay response 時會組 hidden form POST 到綠界付款頁。付款事件已寫入 `payment_event`，可以追蹤 request、success、duplicate 與 rejected callback，並保留金流交易編號與 idempotency key。EC2 目前已透過 SSM 切到 `PAYMENT_PROVIDER=ecpay`，Playwright 已證明能到 ECPay stage checkout 並完成 OTP 成功回流；後端也已具備待對帳候選查詢、ECPay 查詢結果 parser 與 reconciliation job。
 
 ### Q: 如果流量更大會怎麼改？
 
@@ -111,11 +111,11 @@ RedisTemplate 用在快取與一般 KV，RedissonClient 用在分散式鎖。這
 - 管理端操作 audit log 延伸成更完整的營運追蹤報表。
 - 只有在明確瓶頸出現後，再討論服務拆分。
 
-更完整的後續優先順序與完整度評估可以看 `docs/portfolio-roadmap.md`。面試時不要說這是 production 100% 系統；比較好的說法是：核心交易、揪團併發、庫存防重、測試證據、最小業務 metrics、作品級部署、ECPay sandbox provider switch、stage checkout 與 OTP 成功回流已完成；下一步是補重複真實 callback replay、reconciliation、自動化部署和完整監控平台。
+更完整的後續優先順序與完整度評估可以看 `docs/portfolio-roadmap.md`。面試時不要說這是 production 100% 系統；比較好的說法是：核心交易、揪團併發、庫存防重、測試證據、最小業務 metrics、作品級部署、ECPay sandbox provider switch、stage checkout、OTP 成功回流、待對帳候選查詢與 provider-query reconciliation job 已完成；下一步是補正式告警、自動化部署和完整監控平台。
 
 ## 可以主動承認的限制
 
-- 本機 demo 可回到 demo gateway；EC2 已可切到 ECPay sandbox provider，並通過 public callback preflight、Playwright stage checkout、OTP 付款成功、ReturnURL HTTP 200、訂單轉已付款與 `CALLBACK_SUCCEEDED`；但尚未完成重複真實 callback replay 與 reconciliation job。
+- 本機 demo 可回到 demo gateway；EC2 已可切到 ECPay sandbox provider，並通過 public callback preflight、Playwright stage checkout、OTP 付款成功、ReturnURL HTTP 200、訂單轉已付款與 `CALLBACK_SUCCEEDED`；後端已補重複 callback 測試、待對帳候選查詢與 provider-query reconciliation job。
 - 管理端已有產品級基礎，但還沒有完整自動化視覺回歸。
 - 部署是作品級單機 EC2 + Docker MySQL/Redis，不是高可用 production 架構。
 - 前端 UI 已 polish，但主要價值仍是後端流程與工程證據。

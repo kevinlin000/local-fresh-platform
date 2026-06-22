@@ -90,7 +90,12 @@ localfresh:
       hash-key: 5294y06JbISpM5x9
       hash-iv: v77hoKGq4kWxNNIS
       checkout-url: https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5
+      query-url: https://payment-stage.ecpay.com.tw/Cashier/QueryTradeInfo/V5
       return-url: http://localhost:8080/payment/callback
       order-result-url: http://localhost:5173/orders
+    reconciliation:
+      enabled: false
+      cron: 0 */5 * * * ?
+      batch-size: 20
   test:
     mock-redisson: true

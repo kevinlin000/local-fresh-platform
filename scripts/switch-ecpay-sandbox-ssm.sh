@@ -15,8 +15,12 @@ ECPAY_MERCHANT_ID="${ECPAY_MERCHANT_ID:-2000132}"
 ECPAY_HASH_KEY="${ECPAY_HASH_KEY:-5294y06JbISpM5x9}"
 ECPAY_HASH_IV="${ECPAY_HASH_IV:-v77hoKGq4kWxNNIS}"
 ECPAY_CHECKOUT_URL="${ECPAY_CHECKOUT_URL:-https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5}"
+ECPAY_QUERY_URL="${ECPAY_QUERY_URL:-https://payment-stage.ecpay.com.tw/Cashier/QueryTradeInfo/V5}"
 ECPAY_RETURN_URL="${ECPAY_RETURN_URL:-https://localfresh-demo.duckdns.org/payment/callback}"
 ECPAY_ORDER_RESULT_URL="${ECPAY_ORDER_RESULT_URL:-https://d3hqnux25iirgl.cloudfront.net/orders}"
+PAYMENT_RECONCILIATION_ENABLED="${PAYMENT_RECONCILIATION_ENABLED:-false}"
+PAYMENT_RECONCILIATION_CRON="${PAYMENT_RECONCILIATION_CRON:-0 */5 * * * ?}"
+PAYMENT_RECONCILIATION_BATCH_SIZE="${PAYMENT_RECONCILIATION_BATCH_SIZE:-20}"
 
 case "$MODE" in
   status|enable|rollback) ;;
@@ -47,8 +51,12 @@ COMMANDS_JSON="$(
   ECPAY_HASH_KEY="$ECPAY_HASH_KEY" \
   ECPAY_HASH_IV="$ECPAY_HASH_IV" \
   ECPAY_CHECKOUT_URL="$ECPAY_CHECKOUT_URL" \
+  ECPAY_QUERY_URL="$ECPAY_QUERY_URL" \
   ECPAY_RETURN_URL="$ECPAY_RETURN_URL" \
   ECPAY_ORDER_RESULT_URL="$ECPAY_ORDER_RESULT_URL" \
+  PAYMENT_RECONCILIATION_ENABLED="$PAYMENT_RECONCILIATION_ENABLED" \
+  PAYMENT_RECONCILIATION_CRON="$PAYMENT_RECONCILIATION_CRON" \
+  PAYMENT_RECONCILIATION_BATCH_SIZE="$PAYMENT_RECONCILIATION_BATCH_SIZE" \
   python3 - <<'PY'
 import base64
 import json
@@ -79,7 +87,7 @@ if mode == "status":
         "echo effective-payment-env:",
         f"sudo systemctl show {service} --property=Environment | "
         "tr ' ' '\\n' | "
-        "grep -E 'PAYMENT_PROVIDER|ECPAY_' | "
+        "grep -E 'PAYMENT_PROVIDER|PAYMENT_RECONCILIATION|ECPAY_' | "
         "sed -E 's/(ECPAY_HASH_KEY|ECPAY_HASH_IV)=.*/\\1=<redacted>/' || true",
     ])
 elif mode == "enable":
@@ -90,8 +98,12 @@ elif mode == "enable":
         f"Environment=ECPAY_HASH_KEY={os.environ['ECPAY_HASH_KEY']}",
         f"Environment=ECPAY_HASH_IV={os.environ['ECPAY_HASH_IV']}",
         f"Environment=ECPAY_CHECKOUT_URL={os.environ['ECPAY_CHECKOUT_URL']}",
+        f"Environment=ECPAY_QUERY_URL={os.environ['ECPAY_QUERY_URL']}",
         f"Environment=ECPAY_RETURN_URL={os.environ['ECPAY_RETURN_URL']}",
         f"Environment=ECPAY_ORDER_RESULT_URL={os.environ['ECPAY_ORDER_RESULT_URL']}",
+        f"Environment=PAYMENT_RECONCILIATION_ENABLED={os.environ['PAYMENT_RECONCILIATION_ENABLED']}",
+        f"Environment=\"PAYMENT_RECONCILIATION_CRON={os.environ['PAYMENT_RECONCILIATION_CRON']}\"",
+        f"Environment=PAYMENT_RECONCILIATION_BATCH_SIZE={os.environ['PAYMENT_RECONCILIATION_BATCH_SIZE']}",
     ]
     encoded = base64.b64encode(("\n".join(lines) + "\n").encode()).decode()
     commands.extend([
@@ -109,7 +121,7 @@ elif mode == "enable":
         "echo effective-payment-env:",
         f"sudo systemctl show {service} --property=Environment | "
         "tr ' ' '\\n' | "
-        "grep -E 'PAYMENT_PROVIDER|ECPAY_' | "
+        "grep -E 'PAYMENT_PROVIDER|PAYMENT_RECONCILIATION|ECPAY_' | "
         "sed -E 's/(ECPAY_HASH_KEY|ECPAY_HASH_IV)=.*/\\1=<redacted>/' || true",
     ])
 elif mode == "rollback":
@@ -125,7 +137,7 @@ elif mode == "rollback":
         "echo effective-payment-env:",
         f"sudo systemctl show {service} --property=Environment | "
         "tr ' ' '\\n' | "
-        "grep -E 'PAYMENT_PROVIDER|ECPAY_' | "
+        "grep -E 'PAYMENT_PROVIDER|PAYMENT_RECONCILIATION|ECPAY_' | "
         "sed -E 's/(ECPAY_HASH_KEY|ECPAY_HASH_IV)=.*/\\1=<redacted>/' || true",
     ])
 

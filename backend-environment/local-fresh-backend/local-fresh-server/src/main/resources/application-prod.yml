@@ -87,5 +87,10 @@ localfresh:
       hash-key: ${ECPAY_HASH_KEY:}
       hash-iv: ${ECPAY_HASH_IV:}
       checkout-url: ${ECPAY_CHECKOUT_URL:https://payment.ecpay.com.tw/Cashier/AioCheckOut/V5}
+      query-url: ${ECPAY_QUERY_URL:https://payment.ecpay.com.tw/Cashier/QueryTradeInfo/V5}
       return-url: ${ECPAY_RETURN_URL:}
       order-result-url: ${ECPAY_ORDER_RESULT_URL:}
+    reconciliation:
+      enabled: ${PAYMENT_RECONCILIATION_ENABLED:false}
+      cron: ${PAYMENT_RECONCILIATION_CRON:0 */5 * * * ?}
+      batch-size: ${PAYMENT_RECONCILIATION_BATCH_SIZE:20}

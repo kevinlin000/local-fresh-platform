@@ -772,7 +772,7 @@ sequenceDiagram
     Admin->>DB: query payment_event by order/provider
 ```
 
-目前這條路徑已具備 demo provider HMAC、ECPay CheckMacValue parsing / verification 測試、公開 EC2 callback preflight，以及 Playwright ECPay sandbox OTP 成功回流證據；尚未完成的是重複真實 callback replay 與 reconciliation job。
+目前這條路徑已具備 demo provider HMAC、ECPay CheckMacValue parsing / verification 測試、公開 EC2 callback preflight、Playwright ECPay sandbox OTP 成功回流證據、待對帳候選查詢與 provider-query reconciliation job；尚未完成的是正式監控告警與外部查詢排程的長時間運行證據。
 
 ---
 

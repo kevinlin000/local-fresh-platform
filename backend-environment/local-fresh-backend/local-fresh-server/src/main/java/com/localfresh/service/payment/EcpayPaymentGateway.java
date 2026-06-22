@@ -3,6 +3,7 @@ package com.localfresh.service.payment;
 import com.localfresh.constant.MessageConstant;
 import com.localfresh.entity.Orders;
 import com.localfresh.exception.OrderBusinessException;
+import com.localfresh.utils.HttpClientUtil;
 import com.localfresh.utils.JsonUtil;
 import com.localfresh.vo.OrderPaymentVO;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
@@ -35,6 +39,9 @@ public class EcpayPaymentGateway implements PaymentGateway {
 
     @Value("${localfresh.payment.ecpay.checkout-url:https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5}")
     private String checkoutUrl;
+
+    @Value("${localfresh.payment.ecpay.query-url:https://payment-stage.ecpay.com.tw/Cashier/QueryTradeInfo/V5}")
+    private String queryUrl;
 
     @Value("${localfresh.payment.ecpay.return-url:}")
     private String returnUrl;
@@ -104,6 +111,80 @@ public class EcpayPaymentGateway implements PaymentGateway {
                 .rawPayload(JsonUtil.toJson(new TreeMap<>(payload)))
                 .paymentSucceeded("1".equals(payload.get("RtnCode")))
                 .build();
+    }
+
+    @Override
+    public PaymentQueryResult queryPaymentStatus(String orderNumber) {
+        requireConfigured();
+        Map<String, String> params = new LinkedHashMap<>();
+        params.put("MerchantID", merchantId);
+        params.put("MerchantTradeNo", orderNumber);
+        params.put("TimeStamp", String.valueOf(System.currentTimeMillis() / 1000));
+        params.put("CheckMacValue", checkMacValueCalculator.calculate(params, hashKey, hashIv));
+
+        try {
+            return parseTradeQueryResponse(HttpClientUtil.doPost(queryUrl, params));
+        } catch (IOException ex) {
+            throw new IllegalStateException("ECPay trade query failed", ex);
+        }
+    }
+
+    PaymentQueryResult parseTradeQueryResponse(String responseBody) {
+        Map<String, String> payload = parseFormUrlEncoded(responseBody);
+        if (payload.containsKey("CheckMacValue") && !checkMacValueCalculator.verify(payload, hashKey, hashIv)) {
+            throw new OrderBusinessException(MessageConstant.PAYMENT_CALLBACK_INVALID);
+        }
+        return PaymentQueryResult.builder()
+                .provider(provider())
+                .orderNumber(payload.get("MerchantTradeNo"))
+                .status(resolveTradeStatus(payload.get("TradeStatus")))
+                .providerReference(firstPresent(payload.get("PaymentDate"), payload.get("TradeDate"),
+                        payload.get("TradeStatus")))
+                .providerTradeNo(payload.get("TradeNo"))
+                .rawPayload(JsonUtil.toJson(new TreeMap<>(payload)))
+                .build();
+    }
+
+    private Map<String, String> parseFormUrlEncoded(String responseBody) {
+        Map<String, String> payload = new LinkedHashMap<>();
+        if (responseBody == null || responseBody.isBlank()) {
+            return payload;
+        }
+        for (String pair : responseBody.split("&")) {
+            int equalsIndex = pair.indexOf('=');
+            if (equalsIndex < 0) {
+                payload.put(urlDecode(pair), "");
+            } else {
+                payload.put(urlDecode(pair.substring(0, equalsIndex)), urlDecode(pair.substring(equalsIndex + 1)));
+            }
+        }
+        return payload;
+    }
+
+    private PaymentQueryStatus resolveTradeStatus(String tradeStatus) {
+        if ("1".equals(tradeStatus)) {
+            return PaymentQueryStatus.SUCCEEDED;
+        }
+        if ("0".equals(tradeStatus)) {
+            return PaymentQueryStatus.PENDING;
+        }
+        if (tradeStatus == null || tradeStatus.isBlank()) {
+            return PaymentQueryStatus.UNKNOWN;
+        }
+        return PaymentQueryStatus.FAILED;
+    }
+
+    private String firstPresent(String... values) {
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    private String urlDecode(String value) {
+        return URLDecoder.decode(value, StandardCharsets.UTF_8);
     }
 
     private void requireConfigured() {
