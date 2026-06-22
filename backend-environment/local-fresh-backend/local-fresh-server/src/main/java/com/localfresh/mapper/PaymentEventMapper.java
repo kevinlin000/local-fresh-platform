@@ -24,4 +24,6 @@ public interface PaymentEventMapper {
     List<PaymentEvent> listByOrderNumber(@Param("orderNumber") String orderNumber);
 
     Page<PaymentEvent> pageQuery(PaymentEventPageQueryDTO queryDTO);
+
+    Page<PaymentEvent> pagePendingRequestsWithoutTerminalCallback(PaymentEventPageQueryDTO queryDTO);
 }

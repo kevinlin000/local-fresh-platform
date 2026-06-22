@@ -30,6 +30,16 @@ public class PaymentEventServiceImpl implements PaymentEventService {
         return new PageResult(page.getTotal(), records);
     }
 
+    @Override
+    public PageResult pagePendingRequestsWithoutTerminalCallback(PaymentEventPageQueryDTO queryDTO) {
+        PageHelper.startPage(queryDTO.getPage(), queryDTO.getPageSize());
+        Page<PaymentEvent> page = paymentEventMapper.pagePendingRequestsWithoutTerminalCallback(queryDTO);
+        List<PaymentEventVO> records = page.getResult().stream()
+                .map(this::toVO)
+                .toList();
+        return new PageResult(page.getTotal(), records);
+    }
+
     private PaymentEventVO toVO(PaymentEvent paymentEvent) {
         PaymentEventVO vo = new PaymentEventVO();
         BeanUtils.copyProperties(paymentEvent, vo);

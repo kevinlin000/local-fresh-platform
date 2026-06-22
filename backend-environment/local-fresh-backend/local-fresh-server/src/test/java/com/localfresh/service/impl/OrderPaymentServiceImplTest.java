@@ -210,6 +210,37 @@ class OrderPaymentServiceImplTest {
     }
 
     @Test
+    void handleEcpayDuplicateCallbackShouldRecordTradeNoWithoutChangingOrderAgain() {
+        Orders order = orderWithStatus(8L, Orders.TO_BE_CONFIRMED);
+        order.setNumber("ORDER-008");
+        order.setPayStatus(Orders.PAID);
+        order.setAmount(new java.math.BigDecimal("280.00"));
+        when(orderMapper.getByNumber("ORDER-008")).thenReturn(order);
+        PaymentCallbackCommand command = PaymentCallbackCommand.builder()
+                .provider("ECPAY")
+                .orderNumber("ORDER-008")
+                .providerReference("2026/06/22 16:54:16")
+                .providerTradeNo("2606221648068400")
+                .rawPayload("MerchantTradeNo=ORDER-008&RtnCode=1")
+                .paymentSucceeded(true)
+                .build();
+
+        orderPaymentService.handlePaymentCallback(command);
+
+        verify(orderMapper, never()).markPaymentSucceededByNumber(anyString(), any(), any(), any(), any(), any());
+        PaymentEvent event = singlePaymentEvent();
+        assertEquals(PaymentEvent.EVENT_CALLBACK_DUPLICATE, event.getEventType());
+        assertEquals(PaymentEvent.RESULT_IGNORED, event.getResult());
+        assertEquals("ECPAY", event.getProvider());
+        assertEquals("2026/06/22 16:54:16", event.getProviderReference());
+        assertEquals("2606221648068400", event.getProviderTradeNo());
+        assertEquals("ECPAY:CALLBACK_DUPLICATE:ORDER-008:2606221648068400", event.getIdempotencyKey());
+        assertEquals("MerchantTradeNo=ORDER-008&RtnCode=1", event.getRawPayload());
+        verify(businessMetricsService).recordPaymentCallback("ECPAY", PaymentEvent.RESULT_IGNORED);
+        verifyNoInteractions(webSocketServer);
+    }
+
+    @Test
     void handlePaymentSuccessShouldNotNotifyWhenConcurrentCallbackAlreadyMarkedPaid() {
         Orders unpaidOrder = orderWithStatus(6L, Orders.PENDING_PAYMENT);
         unpaidOrder.setNumber("ORDER-006");

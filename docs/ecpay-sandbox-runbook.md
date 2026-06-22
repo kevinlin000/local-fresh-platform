@@ -209,6 +209,17 @@ identity drop-in untouched.
 
 12. Send or replay the same callback once to confirm duplicate handling records
     `CALLBACK_DUPLICATE` without changing the order again.
+13. Query pending payment requests that still need reconciliation:
+
+   ```bash
+   curl -H "token: <admin-token>" \
+     "https://localfresh-demo.duckdns.org/admin/paymentEvents/pendingRequests?page=1&pageSize=20&provider=ECPAY"
+   ```
+
+   This endpoint is intentionally a minimal reconciliation work queue: it
+   returns `REQUEST_CREATED / PENDING` events that do not yet have a
+   `CALLBACK_SUCCEEDED` or `CALLBACK_REJECTED` event for the same provider and
+   order number. It does not call ECPay's query API yet.
 
 ## Rollback
 

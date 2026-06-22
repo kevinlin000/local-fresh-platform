@@ -28,4 +28,12 @@ public class PaymentEventController {
         PageResult pageResult = paymentEventService.pageQuery(queryDTO);
         return Result.success(pageResult);
     }
+
+    @GetMapping("/pendingRequests")
+    @Operation(summary = "付款請求待對帳查詢")
+    public Result<PageResult> pendingRequests(PaymentEventPageQueryDTO queryDTO) {
+        log.info("付款請求待對帳查詢：{}", queryDTO);
+        PageResult pageResult = paymentEventService.pagePendingRequestsWithoutTerminalCallback(queryDTO);
+        return Result.success(pageResult);
+    }
 }

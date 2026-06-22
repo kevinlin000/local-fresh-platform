@@ -62,8 +62,8 @@ The current coverage emphasis is the order lifecycle:
   group-buy pre-orders before any provider request is created.
 - `OrderPaymentServiceImpl`: provider-neutral payment request creation, demo
   immediate success strategy, payment callback command handling, payment event
-  recording, duplicate callback, concurrent callback race, and invalid
-  transition handling.
+  recording, ECPay duplicate callback with provider trade number evidence,
+  concurrent callback race, and invalid transition handling.
 - `DemoPaymentGatewayTest`: demo callback HMAC verification and payload mapping.
 - `EcpayCheckMacValueCalculatorTest`: ECPay callback checksum sorting,
   CheckMacValue exclusion, and case-insensitive verification.
@@ -83,8 +83,9 @@ The current coverage emphasis is the order lifecycle:
   trade number filtering, and idempotency-key filtering through the real mapper
   and H2 schema.
 - `PaymentEventApiTest`: admin payment-event pagination and filtering through
-  the HTTP layer and JWT interceptor, including provider trade number and
-  idempotency-key query fields.
+  the HTTP layer and JWT interceptor, including provider trade number,
+  idempotency-key query fields, and the minimal pending-request reconciliation
+  endpoint.
 - `BusinessMetricsServiceImplTest`: custom Micrometer business counters for
   payment callback outcomes, duplicate/applied order cancellations, and
   group-buy transitions.

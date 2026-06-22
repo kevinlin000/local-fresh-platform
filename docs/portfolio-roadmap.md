@@ -12,7 +12,7 @@
 | 會員端流程 | 商品瀏覽、購物車、下單、付款、訂單查詢、揪團頁已可展示，並使用真實食物圖片。 | 作品層級完整 |
 | 管理端流程 | Dashboard、商品、訂單、付款事件、操作紀錄已能支撐營運 demo。 | 作品層級完整 |
 | 訂單生命週期 | 狀態轉移集中在 `OrderStatusTransitionPolicy`，付款、取消、婉拒、配送、完成都有 service 測試。 | 強 |
-| 付款邊界 | Demo gateway、ECPay CheckMacValue parser、callback endpoint、付款事件表、前端 POST form 導轉、provider-switch readiness test、真 ECPay gateway/controller contract test、公開 EC2 callback preflight、SSM sandbox provider switch、真瀏覽器 stage checkout、sandbox OTP 成功回流與 `CALLBACK_SUCCEEDED` 已完成。 | 強，但仍缺重複真實 callback replay 與 reconciliation |
+| 付款邊界 | Demo gateway、ECPay CheckMacValue parser、callback endpoint、付款事件表、前端 POST form 導轉、provider-switch readiness test、真 ECPay gateway/controller contract test、公開 EC2 callback preflight、SSM sandbox provider switch、真瀏覽器 stage checkout、sandbox OTP 成功回流、`CALLBACK_SUCCEEDED`、ECPay duplicate callback 測試與 pending-request reconciliation 查詢已完成。 | 強，但仍缺 provider 查詢式 reconciliation job 與正式監控告警 |
 | 揪團併發 | Redisson lock、transaction boundary、唯一鍵、Testcontainers Redis、JMeter 證據已具備。 | 強 |
 | 庫存一致性 | 一般訂單、取消還庫存、商品管理邊界與重複取消防線已有測試。 | 強 |
 | 測試證據 | 後端 service/integration/Redis 測試、JaCoCo、前端 build、手動 Playwright 截圖證據已整理。 | 強 |

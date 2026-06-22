@@ -212,7 +212,7 @@ erDiagram
 
 目前已補上 `OrderServiceImpl`、`OrderPaymentServiceImpl`、`DemoPaymentGateway`、`EcpayPaymentGateway`、`OrderCancellationServiceImpl`、`OrderFulfillmentServiceImpl` 與 `OrderStatusTransitionPolicy` 的核心測試，涵蓋付款請求與付款成功回呼分離、已取消 / 揪團中訂單不可付款、demo HMAC callback 驗證、ECPay CheckMacValue 驗證與 callback mapping、付款事件紀錄、重複付款 callback、concurrent callback race、已完成訂單不可取消、會員不可操作他人訂單、未付款拒單不退款、直送箱取消時還原組成商品庫存等案例。`local-fresh-server` 已接入 JaCoCo，可用 `mvn -pl local-fresh-server -am verify` 產生 HTML 報告，完整測試策略見 [docs/testing.md](docs/testing.md)。
 
-付款流程另外新增 `payment_event` 事件表，紀錄 `REQUEST_CREATED`、`CALLBACK_SUCCEEDED`、`CALLBACK_DUPLICATE` 與 `CALLBACK_REJECTED`，並提供 `GET /admin/paymentEvents/page` 依訂單編號、provider、事件類型、結果、金流交易編號、冪等鍵與時間範圍查詢。目前 demo gateway 仍維持本機立即付款成功，方便展示；EC2 demo runtime 則已可透過 SSM 切到 ECPay sandbox provider。Playwright 已完成綠界 stage checkout、OTP 付款、ReturnURL HTTP 200、訂單轉已付款與 `payment_event` 寫入 `CALLBACK_SUCCEEDED` 驗證。後續主要剩重複真實 callback replay、reconciliation job 與正式監控告警。
+付款流程另外新增 `payment_event` 事件表，紀錄 `REQUEST_CREATED`、`CALLBACK_SUCCEEDED`、`CALLBACK_DUPLICATE` 與 `CALLBACK_REJECTED`，並提供 `GET /admin/paymentEvents/page` 依訂單編號、provider、事件類型、結果、金流交易編號、冪等鍵與時間範圍查詢。管理端另有 `GET /admin/paymentEvents/pendingRequests`，可列出已建立付款請求但尚未收到成功或拒絕 callback 的待對帳候選。EC2 demo runtime 已可透過 SSM 切到 ECPay sandbox provider，Playwright 已完成綠界 stage checkout、OTP 付款、ReturnURL HTTP 200、訂單轉已付款與 `payment_event` 寫入 `CALLBACK_SUCCEEDED` 驗證；後續主要剩 provider 查詢式 reconciliation job 與正式監控告警。
 
 管理端也新增「付款事件」頁，可直接查 demo 訂單的付款請求、成功回呼、重複回呼與拒絕回呼，作為未來金流對帳與客服查單的前台證據。
 

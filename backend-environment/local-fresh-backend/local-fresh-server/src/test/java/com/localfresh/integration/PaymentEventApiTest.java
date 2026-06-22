@@ -49,14 +49,20 @@ class PaymentEventApiTest {
                 values
                     (100, 'ORDER-API-1', 'DEMO', ?, 'demo-paid:ORDER-API-1', null, 'DEMO:REQUEST_CREATED:ORDER-API-1:demo-paid:ORDER-API-1', 300.00, ?, '{}', '2026-01-02 10:00:00'),
                     (101, 'ORDER-API-1', 'DEMO', ?, null, 'DEMO-TRADE-API-1', 'DEMO:CALLBACK_SUCCEEDED:ORDER-API-1:DEMO-TRADE-API-1', 300.00, ?, null, '2026-01-02 10:01:00'),
-                    (102, 'ORDER-API-2', 'ECPAY', ?, 'ecpay:ORDER-API-2', null, 'ECPAY:REQUEST_CREATED:ORDER-API-2:ecpay:ORDER-API-2', 500.00, ?, '{}', '2026-01-03 10:00:00')
+                    (102, 'ORDER-API-2', 'ECPAY', ?, 'ecpay:ORDER-API-2', null, 'ECPAY:REQUEST_CREATED:ORDER-API-2:ecpay:ORDER-API-2', 500.00, ?, '{}', '2026-01-03 10:00:00'),
+                    (103, 'ORDER-API-3', 'ECPAY', ?, 'ecpay:ORDER-API-3', null, 'ECPAY:REQUEST_CREATED:ORDER-API-3:ecpay:ORDER-API-3', 700.00, ?, '{}', '2026-01-04 10:00:00'),
+                    (104, 'ORDER-API-3', 'ECPAY', ?, '2026/01/04 10:01:00', 'ECPAY-TRADE-3', 'ECPAY:CALLBACK_REJECTED:ORDER-API-3:ECPAY-TRADE-3', 700.00, ?, '{}', '2026-01-04 10:01:00')
                 """,
                 PaymentEvent.EVENT_REQUEST_CREATED,
                 PaymentEvent.RESULT_PENDING,
                 PaymentEvent.EVENT_CALLBACK_SUCCEEDED,
                 PaymentEvent.RESULT_SUCCEEDED,
                 PaymentEvent.EVENT_REQUEST_CREATED,
-                PaymentEvent.RESULT_PENDING);
+                PaymentEvent.RESULT_PENDING,
+                PaymentEvent.EVENT_REQUEST_CREATED,
+                PaymentEvent.RESULT_PENDING,
+                PaymentEvent.EVENT_CALLBACK_REJECTED,
+                PaymentEvent.RESULT_REJECTED);
     }
 
     @Test
@@ -81,6 +87,24 @@ class PaymentEventApiTest {
                 .andExpect(jsonPath("$.data.records[0].providerTradeNo").value("DEMO-TRADE-API-1"))
                 .andExpect(jsonPath("$.data.records[0].idempotencyKey")
                         .value("DEMO:CALLBACK_SUCCEEDED:ORDER-API-1:DEMO-TRADE-API-1"));
+    }
+
+    @Test
+    void pendingRequestsShouldReturnRequestsWithoutSucceededOrRejectedCallback() throws Exception {
+        mockMvc.perform(get("/admin/paymentEvents/pendingRequests")
+                        .param("page", "1")
+                        .param("pageSize", "10")
+                        .param("provider", "ECPAY")
+                        .param("beginTime", "2026-01-01 00:00:00")
+                        .param("endTime", "2026-01-05 00:00:00")
+                        .header("token", adminToken()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(1))
+                .andExpect(jsonPath("$.data.total").value(1))
+                .andExpect(jsonPath("$.data.records[0].orderNumber").value("ORDER-API-2"))
+                .andExpect(jsonPath("$.data.records[0].provider").value("ECPAY"))
+                .andExpect(jsonPath("$.data.records[0].eventType").value(PaymentEvent.EVENT_REQUEST_CREATED))
+                .andExpect(jsonPath("$.data.records[0].result").value(PaymentEvent.RESULT_PENDING));
     }
 
     private String adminToken() {

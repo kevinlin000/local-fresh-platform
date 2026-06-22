@@ -57,7 +57,7 @@
 
 ### 付款事件紀錄
 
-付款流程新增 `payment_event`，將建立付款請求、成功 callback、重複 callback 與非法 callback 都寫成事件，並提供 `GET /admin/paymentEvents/page` 與管理端「付款事件」頁查詢。這讓 demo gateway 不只是「假付款」，而是先具備真實金流會需要的 provider callback 入口、demo HMAC 驗證、ECPay CheckMacValue parser、會員端 POST form 導轉、reference、provider trade no、idempotency key、amount、raw payload、處理結果與查詢入口。面試時可以說：目前 EC2 已可透過 SSM 切到 ECPay sandbox provider，public callback preflight 已通過，也已用 Playwright 從 CloudFront 會員端導向綠界 stage checkout，完成 OTP 付款成功、ReturnURL HTTP 200、訂單轉已付款與 `CALLBACK_SUCCEEDED` 落庫；還沒做的是重複真實 callback replay 與 reconciliation job。
+付款流程新增 `payment_event`，將建立付款請求、成功 callback、重複 callback 與非法 callback 都寫成事件，並提供 `GET /admin/paymentEvents/page` 與管理端「付款事件」頁查詢。另有 `GET /admin/paymentEvents/pendingRequests` 可列出已建立付款請求但還沒有成功或拒絕 callback 的待對帳候選。這讓 demo gateway 不只是「假付款」，而是先具備真實金流會需要的 provider callback 入口、demo HMAC 驗證、ECPay CheckMacValue parser、會員端 POST form 導轉、reference、provider trade no、idempotency key、amount、raw payload、處理結果與查詢入口。面試時可以說：目前 EC2 已可透過 SSM 切到 ECPay sandbox provider，public callback preflight 已通過，也已用 Playwright 從 CloudFront 會員端導向綠界 stage checkout，完成 OTP 付款成功、ReturnURL HTTP 200、訂單轉已付款與 `CALLBACK_SUCCEEDED` 落庫；還沒做的是 provider 查詢式 reconciliation job 與正式監控告警。
 
 ### 管理端操作 Audit Log
 

@@ -116,12 +116,12 @@
 
 目前已完成真瀏覽器 ECPay sandbox stage checkout 與 OTP 付款成功回流。你可以說：
 
-> provider abstraction、callback endpoint、demo HMAC、ECPay CheckMacValue、payment_event、provider-switch readiness、public callback preflight、EC2 SSM sandbox provider switch、Playwright stage checkout、OTP 付款成功、ReturnURL HTTP 200、訂單轉已付款與 `CALLBACK_SUCCEEDED` 都已完成；但還需要補重複真實 callback replay、reconciliation job 與正式監控告警。
+> provider abstraction、callback endpoint、demo HMAC、ECPay CheckMacValue、payment_event、provider-switch readiness、public callback preflight、EC2 SSM sandbox provider switch、Playwright stage checkout、OTP 付款成功、ReturnURL HTTP 200、訂單轉已付款、`CALLBACK_SUCCEEDED`、ECPay duplicate callback 單元測試與 pending-request reconciliation 查詢都已完成；但還需要補 provider 查詢式 reconciliation job 與正式監控告警。
 
 下一步：
 
-- 補重複真實 callback replay。
-- 補 reconciliation job。
+- 補 provider 查詢式 reconciliation job。
+- 補 callback failure / pending request 告警。
 - 考慮 payment_event idempotency key unique constraint。
 
 ## 3. 揪團併發
