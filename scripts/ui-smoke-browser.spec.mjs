@@ -33,6 +33,7 @@ test.describe('local browser smoke', () => {
     await expect(page).toHaveURL(`${config.adminBaseUrl}/dashboard`)
     await expect(page.getByRole('heading', { name: '今日營運概覽' })).toBeVisible()
     await expect(page.getByText('今日優先處理')).toBeVisible()
+    await expect(page.getByRole('heading', { name: '付款與監控' })).toBeVisible()
 
     await page.goto(`${config.adminBaseUrl}/orders`)
     await expect(page.getByPlaceholder('搜尋訂單編號')).toBeVisible()
