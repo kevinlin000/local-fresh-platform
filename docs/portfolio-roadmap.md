@@ -12,7 +12,7 @@
 | 會員端流程 | 商品瀏覽、購物車、下單、付款、訂單查詢、揪團頁已可展示，並使用真實食物圖片。 | 作品層級完整 |
 | 管理端流程 | Dashboard、商品、訂單、付款事件、操作紀錄已能支撐營運 demo。 | 作品層級完整 |
 | 訂單生命週期 | 狀態轉移集中在 `OrderStatusTransitionPolicy`，付款、取消、婉拒、配送、完成都有 service 測試。 | 強 |
-| 付款邊界 | Demo gateway、ECPay CheckMacValue parser、callback endpoint、付款事件表、前端 POST form 導轉骨架、provider-switch readiness test、真 ECPay gateway/controller contract test、公開 EC2 callback preflight 與 SSM sandbox provider switch 已完成。 | 強，但缺真瀏覽器 sandbox checkout 與 reconciliation |
+| 付款邊界 | Demo gateway、ECPay CheckMacValue parser、callback endpoint、付款事件表、前端 POST form 導轉、provider-switch readiness test、真 ECPay gateway/controller contract test、公開 EC2 callback preflight、SSM sandbox provider switch、真瀏覽器 stage checkout、sandbox OTP 成功回流與 `CALLBACK_SUCCEEDED` 已完成。 | 強，但仍缺重複真實 callback replay 與 reconciliation |
 | 揪團併發 | Redisson lock、transaction boundary、唯一鍵、Testcontainers Redis、JMeter 證據已具備。 | 強 |
 | 庫存一致性 | 一般訂單、取消還庫存、商品管理邊界與重複取消防線已有測試。 | 強 |
 | 測試證據 | 後端 service/integration/Redis 測試、JaCoCo、前端 build、手動 Playwright 截圖證據已整理。 | 強 |
@@ -37,10 +37,10 @@
 
 ### P1 - Best Next Slices
 
-1. **ECPay sandbox 付款成功回流驗證**
-   - 目的：把「已能用瀏覽器進 ECPay stage checkout」推進到「付款成功回流與 callback 落庫」。
-   - 範圍：使用 stage checkout 訂單完成 sandbox 卡號付款、確認 ReturnURL 經 Nginx 進 Spring Boot、付款事件寫入 `ECPAY / CALLBACK_SUCCEEDED`。
-   - 風險：需要可用 sandbox 測試卡流程與公開 HTTPS callback；完成後仍要保留 `scripts/switch-ecpay-sandbox-ssm.sh rollback`。
+1. **ECPay duplicate callback replay + reconciliation 設計**
+   - 目的：把「已完成 sandbox OTP 成功回流」推進到「真實 provider 重送 callback 也可追蹤、可對帳」。
+   - 範圍：保留已成功訂單證據，補重複 callback replay、`CALLBACK_DUPLICATE` 查證、reconciliation job 設計與最小實作。
+   - 風險：不要過度做成大型 event sourcing；先補可面試說清楚的防重與對帳切面。
 
 2. **庫存異動 idempotency 設計**
    - 目的：回答「取消、退款、重複 callback、重複還庫存怎麼防？」。
@@ -95,14 +95,14 @@
 
 剛完成的本地切面是取消訂單防重：若訂單已取消，或該訂單已存在 `ORDER_CANCEL_RESTORE` 庫存回補紀錄，取消流程會直接跳過；真正寫入庫存流水時，`product_inventory_log.idempotency_key` 也有 unique constraint 作為 DB 最後防線，避免重複退款與重複還庫存。
 
-剛完成的雲端切面是 **ECPay sandbox runtime switch + browser stage checkout，不急著正式上線**。
+剛完成的雲端切面是 **ECPay sandbox OTP 成功回流，不急著正式上線**。
 
 理由：
 
 - 付款事件、callback parser、前端 POST form、observability 與 public callback preflight 已具備。
-- EC2 backend 已同步到 commit `5612e4c24601`，`/actuator/info` 與 `/payment/callback` public preflight 已通過。
+- EC2 backend 已同步到 commit `8d7a0d5eeefe`，`/actuator/info` 與 `/payment/callback` public preflight 已通過。
 - 已新增 `scripts/switch-ecpay-sandbox-ssm.sh`，並用 SSM 寫入獨立 systemd payment drop-in，確認 effective `PAYMENT_PROVIDER=ecpay`。
-- 這仍不等於正式金流上線；stage checkout 已通，還缺 sandbox 卡號付款成功、ReturnURL / OrderResultURL 證據與 reconciliation job。
+- 這仍不等於正式金流上線；stage checkout、OTP 成功付款、ReturnURL HTTP 200、訂單轉已付款與 `CALLBACK_SUCCEEDED` 已通，還缺重複真實 callback replay、reconciliation job 與正式監控告警。
 
 目前結論：
 
@@ -111,6 +111,7 @@
 - 2026-06-21 公開 preflight 已通過 health、Nginx、`/actuator/info`、`/payment/callback` invalid-signature `0|FAIL` 與 CloudFront storefront。
 - 2026-06-21 已透過 SSM 切到 `PAYMENT_PROVIDER=ecpay`，HashKey/HashIV 只在 status 輸出中遮罩顯示。
 - 2026-06-22 已用 Playwright 從 CloudFront 會員端建立訂單 `2068949685467095040`，導向 ECPay stage checkout，並確認 `payment_event` 寫入 `ECPAY / REQUEST_CREATED / PENDING`。
+- 2026-06-22 已完成訂單 `2068979325367758848` 的 ECPay stage OTP 付款，ReturnURL 經 Nginx 回到 Spring Boot HTTP `200`，訂單變成 `status=2`、`pay_status=1`，`payment_event` 寫入 `ECPAY / CALLBACK_SUCCEEDED / SUCCEEDED`。
 
 剛完成的本地切面是 **UI smoke precheck + browser smoke + member/admin commerce polish**：
 

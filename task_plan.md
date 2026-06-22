@@ -52,6 +52,7 @@ Raise `local-fresh-platform` to an interview-ready Java backend/fullstack portfo
 | 34. SSM backend deployment sync | completed | Deploy the verified backend release through SSM, preserve EC2 runtime secrets, and prove `/actuator/info` plus payment callback readiness publicly. |
 | 35. Reversible ECPay sandbox switch | completed | Add a guarded SSM runtime switch for ECPay sandbox, verify required non-secret/runtime settings without exposing secrets, and keep rollback to demo provider one command away. |
 | 36. ECPay browser checkout evidence | completed | Use Playwright against the deployed storefront to verify the ECPay stage checkout redirect path, capture blockers, and confirm backend payment evidence where possible. |
+| 37. ECPay sandbox success return | completed | Complete a real ECPay stage credit-card OTP flow, prove ReturnURL reaches EC2/Nginx with HTTP 200, and verify `orders` plus `payment_event` record `CALLBACK_SUCCEEDED`. |
 
 ## Constraints
 

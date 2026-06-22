@@ -949,3 +949,40 @@
 - Remaining boundary:
   - ECPay stage checkout is proven.
   - Full sandbox card payment, ReturnURL / OrderResultURL success return, `CALLBACK_SUCCEEDED`, duplicate callback replay, and reconciliation job remain next.
+
+## 2026-06-22 16:55 +0800
+
+- Completed Phase 37 ECPay sandbox success return.
+- Fixed the real ECPay ReturnURL callback boundary after Playwright exposed two deployed issues:
+  - ECPay's server-to-server callback used a legacy browser `Accept` header and initially received HTTP `406`.
+  - Returning `ResponseEntity<String>` without an explicit text content type made the invalid callback preflight body become JSON string `"0|FAIL"` instead of raw `0|FAIL`.
+- Implemented and shipped two focused backend fixes:
+  - `d70538d fix: accept legacy ecpay callback headers`
+  - `8d7a0d5 fix: keep ecpay callback body plain`
+- Verification before deploy:
+  - Focused callback controller tests passed.
+  - `mvn -pl local-fresh-server -am verify` passed with 161 tests, 0 failures, 0 errors, 5 skipped, and JaCoCo report generation.
+  - `node scripts/check-repo-hygiene.mjs` passed.
+  - `git diff --check` passed.
+- CI and deploy:
+  - CI run `27939167144` completed successfully for commit `8d7a0d5eeefe`.
+  - Deployed backend release artifact `7786782724` to EC2 through SSM.
+  - EC2 health returned `UP`; `/actuator/info` returned commit `8d7a0d5eeefe`.
+  - `EXPECTED_DEPLOY_COMMIT=8d7a0d5eeefe scripts/check-ecpay-sandbox-readiness.sh` passed publicly, including raw invalid callback body `0|FAIL`.
+- Playwright ECPay success flow:
+  - Created a fresh CloudFront member order `2068979325367758848` for `NT$280`.
+  - Completed ECPay stage credit-card OTP verification.
+  - Browser returned to `https://d3hqnux25iirgl.cloudfront.net/orders`.
+- Production data evidence from EC2 MySQL:
+  - `orders.number=2068979325367758848`
+  - `orders.status=2`
+  - `orders.pay_status=1`
+  - `checkout_time=2026-06-22 08:54:18`
+  - `payment_event` contains `ECPAY / REQUEST_CREATED / PENDING / ECPAY:REQUEST:2068979325367758848 / 280.00`
+  - `payment_event` contains `ECPAY / CALLBACK_SUCCEEDED / SUCCEEDED / provider_trade_no=2606221648068400 / 280.00`
+- Nginx evidence:
+  - ECPay callback reached `POST /payment/callback` from ECPay's legacy user agent at `2026-06-22 08:54:18 UTC`.
+  - Nginx returned HTTP `200`.
+- Remaining boundary:
+  - ECPay sandbox request, OTP success, ReturnURL, order state transition, and payment event success are now proven.
+  - Still not production payment readiness: duplicate callback replay evidence, reconciliation job, monitoring/alerting around callback failures, formal secret rotation, and a non-manual deployment pipeline remain follow-up work.

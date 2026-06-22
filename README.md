@@ -212,7 +212,7 @@ erDiagram
 
 目前已補上 `OrderServiceImpl`、`OrderPaymentServiceImpl`、`DemoPaymentGateway`、`EcpayPaymentGateway`、`OrderCancellationServiceImpl`、`OrderFulfillmentServiceImpl` 與 `OrderStatusTransitionPolicy` 的核心測試，涵蓋付款請求與付款成功回呼分離、已取消 / 揪團中訂單不可付款、demo HMAC callback 驗證、ECPay CheckMacValue 驗證與 callback mapping、付款事件紀錄、重複付款 callback、concurrent callback race、已完成訂單不可取消、會員不可操作他人訂單、未付款拒單不退款、直送箱取消時還原組成商品庫存等案例。`local-fresh-server` 已接入 JaCoCo，可用 `mvn -pl local-fresh-server -am verify` 產生 HTML 報告，完整測試策略見 [docs/testing.md](docs/testing.md)。
 
-付款流程另外新增 `payment_event` 事件表，紀錄 `REQUEST_CREATED`、`CALLBACK_SUCCEEDED`、`CALLBACK_DUPLICATE` 與 `CALLBACK_REJECTED`，並提供 `GET /admin/paymentEvents/page` 依訂單編號、provider、事件類型、結果、金流交易編號、冪等鍵與時間範圍查詢。目前 demo gateway 仍維持本機立即付款成功，方便展示；但後端已新增 `/payment/callback` provider 回呼入口、demo HMAC 驗證與可切換的 ECPay CheckMacValue parser，會員端也能把 ECPay 付款請求組成 POST form 導轉。資料模型保留 provider、provider reference、provider trade no、idempotency key、amount、raw payload 與處理結果。後續接綠界 ECPay sandbox 時，主要剩真實 ReturnURL / OrderResultURL callback 驗證與對帳紀錄。
+付款流程另外新增 `payment_event` 事件表，紀錄 `REQUEST_CREATED`、`CALLBACK_SUCCEEDED`、`CALLBACK_DUPLICATE` 與 `CALLBACK_REJECTED`，並提供 `GET /admin/paymentEvents/page` 依訂單編號、provider、事件類型、結果、金流交易編號、冪等鍵與時間範圍查詢。目前 demo gateway 仍維持本機立即付款成功，方便展示；EC2 demo runtime 則已可透過 SSM 切到 ECPay sandbox provider。Playwright 已完成綠界 stage checkout、OTP 付款、ReturnURL HTTP 200、訂單轉已付款與 `payment_event` 寫入 `CALLBACK_SUCCEEDED` 驗證。後續主要剩重複真實 callback replay、reconciliation job 與正式監控告警。
 
 管理端也新增「付款事件」頁，可直接查 demo 訂單的付款請求、成功回呼、重複回呼與拒絕回呼，作為未來金流對帳與客服查單的前台證據。
 
@@ -438,7 +438,7 @@ pnpm dev
 
 ## 已知限制
 
-- 本機支付流程仍可使用 demo gateway；EC2 demo 已可透過 SSM 切到 ECPay sandbox provider，且已用 Playwright 驗證會員端可導向綠界 ECPay stage checkout；尚未完成的是 sandbox 卡號付款成功、ReturnURL / OrderResultURL 回流與 reconciliation
+- 本機支付流程仍可使用 demo gateway；EC2 demo 已可透過 SSM 切到 ECPay sandbox provider，且已用 Playwright 驗證會員端導向綠界 ECPay stage checkout、OTP 付款成功、ReturnURL HTTP 200、訂單轉已付款與 `payment_event` 的 `CALLBACK_SUCCEEDED`；尚未完成的是重複真實 callback replay 與 reconciliation
 - 管理端已完成核心營運台與表格頁 polish，但尚未加入完整 E2E 視覺回歸
 - 用戶端已完成桌面與手機版 RWD 基礎體驗，尚未加入跨瀏覽器視覺回歸測試
 - 舊資料庫第一次導入 Flyway 時需要 baseline；全新資料庫可直接套用 migration
@@ -491,12 +491,12 @@ npm run smoke:browser
 
 ### 進行中
 
-- **ECPay sandbox checkout 證據**: EC2 backend 已同步到 commit `5612e4c24601`，public `/actuator/info` 與 `/payment/callback` preflight 已通過，runtime 維持 `PAYMENT_PROVIDER=ecpay`。Playwright 已從 CloudFront 會員端建立待付款訂單並導向綠界 stage checkout，截圖保存在 `docs/screenshots/10-ecpay-stage-checkout.png`；下一步是完成 sandbox 卡號付款，確認 ReturnURL / OrderResultURL 與 `payment_event` 的 `CALLBACK_SUCCEEDED` 落點。
+- **ECPay sandbox checkout 證據**: EC2 backend 已同步到 commit `8d7a0d5eeefe`，public `/actuator/info` 與 `/payment/callback` preflight 已通過，runtime 維持 `PAYMENT_PROVIDER=ecpay`。Playwright 已從 CloudFront 會員端建立待付款訂單、導向綠界 stage checkout，並完成 OTP 付款成功回流；Nginx 收到 ECPay `POST /payment/callback` HTTP `200`，訂單 `2068979325367758848` 轉為 `status=2`、`pay_status=1`，`payment_event` 寫入 `ECPAY / CALLBACK_SUCCEEDED / SUCCEEDED`。
 - **Browser UI smoke**:在 dependency-free local precheck 之外，新增 Playwright Chromium smoke，覆蓋會員登入/home/orders 與管理端登入/dashboard/orders/products。
 
 ### 規劃中
 
-- **綠界 ECPay reconciliation**:在 EC2 sandbox provider 已可切換後,補真實 ReturnURL / OrderResultURL 成功付款證據、重複 callback replay、付款事件對帳與 reconciliation job。
+- **綠界 ECPay reconciliation**:在 EC2 sandbox provider 與真實 OTP 成功回流已完成後,補重複 callback replay、付款事件對帳與 reconciliation job。
 - **可觀測性三件套**:Spring Boot Actuator + Prometheus + Grafana,自訂業務 metric(揪團成團率、支付成功率),搭配結構化 log 與 Trace ID 串穿全鏈路。
 - **CD 自動化**:在現有 GitHub Actions 測試/build 基礎上,加入 Docker image build、推送 ECR,並觸發 EC2 滾動部署。
 

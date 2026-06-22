@@ -163,7 +163,7 @@ Order status transitions are centralized in `OrderStatusTransitionPolicy`, which
 
 The backend now includes focused tests for `OrderServiceImpl`, `OrderPaymentServiceImpl`, `DemoPaymentGateway`, `EcpayPaymentGateway`, `OrderCancellationServiceImpl`, `OrderFulfillmentServiceImpl`, and `OrderStatusTransitionPolicy`. These tests cover payment request creation, cancelled and pending-group orders that cannot be paid, demo HMAC callback verification, ECPay CheckMacValue verification and callback mapping, payment event recording, duplicate payment callbacks, completed orders that cannot be cancelled, member ownership checks, unpaid rejections that should not refund, gift-box cancellation restoring component product stock, and inventory restore idempotency backed by a nullable `product_inventory_log.idempotency_key` unique constraint. `local-fresh-server` also produces a JaCoCo HTML report with `mvn -pl local-fresh-server -am verify`; see [docs/testing.md](docs/testing.md) for the repeatable command and report path.
 
-Payment processing also writes a provider-neutral `payment_event` trail for `REQUEST_CREATED`, `CALLBACK_SUCCEEDED`, `CALLBACK_DUPLICATE`, and `CALLBACK_REJECTED`. Admins can query that trail through `GET /admin/paymentEvents/page` by order number, provider, event type, result, provider trade number, idempotency key, and time range. The current demo gateway still completes payments immediately for local demos, but the backend now has a `/payment/callback` provider callback boundary with demo HMAC verification and a switchable ECPay CheckMacValue parser, and the member frontend can turn an ECPay payment request into a POST form redirect. The data model already stores provider, provider reference, provider trade number, idempotency key, amount, raw payload, and processing result so a future ECPay sandbox adapter can reuse the same callback and reconciliation evidence.
+Payment processing also writes a provider-neutral `payment_event` trail for `REQUEST_CREATED`, `CALLBACK_SUCCEEDED`, `CALLBACK_DUPLICATE`, and `CALLBACK_REJECTED`. Admins can query that trail through `GET /admin/paymentEvents/page` by order number, provider, event type, result, provider trade number, idempotency key, and time range. The current demo gateway still completes payments immediately for local demos, while the EC2 demo runtime can switch to the ECPay sandbox provider through SSM. Playwright has now verified ECPay stage checkout, OTP payment, ReturnURL HTTP 200, the order moving to paid, and `payment_event` recording `CALLBACK_SUCCEEDED`. The remaining payment work is real-provider duplicate callback replay evidence, reconciliation, and production-grade monitoring.
 
 The admin console also includes a Payment Events page, so demo reviewers can inspect payment requests, successful callbacks, duplicate callbacks, and rejected callbacks without calling the API manually.
 
@@ -388,7 +388,7 @@ The deployment topology is:
 
 ## Known Limitations
 
-- Local demos can still use the demo gateway by default. The EC2 demo runtime can now be switched to the ECPay sandbox provider through SSM, with public callback readiness verified; Playwright has also verified the deployed storefront redirect into the ECPay stage checkout. The remaining payment gap is sandbox card completion, ReturnURL / OrderResultURL return evidence, and reconciliation.
+- Local demos can still use the demo gateway by default. The EC2 demo runtime can now be switched to the ECPay sandbox provider through SSM, with public callback readiness verified; Playwright has also verified deployed storefront redirect into ECPay stage checkout, OTP payment completion, ReturnURL HTTP 200, paid order state, and `CALLBACK_SUCCEEDED` payment evidence. The remaining payment gap is duplicate real-provider callback replay evidence and reconciliation.
 - The admin console now has a polished operations-console baseline, but it does not yet include automated visual regression coverage.
 - The user frontend now covers desktop and mobile responsive basics, but does not yet include cross-browser visual regression testing.
 - Legacy databases need a one-time Flyway baseline; fresh databases can apply migrations directly.
@@ -450,11 +450,12 @@ npm run smoke:browser
 For the current completeness assessment and next-priority plan, see
 [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md). The project is already
 interview-ready for its core Java backend story. The EC2 backend is now synced
-to commit `5612e4c24601`, public `/actuator/info` and `/payment/callback`
+to commit `8d7a0d5eeefe`, public `/actuator/info` and `/payment/callback`
 readiness pass, and the runtime has been switched to `PAYMENT_PROVIDER=ecpay`
 through the SSM switch script. Playwright has verified the CloudFront storefront
-redirect into ECPay stage checkout; the remaining payment gap is sandbox card
-completion, ReturnURL / OrderResultURL evidence, and payment-event
+redirect into ECPay stage checkout, OTP payment completion, ReturnURL HTTP 200,
+paid order state, and `CALLBACK_SUCCEEDED` payment evidence; the remaining
+payment gap is duplicate real-provider callback replay evidence and
 reconciliation.
 
 ## License

@@ -1,6 +1,6 @@
 # ECPay Sandbox Runbook
 
-This runbook documents the next payment hardening slice: verifying the existing ECPay parser and member-side POST redirect against the ECPay sandbox through the deployed EC2 + Nginx HTTPS API domain.
+This runbook documents the deployed ECPay sandbox verification path through the CloudFront storefront, EC2 + Nginx HTTPS API domain, Spring Boot callback endpoint, and MySQL payment event trail.
 
 ## Current Boundary
 
@@ -18,7 +18,7 @@ Already implemented:
 
 Verified on the deployed EC2 runtime:
 
-- `/actuator/info` publicly exposes deployed commit `5612e4c24601`.
+- `/actuator/info` publicly exposes deployed commit `8d7a0d5eeefe`.
 - `scripts/check-ecpay-sandbox-readiness.sh` passes health, Nginx, actuator
   info, callback invalid-signature response `0|FAIL`, and storefront reachability.
 - `scripts/switch-ecpay-sandbox-ssm.sh status` shows effective
@@ -28,28 +28,35 @@ Verified on the deployed EC2 runtime:
 - Screenshot evidence: `docs/screenshots/10-ecpay-stage-checkout.png`.
 - `payment_event` contains `ECPAY / REQUEST_CREATED / PENDING` with compact
   reference `ECPAY:REQUEST:2068949685467095040`.
+- Playwright completed a real ECPay stage credit-card OTP flow for order
+  `2068979325367758848`.
+- ECPay ReturnURL reached `POST /payment/callback` through Nginx with HTTP
+  `200`.
+- The order moved to `status=2`, `pay_status=1`, and `payment_event` recorded
+  `ECPAY / CALLBACK_SUCCEEDED / SUCCEEDED`.
 
-Not yet verified:
+Not yet implemented:
 
-- Real ReturnURL callback through EC2 + Nginx
-- Real OrderResultURL return to the CloudFront storefront
-- Real sandbox card payment completion
+- Duplicate real-provider callback replay evidence
 - Reconciliation job
 
 ## Current Preflight Status
 
-As of 2026-06-22 14:55 +0800, the public preflight result is:
+As of 2026-06-22 16:55 +0800, the public preflight and success-flow result is:
 
 - `https://localfresh-demo.duckdns.org/actuator/health`: passed
 - Public API `Server` header: Nginx detected
 - `https://localfresh-demo.duckdns.org/actuator/info`: passed, commit
-  `5612e4c24601`
+  `8d7a0d5eeefe`
 - `POST https://localfresh-demo.duckdns.org/payment/callback`: passed with
   HTTP `200` and body `0|FAIL` for an intentionally invalid ECPay payload
+- Real ECPay ReturnURL callback: HTTP `200`
+- Real payment event evidence: `CALLBACK_SUCCEEDED`
 
 The previous deployed `404` blocker is resolved, and Playwright has verified
-that the deployed storefront reaches ECPay stage checkout. The remaining gap is
-successful sandbox card payment returning through ReturnURL / OrderResultURL.
+that the deployed storefront reaches ECPay stage checkout and completes sandbox
+card OTP payment back through ReturnURL. The remaining payment gaps are
+duplicate callback replay evidence and reconciliation.
 
 ## Local Contract Evidence
 
@@ -96,7 +103,7 @@ ECPAY_HASH_IV=v77hoKGq4kWxNNIS
 ECPAY_CHECKOUT_URL=https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5
 ECPAY_RETURN_URL=https://localfresh-demo.duckdns.org/payment/callback
 ECPAY_ORDER_RESULT_URL=https://d3hqnux25iirgl.cloudfront.net/orders
-SOURCE_COMMIT=<deployed git commit, for example 5612e4c24601>
+SOURCE_COMMIT=<deployed git commit, for example 8d7a0d5eeefe>
 SOURCE_BRANCH=hardening-and-upgrade
 ```
 
@@ -173,7 +180,7 @@ identity drop-in untouched.
    To require a specific backend commit:
 
    ```bash
-   EXPECTED_DEPLOY_COMMIT=5612e4c24601 scripts/check-ecpay-sandbox-readiness.sh
+   EXPECTED_DEPLOY_COMMIT=8d7a0d5eeefe scripts/check-ecpay-sandbox-readiness.sh
    ```
 
    The callback check must return HTTP `200` with `0|FAIL` for an intentionally invalid signature. If it returns `404`, stop here and deploy the backend version containing `/payment/callback` before changing `PAYMENT_PROVIDER`.
@@ -200,7 +207,8 @@ identity drop-in untouched.
    - `provider_trade_no = TradeNo`
    - `idempotency_key` populated
 
-11. Send or replay the same callback once to confirm duplicate handling records `CALLBACK_DUPLICATE` without changing the order again.
+12. Send or replay the same callback once to confirm duplicate handling records
+    `CALLBACK_DUPLICATE` without changing the order again.
 
 ## Rollback
 
