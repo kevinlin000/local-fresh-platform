@@ -46,9 +46,9 @@ Price, delivery timing, storage guidance, subtotal, quantity, and the "Add to Ca
 
 ![Product Detail](docs/screenshots/03-product-detail.png)
 
-### 4. Group Buy Detail — Live Progress & Initiator Cancellation
+### 4. Group Buy Detail — Joining Decision and Share Conversion
 
-Countdown, participant progress, shareable link, and member list are shown together. The initiator can cancel when no other member has joined, with the pre-order auto-canceled.
+Remaining seats, deadline, member progress, share CTA, campaign lifecycle, and open participant slots are shown together so users can decide whether to join or share.
 
 ![Group Buy](docs/screenshots/04-group-buy.png)
 

@@ -16,7 +16,23 @@
             <el-tag :type="statusType(groupBuy.status)" size="large" effect="plain">
               {{ statusText(groupBuy.status) }}
             </el-tag>
-            <span class="countdown">倒數 {{ countdownText }}</span>
+            <span class="countdown">截止倒數 {{ countdownText }}</span>
+            <span class="deadline">截止 {{ formatDate(groupBuy.expireAt) }}</span>
+          </div>
+
+          <div class="groupbuy-facts" aria-label="揪團關鍵資訊">
+            <div>
+              <span>還差人數</span>
+              <strong>{{ remainingCount }} 人</strong>
+            </div>
+            <div>
+              <span>目前成員</span>
+              <strong>{{ groupBuy.currentCount }}/{{ groupBuy.requiredCount }}</strong>
+            </div>
+            <div>
+              <span>商品數量</span>
+              <strong>{{ groupBuy.quantity || 1 }} 件</strong>
+            </div>
           </div>
 
           <div class="join-progress-panel">
@@ -31,6 +47,37 @@
               </div>
               <small>{{ groupBuy.currentCount }} / {{ groupBuy.requiredCount }} 人</small>
             </div>
+          </div>
+
+          <div class="actions">
+            <template v-if="groupBuy.status === 1 && !joinedByCurrentMember">
+              <el-button type="success" size="large" :loading="joining" @click="openJoinDialog">
+                加入並湊滿免運
+              </el-button>
+            </template>
+            <template v-else-if="groupBuy.status === 1">
+              <el-tag type="success" size="large">已加入，等待其他成員</el-tag>
+            </template>
+            <template v-else>
+              <el-button plain @click="goOrders">回我的揪團</el-button>
+            </template>
+
+            <el-button plain @click="copyShareUrl">複製分享連結</el-button>
+            <el-button
+              v-if="canCancelGroupBuy"
+              type="danger"
+              plain
+              :loading="cancelling"
+              @click="handleCancelGroupBuy"
+            >
+              取消揪團
+            </el-button>
+          </div>
+
+          <div class="process-strip" aria-label="揪團流程">
+            <span class="active">建立預訂單</span>
+            <span :class="{ active: groupBuy.currentCount >= groupBuy.requiredCount }">滿 {{ groupBuy.requiredCount }} 人成團</span>
+            <span :class="{ active: groupBuy.status === 2 }">門市確認配送</span>
           </div>
 
           <div v-if="groupBuy.status === 3" class="status-alert danger">
@@ -61,31 +108,6 @@
               <strong>{{ remainingCount }} 人</strong>
             </div>
           </div>
-
-          <div class="actions">
-            <template v-if="groupBuy.status === 1 && !joinedByCurrentMember">
-              <el-button type="success" size="large" :loading="joining" @click="openJoinDialog">
-                加入並湊滿免運
-              </el-button>
-            </template>
-            <template v-else-if="groupBuy.status === 1">
-              <el-tag type="success" size="large">已加入，等待其他成員</el-tag>
-            </template>
-            <template v-else>
-              <el-button plain @click="goOrders">回我的揪團</el-button>
-            </template>
-
-            <el-button @click="copyShareUrl">複製分享連結</el-button>
-            <el-button
-              v-if="canCancelGroupBuy"
-              type="danger"
-              plain
-              :loading="cancelling"
-              @click="handleCancelGroupBuy"
-            >
-              取消揪團
-            </el-button>
-          </div>
           <div class="trust-notes">
             <span>成團後才轉待確認</span>
             <span>未成團自動取消預訂</span>
@@ -105,13 +127,14 @@
 
         <div class="participant-list">
           <article
-            v-for="participant in groupBuy.participants"
-            :key="`${participant.memberId}-${participant.joinedAt}`"
+            v-for="slot in participantSlots"
+            :key="slot.key"
             class="participant-card"
+            :class="{ pending: !slot.participant }"
           >
-            <strong>{{ participant.memberName }}</strong>
-            <span>ID {{ participant.memberId }}</span>
-            <time>{{ formatDate(participant.joinedAt) }}</time>
+            <strong>{{ slot.participant?.memberName || '等待加入' }}</strong>
+            <span>{{ slot.participant ? `ID ${slot.participant.memberId}` : '分享連結邀請朋友' }}</span>
+            <time>{{ slot.participant ? formatDate(slot.participant.joinedAt) : '尚未加入' }}</time>
           </article>
         </div>
       </div>
@@ -250,6 +273,7 @@ import {
   cancelGroupBuy,
   fetchGroupBuy,
   joinGroupBuy,
+  type GroupBuyParticipant,
   type GroupBuyRecord
 } from '@/services/groupBuy'
 import { useMemberStore } from '@/stores/member'
@@ -311,6 +335,22 @@ const progressPercent = computed(() => {
     return 0
   }
   return Math.min(Math.round((groupBuy.value.currentCount / groupBuy.value.requiredCount) * 100), 100)
+})
+const participantSlots = computed<Array<{ key: string, participant: GroupBuyParticipant | null }>>(() => {
+  if (!groupBuy.value) {
+    return []
+  }
+  const slots: Array<{ key: string, participant: GroupBuyParticipant | null }> = groupBuy.value.participants.map((participant) => ({
+    key: `participant-${participant.memberId}-${participant.joinedAt}`,
+    participant
+  }))
+  for (let index = slots.length; index < groupBuy.value.requiredCount; index += 1) {
+    slots.push({
+      key: `pending-${index}`,
+      participant: null
+    })
+  }
+  return slots
 })
 const progressEyebrow = computed(() => {
   if (groupBuy.value?.status === 2) {
@@ -675,7 +715,7 @@ onBeforeUnmount(() => {
 .page-shell {
   max-width: 1180px;
   margin: 0 auto;
-  padding: 24px 0 48px;
+  padding: 18px 0 48px;
 }
 
 .card,
@@ -687,13 +727,13 @@ onBeforeUnmount(() => {
 }
 
 .card {
-  padding: 20px;
+  padding: 18px;
 }
 
 .groupbuy-layout {
   display: grid;
-  grid-template-columns: 320px minmax(0, 1fr);
-  gap: 22px;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 20px;
 }
 
 .media-panel,
@@ -704,7 +744,7 @@ onBeforeUnmount(() => {
 }
 
 .media-panel {
-  height: 320px;
+  height: 300px;
 }
 
 .media-panel img,
@@ -729,7 +769,7 @@ onBeforeUnmount(() => {
 }
 
 .content-panel {
-  padding-top: 8px;
+  padding-top: 4px;
 }
 
 .eyebrow {
@@ -751,26 +791,63 @@ h3 {
 .status-row {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-top: 18px;
+  gap: 10px;
+  margin-top: 14px;
   flex-wrap: wrap;
 }
 
-.countdown {
+.countdown,
+.deadline {
+  min-height: 28px;
+  padding: 0 9px;
+  border-radius: 7px;
+  background: #f1f4ef;
   color: var(--farm-muted);
+  font-size: 13px;
   font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+}
+
+.groupbuy-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.groupbuy-facts div {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--farm-line);
+  border-radius: 8px;
+  background: #fbfcf8;
+}
+
+.groupbuy-facts span {
+  display: block;
+  color: var(--farm-muted);
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.groupbuy-facts strong {
+  display: block;
+  margin-top: 6px;
+  color: var(--farm-primary-deep);
+  font-size: 18px;
 }
 
 .join-progress-panel {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 220px;
-  gap: 18px;
+  gap: 16px;
   align-items: end;
-  margin-top: 18px;
-  padding: 16px;
+  margin-top: 14px;
+  padding: 14px;
   border: 1px solid rgba(47, 111, 78, 0.16);
   border-radius: 8px;
-  background: linear-gradient(135deg, #f5f8f1 0%, #ffffff 72%);
+  background: #fbfcf8;
 }
 
 .progress-copy span {
@@ -783,7 +860,7 @@ h3 {
   display: block;
   margin-top: 6px;
   color: var(--farm-text);
-  font-size: 24px;
+  font-size: 22px;
   line-height: 1.25;
 }
 
@@ -810,7 +887,7 @@ h3 {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--farm-primary) 0%, #8aa957 100%);
+  background: var(--farm-primary);
 }
 
 .progress-meter small {
@@ -820,8 +897,8 @@ h3 {
 }
 
 .status-alert {
-  margin-top: 16px;
-  padding: 14px 16px;
+  margin-top: 12px;
+  padding: 12px 14px;
   border-radius: 8px;
   font-weight: 700;
 }
@@ -839,12 +916,12 @@ h3 {
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 24px;
+  gap: 10px;
+  margin-top: 14px;
 }
 
 .summary-item {
-  padding: 14px 16px;
+  padding: 12px;
   border: 1px solid var(--farm-line);
   border-radius: 8px;
   background: #fbfaf6;
@@ -858,24 +935,57 @@ h3 {
 
 .summary-item strong {
   display: block;
-  margin-top: 8px;
+  margin-top: 6px;
   color: var(--farm-text);
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .actions {
   display: flex;
-  gap: 14px;
+  gap: 10px;
   align-items: center;
-  margin-top: 28px;
+  margin-top: 14px;
   flex-wrap: wrap;
+}
+
+.actions :deep(.el-button--large) {
+  min-width: 154px;
+}
+
+.process-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+  padding: 8px;
+  border: 1px solid var(--farm-line);
+  border-radius: 8px;
+  background: #f7f8f5;
+}
+
+.process-strip span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  border-radius: 7px;
+  color: #657267;
+  font-size: 12px;
+  font-weight: 760;
+  text-align: center;
+}
+
+.process-strip span.active {
+  background: #ffffff;
+  color: var(--farm-primary-deep);
+  box-shadow: 0 4px 12px rgba(28, 39, 32, 0.055);
 }
 
 .trust-notes {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 14px;
+  margin-top: 12px;
   color: #55645a;
   font-size: 13px;
   font-weight: 700;
@@ -888,8 +998,8 @@ h3 {
 }
 
 .participants-card {
-  margin-top: 18px;
-  padding: 20px;
+  margin-top: 16px;
+  padding: 18px;
 }
 
 .participants-header {
@@ -907,15 +1017,25 @@ h3 {
 .participant-list {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 18px;
+  gap: 10px;
+  margin-top: 16px;
 }
 
 .participant-card {
-  padding: 14px;
+  min-height: 96px;
+  padding: 12px;
   border-radius: 8px;
   border: 1px solid var(--farm-line);
   background: var(--farm-surface-strong);
+}
+
+.participant-card.pending {
+  border-style: dashed;
+  background: #fbfcf8;
+}
+
+.participant-card.pending strong {
+  color: var(--farm-muted);
 }
 
 .participant-card span,
@@ -1018,6 +1138,11 @@ h3 {
     grid-template-columns: 1fr;
   }
 
+  .groupbuy-facts,
+  .process-strip {
+    grid-template-columns: 1fr;
+  }
+
   .progress-meter small {
     text-align: left;
   }
@@ -1039,6 +1164,8 @@ h3 {
   }
 
   .summary-grid,
+  .groupbuy-facts,
+  .process-strip,
   .dialog-summary,
   .address-card {
     grid-template-columns: 1fr;
