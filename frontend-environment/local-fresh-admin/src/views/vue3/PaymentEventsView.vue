@@ -443,20 +443,41 @@ onMounted(() => {
 }
 
 .reconciliation-primary.danger {
-  border-color: rgba(180, 35, 24, 0.24);
-  background: #fffafa;
-  box-shadow: inset 3px 0 0 rgba(180, 35, 24, 0.72);
+  border-color: var(--admin-line-strong);
 }
 
 .reconciliation-primary.warning {
-  border-color: rgba(167, 109, 34, 0.25);
-  background: #fffaf2;
-  box-shadow: inset 3px 0 0 rgba(167, 109, 34, 0.72);
+  border-color: var(--admin-line-strong);
 }
 
 .reconciliation-primary.success {
-  border-color: rgba(45, 106, 79, 0.2);
-  box-shadow: inset 3px 0 0 rgba(45, 106, 79, 0.68);
+  border-color: var(--admin-line-strong);
+}
+
+.reconciliation-primary::before,
+.payment-summary-card::before {
+  content: "";
+  display: block;
+  width: 30px;
+  height: 3px;
+  margin-bottom: 11px;
+  border-radius: 999px;
+  background: var(--admin-line-strong);
+}
+
+.reconciliation-primary.danger::before,
+.payment-summary-card.danger::before {
+  background: var(--admin-danger);
+}
+
+.reconciliation-primary.warning::before,
+.payment-summary-card.warning::before {
+  background: var(--admin-gold);
+}
+
+.reconciliation-primary.success::before,
+.payment-summary-card.success::before {
+  background: var(--admin-green);
 }
 
 .payment-summary {
@@ -474,17 +495,15 @@ onMounted(() => {
 }
 
 .payment-summary-card.warning {
-  border-color: rgba(167, 109, 34, 0.22);
-  background: #fffaf2;
+  border-color: var(--admin-line-strong);
 }
 
 .payment-summary-card.danger {
-  border-color: rgba(180, 35, 24, 0.22);
-  background: #fffafa;
+  border-color: var(--admin-line-strong);
 }
 
 .payment-summary-card.success {
-  border-color: rgba(45, 106, 79, 0.18);
+  border-color: var(--admin-line-strong);
 }
 
 .reconciliation-primary span,

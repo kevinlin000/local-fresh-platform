@@ -28,6 +28,50 @@
       <main class="view-shell" :class="{ 'with-navbar': showNavbar }">
         <RouterView />
       </main>
+
+      <footer v-if="showNavbar" class="site-footer">
+        <div class="site-footer-inner">
+          <div class="footer-brand">
+            <span class="brand-mark">菜</span>
+            <div>
+              <strong>菜籃日</strong>
+              <small>在地小農生鮮配送</small>
+            </div>
+          </div>
+
+          <nav class="footer-links" aria-label="服務資訊">
+            <section>
+              <h2>服務</h2>
+              <RouterLink to="/">瀏覽商品</RouterLink>
+              <RouterLink to="/cart">購物車</RouterLink>
+              <RouterLink to="/orders">訂單紀錄</RouterLink>
+            </section>
+            <section>
+              <h2>會員</h2>
+              <RouterLink to="/addresses">常用地址</RouterLink>
+              <RouterLink to="/orders">配送進度</RouterLink>
+              <a href="mailto:support@local-fresh.example">客服信箱</a>
+            </section>
+            <section>
+              <h2>營運資訊</h2>
+              <span>配送區域：台北市、新北市示範區</span>
+              <span>客服時間：週一至週日 09:00-21:00</span>
+              <span>付款方式：展示支付、綠界測試環境</span>
+            </section>
+          </nav>
+
+          <div class="footer-service-note" aria-label="服務承諾">
+            <span>冷藏配送</span>
+            <span>每日 14:00 前截單</span>
+            <span>付款與訂單狀態全程留痕</span>
+          </div>
+
+          <div class="footer-bottom">
+            <span>© 2026 菜籃日 Local Fresh Platform</span>
+            <span>展示環境，訂單與付款資料僅供作品驗證。</span>
+          </div>
+        </div>
+      </footer>
     </div>
   </el-config-provider>
 </template>
@@ -197,6 +241,100 @@ a {
   padding-top: 0;
 }
 
+.site-footer {
+  margin-top: 56px;
+  border-top: 1px solid var(--farm-line);
+  background: #ffffff;
+}
+
+.site-footer-inner {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 30px 0 24px;
+}
+
+.footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--farm-primary-deep);
+}
+
+.footer-brand strong,
+.footer-brand small {
+  display: block;
+}
+
+.footer-brand strong {
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.footer-brand small {
+  margin-top: 2px;
+  color: var(--farm-muted);
+  font-size: 12px;
+}
+
+.footer-links {
+  display: grid;
+  grid-template-columns: 0.8fr 0.8fr 1.6fr;
+  gap: 32px;
+  margin-top: 24px;
+}
+
+.footer-links section {
+  display: grid;
+  gap: 9px;
+  align-content: start;
+}
+
+.footer-links h2 {
+  margin: 0 0 3px;
+  color: var(--farm-text);
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.footer-links a,
+.footer-links span {
+  color: var(--farm-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.footer-links a:hover {
+  color: var(--farm-primary-deep);
+}
+
+.footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--farm-line);
+  color: var(--farm-muted);
+  font-size: 12px;
+}
+
+.footer-service-note {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.footer-service-note span {
+  padding: 6px 10px;
+  border: 1px solid var(--farm-line);
+  border-radius: 999px;
+  background: var(--farm-surface-strong);
+  color: #4d5b53;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .home-shell,
 .cart-shell,
 .orders-shell,
@@ -295,6 +433,19 @@ a {
   .orders-shell,
   .page-shell {
     width: min(100% - 24px, 1180px);
+  }
+
+  .site-footer {
+    margin-top: 36px;
+  }
+
+  .site-footer-inner {
+    width: min(100% - 24px, 1180px);
+  }
+
+  .footer-links {
+    grid-template-columns: 1fr;
+    gap: 22px;
   }
 }
 

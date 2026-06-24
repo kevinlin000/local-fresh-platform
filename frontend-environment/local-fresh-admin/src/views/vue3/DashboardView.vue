@@ -596,6 +596,7 @@ h2 {
 .priority-card,
 .queue-tile,
 .overview-tile {
+  position: relative;
   cursor: pointer;
   transition: border-color 0.18s ease, background-color 0.18s ease;
 }
@@ -603,25 +604,47 @@ h2 {
 .priority-card {
   min-height: 150px;
   padding: 18px;
-  background: #fbfcfa;
+  background: #ffffff;
 }
 
 .priority-card.danger {
-  border-color: rgba(180, 35, 24, 0.24);
-  background: #fffafa;
-  box-shadow: inset 3px 0 0 rgba(180, 35, 24, 0.75);
+  border-color: var(--admin-line-strong);
 }
 
 .priority-card.warning {
-  border-color: rgba(167, 109, 34, 0.25);
-  background: #fffaf2;
-  box-shadow: inset 3px 0 0 rgba(167, 109, 34, 0.72);
+  border-color: var(--admin-line-strong);
 }
 
 .priority-card.success {
-  border-color: rgba(45, 106, 79, 0.22);
-  background: #f8faf7;
-  box-shadow: inset 3px 0 0 rgba(45, 106, 79, 0.72);
+  border-color: var(--admin-line-strong);
+}
+
+.priority-card::before,
+.queue-tile::before,
+.health-item::before {
+  content: "";
+  display: block;
+  width: 32px;
+  height: 3px;
+  margin-bottom: 12px;
+  border-radius: 999px;
+  background: var(--admin-line-strong);
+}
+
+.priority-card.danger::before,
+.queue-tile.danger::before {
+  background: var(--admin-danger);
+}
+
+.priority-card.warning::before,
+.queue-tile.warning::before,
+.health-item.warning::before {
+  background: var(--admin-gold);
+}
+
+.priority-card.success::before,
+.health-item.success::before {
+  background: var(--admin-green);
 }
 
 .priority-card span,
@@ -658,17 +681,15 @@ h2 {
   min-width: 0;
   min-height: 150px;
   padding: 14px;
-  background: #fbfcfa;
+  background: #ffffff;
 }
 
 .queue-tile.danger {
-  border-color: rgba(180, 35, 24, 0.2);
-  background: #fffafa;
+  border-color: var(--admin-line-strong);
 }
 
 .queue-tile.warning {
-  border-color: rgba(167, 109, 34, 0.22);
-  background: #fffaf2;
+  border-color: var(--admin-line-strong);
 }
 
 .queue-tile strong {
@@ -697,16 +718,15 @@ h2 {
   padding: 12px 14px;
   border: 1px solid var(--admin-line);
   border-radius: 6px;
-  background: #fbfcfa;
+  background: #ffffff;
 }
 
 .health-item.warning {
-  border-color: rgba(167, 109, 34, 0.2);
-  background: #fffaf2;
+  border-color: var(--admin-line-strong);
 }
 
 .health-item.success {
-  border-color: rgba(45, 106, 79, 0.18);
+  border-color: var(--admin-line-strong);
 }
 
 .health-item strong {
@@ -771,8 +791,13 @@ h2 {
 }
 
 .ops-panel.urgent {
-  border-color: rgba(180, 35, 24, 0.22);
-  box-shadow: inset 3px 0 0 rgba(180, 35, 24, 0.72);
+  border-color: var(--admin-line-strong);
+  box-shadow: none;
+}
+
+.ops-panel.urgent .ops-panel-title {
+  padding-left: 10px;
+  border-left: 3px solid var(--admin-danger);
 }
 
 .ops-panel-title,
