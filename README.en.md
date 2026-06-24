@@ -66,7 +66,7 @@ Order totals, payment state, fulfillment state, item count, and a status timelin
 
 ### 7. Admin Dashboard — Operational Priorities
 
-The dashboard gives operators a daily view of revenue, order states, low-stock items, and priority queues.
+The dashboard turns pending orders, payment follow-up, stock risk, offline products, and product coverage into a prioritized operations command center.
 
 ![Admin Dashboard](docs/screenshots/07-admin-dashboard.png)
 

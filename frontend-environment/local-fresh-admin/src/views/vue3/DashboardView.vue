@@ -5,27 +5,41 @@
         <div>
           <p class="eyebrow">今日</p>
           <h2>營運指揮台</h2>
-          <span class="section-copy">先處理會阻塞履約的事項，再檢查付款與商品狀態。</span>
+          <span class="section-copy">先處理會阻塞履約的事項，再檢查付款、庫存與商品可售狀態。</span>
         </div>
         <el-button type="primary" plain @click="loadDashboard">重新整理</el-button>
       </div>
 
-      <div class="command-layout">
-        <button class="command-primary" type="button" @click="goToOrders(2)">
-          <span>待確認訂單</span>
-          <strong>{{ pendingOrders.length }}</strong>
-          <small>需要接單或婉拒，會直接影響今日履約節奏</small>
+      <div class="command-board">
+        <button class="priority-card" :class="primaryPriority.tone" type="button" @click="primaryPriority.onClick">
+          <span>目前第一優先</span>
+          <strong>{{ primaryPriority.label }}</strong>
+          <small>{{ primaryPriority.caption }}</small>
+          <b>{{ primaryPriority.actionLabel }}</b>
         </button>
-        <button class="command-secondary" type="button" @click="goToPaymentEvents({ result: 'PENDING' })">
-          <span>待對帳付款</span>
-          <strong>{{ pendingPaymentRequests.length }}</strong>
-          <small>付款請求尚未收到終態回呼</small>
-        </button>
-        <button class="command-secondary" type="button" @click="goToProducts(undefined, true)">
-          <span>低庫存品項</span>
-          <strong>{{ lowStockProducts.length }}</strong>
-          <small>可能造成無法履約或需要調整庫存</small>
-        </button>
+
+        <div class="priority-queue" aria-label="今日工作隊列">
+          <button
+            v-for="item in priorityCards"
+            :key="item.label"
+            class="queue-tile"
+            :class="item.tone"
+            type="button"
+            @click="item.onClick"
+          >
+            <span>{{ item.label }}</span>
+            <strong>{{ item.value }}</strong>
+            <small>{{ item.caption }}</small>
+          </button>
+        </div>
+      </div>
+
+      <div class="health-strip" aria-label="今日營運健康度">
+        <div v-for="item in healthIndicators" :key="item.label" class="health-item" :class="item.tone">
+          <span>{{ item.label }}</span>
+          <strong>{{ item.value }}</strong>
+          <small>{{ item.caption }}</small>
+        </div>
       </div>
     </article>
 
@@ -283,6 +297,70 @@ const orderCards = computed(() => [
 const paymentAttentionCount = computed(() => {
   return recentPaymentEvents.value.filter((item) => ['IGNORED', 'REJECTED'].includes(item.result)).length
 })
+const priorityCards = computed(() => [
+  {
+    label: '待確認訂單',
+    value: pendingOrders.value.length,
+    caption: '需要接單或婉拒',
+    actionLabel: '前往訂單',
+    tone: pendingOrders.value.length ? 'danger' : 'neutral',
+    onClick: () => goToOrders(2)
+  },
+  {
+    label: '待對帳付款',
+    value: pendingPaymentRequests.value.length,
+    caption: '付款請求尚未收到終態回呼',
+    actionLabel: '查看付款',
+    tone: pendingPaymentRequests.value.length ? 'warning' : 'neutral',
+    onClick: () => goToPaymentEvents({ result: 'PENDING' })
+  },
+  {
+    label: '低庫存品項',
+    value: lowStockProducts.value.length,
+    caption: '可能影響今日履約',
+    actionLabel: '檢查庫存',
+    tone: lowStockProducts.value.length ? 'danger' : 'neutral',
+    onClick: () => goToProducts(undefined, true)
+  },
+  {
+    label: '下架商品',
+    value: offlineProducts.value.length,
+    caption: '影響會員端可售品項',
+    actionLabel: '整理上架',
+    tone: offlineProducts.value.length ? 'warning' : 'neutral',
+    onClick: () => goToProducts(0)
+  }
+])
+const primaryPriority = computed(() => {
+  return priorityCards.value.find((item) => item.value > 0) || {
+    label: '營運狀態穩定',
+    value: 0,
+    caption: '目前沒有阻塞履約的事項，建議檢查商品資料與付款事件。',
+    actionLabel: '查看付款監控',
+    tone: 'success',
+    onClick: () => goToPaymentEvents()
+  }
+})
+const healthIndicators = computed(() => [
+  {
+    label: '今日完成率',
+    value: percent(businessData.value.orderCompletionRate),
+    caption: '有效訂單 / 全部訂單',
+    tone: Number(businessData.value.orderCompletionRate || 0) >= 0.8 ? 'success' : 'neutral'
+  },
+  {
+    label: '需追蹤付款',
+    value: paymentAttentionCount.value,
+    caption: '重複或拒絕回呼',
+    tone: paymentAttentionCount.value ? 'warning' : 'success'
+  },
+  {
+    label: '商品覆蓋',
+    value: `${productOverview.value.sold ?? 0}/${(productOverview.value.sold ?? 0) + (productOverview.value.discontinued ?? 0)}`,
+    caption: '上架 / 全部商品',
+    tone: (productOverview.value.discontinued ?? 0) ? 'warning' : 'success'
+  }
+])
 
 const paymentHealthCards = computed(() => [
   {
@@ -312,7 +390,8 @@ const paymentHealthCards = computed(() => [
 ])
 
 function money(value: number | undefined) {
-  return `$${Number(value || 0).toFixed(2)}`
+  const amount = Number(value || 0)
+  return `NT$ ${amount.toLocaleString('zh-TW', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`
 }
 
 function percent(value: number | undefined) {
@@ -494,17 +573,18 @@ h2 {
 }
 
 .command-card {
-  background: linear-gradient(180deg, #ffffff 0%, #fbfcfa 100%);
+  background: #ffffff;
 }
 
-.command-layout {
+.command-board {
   display: grid;
-  grid-template-columns: minmax(280px, 1.3fr) repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
 }
 
-.command-primary,
-.command-secondary,
+.priority-card,
+.queue-tile,
 .overview-tile,
 .split-stat > div {
   border: 1px solid var(--admin-line);
@@ -513,46 +593,126 @@ h2 {
   text-align: left;
 }
 
-.command-primary,
-.command-secondary,
+.priority-card,
+.queue-tile,
 .overview-tile {
   cursor: pointer;
   transition: border-color 0.18s ease, background-color 0.18s ease;
 }
 
-.command-primary {
+.priority-card {
+  min-height: 150px;
   padding: 18px;
-  border-color: rgba(180, 35, 24, 0.22);
+  background: #fbfcfa;
+}
+
+.priority-card.danger {
+  border-color: rgba(180, 35, 24, 0.24);
   background: #fffafa;
   box-shadow: inset 3px 0 0 rgba(180, 35, 24, 0.75);
 }
 
-.command-secondary {
-  padding: 16px;
-  background: #f8faf7;
+.priority-card.warning {
+  border-color: rgba(167, 109, 34, 0.25);
+  background: #fffaf2;
+  box-shadow: inset 3px 0 0 rgba(167, 109, 34, 0.72);
 }
 
-.command-primary:hover,
-.command-secondary:hover,
+.priority-card.success {
+  border-color: rgba(45, 106, 79, 0.22);
+  background: #f8faf7;
+  box-shadow: inset 3px 0 0 rgba(45, 106, 79, 0.72);
+}
+
+.priority-card span,
+.priority-card small,
+.priority-card b,
+.queue-tile span,
+.queue-tile small,
+.health-item span,
+.health-item small {
+  display: block;
+  color: var(--admin-muted);
+}
+
+.priority-card strong {
+  display: block;
+  margin: 10px 0 8px;
+  font-size: 25px;
+  line-height: 1.2;
+}
+
+.priority-card b {
+  margin-top: 18px;
+  color: var(--admin-green-dark);
+  font-size: 13px;
+}
+
+.priority-queue {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.queue-tile {
+  min-width: 0;
+  min-height: 150px;
+  padding: 14px;
+  background: #fbfcfa;
+}
+
+.queue-tile.danger {
+  border-color: rgba(180, 35, 24, 0.2);
+  background: #fffafa;
+}
+
+.queue-tile.warning {
+  border-color: rgba(167, 109, 34, 0.22);
+  background: #fffaf2;
+}
+
+.queue-tile strong {
+  display: block;
+  margin: 10px 0 8px;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.priority-card:hover,
+.queue-tile:hover,
 .overview-tile:hover {
   border-color: rgba(47, 107, 66, 0.35);
   background: #f5f8f3;
 }
 
-.command-primary span,
-.command-secondary span,
-.command-primary small,
-.command-secondary small {
-  display: block;
-  color: var(--admin-muted);
+.health-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
 }
 
-.command-primary strong,
-.command-secondary strong {
+.health-item {
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--admin-line);
+  border-radius: 6px;
+  background: #fbfcfa;
+}
+
+.health-item.warning {
+  border-color: rgba(167, 109, 34, 0.2);
+  background: #fffaf2;
+}
+
+.health-item.success {
+  border-color: rgba(45, 106, 79, 0.18);
+}
+
+.health-item strong {
   display: block;
-  margin: 10px 0 8px;
-  font-size: 32px;
-  line-height: 1;
+  margin: 6px 0 4px;
+  font-size: 18px;
 }
 
 .overview-grid,
@@ -733,6 +893,9 @@ h2 {
     grid-template-columns: 1fr;
   }
 
+  .command-board,
+  .priority-queue,
+  .health-strip,
   .payment-ops-grid,
   .payment-health-grid {
     grid-template-columns: 1fr;
