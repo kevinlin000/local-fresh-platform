@@ -12,20 +12,48 @@
           <span>產地直送箱</span>
           <span>台北、新北配送</span>
         </div>
+        <div v-if="quickCategoryOptions.length" class="quick-categories" aria-label="快速選擇商品分類">
+          <button
+            class="quick-category"
+            :class="{ active: activeTab === 'product' && activeCategoryId === null }"
+            type="button"
+            @click="showProductCategory(null)"
+          >
+            全部
+          </button>
+          <button
+            v-for="category in quickCategoryOptions"
+            :key="category.id"
+            class="quick-category"
+            :class="{ active: activeTab === 'product' && activeCategoryId === category.id }"
+            type="button"
+            @click="showProductCategory(category.id)"
+          >
+            {{ category.name }}
+          </button>
+        </div>
         <div class="header-actions" aria-label="快速採買操作">
           <el-button type="success" @click="scrollToCatalog">開始採買</el-button>
           <el-button plain @click="switchToGiftBoxes">查看直送箱</el-button>
         </div>
-        <div v-if="featuredShelves.length" class="market-shelves" aria-label="本週推薦補貨清單">
-          <button
-            v-for="item in featuredShelves"
-            :key="item.id"
-            class="shelf-button"
-            @click="openProduct(item.id)"
-          >
-            <span>{{ item.tag }}</span>
-            <strong>{{ item.product.productName }}</strong>
-          </button>
+        <div v-if="featuredShelves.length" class="market-board" aria-label="本週推薦補貨清單">
+          <div class="market-board-header">
+            <span>本週補貨清單</span>
+            <small>價格、配送與用途一次看</small>
+          </div>
+          <div class="market-shelves">
+            <button
+              v-for="item in featuredShelves"
+              :key="item.id"
+              class="shelf-button"
+              type="button"
+              @click="openProduct(item.id)"
+            >
+              <span>{{ item.tag }}</span>
+              <strong>{{ item.product.productName }}</strong>
+              <small>NT$ {{ formatPrice(item.product.price) }} · {{ productDeliverySignal(item.product) }}</small>
+            </button>
+          </div>
         </div>
       </div>
       <aside class="fulfillment-panel" :style="{ backgroundImage: heroBackground }">
@@ -48,6 +76,7 @@
           v-model="productSearchDraft"
           class="catalog-search"
           clearable
+          aria-label="搜尋商品"
           placeholder="搜尋蔬果、肉品或商品關鍵字"
         />
       </div>
@@ -153,7 +182,7 @@
                       :loading="addingProductId === product.id"
                       @click="quickAddProductToCart(product)"
                     >
-                      加入
+                      加入購物車
                     </el-button>
                   </div>
                 </div>
@@ -278,6 +307,8 @@ const activeCategories = computed(() =>
   activeTab.value === 'product' ? productCategories.value : giftBoxCategories.value
 )
 
+const quickCategoryOptions = computed(() => productCategories.value.slice(0, 6))
+
 const activeCategoryName = computed(() => {
   if (activeTab.value === 'product' && activeCategoryId.value === null) {
     return '全部商品'
@@ -388,6 +419,12 @@ function recommendedRank(product: Product) {
 
 function selectCategory(categoryId: number | null) {
   activeCategoryId.value = categoryId
+}
+
+function showProductCategory(categoryId: number | null) {
+  activeTab.value = 'product'
+  activeCategoryId.value = categoryId
+  requestAnimationFrame(() => scrollToCatalog())
 }
 
 async function loadCategories() {
@@ -563,23 +600,23 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .home-shell {
-  padding: 20px 0 52px;
+  padding: 16px 0 48px;
 }
 
 .storefront-header {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
-  gap: 22px;
+  grid-template-columns: minmax(0, 1fr) 328px;
+  gap: 18px;
   align-items: stretch;
-  margin: 0 0 22px;
+  margin: 0 0 18px;
 }
 
 .storefront-copy {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 226px;
-  padding: 22px 0;
+  min-height: 212px;
+  padding: 14px 0 16px;
   border-bottom: 1px solid var(--farm-line);
 }
 
@@ -587,24 +624,24 @@ onBeforeUnmount(() => {
   max-width: 680px;
   margin: 0;
   color: var(--farm-text);
-  font-size: 36px;
-  line-height: 1.18;
+  font-size: 32px;
+  line-height: 1.2;
   font-weight: 780;
 }
 
 .header-copy {
   max-width: 640px;
-  margin: 14px 0 0;
+  margin: 10px 0 0;
   color: var(--farm-muted);
-  font-size: 16px;
-  line-height: 1.8;
+  font-size: 15px;
+  line-height: 1.68;
 }
 
 .header-facts {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 22px;
+  margin-top: 16px;
   color: #4f5d55;
   font-size: 13px;
 }
@@ -625,28 +662,80 @@ onBeforeUnmount(() => {
   font-size: 16px;
 }
 
+.quick-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.quick-category {
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid rgba(41, 59, 49, 0.12);
+  border-radius: 7px;
+  background: #fffdf8;
+  color: #405047;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background-color 0.18s ease, color 0.18s ease;
+}
+
+.quick-category:hover,
+.quick-category:focus-visible,
+.quick-category.active {
+  outline: none;
+  border-color: rgba(47, 111, 78, 0.28);
+  background: #edf2ee;
+  color: var(--farm-primary-deep);
+}
+
 .header-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 18px;
+  margin-top: 14px;
+}
+
+.market-board {
+  margin-top: 14px;
+  max-width: 760px;
+}
+
+.market-board-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.market-board-header span {
+  color: var(--farm-text);
+  font-size: 14px;
+  font-weight: 820;
+}
+
+.market-board-header small {
+  color: var(--farm-muted);
+  font-size: 12px;
+  font-weight: 650;
 }
 
 .market-shelves {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 18px;
-  max-width: 760px;
+  gap: 8px;
 }
 
 .shelf-button {
   display: flex;
-  min-height: 78px;
+  min-height: 86px;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 12px;
+  justify-content: flex-start;
+  gap: 5px;
+  padding: 10px;
   border: 1px solid rgba(41, 59, 49, 0.12);
   border-radius: 8px;
   background: #ffffff;
@@ -660,7 +749,7 @@ onBeforeUnmount(() => {
 .shelf-button:focus-visible {
   outline: none;
   border-color: rgba(47, 111, 78, 0.34);
-  box-shadow: 0 12px 26px rgba(28, 39, 32, 0.08);
+  box-shadow: 0 8px 18px rgba(28, 39, 32, 0.07);
   transform: translateY(-1px);
 }
 
@@ -673,19 +762,27 @@ onBeforeUnmount(() => {
 .shelf-button strong {
   color: var(--farm-text);
   font-size: 14px;
-  line-height: 1.45;
+  line-height: 1.38;
+}
+
+.shelf-button small {
+  margin-top: auto;
+  color: var(--farm-muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
 }
 
 .fulfillment-panel {
   display: flex;
   align-items: flex-end;
-  min-height: 226px;
+  min-height: 212px;
   overflow: hidden;
   border: 1px solid rgba(41, 59, 49, 0.12);
   border-radius: 8px;
   background-position: center;
   background-size: cover;
-  box-shadow: 0 14px 32px rgba(28, 39, 32, 0.08);
+  box-shadow: 0 8px 20px rgba(28, 39, 32, 0.07);
 }
 
 .fulfillment-overlay {
@@ -713,8 +810,8 @@ onBeforeUnmount(() => {
 
 .fulfillment-overlay strong {
   display: block;
-  margin-top: 12px;
-  font-size: 24px;
+  margin-top: 10px;
+  font-size: 22px;
   line-height: 1.25;
 }
 
@@ -743,12 +840,12 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   gap: 16px;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   padding: 12px;
   border: 1px solid var(--farm-line);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 8px 22px rgba(28, 39, 32, 0.05);
+  box-shadow: 0 5px 14px rgba(28, 39, 32, 0.045);
 }
 
 .catalog-switch {
@@ -777,8 +874,8 @@ onBeforeUnmount(() => {
 
 .catalog-layout {
   display: grid;
-  grid-template-columns: 198px minmax(0, 1fr);
-  gap: 22px;
+  grid-template-columns: 188px minmax(0, 1fr);
+  gap: 18px;
 }
 
 .category-panel {
@@ -844,11 +941,11 @@ onBeforeUnmount(() => {
 
 .catalog-content {
   min-width: 0;
-  padding: 18px;
+  padding: 16px;
   border: 1px solid var(--farm-line);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 10px 28px rgba(28, 39, 32, 0.06);
+  box-shadow: 0 6px 18px rgba(28, 39, 32, 0.055);
 }
 
 .content-header {
@@ -856,7 +953,7 @@ onBeforeUnmount(() => {
 }
 
 .content-header h2 {
-  font-size: 24px;
+  font-size: 22px;
   line-height: 1.25;
 }
 
@@ -885,8 +982,8 @@ onBeforeUnmount(() => {
 .product-grid,
 .giftbox-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(214px, 1fr));
+  gap: 14px;
 }
 
 .product-card,
@@ -908,12 +1005,12 @@ onBeforeUnmount(() => {
 .product-card:focus-visible {
   outline: none;
   border-color: rgba(47, 111, 78, 0.36);
-  box-shadow: 0 14px 30px rgba(28, 39, 32, 0.09);
+  box-shadow: 0 10px 22px rgba(28, 39, 32, 0.075);
 }
 
 .product-image,
 .giftbox-image {
-  height: 168px;
+  height: 156px;
   background: #eef1eb;
 }
 
@@ -948,7 +1045,7 @@ onBeforeUnmount(() => {
   display: flex;
   flex: 1;
   flex-direction: column;
-  padding: 14px;
+  padding: 12px;
 }
 
 .product-meta {
@@ -971,7 +1068,7 @@ onBeforeUnmount(() => {
 }
 
 .product-topline {
-  min-height: 46px;
+  min-height: 44px;
 }
 
 .product-topline h3 {
@@ -988,23 +1085,23 @@ onBeforeUnmount(() => {
 }
 
 .description {
-  min-height: 44px;
-  margin: 10px 0 0;
+  min-height: 42px;
+  margin: 8px 0 0;
   color: var(--farm-muted);
-  line-height: 1.6;
+  line-height: 1.55;
   font-size: 14px;
 }
 
 .product-signals {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  margin-top: 12px;
+  gap: 6px;
+  margin-top: 10px;
 }
 
 .product-signals span {
   min-width: 0;
-  padding: 8px 9px;
+  padding: 7px 8px;
   border: 1px solid rgba(47, 111, 78, 0.12);
   border-radius: 7px;
   background: #fbfcf8;
@@ -1020,7 +1117,7 @@ onBeforeUnmount(() => {
   gap: 12px;
   align-items: center;
   margin-top: auto;
-  padding-top: 14px;
+  padding-top: 12px;
 }
 
 .product-actions {

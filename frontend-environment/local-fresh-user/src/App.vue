@@ -257,8 +257,19 @@ a {
     padding: 10px 14px;
   }
 
+  .brand {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .member-bar {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
   .nav-links {
     grid-column: 1 / -1;
+    grid-row: 2;
     justify-content: flex-start;
     overflow-x: auto;
     padding-bottom: 2px;
