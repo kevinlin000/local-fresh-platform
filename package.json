@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "smoke:backend": "node scripts/check-local-backend-identity.mjs",
     "smoke:local": "node scripts/check-ui-smoke-local.mjs",
     "smoke:browser": "playwright test scripts/ui-smoke-browser.spec.mjs"
   },

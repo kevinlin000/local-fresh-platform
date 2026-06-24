@@ -197,17 +197,42 @@ Before a screenshot refresh or live demo, run the local smoke precheck against
 the running services:
 
 ```bash
+API_BASE_URL=http://127.0.0.1:8080 npm run smoke:backend
+
 USER_BASE_URL=http://127.0.0.1:5176 \
 ADMIN_BASE_URL=http://127.0.0.1:5177 \
 scripts/check-ui-smoke-local.mjs
 ```
 
-The script intentionally has no third-party dependency. It verifies that the
-backend health endpoint is up, both Vue app shells are served, member mock login
-works, admin login works, product/order APIs return data, and admin dashboard /
-order APIs are reachable. It is not a visual-regression test; it catches broken
-local services, proxy/auth regressions, and empty demo data before manual
-browser acceptance.
+`npm run smoke:backend` verifies that `/actuator/info` identifies the service as
+`local-fresh-server` before checking health. This prevents a misleading pass
+when another local project is occupying port `8080`.
+
+If port `8080` is already in use, start the backend on a temporary demo port and
+point the frontends/smoke checks at that port:
+
+```bash
+cd backend-environment/local-fresh-backend
+MYSQL_ROOT_PASSWORD=password mvn -f local-fresh-server/pom.xml spring-boot:run \
+  -Dspring-boot.run.arguments=--server.port=18080
+
+cd frontend-environment/local-fresh-user
+VITE_API_PROXY_TARGET=http://localhost:18080 corepack pnpm@10.25.0 exec vite --host 127.0.0.1 --port 5176
+
+cd frontend-environment/local-fresh-admin
+VITE_API_PROXY_TARGET=http://localhost:18080 npm run dev -- --host 127.0.0.1 --port 5177
+
+cd ../..
+API_BASE_URL=http://127.0.0.1:18080 npm run smoke:backend
+```
+
+The full local smoke script intentionally has no third-party dependency. It
+verifies that the backend identity and health endpoints are correct, both Vue
+app shells are served, member mock login works, admin login works,
+product/order APIs return data, and admin dashboard / order APIs are reachable.
+It is not a visual-regression test; it catches broken local services,
+proxy/auth regressions, wrong-backend port conflicts, and empty demo data before
+manual browser acceptance.
 
 The browser smoke test adds a real Chromium pass over the most important local
 UI routes:

@@ -2,6 +2,7 @@
 
 const config = {
   apiBaseUrl: process.env.API_BASE_URL || 'http://127.0.0.1:8080',
+  expectedBackendApplication: process.env.EXPECTED_BACKEND_APPLICATION || 'local-fresh-server',
   userBaseUrl: process.env.USER_BASE_URL || 'http://127.0.0.1:5173',
   adminBaseUrl: process.env.ADMIN_BASE_URL || 'http://127.0.0.1:5174',
   userMockCode: process.env.USER_MOCK_CODE || 'user_a',
@@ -82,8 +83,21 @@ async function checkSpaShell(name, baseUrl, path) {
 async function main() {
   console.log('Local UI smoke precheck')
   console.log(`API_BASE_URL=${config.apiBaseUrl}`)
+  console.log(`EXPECTED_BACKEND_APPLICATION=${config.expectedBackendApplication}`)
   console.log(`USER_BASE_URL=${config.userBaseUrl}`)
   console.log(`ADMIN_BASE_URL=${config.adminBaseUrl}`)
+
+  const info = await request('backend identity', `${config.apiBaseUrl}/actuator/info`)
+  expectHttpOk(info)
+  const infoJson = parseJson(info)
+  const application = infoJson?.deployment?.application
+  if (application !== config.expectedBackendApplication) {
+    fail(
+      `backend identity mismatch: expected deployment.application=${config.expectedBackendApplication}, ` +
+        `got ${application || 'missing'}`
+    )
+  }
+  pass(`backend identity is ${application}`)
 
   const health = await request('backend health', `${config.apiBaseUrl}/actuator/health`)
   expectHttpOk(health)
@@ -157,6 +171,8 @@ main().catch(error => {
   console.error(`FAIL ${error instanceof Error ? error.message : String(error)}`)
   console.error('\nExpected local services:')
   console.error('- Backend: API_BASE_URL, default http://127.0.0.1:8080')
+  console.error('  If 8080 is occupied by another service, start the backend with --server.port=18080')
+  console.error('  and run with API_BASE_URL=http://127.0.0.1:18080')
   console.error('- User storefront: USER_BASE_URL, default http://127.0.0.1:5173')
   console.error('- Admin console: ADMIN_BASE_URL, default http://127.0.0.1:5174')
   process.exit(1)
