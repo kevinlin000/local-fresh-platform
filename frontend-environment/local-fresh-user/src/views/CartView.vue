@@ -6,10 +6,17 @@
           <div>
             <p class="eyebrow">結帳流程</p>
             <h1>確認採買清單</h1>
+            <p class="section-copy">核對品項、數量與配送資訊；送出後由門市確認備貨與付款狀態。</p>
           </div>
           <el-button text type="danger" :disabled="!cartItems.length" @click="handleCleanCart">
             清空購物車
           </el-button>
+        </div>
+
+        <div class="checkout-steps" aria-label="結帳進度">
+          <span class="active">1. 採買清單</span>
+          <span>2. 配送地址</span>
+          <span>3. 門市確認</span>
         </div>
 
         <el-skeleton v-if="loading" :rows="8" animated />
@@ -30,15 +37,22 @@
                 <div>
                   <h2>{{ item.name }}</h2>
                   <p v-if="item.productSpec" class="spec">{{ item.productSpec }}</p>
+                  <div class="item-badges" aria-label="商品資訊">
+                    <span>{{ itemKind(item) }}</span>
+                    <span>{{ deliverySignal(item) }}</span>
+                  </div>
                 </div>
-                <strong>NT$ {{ formatPrice(item.amount) }}</strong>
+                <div class="line-price">
+                  <span>小計</span>
+                  <strong>NT$ {{ formatPrice(lineTotal(item)) }}</strong>
+                </div>
               </div>
 
               <div class="cart-item-actions">
                 <div class="quantity-box">
-                  <el-button circle @click="subItem(item)">-</el-button>
+                  <el-button circle aria-label="減少數量" @click="subItem(item)">-</el-button>
                   <span>{{ item.number }}</span>
-                  <el-button circle type="success" plain @click="addItem(item)">+</el-button>
+                  <el-button circle type="success" plain aria-label="增加數量" @click="addItem(item)">+</el-button>
                 </div>
 
                 <el-button text type="danger" @click="removeItem(item)">
@@ -53,6 +67,10 @@
       <aside class="cart-summary card">
         <p class="eyebrow">訂單摘要</p>
         <h2>本次結算</h2>
+        <div class="summary-count">
+          <span>{{ totalItems }} 件商品</span>
+          <span>{{ cartItems.length }} 個品項</span>
+        </div>
 
         <div class="summary-row">
           <span>商品小計</span>
@@ -62,9 +80,28 @@
           <span>打包費</span>
           <strong>NT$ 0</strong>
         </div>
+        <div class="summary-row muted">
+          <span>配送安排</span>
+          <strong>門市確認</strong>
+        </div>
         <div class="summary-total">
           <span>應付總額</span>
           <strong>NT$ {{ formatPrice(subtotal) }}</strong>
+        </div>
+
+        <div class="checkout-assurance" aria-label="結帳提醒">
+          <div>
+            <strong>付款方式</strong>
+            <span>依環境使用 demo gateway 或 ECPay sandbox</span>
+          </div>
+          <div>
+            <strong>配送確認</strong>
+            <span>下單後由門市確認庫存與配送時段</span>
+          </div>
+          <div>
+            <strong>揪團免運</strong>
+            <span>商品詳情可發起 3 人揪團</span>
+          </div>
         </div>
 
         <el-button
@@ -74,6 +111,10 @@
           @click="openCheckout"
         >
           結算下單
+        </el-button>
+
+        <el-button class="continue-shopping" plain @click="goHome">
+          繼續採買
         </el-button>
       </aside>
     </div>
@@ -155,7 +196,10 @@
         </div>
 
         <div class="checkout-summary">
-          <span>商品 {{ totalItems }} 件</span>
+          <div>
+            <span>商品 {{ totalItems }} 件</span>
+            <small>{{ cartItems.length }} 個品項，門市確認後安排配送</small>
+          </div>
           <strong>NT$ {{ formatPrice(subtotal) }}</strong>
         </div>
 
@@ -261,6 +305,27 @@ const totalItems = computed(() =>
 
 function formatPrice(value: number) {
   return Number(value || 0).toLocaleString('zh-TW')
+}
+
+function lineTotal(item: CartItem) {
+  return Number(item.amount || 0) * item.number
+}
+
+function itemKind(item: CartItem) {
+  return item.giftBoxId ? '直送箱' : '單品'
+}
+
+function deliverySignal(item: CartItem) {
+  if (item.giftBoxId) {
+    return '家庭備菜'
+  }
+  if (item.name.includes('豬') || item.name.includes('雞') || item.name.includes('魚') || item.name.includes('蝦')) {
+    return '冷鏈排單'
+  }
+  if (item.name.includes('蛋') || item.name.includes('奶')) {
+    return '冷藏配送'
+  }
+  return '明日可配'
 }
 
 function buildCartPayload(item: CartItem) {
@@ -471,12 +536,12 @@ onMounted(() => {
 .cart-shell {
   max-width: 1180px;
   margin: 0 auto;
-  padding: 24px 0 48px;
+  padding: 18px 0 48px;
 }
 
 .cart-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: minmax(0, 1fr) 336px;
   gap: 18px;
 }
 
@@ -484,7 +549,7 @@ onMounted(() => {
   border: 1px solid var(--farm-line);
   border-radius: 8px;
   background: var(--farm-surface);
-  box-shadow: 0 10px 28px rgba(28, 39, 32, 0.06);
+  box-shadow: 0 6px 18px rgba(28, 39, 32, 0.055);
 }
 
 .cart-main {
@@ -496,7 +561,7 @@ onMounted(() => {
   justify-content: space-between;
   align-items: flex-start;
   gap: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 .eyebrow {
@@ -513,25 +578,61 @@ h3 {
   color: var(--farm-text);
 }
 
+.section-copy {
+  max-width: 620px;
+  margin: 8px 0 0;
+  color: var(--farm-muted);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.checkout-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 8px;
+  border: 1px solid var(--farm-line);
+  border-radius: 8px;
+  background: #f7f8f5;
+}
+
+.checkout-steps span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  border-radius: 7px;
+  color: #657267;
+  font-size: 13px;
+  font-weight: 760;
+}
+
+.checkout-steps .active {
+  background: #ffffff;
+  color: var(--farm-primary-deep);
+  box-shadow: 0 4px 12px rgba(28, 39, 32, 0.055);
+}
+
 .cart-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .cart-item {
   display: grid;
-  grid-template-columns: 128px 1fr;
+  grid-template-columns: 120px 1fr;
   gap: 14px;
-  padding: 14px;
+  padding: 12px;
   border-radius: 8px;
   border: 1px solid var(--farm-line);
-  background: #fbfcfa;
+  background: #ffffff;
 }
 
 .cart-item-image {
   overflow: hidden;
-  height: 112px;
+  height: 108px;
   border-radius: 8px;
   background: #edf1e9;
 }
@@ -566,7 +667,7 @@ h3 {
 }
 
 .cart-item-header h2 {
-  font-size: 18px;
+  font-size: 17px;
   line-height: 1.4;
 }
 
@@ -575,20 +676,67 @@ h3 {
   color: var(--farm-muted);
 }
 
+.item-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.item-badges span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border: 1px solid rgba(47, 111, 78, 0.12);
+  border-radius: 7px;
+  background: #f7f9f4;
+  color: #405047;
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.line-price {
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.line-price span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--farm-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.line-price strong {
+  color: var(--farm-primary-deep);
+  font-size: 17px;
+}
+
 .cart-item-actions {
-  margin-top: 18px;
+  margin-top: 14px;
 }
 
 .quantity-box {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  padding: 4px;
+  border: 1px solid var(--farm-line);
+  border-radius: 999px;
+  background: #fbfcf8;
 }
 
 .quantity-box span {
-  min-width: 24px;
+  min-width: 26px;
   text-align: center;
   font-weight: 700;
+}
+
+.quantity-box :deep(.el-button.is-circle) {
+  width: 28px;
+  height: 28px;
 }
 
 .cart-summary {
@@ -598,17 +746,77 @@ h3 {
   top: 88px;
 }
 
+.summary-count {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.summary-count span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 9px;
+  border-radius: 7px;
+  background: #f1f4ef;
+  color: #405047;
+  font-size: 12px;
+  font-weight: 760;
+}
+
 .summary-row {
-  margin-top: 16px;
+  margin-top: 14px;
   color: var(--farm-muted);
 }
 
+.summary-row.muted strong {
+  color: #405047;
+}
+
 .summary-total {
-  margin: 24px 0 28px;
-  padding-top: 20px;
+  margin: 22px 0 18px;
+  padding-top: 18px;
   border-top: 1px solid var(--farm-line);
   color: var(--farm-text);
   font-size: 18px;
+}
+
+.checkout-assurance {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding: 12px;
+  border: 1px solid rgba(47, 111, 78, 0.12);
+  border-radius: 8px;
+  background: #fbfcf8;
+}
+
+.checkout-assurance div {
+  display: grid;
+  gap: 3px;
+}
+
+.checkout-assurance strong {
+  color: var(--farm-text);
+  font-size: 13px;
+}
+
+.checkout-assurance span {
+  color: var(--farm-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.cart-summary :deep(.el-button--large) {
+  width: 100%;
+}
+
+.continue-shopping {
+  width: 100%;
+  margin-top: 10px;
+  margin-left: 0;
 }
 
 .checkout-panel {
@@ -689,10 +897,21 @@ h3 {
 }
 
 .checkout-summary {
-  padding: 18px 20px;
+  padding: 16px 18px;
   border-radius: 8px;
   background: #f8faf7;
   color: var(--farm-primary-deep);
+}
+
+.checkout-summary div {
+  display: grid;
+  gap: 4px;
+}
+
+.checkout-summary small {
+  color: var(--farm-muted);
+  font-size: 12px;
+  font-weight: 650;
 }
 
 @media (max-width: 900px) {
@@ -716,6 +935,10 @@ h3 {
     padding: 14px;
   }
 
+  .checkout-steps {
+    grid-template-columns: 1fr;
+  }
+
   .section-header,
   .cart-item-header,
   .cart-item-actions {
@@ -733,6 +956,10 @@ h3 {
 
   .cart-item-header h2 {
     font-size: 16px;
+  }
+
+  .line-price {
+    text-align: left;
   }
 
   .address-card,

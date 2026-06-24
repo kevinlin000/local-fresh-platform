@@ -52,9 +52,9 @@ Countdown, participant progress, shareable link, and member list are shown toget
 
 ![Group Buy](docs/screenshots/04-group-buy.png)
 
-### 5. Cart — Real-time Total
+### 5. Cart — Checkout Summary and Delivery Context
 
-Cart items and the order summary are separated so item quantities and checkout totals are easy to scan before submitting an order.
+Cart items, quantity controls, checkout steps, and a sticky order summary are separated, with delivery confirmation, payment mode, and group-buy free-shipping reminders visible before submit.
 
 ![Cart](docs/screenshots/05-cart.png)
 
