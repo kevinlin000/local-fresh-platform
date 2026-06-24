@@ -76,9 +76,9 @@ The product table supports search, status filters, low-stock filtering, listing-
 
 ![Admin Products](docs/screenshots/08-admin-products.png)
 
-### 9. Order Management — Fulfillment Actions
+### 9. Order Management — Fulfillment Queue and Next Actions
 
-The admin order page supports status search, detail inspection, confirmation, rejection, cancellation, delivery, and completion workflows.
+The admin order page surfaces pending confirmation, delivery, contact, address, and group-buy pre-order signals, then shows the next operational action for each order row.
 
 ![Admin Orders](docs/screenshots/09-admin-orders.png)
 

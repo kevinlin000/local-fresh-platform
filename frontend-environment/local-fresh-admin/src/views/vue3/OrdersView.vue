@@ -27,6 +27,21 @@
       </button>
     </div>
 
+    <div class="queue-board" aria-label="今日履約隊列">
+      <div class="queue-copy">
+        <span>今日處理順序</span>
+        <strong>{{ queueHeadline }}</strong>
+        <small>依狀態、聯絡資訊與地址完整度排序，把會阻塞履約的訂單先浮上來。</small>
+      </div>
+      <div class="queue-metrics">
+        <div v-for="item in queueMetrics" :key="item.label" class="queue-metric">
+          <span>{{ item.label }}</span>
+          <strong>{{ item.value }}</strong>
+          <small>{{ item.caption }}</small>
+        </div>
+      </div>
+    </div>
+
     <div class="table-toolbar">
       <el-input v-model="query.number" clearable placeholder="搜尋訂單編號" @keyup.enter="loadData" />
       <el-select v-model="query.status" clearable placeholder="訂單狀態">
@@ -53,9 +68,16 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column prop="consignee" label="收件人" width="100" />
-      <el-table-column prop="phone" label="電話" width="118" />
-      <el-table-column label="金額" width="100">
+      <el-table-column label="收件 / 配送" min-width="220">
+        <template #default="{ row }">
+          <div class="delivery-cell">
+            <strong>{{ row.consignee || '未填收件人' }}</strong>
+            <span>{{ row.phone || '未填電話' }}</span>
+            <small>{{ row.address || '地址待核對' }}</small>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column label="金額" width="112" align="right">
         <template #default="{ row }">{{ money(row.amount) }}</template>
       </el-table-column>
       <el-table-column label="狀態" width="110">
@@ -77,8 +99,16 @@
           </div>
         </template>
       </el-table-column>
+      <el-table-column label="下一步判斷" min-width="160">
+        <template #default="{ row }">
+          <div class="next-step" :class="nextStepTone(row)">
+            <strong>{{ nextStepLabel(row) }}</strong>
+            <span>{{ nextStepHint(row) }}</span>
+          </div>
+        </template>
+      </el-table-column>
       <el-table-column prop="orderTime" label="下單時間" width="160" />
-      <el-table-column label="下一步" fixed="right" width="190">
+      <el-table-column label="操作" fixed="right" width="206">
         <template #default="{ row }">
           <div class="row-actions">
             <el-button size="small" @click="openDetail(row)">檢視</el-button>
@@ -108,15 +138,27 @@
       @current-change="loadData"
     />
 
-    <el-dialog v-model="detailVisible" title="訂單詳情" width="720px">
+    <el-dialog v-model="detailVisible" title="訂單詳情" width="760px">
+      <div v-if="detail" class="detail-summary">
+        <div>
+          <span>訂單編號</span>
+          <strong>{{ detail.number }}</strong>
+        </div>
+        <div>
+          <span>目前狀態</span>
+          <strong>{{ statusText(detail.status) }}</strong>
+        </div>
+        <div>
+          <span>訂單金額</span>
+          <strong>{{ money(detail.amount) }}</strong>
+        </div>
+      </div>
       <el-descriptions v-if="detail" :column="2" border>
-        <el-descriptions-item label="訂單編號">{{ detail.number }}</el-descriptions-item>
-        <el-descriptions-item label="狀態">{{ statusText(detail.status) }}</el-descriptions-item>
-        <el-descriptions-item label="收件人">{{ detail.consignee }}</el-descriptions-item>
-        <el-descriptions-item label="電話">{{ detail.phone }}</el-descriptions-item>
-        <el-descriptions-item label="地址" :span="2">{{ detail.address }}</el-descriptions-item>
-        <el-descriptions-item label="金額">{{ detail.amount }}</el-descriptions-item>
-        <el-descriptions-item label="下單時間">{{ detail.orderTime }}</el-descriptions-item>
+        <el-descriptions-item label="收件人">{{ detail.consignee || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="電話">{{ detail.phone || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="地址" :span="2">{{ detail.address || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="下單時間">{{ detail.orderTime || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="履約判斷">{{ nextStepLabel(detail) }}</el-descriptions-item>
         <el-descriptions-item v-if="detail.remark" label="備註" :span="2">{{ detail.remark }}</el-descriptions-item>
       </el-descriptions>
       <el-table v-if="detail?.orderDetailList?.length" :data="detail.orderDetailList" class="detail-table">
@@ -183,6 +225,30 @@ const statCards = computed(() => [
   { label: '已確認', value: statistics.value.confirmed ?? 0, status: 3, caption: '準備出貨配送' },
   { label: '配送中', value: statistics.value.deliveryInProgress ?? 0, status: 4, caption: '等待完成回報' }
 ])
+const queueMetrics = computed(() => {
+  const contactIssues = rows.value.filter((row) => !row.phone || !row.consignee).length
+  const addressIssues = rows.value.filter((row) => !row.address).length
+  const groupPreOrders = rows.value.filter((row) => orderKind(row) === '揪團預訂').length
+  const pageAmount = rows.value.reduce((sum, row) => sum + Number(row.amount || 0), 0)
+
+  return [
+    { label: '聯絡待補', value: contactIssues, caption: '缺姓名或電話' },
+    { label: '地址待核', value: addressIssues, caption: '配送資訊不完整' },
+    { label: '揪團預訂', value: groupPreOrders, caption: '等候成團或轉單' },
+    { label: '本頁金額', value: money(pageAmount), caption: '目前查詢結果' }
+  ]
+})
+const queueHeadline = computed(() => {
+  const pending = Number(statistics.value.toBeConfirmed ?? 0)
+  if (pending > 0) {
+    return `${pending} 筆待確認先處理`
+  }
+  const delivery = Number(statistics.value.deliveryInProgress ?? 0)
+  if (delivery > 0) {
+    return `${delivery} 筆配送中待回報`
+  }
+  return '目前沒有阻塞履約的訂單'
+})
 
 function statusText(status: number) {
   return statuses.find(item => item.value === status)?.label || '未知'
@@ -204,7 +270,8 @@ const activeStatusHint = computed(() => {
 })
 
 function money(value: number | string | undefined) {
-  return `$${Number(value || 0).toFixed(2)}`
+  const amount = Number(value || 0)
+  return `NT$ ${amount.toLocaleString('zh-TW', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`
 }
 
 function statusType(status: number) {
@@ -254,6 +321,72 @@ function fulfillmentTags(row: any) {
     tags.push({ label: '待檢視', type: 'info' })
   }
   return tags
+}
+
+function nextStepLabel(row: any) {
+  if (!row.phone || !row.consignee) {
+    return '先補聯絡資訊'
+  }
+  if (!row.address) {
+    return '先核對配送地址'
+  }
+  if (row.status === 2) {
+    return '確認可履約'
+  }
+  if (row.status === 3) {
+    return '安排配送'
+  }
+  if (row.status === 4) {
+    return '等待送達回報'
+  }
+  if (row.status === 5) {
+    return '已完成歸檔'
+  }
+  if (row.status === 6) {
+    return '追蹤取消原因'
+  }
+  if (row.status === 8) {
+    return '等待揪團成團'
+  }
+  return '檢視訂單'
+}
+
+function nextStepHint(row: any) {
+  if (!row.phone || !row.consignee || !row.address) {
+    return '先避免無法聯繫或配送失敗'
+  }
+  if (row.status === 2) {
+    return '可接單則轉已確認，否則婉拒'
+  }
+  if (row.status === 3) {
+    return '確認庫存與配送窗口後出車'
+  }
+  if (row.status === 4) {
+    return '送達後回填完成狀態'
+  }
+  if (row.status === 5) {
+    return '可用於日結與履約核對'
+  }
+  if (row.status === 6) {
+    return '檢查是否需要退款或補償'
+  }
+  if (row.status === 8) {
+    return '成團後才進入正常履約'
+  }
+  return '打開詳情確認下一步'
+}
+
+function nextStepTone(row: any) {
+  if (!row.phone || !row.consignee) {
+    return 'danger'
+  }
+  if (!row.address || row.status === 2) {
+    return 'warning'
+  }
+  if (row.status === 5) {
+    return 'success'
+  }
+  return 'neutral'
 }
 
 function hasSecondaryActions(row: any) {
@@ -422,6 +555,75 @@ onMounted(async () => {
   margin-bottom: 14px;
 }
 
+.queue-board {
+  display: grid;
+  grid-template-columns: 270px minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
+  margin-bottom: 14px;
+  padding: 12px;
+  border: 1px solid var(--admin-line);
+  border-radius: 6px;
+  background: #fbfcfa;
+}
+
+.queue-copy {
+  min-width: 0;
+  padding: 12px;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.queue-copy span,
+.queue-copy small,
+.queue-metric span,
+.queue-metric small {
+  display: block;
+  color: var(--admin-muted);
+}
+
+.queue-copy span,
+.queue-metric span {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.queue-copy strong {
+  display: block;
+  margin: 8px 0 6px;
+  color: var(--admin-green-dark);
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+.queue-copy small,
+.queue-metric small {
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.queue-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.queue-metric {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--admin-line);
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.queue-metric strong {
+  display: block;
+  margin: 7px 0 4px;
+  color: var(--admin-ink);
+  font-size: 20px;
+  line-height: 1.25;
+}
+
 .ops-header {
   display: flex;
   justify-content: space-between;
@@ -508,16 +710,98 @@ onMounted(async () => {
   font-size: 12px;
 }
 
+.delivery-cell {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.delivery-cell strong {
+  color: var(--admin-ink);
+  font-weight: 800;
+}
+
+.delivery-cell span,
+.delivery-cell small {
+  overflow: hidden;
+  color: var(--admin-muted);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .fulfillment-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
+.next-step {
+  display: grid;
+  gap: 3px;
+  padding-left: 9px;
+  border-left: 3px solid var(--admin-line-strong);
+}
+
+.next-step strong {
+  color: var(--admin-ink);
+  font-weight: 800;
+}
+
+.next-step span {
+  color: var(--admin-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.next-step.danger {
+  border-left-color: var(--admin-danger);
+}
+
+.next-step.warning {
+  border-left-color: var(--admin-gold);
+}
+
+.next-step.success {
+  border-left-color: var(--admin-green);
+}
+
 .row-actions {
   display: flex;
   gap: 6px;
   align-items: center;
+}
+
+.detail-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.detail-summary div {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--admin-line);
+  border-radius: 6px;
+  background: #fbfcfa;
+}
+
+.detail-summary span {
+  display: block;
+  color: var(--admin-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.detail-summary strong {
+  display: block;
+  overflow: hidden;
+  margin-top: 7px;
+  color: var(--admin-ink);
+  font-size: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .detail-table {
@@ -535,6 +819,12 @@ onMounted(async () => {
 
   .order-stats {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .queue-board,
+  .queue-metrics,
+  .detail-summary {
+    grid-template-columns: 1fr;
   }
 
   .order-stat {
