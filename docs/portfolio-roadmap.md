@@ -12,14 +12,14 @@
 | 會員端流程 | 商品瀏覽、購物車、下單、付款、訂單查詢、揪團頁已可展示，並使用真實食物圖片。 | 作品層級完整 |
 | 管理端流程 | Dashboard、商品、訂單、付款事件、操作紀錄已能支撐營運 demo。 | 作品層級完整 |
 | 訂單生命週期 | 狀態轉移集中在 `OrderStatusTransitionPolicy`，付款、取消、婉拒、配送、完成都有 service 測試。 | 強 |
-| 付款邊界 | Demo gateway、ECPay CheckMacValue parser、callback endpoint、付款事件表、前端 POST form 導轉、provider-switch readiness test、真 ECPay gateway/controller contract test、公開 EC2 callback preflight、SSM sandbox provider switch、真瀏覽器 stage checkout、sandbox OTP 成功回流、`CALLBACK_SUCCEEDED`、ECPay duplicate callback 測試、pending-request reconciliation 查詢、ECPay 查詢結果 parser 與 provider-query reconciliation job 已完成。 | 強，但仍缺正式監控告警與外部查詢排程的長時間運行證據 |
+| 付款邊界 | Demo gateway、ECPay CheckMacValue parser、callback endpoint、付款事件表、前端 POST form 導轉、provider-switch readiness test、真 ECPay gateway/controller contract test、公開 EC2 callback preflight、SSM sandbox provider switch、真瀏覽器 stage checkout、sandbox OTP 成功回流、`CALLBACK_SUCCEEDED`、ECPay duplicate callback 測試、pending-request reconciliation 查詢、ECPay 查詢結果 parser、provider-query reconciliation job 與 pending candidate gauge 已完成。 | 強，但仍缺 Grafana/Alertmanager 接線與外部查詢排程的長時間運行證據 |
 | 揪團併發 | Redisson lock、transaction boundary、唯一鍵、Testcontainers Redis、JMeter 證據已具備。 | 強 |
 | 庫存一致性 | 一般訂單、取消還庫存、商品管理邊界與重複取消防線已有測試。 | 強 |
 | 測試證據 | 後端 service/integration/Redis 測試、JaCoCo、前端 build、手動 Playwright 截圖證據已整理。 | 強 |
 | 系統設計答辯 | 已整理自用後端深挖筆記，涵蓋 correctness、idempotency、concurrency、payment、inventory、observability 與 residual risk。 | 強 |
 | UI/UX | 已完成產品級 polish；不像最初的小 demo，但仍不是設計系統等級產品。 | 足夠面試 |
 | 部署 | 已有 AWS EC2 + Nginx + Docker MySQL/Redis + S3 + CloudFront + DuckDNS 作品級部署敘事。 | 足夠面試 |
-| 可觀測性 | 已有 Actuator health/info/metrics/prometheus 與少量業務 metrics，涵蓋付款 callback、付款 reconciliation、取消防重與揪團狀態轉換；已整理 Prometheus scrape 範例、告警症狀與 first checks，尚未部署 Grafana/Alertmanager 與 trace。 | 作品層級足夠 |
+| 可觀測性 | 已有 Actuator health/info/metrics/prometheus 與少量業務 metrics，涵蓋付款 callback、付款 reconciliation、latest pending reconciliation candidates、取消防重與揪團狀態轉換；已整理 Prometheus scrape 範例、告警症狀與 first checks，尚未部署 Grafana/Alertmanager 與 trace。 | 作品層級足夠 |
 | 自動化交付 | 有 GitHub Actions checks；backend 現在可透過 `/actuator/info` 暴露部署 commit/branch；CI 會上傳 backend release package artifact，內含 jar、release metadata、SHA256 checksums、deploy commands、systemd/Nginx/env 範本；尚未做 image build / ECR / EC2 自動部署。 | 後期再做 |
 
 ## Recommended Priority
@@ -39,7 +39,7 @@
 
 1. **Grafana dashboard 最小證據**
    - 目的：把已完成的 Prometheus scrape endpoint 與告警門檻接到可視化 dashboard 證據。
-   - 範圍：先做 payment callback / reconciliation、group-buy transition、cancellation counters 的 dashboard JSON 或截圖，不急著做完整 tracing。
+   - 範圍：先做 payment callback / reconciliation、pending candidate gauge、group-buy transition、cancellation counters 的 dashboard JSON 或截圖，不急著做完整 tracing。
    - 風險：不要把作品部署複雜度拉太高；保留單機 demo 可穩定重現。
 
 2. **庫存異動 idempotency 設計**
@@ -90,9 +90,9 @@
 
 - Actuator exposure 納入 `health,info,metrics,prometheus`，並可用 `MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE` 覆蓋。
 - Prometheus registry 已接入，`/actuator/prometheus` 可輸出 scrape-format metrics，可用 `MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED` 控制。
-- 補少量業務 metrics：付款 callback 成功/拒絕/重複、訂單取消防重命中、揪團成功/失敗/取消。
+- 補少量業務 metrics：付款 callback 成功/拒絕/重複、付款 reconciliation 結果、latest pending reconciliation candidates、訂單取消防重命中、揪團成功/失敗/取消。
 - 新增 `docs/observability.md` 說明本機查詢方式與目前邊界。
-- 不導入完整 Grafana/Alertmanager；先把應用層 metrics 與 Prometheus scrape contract 定義清楚。
+- 不導入完整 Grafana/Alertmanager；先把應用層 metrics、pending candidate gauge 與 Prometheus scrape contract 定義清楚。
 
 剛完成的本地切面是取消訂單防重：若訂單已取消，或該訂單已存在 `ORDER_CANCEL_RESTORE` 庫存回補紀錄，取消流程會直接跳過；真正寫入庫存流水時，`product_inventory_log.idempotency_key` 也有 unique constraint 作為 DB 最後防線，避免重複退款與重複還庫存。
 
@@ -103,7 +103,7 @@
 - 付款事件、callback parser、前端 POST form、observability 與 public callback preflight 已具備。
 - EC2 backend 已同步到 commit `8d7a0d5eeefe`，`/actuator/info` 與 `/payment/callback` public preflight 已通過。
 - 已新增 `scripts/switch-ecpay-sandbox-ssm.sh`，並用 SSM 寫入獨立 systemd payment drop-in，確認 effective `PAYMENT_PROVIDER=ecpay`。
-- 這仍不等於正式金流上線；stage checkout、OTP 成功付款、ReturnURL HTTP 200、訂單轉已付款、`CALLBACK_SUCCEEDED`、重複 callback 測試、待對帳候選查詢與 provider-query reconciliation job 已通，還缺正式監控告警與外部查詢排程的長時間運行證據。
+- 這仍不等於正式金流上線；stage checkout、OTP 成功付款、ReturnURL HTTP 200、訂單轉已付款、`CALLBACK_SUCCEEDED`、重複 callback 測試、待對帳候選查詢、provider-query reconciliation job 與 pending candidate gauge 已通，還缺 Grafana/Alertmanager 接線與外部查詢排程的長時間運行證據。
 
 目前結論：
 

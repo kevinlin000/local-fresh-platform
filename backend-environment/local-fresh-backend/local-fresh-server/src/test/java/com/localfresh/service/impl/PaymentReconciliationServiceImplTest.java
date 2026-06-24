@@ -70,6 +70,7 @@ class PaymentReconciliationServiceImplTest {
         assertEquals("ECPAY", commandCaptor.getValue().getProvider());
         assertEquals("ORDER-RECON-1", commandCaptor.getValue().getOrderNumber());
         assertEquals("260622181000001", commandCaptor.getValue().getProviderTradeNo());
+        verify(businessMetricsService).recordPaymentReconciliationCandidates("ECPAY", 1);
         verify(businessMetricsService).recordPaymentReconciliation("ECPAY", "APPLIED");
     }
 
@@ -186,6 +187,7 @@ class PaymentReconciliationServiceImplTest {
         verify(paymentEventMapper).pagePendingRequestsWithoutTerminalCallback(queryCaptor.capture());
         assertEquals(1, queryCaptor.getValue().getPage());
         assertEquals(100, queryCaptor.getValue().getPageSize());
+        verify(businessMetricsService).recordPaymentReconciliationCandidates("ECPAY", 0);
         verify(orderPaymentService, never()).handlePaymentCallback(any());
     }
 

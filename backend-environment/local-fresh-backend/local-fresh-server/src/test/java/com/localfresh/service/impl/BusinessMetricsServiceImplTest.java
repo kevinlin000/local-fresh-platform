@@ -35,6 +35,22 @@ class BusinessMetricsServiceImplTest {
     }
 
     @Test
+    void recordPaymentReconciliationCandidatesShouldExposeLatestCandidateCount() {
+        businessMetricsService.recordPaymentReconciliationCandidates("ECPAY", 7);
+        businessMetricsService.recordPaymentReconciliationCandidates("ECPAY", 2);
+        businessMetricsService.recordPaymentReconciliationCandidates(null, -3);
+
+        assertEquals(2.0, meterRegistry.get(BusinessMetricsServiceImpl.PAYMENT_RECONCILIATION_PENDING_CANDIDATES)
+                .tag("provider", "ecpay")
+                .gauge()
+                .value());
+        assertEquals(0.0, meterRegistry.get(BusinessMetricsServiceImpl.PAYMENT_RECONCILIATION_PENDING_CANDIDATES)
+                .tag("provider", "unknown")
+                .gauge()
+                .value());
+    }
+
+    @Test
     void recordOrderCancellationShouldTagResult() {
         businessMetricsService.recordOrderCancellation("applied");
         businessMetricsService.recordOrderCancellation("duplicate");

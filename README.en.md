@@ -172,7 +172,7 @@ Payment processing also writes a provider-neutral `payment_event` trail for `REQ
 
 The admin console also includes a Payment Events page, so demo reviewers can inspect payment requests, successful callbacks, duplicate callbacks, and rejected callbacks without calling the API manually.
 
-The backend also exposes a minimal business-metrics slice through Actuator. It tracks payment callback outcomes, payment reconciliation outcomes, duplicate/applied order cancellations, and group-buy state transitions. The backend now exposes `/actuator/prometheus` in scrape format, while the full Prometheus/Grafana stack is still intentionally deferred; see [docs/observability.md](docs/observability.md) for local query examples, scrape configuration, alert thresholds, and current boundaries.
+The backend also exposes a minimal business-metrics slice through Actuator. It tracks payment callback outcomes, payment reconciliation outcomes, the latest pending reconciliation candidate count, duplicate/applied order cancellations, and group-buy state transitions. The backend now exposes `/actuator/prometheus` in scrape format, while the full Prometheus/Grafana stack is still intentionally deferred; see [docs/observability.md](docs/observability.md) for local query examples, scrape configuration, alert thresholds, and current boundaries.
 
 ### 4. Admin operation audit log
 
@@ -393,7 +393,7 @@ The deployment topology is:
 
 ## Known Limitations
 
-- Local demos can still use the demo gateway by default. The EC2 demo runtime can now be switched to the ECPay sandbox provider through SSM, with public callback readiness verified; Playwright has also verified deployed storefront redirect into ECPay stage checkout, OTP payment completion, ReturnURL HTTP 200, paid order state, and `CALLBACK_SUCCEEDED` payment evidence. Duplicate callback coverage, pending reconciliation candidates, and a provider-query reconciliation job are now in place; the remaining payment gap is production monitoring and long-running external-query evidence.
+- Local demos can still use the demo gateway by default. The EC2 demo runtime can now be switched to the ECPay sandbox provider through SSM, with public callback readiness verified; Playwright has also verified deployed storefront redirect into ECPay stage checkout, OTP payment completion, ReturnURL HTTP 200, paid order state, and `CALLBACK_SUCCEEDED` payment evidence. Duplicate callback coverage, pending reconciliation candidates, a provider-query reconciliation job, and the pending-candidate gauge are now in place; the remaining payment gap is Grafana/Alertmanager wiring and long-running external-query evidence.
 - The admin console now has a polished operations-console baseline, but it does not yet include automated visual regression coverage.
 - The user frontend now covers desktop and mobile responsive basics, but does not yet include cross-browser visual regression testing.
 - Legacy databases need a one-time Flyway baseline; fresh databases can apply migrations directly.
@@ -460,7 +460,8 @@ readiness pass, and the runtime has been switched to `PAYMENT_PROVIDER=ecpay`
 through the SSM switch script. Playwright has verified the CloudFront storefront
 redirect into ECPay stage checkout, OTP payment completion, ReturnURL HTTP 200,
 paid order state, and `CALLBACK_SUCCEEDED` payment evidence; the remaining
-payment gap is production monitoring and long-running external-query evidence.
+payment gap is Grafana/Alertmanager wiring and long-running external-query
+evidence.
 
 ## License
 

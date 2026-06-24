@@ -45,12 +45,14 @@ public class PaymentReconciliationServiceImpl implements PaymentReconciliationSe
 
     @Override
     public PaymentReconciliationSummary reconcilePendingRequests(int limit) {
+        String provider = paymentGateway.provider();
         PaymentEventPageQueryDTO queryDTO = new PaymentEventPageQueryDTO();
         queryDTO.setPage(1);
         queryDTO.setPageSize(normalizeLimit(limit));
-        queryDTO.setProvider(paymentGateway.provider());
+        queryDTO.setProvider(provider);
         PageHelper.startPage(queryDTO.getPage(), queryDTO.getPageSize());
         Page<PaymentEvent> pendingRequests = paymentEventMapper.pagePendingRequestsWithoutTerminalCallback(queryDTO);
+        businessMetricsService.recordPaymentReconciliationCandidates(provider, pendingRequests.size());
 
         PaymentReconciliationCounter counter = new PaymentReconciliationCounter(pendingRequests.size());
         for (PaymentEvent pendingRequest : pendingRequests) {

@@ -56,9 +56,9 @@ As of 2026-06-22 16:55 +0800, the public preflight and success-flow result is:
 The previous deployed `404` blocker is resolved, and Playwright has verified
 that the deployed storefront reaches ECPay stage checkout and completes sandbox
 card OTP payment back through ReturnURL. The backend also has duplicate
-callback coverage, pending reconciliation candidates, and a provider-query
-reconciliation job. The remaining payment gaps are production monitoring and
-long-running external-query evidence.
+callback coverage, pending reconciliation candidates, a provider-query
+reconciliation job, and a pending-candidate gauge. The remaining payment gaps
+are Grafana/Alertmanager wiring and long-running external-query evidence.
 
 ## Local Contract Evidence
 
@@ -100,8 +100,8 @@ Set these variables for the Spring Boot process:
 ```bash
 PAYMENT_PROVIDER=ecpay
 ECPAY_MERCHANT_ID=2000132
-ECPAY_HASH_KEY=5294y06JbISpM5x9
-ECPAY_HASH_IV=v77hoKGq4kWxNNIS
+ECPAY_HASH_KEY=<ecpay sandbox hash key>
+ECPAY_HASH_IV=<ecpay sandbox hash iv>
 ECPAY_CHECKOUT_URL=https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5
 ECPAY_QUERY_URL=https://payment-stage.ecpay.com.tw/Cashier/QueryTradeInfo/V5
 ECPAY_RETURN_URL=https://localfresh-demo.duckdns.org/payment/callback

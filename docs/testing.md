@@ -90,10 +90,11 @@ The current coverage emphasis is the order lifecycle:
 - `PaymentReconciliationServiceImplTest`: provider-query reconciliation over
   pending payment requests, including succeeded, still-pending, rejected,
   unsupported-provider, unknown-status, query-error, and capped batch-limit
-  paths.
+  paths, plus the latest pending-candidate gauge update.
 - `BusinessMetricsServiceImplTest`: custom Micrometer business counters for
-  payment callback outcomes, payment reconciliation outcomes,
-  duplicate/applied order cancellations, and group-buy transitions.
+  payment callback outcomes, payment reconciliation outcomes, the latest
+  pending reconciliation candidate gauge, duplicate/applied order
+  cancellations, and group-buy transitions.
 - `PrometheusEndpointTest`: Prometheus registry and `/actuator/prometheus`
   scrape-format endpoint registration.
 - `DeploymentInfoContributorTest`: `/actuator/info` deployment identity,
