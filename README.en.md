@@ -40,9 +40,9 @@ The catalog combines category navigation, sorting, price filters, product metada
 
 ![Product List](docs/screenshots/02-product-list.png)
 
-### 3. Product Detail — Two Checkout Paths
+### 3. Product Detail — Product Decision and Dual Purchase Paths
 
-Either "Add to Cart" for batch checkout, or "Start Group Buy" to launch a 3-person free-shipping group.
+Price, delivery timing, storage guidance, subtotal, quantity, and the "Add to Cart / Start Group Buy" actions are visible in the first viewport, clearly separating standard checkout from 3-person free-shipping group buy.
 
 ![Product Detail](docs/screenshots/03-product-detail.png)
 

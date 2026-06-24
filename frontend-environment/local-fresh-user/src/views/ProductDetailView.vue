@@ -12,13 +12,31 @@
         <div class="content-panel">
           <p class="eyebrow">商品詳情</p>
           <h1>{{ product.productName }}</h1>
-          <p class="price">NT$ {{ formatPrice(product.price) }}</p>
+          <div class="price-row">
+            <p class="price">NT$ {{ formatPrice(product.price) }}</p>
+            <span>{{ unitLabel }}</span>
+          </div>
           <div class="detail-meta">
             <span>{{ product.categoryName || '當季鮮選' }}</span>
-            <span>可排單配送</span>
-            <span>可發起 3 人揪團</span>
+            <span>{{ deliverySignal }}</span>
+            <span>3 人揪團免運</span>
           </div>
           <p class="description">{{ product.description || '來自在地產區的當季鮮選，適合日常料理與家庭備菜。' }}</p>
+
+          <div class="purchase-summary" aria-label="商品採買摘要">
+            <div>
+              <span>配送節奏</span>
+              <strong>{{ deliverySignal }}</strong>
+            </div>
+            <div>
+              <span>保存建議</span>
+              <strong>{{ storageSignal }}</strong>
+            </div>
+            <div>
+              <span>本次小計</span>
+              <strong>NT$ {{ formatPrice(lineTotal) }}</strong>
+            </div>
+          </div>
 
           <div class="assurance-grid" aria-label="購買與配送資訊">
             <section v-for="item in purchaseAssurance" :key="item.label" class="assurance-item">
@@ -43,16 +61,32 @@
 
           <div class="quantity-panel">
             <h2>購買數量</h2>
-            <el-input-number v-model="quantity" :min="1" :max="99" />
+            <div class="quantity-row">
+              <el-input-number v-model="quantity" :min="1" :max="99" />
+              <span>預估 {{ quantity }} 件，合計 NT$ {{ formatPrice(lineTotal) }}</span>
+            </div>
           </div>
 
           <div class="actions">
             <el-button type="success" size="large" :loading="submittingCart" @click="handleAddToCart">
               加入購物車
             </el-button>
-            <el-button size="large" :loading="groupBuySubmitting" @click="openGroupBuyDialog">
+            <el-button size="large" plain :loading="groupBuySubmitting" @click="openGroupBuyDialog">
               立即揪團
             </el-button>
+          </div>
+
+          <p class="action-note">下單後由門市確認庫存與配送時段；揪團訂單需滿員後進入確認流程。</p>
+
+          <div class="route-panel" aria-label="採買路徑">
+            <div>
+              <strong>一般採買</strong>
+              <span>加入購物車後可與其他商品一起結算。</span>
+            </div>
+            <div>
+              <strong>揪團免運</strong>
+              <span>建立 3 人團，分享連結邀請朋友加入。</span>
+            </div>
           </div>
         </div>
       </div>
@@ -267,24 +301,59 @@ const specOptions = computed(() => {
   }))
 })
 
+const categoryName = computed(() => product.value?.categoryName || '')
+
+const isColdChainProduct = computed(() =>
+  categoryName.value.includes('海鮮') || categoryName.value.includes('肉')
+)
+
+const isChilledProduct = computed(() =>
+  isColdChainProduct.value || categoryName.value.includes('蛋') || categoryName.value.includes('奶')
+)
+
+const deliverySignal = computed(() => {
+  if (isColdChainProduct.value) {
+    return '冷鏈排單'
+  }
+  if (isChilledProduct.value) {
+    return '冷藏配送'
+  }
+  return '明日可配'
+})
+
+const storageSignal = computed(() => {
+  if (isColdChainProduct.value) {
+    return '收到後冷凍'
+  }
+  if (isChilledProduct.value) {
+    return '收到後冷藏'
+  }
+  return '陰涼保存'
+})
+
+const unitLabel = computed(() => {
+  if (!selectedSpec.value) {
+    return '單品價格'
+  }
+  return selectedSpec.value
+})
+
+const lineTotal = computed(() => Number(product.value?.price || 0) * quantity.value)
+
 const purchaseAssurance = computed(() => {
   if (!product.value) {
     return []
   }
 
-  const category = product.value.categoryName || ''
-  const isColdChain = category.includes('海鮮') || category.includes('肉')
-  const isChilled = isColdChain || category.includes('蛋') || category.includes('奶')
-
   return [
     {
       label: '配送',
-      value: isColdChain ? '冷鏈排單' : isChilled ? '冷藏配送' : '明日可配',
+      value: deliverySignal.value,
       caption: '下單後由門市確認備貨與配送時段。'
     },
     {
       label: '保存',
-      value: isColdChain ? '收到後冷凍' : isChilled ? '收到後冷藏' : '陰涼保存',
+      value: storageSignal.value,
       caption: '商品頁保留規格與數量，方便家庭備菜。'
     },
     {
@@ -480,7 +549,7 @@ onMounted(() => {
 .detail-shell {
   max-width: 1180px;
   margin: 0 auto;
-  padding: 24px 0 48px;
+  padding: 18px 0 48px;
 }
 
 .detail-card {
@@ -491,7 +560,7 @@ onMounted(() => {
   border: 1px solid var(--farm-line);
   border-radius: 8px;
   background: var(--farm-surface);
-  box-shadow: 0 10px 28px rgba(28, 39, 32, 0.06);
+  box-shadow: 0 6px 18px rgba(28, 39, 32, 0.055);
 }
 
 .media-panel {
@@ -524,7 +593,7 @@ onMounted(() => {
 }
 
 .content-panel {
-  padding: 10px 6px;
+  padding: 6px 6px 4px;
 }
 
 .eyebrow {
@@ -537,15 +606,29 @@ onMounted(() => {
 h1 {
   margin: 0;
   color: var(--farm-text);
-  font-size: 32px;
+  font-size: 30px;
   line-height: 1.25;
 }
 
+.price-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: baseline;
+  margin-top: 16px;
+}
+
 .price {
-  margin: 18px 0 0;
+  margin: 0;
   color: var(--farm-primary-deep);
-  font-size: 28px;
+  font-size: 30px;
   font-weight: 800;
+}
+
+.price-row span {
+  color: var(--farm-muted);
+  font-size: 13px;
+  font-weight: 750;
 }
 
 .detail-meta {
@@ -566,21 +649,50 @@ h1 {
 }
 
 .description {
-  margin: 18px 0 0;
+  margin: 16px 0 0;
   color: var(--farm-muted);
-  line-height: 1.75;
+  line-height: 1.7;
+}
+
+.purchase-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.purchase-summary div {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--farm-line);
+  border-radius: 8px;
+  background: #fbfcf8;
+}
+
+.purchase-summary span {
+  display: block;
+  color: var(--farm-muted);
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.purchase-summary strong {
+  display: block;
+  margin-top: 6px;
+  color: var(--farm-primary-deep);
+  font-size: 15px;
 }
 
 .assurance-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
-  margin-top: 18px;
+  margin-top: 14px;
 }
 
 .assurance-item {
   min-width: 0;
-  padding: 13px;
+  padding: 11px;
   border: 1px solid rgba(47, 111, 78, 0.14);
   border-radius: 8px;
   background: #fbfcf8;
@@ -608,7 +720,7 @@ h1 {
 
 .specs-panel,
 .quantity-panel {
-  margin-top: 24px;
+  margin-top: 16px;
 }
 
 .specs-panel h2,
@@ -619,11 +731,63 @@ h1 {
   font-size: 16px;
 }
 
+.quantity-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.quantity-row span {
+  color: var(--farm-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.route-panel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.route-panel div {
+  padding: 12px;
+  border: 1px solid rgba(47, 111, 78, 0.12);
+  border-radius: 8px;
+  background: #fbfcf8;
+}
+
+.route-panel strong {
+  display: block;
+  color: var(--farm-text);
+  font-size: 14px;
+}
+
+.route-panel span {
+  display: block;
+  margin-top: 6px;
+  color: var(--farm-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .actions {
   display: flex;
   gap: 14px;
-  margin-top: 32px;
+  margin-top: 18px;
   flex-wrap: wrap;
+}
+
+.actions :deep(.el-button--large) {
+  min-width: 148px;
+}
+
+.action-note {
+  margin: 12px 0 0;
+  color: var(--farm-muted);
+  font-size: 12px;
+  line-height: 1.6;
 }
 
 .dialog-body {
@@ -743,6 +907,11 @@ h1 {
   h1 {
     font-size: 28px;
   }
+
+  .purchase-summary,
+  .route-panel {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 560px) {
@@ -751,6 +920,10 @@ h1 {
   }
 
   .assurance-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .purchase-summary {
     grid-template-columns: 1fr;
   }
 
