@@ -136,6 +136,59 @@ class PaymentReconciliationServiceImplTest {
         verify(businessMetricsService).recordPaymentReconciliation("ECPAY", "QUERY_ERROR");
     }
 
+    @Test
+    void reconcilePendingRequestsShouldRecordUnsupportedProviderWithoutStoppingBatch() {
+        when(paymentGateway.provider()).thenReturn("DEMO");
+        Page<PaymentEvent> page = new Page<>();
+        page.add(pendingRequest("ORDER-RECON-5"));
+        when(paymentEventMapper.pagePendingRequestsWithoutTerminalCallback(any())).thenReturn(page);
+        when(paymentGateway.queryPaymentStatus("ORDER-RECON-5"))
+                .thenThrow(new UnsupportedOperationException("provider query not available"));
+
+        PaymentReconciliationSummary summary = paymentReconciliationService.reconcilePendingRequests(20);
+
+        assertEquals(1, summary.getCandidates());
+        assertEquals(1, summary.getUnsupported());
+        verify(orderPaymentService, never()).handlePaymentCallback(any());
+        verify(businessMetricsService).recordPaymentReconciliation("DEMO", "UNSUPPORTED");
+    }
+
+    @Test
+    void reconcilePendingRequestsShouldCountUnknownProviderStatusForManualReview() {
+        when(paymentGateway.provider()).thenReturn("ECPAY");
+        Page<PaymentEvent> page = new Page<>();
+        page.add(pendingRequest("ORDER-RECON-6"));
+        when(paymentEventMapper.pagePendingRequestsWithoutTerminalCallback(any())).thenReturn(page);
+        when(paymentGateway.queryPaymentStatus("ORDER-RECON-6")).thenReturn(PaymentQueryResult.builder()
+                .provider("ECPAY")
+                .orderNumber("ORDER-RECON-6")
+                .status(PaymentQueryStatus.UNKNOWN)
+                .rawPayload("MerchantTradeNo=ORDER-RECON-6&TradeStatus=UNKNOWN")
+                .build());
+
+        PaymentReconciliationSummary summary = paymentReconciliationService.reconcilePendingRequests(20);
+
+        assertEquals(1, summary.getCandidates());
+        assertEquals(1, summary.getUnknown());
+        verify(orderPaymentService, never()).handlePaymentCallback(any());
+        verify(businessMetricsService).recordPaymentReconciliation("ECPAY", "UNKNOWN");
+    }
+
+    @Test
+    void reconcilePendingRequestsShouldCapRequestedLimitAtOneHundred() {
+        when(paymentGateway.provider()).thenReturn("ECPAY");
+        when(paymentEventMapper.pagePendingRequestsWithoutTerminalCallback(any())).thenReturn(new Page<>());
+
+        paymentReconciliationService.reconcilePendingRequests(500);
+
+        ArgumentCaptor<com.localfresh.dto.PaymentEventPageQueryDTO> queryCaptor =
+                ArgumentCaptor.forClass(com.localfresh.dto.PaymentEventPageQueryDTO.class);
+        verify(paymentEventMapper).pagePendingRequestsWithoutTerminalCallback(queryCaptor.capture());
+        assertEquals(1, queryCaptor.getValue().getPage());
+        assertEquals(100, queryCaptor.getValue().getPageSize());
+        verify(orderPaymentService, never()).handlePaymentCallback(any());
+    }
+
     private PaymentEvent pendingRequest(String orderNumber) {
         return PaymentEvent.builder()
                 .id(10L)

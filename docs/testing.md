@@ -88,8 +88,9 @@ The current coverage emphasis is the order lifecycle:
   idempotency-key query fields, and the minimal pending-request reconciliation
   endpoint.
 - `PaymentReconciliationServiceImplTest`: provider-query reconciliation over
-  pending payment requests, including succeeded, still-pending, and rejected
-  provider query results.
+  pending payment requests, including succeeded, still-pending, rejected,
+  unsupported-provider, unknown-status, query-error, and capped batch-limit
+  paths.
 - `BusinessMetricsServiceImplTest`: custom Micrometer business counters for
   payment callback outcomes, payment reconciliation outcomes,
   duplicate/applied order cancellations, and group-buy transitions.
