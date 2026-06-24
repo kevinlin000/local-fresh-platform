@@ -5,7 +5,7 @@
         <div class="admin-brand-mark">菜</div>
         <div>
           <div>菜籃日</div>
-          <small>Cailán Admin</small>
+          <small>營運後台</small>
         </div>
       </div>
 
@@ -29,7 +29,7 @@
           <p>訂單、商品、庫存與直送箱營運管理</p>
         </div>
         <div class="topbar-actions">
-          <span class="environment-pill">Local demo</span>
+          <span class="environment-pill">展示環境</span>
           <el-button type="primary" plain @click="handleLogout">登出</el-button>
         </div>
       </header>

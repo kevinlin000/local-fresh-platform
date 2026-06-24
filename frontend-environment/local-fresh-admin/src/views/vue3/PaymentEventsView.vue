@@ -4,7 +4,7 @@
       <div>
         <p class="eyebrow">付款對帳</p>
         <h2>付款事件工作台</h2>
-        <span>追蹤付款請求、成功回呼、重複 callback、拒絕回呼與冪等鍵，避免訂單付款狀態不一致。</span>
+        <span>追蹤付款請求、成功回呼、重複回呼、拒絕回呼與冪等鍵，避免訂單付款狀態不一致。</span>
       </div>
       <div class="payment-header-actions">
         <el-button @click="resetQuery">重置</el-button>
@@ -31,7 +31,7 @@
       <el-input v-model="query.orderNumber" clearable placeholder="訂單編號" @keyup.enter="search" />
       <el-input v-model="query.providerTradeNo" clearable placeholder="交易編號" @keyup.enter="search" />
       <el-input v-model="query.idempotencyKey" clearable placeholder="冪等鍵" @keyup.enter="search" />
-      <el-select v-model="query.provider" clearable placeholder="付款 Provider">
+      <el-select v-model="query.provider" clearable placeholder="付款通道">
         <el-option v-for="item in providerOptions" :key="item.value" :label="item.label" :value="item.value" />
       </el-select>
       <el-select v-model="query.eventType" clearable placeholder="事件類型">
@@ -70,9 +70,9 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="Provider" width="105">
+        <el-table-column label="付款通道" width="105">
           <template #default="{ row }">
-            <el-tag effect="plain">{{ row.provider || '-' }}</el-tag>
+            <el-tag effect="plain">{{ providerLabel(row.provider) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="事件" min-width="145">
@@ -96,11 +96,11 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="Reference" min-width="220">
+        <el-table-column label="對帳參考" min-width="220">
           <template #default="{ row }">
             <div class="reference-cell">
               <strong>{{ row.providerReference || '-' }}</strong>
-              <span v-if="row.providerTradeNo">Trade #{{ row.providerTradeNo }}</span>
+              <span v-if="row.providerTradeNo">交易編號 {{ row.providerTradeNo }}</span>
               <small v-if="row.idempotencyKey">{{ row.idempotencyKey }}</small>
             </div>
           </template>
@@ -133,9 +133,9 @@ import { readPage, useLoading, usePage } from './composables'
 const route = useRoute()
 
 const providerOptions = [
-  { label: 'Demo', value: 'DEMO' },
+  { label: '展示通道', value: 'DEMO' },
   { label: '綠界 ECPay', value: 'ECPAY' },
-  { label: '未知', value: 'UNKNOWN' }
+  { label: '未知通道', value: 'UNKNOWN' }
 ]
 
 const eventOptions = [
@@ -176,7 +176,7 @@ const summaryCards = computed(() => {
     { label: '成功', value: succeeded, caption: '已入帳或處理完成', tone: 'success' },
     { label: '待處理', value: pending, caption: '付款請求已建立', tone: pending ? 'warning' : 'neutral' },
     { label: '需追蹤', value: attention, caption: '重複或被拒回呼', tone: attention ? 'danger' : 'neutral' },
-    { label: 'Provider', value: providers, caption: '本頁付款通道數', tone: 'neutral' }
+    { label: '付款通道', value: providers, caption: '本頁付款通道數', tone: 'neutral' }
   ]
 })
 const paymentPriority = computed(() => {
@@ -187,7 +187,7 @@ const paymentPriority = computed(() => {
   if (rejected > 0) {
     return {
       label: `${rejected} 筆拒絕回呼需查`,
-      caption: '優先檢查簽章、訂單狀態與 provider payload，避免付款成功但訂單未入帳。',
+      caption: '優先檢查簽章、訂單狀態與金流回傳內容，避免付款成功但訂單未入帳。',
       tone: 'danger'
     }
   }
@@ -201,7 +201,7 @@ const paymentPriority = computed(() => {
   if (ignored > 0) {
     return {
       label: `${ignored} 筆冪等忽略事件`,
-      caption: '多數為重複 callback 或已處理事件，保留留痕即可。',
+      caption: '多數為重複回呼或已處理事件，保留留痕即可。',
       tone: 'neutral'
     }
   }
@@ -282,6 +282,10 @@ function resultLabel(result: string) {
   return resultOptions.find((item) => item.value === result)?.label || result || '-'
 }
 
+function providerLabel(provider?: string) {
+  return providerOptions.find((item) => item.value === provider)?.label || provider || '-'
+}
+
 function eventTagType(eventType: string) {
   if (eventType === 'CALLBACK_SUCCEEDED') {
     return 'success'
@@ -335,10 +339,10 @@ function reconciliationHint(row: any) {
     return '檢查簽章、金額與訂單狀態'
   }
   if (row.result === 'PENDING') {
-    return '等待 provider 回呼或逾時對帳'
+    return '等待金流回呼或逾時對帳'
   }
   if (row.eventType === 'CALLBACK_DUPLICATE' || row.result === 'IGNORED') {
-    return '重複 callback 已留痕'
+    return '重複回呼已留痕'
   }
   if (row.eventType === 'CALLBACK_SUCCEEDED' || row.result === 'SUCCEEDED') {
     return '訂單付款狀態可核對'
@@ -346,7 +350,7 @@ function reconciliationHint(row: any) {
   if (row.eventType === 'REQUEST_CREATED') {
     return '後續應收到付款終態'
   }
-  return '打開 provider reference 追查'
+  return '查看金流參考資料追查'
 }
 
 function reconciliationTone(row: any) {
