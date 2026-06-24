@@ -94,16 +94,23 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="230">
+      <el-table-column label="操作" width="220">
         <template #default="{ row }">
           <div class="row-actions">
-            <el-button link type="primary" @click="openEdit(row)">編輯</el-button>
-            <el-button link type="primary" @click="toggleStatus(row)">
+            <el-button size="small" @click="openEdit(row)">編輯</el-button>
+            <el-button size="small" type="primary" plain @click="toggleStatus(row)">
               {{ row.status === 1 ? '下架' : '上架' }}
             </el-button>
-            <el-button link type="primary" @click="openInventoryAdjust(row)">調整庫存</el-button>
-            <el-button link type="primary" @click="openInventoryLogs(row)">庫存紀錄</el-button>
-            <el-button link type="danger" @click="remove(row)">刪除</el-button>
+            <el-dropdown trigger="click">
+              <el-button size="small" plain>更多</el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item @click="openInventoryAdjust(row)">調整庫存</el-dropdown-item>
+                  <el-dropdown-item @click="openInventoryLogs(row)">庫存紀錄</el-dropdown-item>
+                  <el-dropdown-item divided @click="remove(row)">刪除商品</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
           </div>
         </template>
       </el-table-column>
@@ -615,8 +622,8 @@ onMounted(async () => {
 .product-summary {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin-bottom: 18px;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 
 .ops-header {
@@ -624,7 +631,7 @@ onMounted(async () => {
   justify-content: space-between;
   gap: 18px;
   align-items: flex-start;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
 .ops-header h2 {
@@ -655,9 +662,9 @@ onMounted(async () => {
 
 .summary-card {
   width: 100%;
-  padding: 16px;
+  padding: 14px;
   border: 1px solid var(--admin-line);
-  border-radius: 8px;
+  border-radius: 6px;
   background: #f8faf7;
   color: var(--admin-ink);
   text-align: left;
@@ -683,8 +690,8 @@ onMounted(async () => {
 
 .summary-card strong {
   display: block;
-  margin: 8px 0 4px;
-  font-size: 26px;
+  margin: 6px 0 3px;
+  font-size: 24px;
 }
 
 .product-cell {
@@ -730,8 +737,8 @@ onMounted(async () => {
 
 .row-actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px 10px;
+  gap: 6px;
+  align-items: center;
 }
 
 .row-actions :deep(.el-button) {

@@ -78,14 +78,23 @@
         </template>
       </el-table-column>
       <el-table-column prop="orderTime" label="下單時間" width="160" />
-      <el-table-column label="下一步" fixed="right" width="260">
+      <el-table-column label="下一步" fixed="right" width="190">
         <template #default="{ row }">
-          <el-button link type="primary" @click="openDetail(row)">檢視</el-button>
-          <el-button v-if="row.status === 2" link type="success" @click="accept(row)">確認</el-button>
-          <el-button v-if="row.status === 2" link type="danger" @click="openReason(row, 'reject')">婉拒</el-button>
-          <el-button v-if="[2, 3].includes(row.status)" link type="warning" @click="openReason(row, 'cancel')">取消</el-button>
-          <el-button v-if="row.status === 3" link type="primary" @click="delivery(row)">配送</el-button>
-          <el-button v-if="row.status === 4" link type="success" @click="complete(row)">完成</el-button>
+          <div class="row-actions">
+            <el-button size="small" @click="openDetail(row)">檢視</el-button>
+            <el-button v-if="row.status === 2" size="small" type="primary" @click="accept(row)">確認</el-button>
+            <el-button v-else-if="row.status === 3" size="small" type="primary" @click="delivery(row)">配送</el-button>
+            <el-button v-else-if="row.status === 4" size="small" type="success" @click="complete(row)">完成</el-button>
+            <el-dropdown v-if="hasSecondaryActions(row)" trigger="click">
+              <el-button size="small" plain>更多</el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item v-if="row.status === 2" @click="openReason(row, 'reject')">婉拒</el-dropdown-item>
+                  <el-dropdown-item v-if="[2, 3].includes(row.status)" @click="openReason(row, 'cancel')">取消訂單</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -247,6 +256,10 @@ function fulfillmentTags(row: any) {
   return tags
 }
 
+function hasSecondaryActions(row: any) {
+  return row.status === 2 || row.status === 3
+}
+
 function filterByStatus(status: number) {
   query.status = query.status === status ? undefined : status
   page.page = 1
@@ -405,8 +418,8 @@ onMounted(async () => {
 .order-stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  margin-bottom: 18px;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 
 .ops-header {
@@ -414,7 +427,7 @@ onMounted(async () => {
   justify-content: space-between;
   gap: 18px;
   align-items: flex-start;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
 .ops-header h2 {
@@ -445,9 +458,9 @@ onMounted(async () => {
 
 .order-stat {
   width: 100%;
-  padding: 18px;
+  padding: 14px;
   border: 1px solid var(--admin-line);
-  border-radius: 8px;
+  border-radius: 6px;
   background: #f8faf7;
   color: var(--admin-ink);
   text-align: left;
@@ -473,8 +486,8 @@ onMounted(async () => {
 
 .order-stat strong {
   display: block;
-  margin: 8px 0 4px;
-  font-size: 26px;
+  margin: 6px 0 3px;
+  font-size: 24px;
 }
 
 .filter-alert {
@@ -499,6 +512,12 @@ onMounted(async () => {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+}
+
+.row-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
 }
 
 .detail-table {

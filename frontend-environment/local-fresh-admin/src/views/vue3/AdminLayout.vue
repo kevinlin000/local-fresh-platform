@@ -28,7 +28,10 @@
           <h1>{{ currentTitle }}</h1>
           <p>訂單、商品、庫存與直送箱營運管理</p>
         </div>
-        <el-button type="primary" plain @click="handleLogout">登出</el-button>
+        <div class="topbar-actions">
+          <span class="environment-pill">Local demo</span>
+          <el-button type="primary" plain @click="handleLogout">登出</el-button>
+        </div>
       </header>
       <RouterView />
     </main>
@@ -54,8 +57,9 @@ async function handleLogout() {
 
 <style scoped>
 h1 {
-  margin: 0 0 8px;
-  font-size: 30px;
+  margin: 0 0 6px;
+  font-size: 28px;
+  line-height: 1.15;
 }
 
 p {
@@ -68,5 +72,21 @@ small {
   font-size: 11px;
   letter-spacing: 0;
   text-transform: uppercase;
+}
+
+.topbar-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.environment-pill {
+  padding: 5px 9px;
+  border: 1px solid var(--admin-line);
+  border-radius: 999px;
+  background: #fbfcfa;
+  color: var(--admin-muted);
+  font-size: 12px;
+  font-weight: 800;
 }
 </style>

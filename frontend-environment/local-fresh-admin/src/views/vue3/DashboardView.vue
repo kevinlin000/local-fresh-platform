@@ -1,25 +1,53 @@
 <template>
   <section v-loading="loading" class="dashboard-grid">
+    <article class="admin-card admin-card-pad wide command-card">
+      <div class="section-title">
+        <div>
+          <p class="eyebrow">今日</p>
+          <h2>營運指揮台</h2>
+          <span class="section-copy">先處理會阻塞履約的事項，再檢查付款與商品狀態。</span>
+        </div>
+        <el-button type="primary" plain @click="loadDashboard">重新整理</el-button>
+      </div>
+
+      <div class="command-layout">
+        <button class="command-primary" type="button" @click="goToOrders(2)">
+          <span>待確認訂單</span>
+          <strong>{{ pendingOrders.length }}</strong>
+          <small>需要接單或婉拒，會直接影響今日履約節奏</small>
+        </button>
+        <button class="command-secondary" type="button" @click="goToPaymentEvents({ result: 'PENDING' })">
+          <span>待對帳付款</span>
+          <strong>{{ pendingPaymentRequests.length }}</strong>
+          <small>付款請求尚未收到終態回呼</small>
+        </button>
+        <button class="command-secondary" type="button" @click="goToProducts(undefined, true)">
+          <span>低庫存品項</span>
+          <strong>{{ lowStockProducts.length }}</strong>
+          <small>可能造成無法履約或需要調整庫存</small>
+        </button>
+      </div>
+    </article>
+
     <article v-for="card in metricCards" :key="card.label" class="admin-card admin-card-pad metric-card">
       <p>{{ card.label }}</p>
       <strong>{{ card.value }}</strong>
       <span>{{ card.caption }}</span>
     </article>
 
-    <article class="admin-card admin-card-pad wide">
-      <div class="section-title">
+    <article class="admin-card admin-card-pad wide overview-card">
+      <div class="section-title compact-title">
         <div>
-          <p class="eyebrow">今日</p>
+          <p class="eyebrow">訂單</p>
           <h2>今日營運概覽</h2>
         </div>
-        <el-button type="primary" plain @click="loadDashboard">重新整理</el-button>
       </div>
 
       <div class="overview-grid">
-        <div v-for="item in orderCards" :key="item.label" class="overview-tile">
+        <button v-for="item in orderCards" :key="item.label" class="overview-tile" type="button" @click="goToOrders(item.status)">
           <span>{{ item.label }}</span>
           <strong>{{ item.value }}</strong>
-        </div>
+        </button>
       </div>
     </article>
 
@@ -246,10 +274,10 @@ const metricCards = computed(() => [
 ])
 
 const orderCards = computed(() => [
-  { label: '待確認', value: orderOverview.value.waitingOrders ?? 0 },
-  { label: '已確認', value: orderOverview.value.deliveredOrders ?? 0 },
-  { label: '已完成', value: orderOverview.value.completedOrders ?? 0 },
-  { label: '已取消', value: orderOverview.value.cancelledOrders ?? 0 }
+  { label: '待確認', value: orderOverview.value.waitingOrders ?? 0, status: 2 },
+  { label: '已確認', value: orderOverview.value.deliveredOrders ?? 0, status: 3 },
+  { label: '已完成', value: orderOverview.value.completedOrders ?? 0, status: 5 },
+  { label: '已取消', value: orderOverview.value.cancelledOrders ?? 0, status: 6 }
 ])
 
 const paymentAttentionCount = computed(() => {
@@ -396,8 +424,8 @@ onMounted(loadDashboard)
 
 .metric-card {
   grid-column: span 2;
-  min-height: 122px;
-  padding: 18px;
+  min-height: 92px;
+  padding: 15px 16px;
 }
 
 .metric-card p,
@@ -414,8 +442,8 @@ onMounted(loadDashboard)
 
 .metric-card strong {
   display: block;
-  margin: 12px 0 8px;
-  font-size: 28px;
+  margin: 8px 0 5px;
+  font-size: 24px;
   line-height: 1;
 }
 
@@ -432,7 +460,18 @@ onMounted(loadDashboard)
   justify-content: space-between;
   gap: 16px;
   align-items: flex-start;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
+}
+
+.compact-title {
+  margin-bottom: 10px;
+}
+
+.section-copy {
+  display: block;
+  margin-top: 6px;
+  color: var(--admin-muted);
+  font-size: 13px;
 }
 
 .section-actions {
@@ -450,22 +489,82 @@ onMounted(loadDashboard)
 
 h2 {
   margin: 0;
-  font-size: 22px;
+  font-size: 21px;
   line-height: 1.25;
+}
+
+.command-card {
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcfa 100%);
+}
+
+.command-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 1.3fr) repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.command-primary,
+.command-secondary,
+.overview-tile,
+.split-stat > div {
+  border: 1px solid var(--admin-line);
+  border-radius: 6px;
+  color: var(--admin-ink);
+  text-align: left;
+}
+
+.command-primary,
+.command-secondary,
+.overview-tile {
+  cursor: pointer;
+  transition: border-color 0.18s ease, background-color 0.18s ease;
+}
+
+.command-primary {
+  padding: 18px;
+  border-color: rgba(180, 35, 24, 0.22);
+  background: #fffafa;
+  box-shadow: inset 3px 0 0 rgba(180, 35, 24, 0.75);
+}
+
+.command-secondary {
+  padding: 16px;
+  background: #f8faf7;
+}
+
+.command-primary:hover,
+.command-secondary:hover,
+.overview-tile:hover {
+  border-color: rgba(47, 107, 66, 0.35);
+  background: #f5f8f3;
+}
+
+.command-primary span,
+.command-secondary span,
+.command-primary small,
+.command-secondary small {
+  display: block;
+  color: var(--admin-muted);
+}
+
+.command-primary strong,
+.command-secondary strong {
+  display: block;
+  margin: 10px 0 8px;
+  font-size: 32px;
+  line-height: 1;
 }
 
 .overview-grid,
 .split-stat {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
 }
 
 .overview-tile,
 .split-stat > div {
-  padding: 14px;
-  border: 1px solid var(--admin-line);
-  border-radius: 7px;
+  padding: 12px 14px;
   background: #f8faf7;
 }
 
@@ -478,8 +577,8 @@ h2 {
 .overview-tile strong,
 .split-stat strong {
   display: block;
-  margin-top: 8px;
-  font-size: 26px;
+  margin-top: 6px;
+  font-size: 23px;
 }
 
 .split-stat {
@@ -505,9 +604,9 @@ h2 {
 }
 
 .ops-panel {
-  padding: 16px;
+  padding: 14px;
   border: 1px solid var(--admin-line);
-  border-radius: 8px;
+  border-radius: 6px;
   background: #ffffff;
 }
 
@@ -547,9 +646,9 @@ h2 {
 
 .ops-row {
   width: 100%;
-  padding: 12px;
+  padding: 10px 12px;
   border: 1px solid var(--admin-line);
-  border-radius: 7px;
+  border-radius: 6px;
   background: #fbfcfa;
   color: var(--admin-ink);
   text-align: left;
@@ -584,10 +683,10 @@ h2 {
 
 .payment-health-card {
   min-width: 0;
-  min-height: 118px;
-  padding: 14px;
+  min-height: 104px;
+  padding: 12px;
   border: 1px solid var(--admin-line);
-  border-radius: 7px;
+  border-radius: 6px;
   background: #f8faf7;
   color: var(--admin-ink);
   text-align: left;
