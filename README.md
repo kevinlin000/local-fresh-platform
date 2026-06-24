@@ -218,11 +218,11 @@ erDiagram
 
 目前已補上 `OrderServiceImpl`、`OrderPaymentServiceImpl`、`DemoPaymentGateway`、`EcpayPaymentGateway`、`OrderCancellationServiceImpl`、`OrderFulfillmentServiceImpl` 與 `OrderStatusTransitionPolicy` 的核心測試，涵蓋付款請求與付款成功回呼分離、已取消 / 揪團中訂單不可付款、demo HMAC callback 驗證、ECPay CheckMacValue 驗證與 callback mapping、付款事件紀錄、重複付款 callback、concurrent callback race、已完成訂單不可取消、會員不可操作他人訂單、未付款拒單不退款、直送箱取消時還原組成商品庫存等案例。`local-fresh-server` 已接入 JaCoCo，可用 `mvn -pl local-fresh-server -am verify` 產生 HTML 報告，完整測試策略見 [docs/testing.md](docs/testing.md)。
 
-付款流程另外新增 `payment_event` 事件表，紀錄 `REQUEST_CREATED`、`CALLBACK_SUCCEEDED`、`CALLBACK_DUPLICATE` 與 `CALLBACK_REJECTED`，並提供 `GET /admin/paymentEvents/page` 依訂單編號、provider、事件類型、結果、金流交易編號、冪等鍵與時間範圍查詢。管理端另有 `GET /admin/paymentEvents/pendingRequests`，可列出已建立付款請求但尚未收到成功或拒絕 callback 的待對帳候選。後端已補 ECPay 查詢結果 parser 與 provider-query reconciliation service / job，排程預設關閉，可透過 `PAYMENT_RECONCILIATION_ENABLED=true` 啟用；測試覆蓋成功、仍待處理、拒絕、provider 不支援查詢、未知狀態、查詢錯誤、批次上限與 pending candidate gauge 更新。EC2 demo runtime 已可透過 SSM 切到 ECPay sandbox provider，Playwright 已完成綠界 stage checkout、OTP 付款、ReturnURL HTTP 200、訂單轉已付款與 `payment_event` 寫入 `CALLBACK_SUCCEEDED` 驗證；後續主要剩 Grafana/Alertmanager 接線與外部查詢排程的長時間運行證據。
+付款流程另外新增 `payment_event` 事件表，紀錄 `REQUEST_CREATED`、`CALLBACK_SUCCEEDED`、`CALLBACK_DUPLICATE` 與 `CALLBACK_REJECTED`，並提供 `GET /admin/paymentEvents/page` 依訂單編號、provider、事件類型、結果、金流交易編號、冪等鍵與時間範圍查詢。管理端另有 `GET /admin/paymentEvents/pendingRequests`，可列出已建立付款請求但尚未收到成功或拒絕 callback 的待對帳候選。後端已補 ECPay 查詢結果 parser 與 provider-query reconciliation service / job，排程預設關閉，可透過 `PAYMENT_RECONCILIATION_ENABLED=true` 啟用；測試覆蓋成功、仍待處理、拒絕、provider 不支援查詢、未知狀態、查詢錯誤、批次上限與 pending candidate gauge 更新。EC2 demo runtime 已可透過 SSM 切到 ECPay sandbox provider，Playwright 已完成綠界 stage checkout、OTP 付款、ReturnURL HTTP 200、訂單轉已付款與 `payment_event` 寫入 `CALLBACK_SUCCEEDED` 驗證；後續主要剩 live Grafana/Alertmanager 接線與外部查詢排程的長時間運行證據。
 
 管理端也新增「付款事件」頁，可直接查 demo 訂單的付款請求、成功回呼、重複回呼與拒絕回呼，作為未來金流對帳與客服查單的前台證據。
 
-Actuator 也補上最小業務 metrics，可查付款 callback 結果、付款 reconciliation 結果、最新待對帳候選數、訂單取消防重命中與揪團狀態轉換，用來回答「系統跑起來後怎麼看異常」。後端已提供 `/actuator/prometheus` scrape-format endpoint；目前仍不綁定完整 Prometheus/Grafana stack，查詢方式、scrape 範例與告警門檻見 [docs/observability.md](docs/observability.md)。
+Actuator 也補上最小業務 metrics，可查付款 callback 結果、付款 reconciliation 結果、最新待對帳候選數、訂單取消防重命中與揪團狀態轉換，用來回答「系統跑起來後怎麼看異常」。後端已提供 `/actuator/prometheus` scrape-format endpoint，並附一份可匯入 Grafana 的 [Local Fresh Operations dashboard](docs/grafana/local-fresh-operations-dashboard.json)；目前仍不綁定完整 Grafana/Alertmanager runtime，查詢方式、scrape 範例、dashboard 說明與告警門檻見 [docs/observability.md](docs/observability.md)。
 
 ### 4. 管理端操作 Audit Log
 
@@ -502,15 +502,15 @@ npm run smoke:browser
 
 ### 規劃中
 
-- **綠界 ECPay reconciliation**:已補重複 callback 測試、付款事件待對帳候選、ECPay 查詢結果 parser、reconciliation job 與 pending candidate gauge；下一步補 Grafana/Alertmanager 接線與外部查詢排程運行證據。
-- **可觀測性三件套**:Spring Boot Actuator + Prometheus + Grafana,自訂業務 metric(揪團成團率、支付成功率),搭配結構化 log 與 Trace ID 串穿全鏈路。
+- **綠界 ECPay reconciliation**:已補重複 callback 測試、付款事件待對帳候選、ECPay 查詢結果 parser、reconciliation job、pending candidate gauge 與 Grafana dashboard JSON；下一步補實機 Grafana/Alertmanager 接線與外部查詢排程運行證據。
+- **可觀測性三件套**:Spring Boot Actuator + Prometheus scrape endpoint + Grafana dashboard artifact，自訂業務 metric 涵蓋 payment callback、reconciliation backlog、取消防重與揪團狀態轉換；下一步再補結構化 log 與 Trace ID。
 - **CD 自動化**:在現有 GitHub Actions 測試/build 基礎上,加入 Docker image build、推送 ECR,並觸發 EC2 滾動部署。
 
 ### 已完成里程碑
 
 - 揪團分散式鎖壓測證據:100 concurrent join JMeter 壓測,`joinGroupBuy` error rate `0.00%`, P95 `2847.65 ms`, DB 最終 `current_count=101 / participant=100`
 - 訂單生命週期測試證據:`OrderStatusTransitionPolicy` 集中管理狀態轉移,核心 Order service 測試涵蓋付款、取消、婉拒、配送、完成與還庫存,並可用 JaCoCo 產生本地覆蓋率報告
-- 最小業務可觀測性:Actuator metrics 暴露付款 callback、訂單取消防重與揪團狀態轉換 counters,並保留環境變數覆蓋 exposure 範圍
+- 最小業務可觀測性:Actuator metrics 暴露付款 callback、reconciliation backlog、訂單取消防重與揪團狀態轉換,並保留環境變數覆蓋 exposure 範圍與 Grafana dashboard artifact
 - 本機 UI smoke precheck:不新增測試框架,以 Node script 檢查 backend health、前端 dev server、會員/管理端登入與核心資料 API
 - 真瀏覽器 UI smoke:以 Playwright Chromium 檢查會員端與管理端關鍵頁面可登入、可載入、可互動
 - 庫存異動防重:取消訂單時若已取消或已有 `ORDER_CANCEL_RESTORE` 庫存回補紀錄,service 會跳過重複退款、訂單更新與庫存回補；庫存流水另有 nullable `idempotency_key` unique constraint 作為 DB 最後防線

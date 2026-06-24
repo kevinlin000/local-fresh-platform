@@ -1,6 +1,6 @@
 # Observability
 
-This project keeps observability intentionally small: Spring Boot Actuator plus a few business counters that explain the most important portfolio workflows. The backend now exposes a Prometheus scrape endpoint, but it does not run a bundled Prometheus server, Grafana dashboard, or alert manager yet.
+This project keeps observability intentionally small: Spring Boot Actuator plus a few business counters that explain the most important portfolio workflows. The backend now exposes a Prometheus scrape endpoint and includes an importable Grafana dashboard artifact, but it does not run a bundled Prometheus server, live Grafana instance, or alert manager yet.
 
 ## Actuator Endpoints
 
@@ -97,11 +97,41 @@ scrape_configs:
       - targets: ["localfresh-demo.duckdns.org"]
 ```
 
+## Grafana Dashboard Artifact
+
+The repository includes an importable Grafana dashboard:
+
+```text
+docs/grafana/local-fresh-operations-dashboard.json
+```
+
+It uses the Prometheus datasource variable `${DS_PROMETHEUS}` and the
+`provider` dashboard variable. The dashboard is intentionally narrow and maps
+directly to the business-risk questions above:
+
+| Panel | Question it answers |
+|---|---|
+| Payment Callback Outcomes | Are callbacks succeeding, rejected, or being ignored as duplicates? |
+| Latest Reconciliation Backlog | How many pending payment requests did the latest reconciliation scan find? |
+| Reconciliation Query Errors | Is the provider query path failing right now? |
+| Rejected Callbacks | Are callback signatures or provider settings breaking user payment completion? |
+| Payment Reconciliation Outcomes | Are provider-query results being applied, rejected, pending, unknown, or unsupported? |
+| Order Cancellation Outcomes | Are cancellation idempotency guards being hit unexpectedly? |
+| Group-Buy Transitions | Are group-buy completion/failure/cancel transitions moving normally? |
+
+Import steps:
+
+1. Add the backend as a Prometheus scrape target using `/actuator/prometheus`.
+2. In Grafana, import `docs/grafana/local-fresh-operations-dashboard.json`.
+3. Select the Prometheus datasource for `${DS_PROMETHEUS}`.
+4. Exercise payment, cancellation, or group-buy flows, then verify the panels
+   show the corresponding counters/gauge.
+
 ## Alert Thresholds
 
 These are portfolio-grade alert rules rather than a deployed alert manager
 setup. They define the symptoms to watch when a Prometheus/Grafana stack is
-added later.
+wired later.
 
 | Severity | Symptom | Suggested threshold | First check |
 |---|---|---|---|
@@ -128,7 +158,8 @@ Runbook notes:
 
 This is enough to show production thinking in an interview: the system can answer whether payment callbacks are being accepted, rejected, duplicated, whether reconciliation is applying provider results or getting stuck, how many pending payment requests the latest reconciliation scan found, whether cancellation idempotency guards are being hit, and whether group-buy transitions are moving as expected.
 
-The scrape endpoint is available, but Grafana dashboards, alert manager wiring,
-and distributed tracing are intentionally deferred until the core demo and cloud
-environment are stable. The alert symptoms and first checks above are the
-contract for that later monitoring stack.
+The scrape endpoint and dashboard artifact are available, but a running Grafana
+instance, Alertmanager wiring, dashboard screenshots, and distributed tracing
+are intentionally deferred until the core demo and cloud environment are
+stable. The alert symptoms and first checks above are the contract for that
+later monitoring stack.

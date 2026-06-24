@@ -57,8 +57,9 @@ The previous deployed `404` blocker is resolved, and Playwright has verified
 that the deployed storefront reaches ECPay stage checkout and completes sandbox
 card OTP payment back through ReturnURL. The backend also has duplicate
 callback coverage, pending reconciliation candidates, a provider-query
-reconciliation job, and a pending-candidate gauge. The remaining payment gaps
-are Grafana/Alertmanager wiring and long-running external-query evidence.
+reconciliation job, a pending-candidate gauge, and a Grafana dashboard artifact.
+The remaining payment gaps are live Grafana/Alertmanager wiring and
+long-running external-query evidence.
 
 ## Local Contract Evidence
 
