@@ -58,10 +58,9 @@ Cart items, quantity controls, checkout steps, and a sticky order summary are se
 
 ![Cart](docs/screenshots/05-cart.png)
 
-### 6. My Orders — Multi-State Tracking
+### 6. My Orders — Status Timeline and After-Sales Tracking
 
-Lists orders across all states (completed / delivering / accepted / unpaid / canceled),
-with product details and cancellation notes.
+Order totals, payment state, fulfillment state, item count, and a status timeline are shown together, with unpaid orders able to continue into payment.
 
 ![My Orders](docs/screenshots/06-orders.png)
 

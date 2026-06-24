@@ -5,6 +5,7 @@
         <div>
           <p class="eyebrow">我的訂單</p>
           <h1>訂單與揪團紀錄</h1>
+          <p class="section-copy">追蹤付款、門市確認、配送與完成狀態；待付款訂單可直接接續付款流程。</p>
         </div>
         <el-button text type="success" @click="refreshCurrentTab">重新整理</el-button>
       </div>
@@ -21,8 +22,28 @@
           <el-button type="success" @click="goHome">回首頁逛逛</el-button>
         </el-empty>
 
-        <div v-else class="order-list">
-          <article v-for="order in orders" :key="order.id" class="order-card clickable-card" @click="openOrderDetail(order.id)">
+        <template v-else>
+          <div class="order-summary-strip" aria-label="訂單摘要">
+            <div>
+              <span>全部訂單</span>
+              <strong>{{ orderSummary.total }}</strong>
+            </div>
+            <div>
+              <span>待付款</span>
+              <strong>{{ orderSummary.pendingPayment }}</strong>
+            </div>
+            <div>
+              <span>處理中</span>
+              <strong>{{ orderSummary.inProgress }}</strong>
+            </div>
+            <div>
+              <span>已完成</span>
+              <strong>{{ orderSummary.completed }}</strong>
+            </div>
+          </div>
+
+          <div class="order-list">
+            <article v-for="order in orders" :key="order.id" class="order-card clickable-card" @click="openOrderDetail(order.id)">
             <div class="order-head">
               <div>
                 <div class="order-number">訂單編號 {{ order.number }}</div>
@@ -36,12 +57,29 @@
                 <el-tag :type="statusType(order.status)" effect="plain">
                   {{ orderStatusText(order.status) }}
                 </el-tag>
+                <span>{{ paymentText(order) }}</span>
                 <strong>NT$ {{ formatPrice(order.amount) }}</strong>
               </div>
             </div>
 
+            <div class="order-tracking" aria-label="訂單進度">
+              <span
+                v-for="step in orderProgressSteps"
+                :key="step.key"
+                :class="{ active: statusStepIndex(order.status) >= step.index }"
+              >
+                {{ step.label }}
+              </span>
+            </div>
+
+            <div class="order-fulfillment">
+              <span>{{ deliveryText(order) }}</span>
+              <span>{{ orderPrimaryItem(order) }}</span>
+              <span>{{ orderItemCount(order) }} 件商品</span>
+            </div>
+
             <div class="order-address">
-              {{ order.address }}
+              {{ order.consignee }} · {{ order.address }}
             </div>
 
             <div class="order-items">
@@ -65,11 +103,12 @@
                 :loading="payingOrderNumber === order.number"
                 @click.stop="handlePayOrder(order.number)"
               >
-                付款
+                前往付款
               </el-button>
             </div>
           </article>
-        </div>
+          </div>
+        </template>
       </template>
 
       <template v-else>
@@ -147,6 +186,16 @@
         </div>
       </div>
 
+      <div class="detail-timeline" aria-label="訂單進度">
+        <span
+          v-for="step in orderProgressSteps"
+          :key="step.key"
+          :class="{ active: statusStepIndex(selectedOrder.status) >= step.index }"
+        >
+          {{ step.label }}
+        </span>
+      </div>
+
       <div class="detail-section">
         <h3>商品列表</h3>
         <div class="detail-list">
@@ -192,7 +241,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus/es/components/message/index'
 import { useRoute, useRouter } from 'vue-router'
 import { fetchMyGroupBuys, type GroupBuyRecord } from '@/services/groupBuy'
@@ -211,6 +260,20 @@ const payingOrderNumber = ref<string | null>(null)
 const orderDetailVisible = ref(false)
 const loadingOrderDetail = ref(false)
 const selectedOrder = ref<OrderRecord | null>(null)
+
+const orderProgressSteps = [
+  { key: 'placed', label: '已下單', index: 0 },
+  { key: 'paid', label: '付款/確認', index: 1 },
+  { key: 'shipping', label: '配送中', index: 2 },
+  { key: 'completed', label: '完成', index: 3 }
+]
+
+const orderSummary = computed(() => ({
+  total: orders.value.length,
+  pendingPayment: orders.value.filter((order) => order.status === 1).length,
+  inProgress: orders.value.filter((order) => [2, 3, 4, 8].includes(order.status)).length,
+  completed: orders.value.filter((order) => order.status === 5).length
+}))
 
 function formatPrice(value: number) {
   return Number(value || 0).toLocaleString('zh-TW')
@@ -288,6 +351,62 @@ function statusType(status: number) {
     default:
       return 'primary'
   }
+}
+
+function statusStepIndex(status: number) {
+  switch (status) {
+    case 1:
+      return 0
+    case 2:
+    case 3:
+    case 8:
+      return 1
+    case 4:
+      return 2
+    case 5:
+      return 3
+    default:
+      return 0
+  }
+}
+
+function paymentText(order: OrderRecord) {
+  if (order.payStatus === 1) {
+    return '已付款'
+  }
+  if (order.status === 1) {
+    return '等待付款'
+  }
+  if (order.status === 6) {
+    return '已取消'
+  }
+  return '待門市確認'
+}
+
+function deliveryText(order: OrderRecord) {
+  if (order.status === 4) {
+    return '配送中'
+  }
+  if (order.status === 5) {
+    return '配送完成'
+  }
+  if (order.status === 6) {
+    return '訂單已取消'
+  }
+  return '門市確認配送'
+}
+
+function orderItemCount(order: OrderRecord) {
+  return order.orderDetailList.reduce((sum, item) => sum + item.number, 0)
+}
+
+function orderPrimaryItem(order: OrderRecord) {
+  const firstItem = order.orderDetailList[0]
+  if (!firstItem) {
+    return '商品整理中'
+  }
+  const extraCount = Math.max(order.orderDetailList.length - 1, 0)
+  return extraCount > 0 ? `${firstItem.name} 等 ${order.orderDetailList.length} 項` : firstItem.name
 }
 
 async function loadOrders() {
@@ -380,7 +499,7 @@ onMounted(async () => {
 .orders-shell {
   max-width: 1180px;
   margin: 0 auto;
-  padding: 24px 0 48px;
+  padding: 18px 0 48px;
 }
 
 .orders-card {
@@ -388,7 +507,7 @@ onMounted(async () => {
   border: 1px solid var(--farm-line);
   border-radius: 8px;
   background: var(--farm-surface);
-  box-shadow: 0 10px 28px rgba(28, 39, 32, 0.06);
+  box-shadow: 0 6px 18px rgba(28, 39, 32, 0.055);
 }
 
 .section-header {
@@ -416,19 +535,57 @@ h2 {
   color: var(--farm-text);
 }
 
+.section-copy {
+  max-width: 660px;
+  margin: 8px 0 0;
+  color: var(--farm-muted);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.order-summary-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.order-summary-strip div {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--farm-line);
+  border-radius: 8px;
+  background: #fbfcf8;
+}
+
+.order-summary-strip span {
+  display: block;
+  color: var(--farm-muted);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.order-summary-strip strong {
+  display: block;
+  margin-top: 5px;
+  color: var(--farm-primary-deep);
+  font-size: 22px;
+  line-height: 1.1;
+}
+
 .order-list,
 .groupbuy-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .order-card,
 .groupbuy-card {
-  padding: 16px;
+  padding: 14px;
   border: 1px solid var(--farm-line);
   border-radius: 8px;
-  background: #fbfcfa;
+  background: #ffffff;
 }
 
 .clickable-card {
@@ -438,7 +595,7 @@ h2 {
 
 .clickable-card:hover {
   border-color: rgba(83, 126, 62, 0.28);
-  box-shadow: 0 8px 20px rgba(28, 39, 32, 0.08);
+  box-shadow: 0 8px 18px rgba(28, 39, 32, 0.07);
 }
 
 .groupbuy-card {
@@ -488,6 +645,7 @@ h2 {
 
 .order-status-block {
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .order-number {
@@ -506,16 +664,18 @@ h2 {
 }
 
 .order-address {
-  margin-top: 12px;
+  margin-top: 10px;
   color: var(--farm-muted);
+  font-size: 14px;
+  line-height: 1.55;
 }
 
 .order-items {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 16px;
-  padding-top: 14px;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
   border-top: 1px dashed var(--farm-line);
 }
 
@@ -545,6 +705,63 @@ h2 {
   font-size: 13px;
 }
 
+.order-status-block > span,
+.order-fulfillment span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 8px;
+  border-radius: 7px;
+  background: #f1f4ef;
+  color: #405047;
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.order-status-block strong {
+  color: var(--farm-primary-deep);
+  font-size: 17px;
+}
+
+.order-tracking,
+.detail-timeline {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+  padding: 8px;
+  border: 1px solid var(--farm-line);
+  border-radius: 8px;
+  background: #f7f8f5;
+}
+
+.order-tracking span,
+.detail-timeline span {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 30px;
+  border-radius: 7px;
+  color: #657267;
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.order-tracking span.active,
+.detail-timeline span.active {
+  background: #ffffff;
+  color: var(--farm-primary-deep);
+  box-shadow: 0 4px 12px rgba(28, 39, 32, 0.055);
+}
+
+.order-fulfillment {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
 .order-remark {
   margin: 14px 0 0;
   color: var(--farm-muted);
@@ -566,6 +783,10 @@ h2 {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+}
+
+.detail-timeline {
+  margin-top: 0;
 }
 
 .detail-item,
@@ -613,6 +834,15 @@ h2 {
 
   .orders-card {
     padding: 14px;
+  }
+
+  .order-summary-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .order-tracking,
+  .detail-timeline {
+    grid-template-columns: 1fr;
   }
 
   .section-header,
