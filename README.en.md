@@ -26,7 +26,7 @@ Admin console
 
 ## Demo Screenshots
 
-End-to-end flow: storefront browsing → checkout → group buy → order tracking → admin operations.
+End-to-end flow: storefront browsing → checkout → group buy → order tracking → admin operations → payment reconciliation.
 
 ### 1. Home — Market Entry and Shopping Context
 
@@ -81,6 +81,12 @@ The product table supports search, status filters, low-stock filtering, listing-
 The admin order page surfaces pending confirmation, delivery, contact, address, and group-buy pre-order signals, then shows the next operational action for each order row.
 
 ![Admin Orders](docs/screenshots/09-admin-orders.png)
+
+### 10. Payment Events — Callback Reconciliation and Idempotency Tracking
+
+The payment event page turns rejected callbacks, pending payment requests, successful settlement, providers, and idempotency keys into a reconciliation workspace for tracking callback consistency.
+
+![Payment Events](docs/screenshots/10-admin-payment-events.png)
 
 ## Overview
 

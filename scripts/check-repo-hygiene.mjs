@@ -48,6 +48,7 @@ const forbiddenTerms = [
   '高德',
   '阿里'
 ]
+const expectedReadmeScreenshots = 10
 
 const failures = []
 
@@ -85,8 +86,8 @@ function checkScreenshotReferences(readmePath) {
   const content = fs.readFileSync(readmePath, 'utf8')
   const refs = [...content.matchAll(/!\[[^\]]*]\((docs\/screenshots\/[^)\s]+)\)/g)]
     .map((match) => match[1])
-  if (refs.length !== 9) {
-    failures.push(`${relative(readmePath)} should reference 9 screenshots, found ${refs.length}`)
+  if (refs.length !== expectedReadmeScreenshots) {
+    failures.push(`${relative(readmePath)} should reference ${expectedReadmeScreenshots} screenshots, found ${refs.length}`)
   }
   for (const ref of refs) {
     const absoluteRef = path.join(rootDir, ref)

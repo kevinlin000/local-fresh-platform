@@ -42,5 +42,9 @@ test.describe('local browser smoke', () => {
     await page.goto(`${config.adminBaseUrl}/products`)
     await expect(page.getByPlaceholder('搜尋商品名稱')).toBeVisible()
     await expect(page.getByRole('button', { name: '新增商品' })).toBeVisible()
+
+    await page.goto(`${config.adminBaseUrl}/payment-events`)
+    await expect(page.getByRole('heading', { name: '付款事件工作台' })).toBeVisible()
+    await expect(page.getByPlaceholder('訂單編號')).toBeVisible()
   })
 })

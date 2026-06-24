@@ -167,7 +167,8 @@ latest accepted screenshots are committed under `docs/screenshots/` and cover:
 
 - User storefront: home, product list, product detail, group-buy detail, cart,
   and order history.
-- Admin console: dashboard, product management, and order management.
+- Admin console: dashboard, product management, order management, and payment
+  event reconciliation.
 
 The local acceptance pass uses Playwright against the running dev services:
 

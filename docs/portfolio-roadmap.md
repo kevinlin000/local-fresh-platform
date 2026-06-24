@@ -132,7 +132,7 @@
 
 下一個建議切面是 **截圖證據重跑，然後再決定是否進 ECPay/雲端同步**：
 
-- 若要整理作品證據：用已新增的 local/browser smoke 當前置檢查，重跑 9 張 README 截圖與 demo acceptance，確認真實食物圖片、會員端、管理端畫面都維持最新狀態。
+- 若要整理作品證據：用已新增的 local/browser smoke 當前置檢查，重跑 10 張 README 截圖與 demo acceptance，確認真實食物圖片、會員端、管理端畫面都維持最新狀態。
 - 若要繼續衝全端觀感：下一刀可做管理端 dashboard 的更細緻優先級排序，但目前 orders/products 的操作面已足夠支撐面試 demo。
 - 若要往 ECPay sandbox 推進：目前 EC2 已切 sandbox provider 且 stage checkout 已通，下一步是完成 sandbox 卡號付款後確認訂單狀態、`payment_event`、callback metrics 與重複 callback replay。
 
