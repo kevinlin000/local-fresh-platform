@@ -10,6 +10,7 @@ import com.localfresh.entity.Product;
 import com.localfresh.entity.ProductInventoryLog;
 import com.localfresh.entity.ShippingAddress;
 import com.localfresh.entity.Orders;
+import com.localfresh.integration.support.MockWebSocketMvcIntegrationTest;
 import com.localfresh.mapper.CartMapper;
 import com.localfresh.mapper.GiftBoxMapper;
 import com.localfresh.mapper.GiftBoxProductMapper;
@@ -26,16 +27,12 @@ import com.localfresh.utils.JsonUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -56,11 +53,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
 @Transactional
-class ProductInventoryOrderTest {
+class ProductInventoryOrderTest extends MockWebSocketMvcIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -91,9 +85,6 @@ class ProductInventoryOrderTest {
 
     @Autowired
     private OrderMapper orderMapper;
-
-    @MockitoBean
-    private ServerEndpointExporter serverEndpointExporter;
 
     @MockitoBean
     private CacheService cacheService;

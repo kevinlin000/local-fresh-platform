@@ -6,17 +6,14 @@ import com.localfresh.client.oauth.GoogleProfile;
 import com.localfresh.constant.MessageConstant;
 import com.localfresh.entity.Member;
 import com.localfresh.exception.LoginFailedException;
+import com.localfresh.integration.support.MockWebSocketMvcIntegrationTest;
 import com.localfresh.mapper.MemberMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 import java.time.LocalDateTime;
 
@@ -29,10 +26,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-class MemberOAuthLoginTest {
+class MemberOAuthLoginTest extends MockWebSocketMvcIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -45,9 +39,6 @@ class MemberOAuthLoginTest {
 
     @MockitoBean
     private GoogleOAuthClient googleOAuthClient;
-
-    @MockitoBean
-    private ServerEndpointExporter serverEndpointExporter;
 
     @Autowired
     private com.localfresh.properties.AuthProperties authProperties;
