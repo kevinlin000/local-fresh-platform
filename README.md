@@ -13,7 +13,7 @@
 
 [https://d3hqnux25iirgl.cloudfront.net](https://d3hqnux25iirgl.cloudfront.net)
 
-> 用戶端 demo 開放使用,可透過開發模式快捷登入快速試玩,或使用 Google 帳號登入體驗完整 OAuth 流程。
+> 用戶端 demo 開放使用，可註冊或使用 Email / 密碼登入，也可透過 Google OAuth 或開發模式快捷登入體驗完整會員流程。
 
 管理端 demo
 
@@ -290,7 +290,7 @@ Actuator 也補上最小業務 metrics，可查付款 callback 結果、付款 r
 
 ### 7. Google OAuth 2.0 採授權碼流程而非 Implicit Flow
 
-會員登入採 Google OAuth 2.0 Authorization Code Flow，而不是已逐漸被淘汰的 Implicit Flow。前端只負責導向 Google 授權頁並接收 callback code，真正與 Google token endpoint 溝通、驗證 `id_token`、檢查 `aud / exp` 等工作放在後端進行，降低憑證暴露風險。服務層另外抽出 `GoogleOAuthClient` 作為外部依賴封裝，使測試可以直接 mock `GoogleProfile`，專注驗證 account merge、JWT 簽發與 mock login 開關，而不是把測試耦合到 Google SDK 細節。
+第三方登入中的 Google OAuth 採 Authorization Code Flow，而不是已逐漸被淘汰的 Implicit Flow。前端只負責導向 Google 授權頁並接收 callback code，真正與 Google token endpoint 溝通、驗證 `id_token`、檢查 `aud / exp` 等工作放在後端進行，降低憑證暴露風險。服務層另外抽出 `GoogleOAuthClient` 作為外部依賴封裝，使測試可以直接 mock `GoogleProfile`，專注驗證 account merge、JWT 簽發與 mock login 開關，而不是把測試耦合到 Google SDK 細節。
 
 ### 8. Redisson 與 Spring Data Redis 職責分離
 
