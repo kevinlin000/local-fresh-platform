@@ -6,6 +6,8 @@ import com.localfresh.constant.MessageConstant;
 import com.localfresh.constant.JwtClaimsConstant;
 import com.localfresh.dto.GoogleOAuthLoginDTO;
 import com.localfresh.dto.MemberLoginDTO;
+import com.localfresh.dto.MemberPasswordLoginDTO;
+import com.localfresh.dto.MemberRegisterDTO;
 import com.localfresh.entity.Member;
 import com.localfresh.exception.LoginFailedException;
 import com.localfresh.mapper.MemberMapper;
@@ -16,6 +18,7 @@ import com.localfresh.utils.JwtUtil;
 import com.localfresh.vo.MemberLoginVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -37,6 +40,9 @@ public class MemberServiceImpl implements MemberService {
 
     @Autowired
     private GoogleOAuthClient googleOAuthClient;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     /**
      * 假登入
@@ -67,6 +73,43 @@ public class MemberServiceImpl implements MemberService {
                     .createTime(LocalDateTime.now())
                     .build();
             memberMapper.insert(member);
+        }
+
+        return buildLoginVO(member);
+    }
+
+    @Override
+    public MemberLoginVO register(MemberRegisterDTO memberRegisterDTO) {
+        String email = normalizeEmail(memberRegisterDTO.getEmail());
+        if (memberMapper.selectByEmail(email) != null) {
+            throw new LoginFailedException(MessageConstant.EMAIL_ALREADY_REGISTERED);
+        }
+
+        Member member = Member.builder()
+                .email(email)
+                .name(memberRegisterDTO.getName().trim())
+                .phone(blankToNull(memberRegisterDTO.getPhone()))
+                .passwordHash(passwordEncoder.encode(memberRegisterDTO.getPassword()))
+                .loginProvider("password")
+                .createTime(LocalDateTime.now())
+                .build();
+        memberMapper.insert(member);
+
+        return buildLoginVO(member);
+    }
+
+    @Override
+    public MemberLoginVO passwordLogin(MemberPasswordLoginDTO memberPasswordLoginDTO) {
+        String email = normalizeEmail(memberPasswordLoginDTO.getEmail());
+        Member member = memberMapper.selectByEmail(email);
+        if (member == null) {
+            throw new LoginFailedException(MessageConstant.ACCOUNT_NOT_FOUND);
+        }
+        if (member.getPasswordHash() == null || member.getPasswordHash().isBlank()) {
+            throw new LoginFailedException(MessageConstant.PASSWORD_LOGIN_NOT_AVAILABLE);
+        }
+        if (!passwordEncoder.matches(memberPasswordLoginDTO.getPassword(), member.getPasswordHash())) {
+            throw new LoginFailedException(MessageConstant.PASSWORD_ERROR);
         }
 
         return buildLoginVO(member);
@@ -117,9 +160,30 @@ public class MemberServiceImpl implements MemberService {
 
         return MemberLoginVO.builder()
                 .id(member.getId())
-                .openid(member.getOpenid() != null ? member.getOpenid() : member.getGoogleSub())
+                .openid(resolveMemberIdentity(member))
                 .name(member.getName())
                 .token(token)
                 .build();
+    }
+
+    private String resolveMemberIdentity(Member member) {
+        if (member.getOpenid() != null) {
+            return member.getOpenid();
+        }
+        if (member.getGoogleSub() != null) {
+            return member.getGoogleSub();
+        }
+        return member.getEmail();
+    }
+
+    private String normalizeEmail(String email) {
+        return email.trim().toLowerCase();
+    }
+
+    private String blankToNull(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return value.trim();
     }
 }

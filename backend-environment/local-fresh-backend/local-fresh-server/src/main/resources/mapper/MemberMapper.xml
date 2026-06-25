@@ -5,8 +5,8 @@
 
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-        insert into member (openid, google_sub, email, name, phone, sex, id_number, avatar, avatar_url, login_provider, create_time)
-        values (#{openid}, #{googleSub}, #{email}, #{name}, #{phone}, #{sex}, #{idNumber}, #{avatar}, #{avatarUrl}, coalesce(#{loginProvider}, 'mock'), #{createTime})
+        insert into member (openid, google_sub, email, name, phone, password_hash, sex, id_number, avatar, avatar_url, login_provider, create_time)
+        values (#{openid}, #{googleSub}, #{email}, #{name}, #{phone}, #{passwordHash}, #{sex}, #{idNumber}, #{avatar}, #{avatarUrl}, coalesce(#{loginProvider}, 'mock'), #{createTime})
     </insert>
 
     <update id="updateOAuthInfo">

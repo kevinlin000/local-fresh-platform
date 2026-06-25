@@ -58,6 +58,111 @@ class MemberOAuthLoginTest {
     }
 
     @Test
+    void passwordRegisterShouldCreateMemberAndReturnToken() throws Exception {
+        mockMvc.perform(post("/user/member/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "email": "fresh.member@example.com",
+                                  "password": "FreshPass123",
+                                  "name": "林小菜",
+                                  "phone": "0912345678"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code", is(1)))
+                .andExpect(jsonPath("$.data.id").isNumber())
+                .andExpect(jsonPath("$.data.openid", is("fresh.member@example.com")))
+                .andExpect(jsonPath("$.data.name", is("林小菜")))
+                .andExpect(jsonPath("$.data.token").isString());
+
+        Member member = memberMapper.selectByEmail("fresh.member@example.com");
+        assertNotNull(member);
+        assertNotNull(member.getPasswordHash());
+        org.junit.jupiter.api.Assertions.assertNotEquals("FreshPass123", member.getPasswordHash());
+    }
+
+    @Test
+    void passwordRegisterShouldRejectDuplicateEmail() throws Exception {
+        memberMapper.insert(Member.builder()
+                .email("duplicate@example.com")
+                .name("既有會員")
+                .passwordHash("$2a$10$existingHashForContractTest")
+                .loginProvider("password")
+                .createTime(LocalDateTime.now())
+                .build());
+
+        mockMvc.perform(post("/user/member/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "email": "duplicate@example.com",
+                                  "password": "FreshPass123",
+                                  "name": "重複會員"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code", is(0)))
+                .andExpect(jsonPath("$.msg", is("Email 已被註冊")));
+    }
+
+    @Test
+    void passwordLoginShouldReturnTokenForRegisteredMember() throws Exception {
+        mockMvc.perform(post("/user/member/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "email": "login.member@example.com",
+                                  "password": "FreshPass123",
+                                  "name": "登入會員"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code", is(1)));
+
+        mockMvc.perform(post("/user/member/password-login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "email": "login.member@example.com",
+                                  "password": "FreshPass123"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code", is(1)))
+                .andExpect(jsonPath("$.data.openid", is("login.member@example.com")))
+                .andExpect(jsonPath("$.data.name", is("登入會員")))
+                .andExpect(jsonPath("$.data.token").isString());
+    }
+
+    @Test
+    void passwordLoginShouldRejectWrongPassword() throws Exception {
+        mockMvc.perform(post("/user/member/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "email": "wrong-password@example.com",
+                                  "password": "FreshPass123",
+                                  "name": "登入失敗會員"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code", is(1)));
+
+        mockMvc.perform(post("/user/member/password-login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "email": "wrong-password@example.com",
+                                  "password": "BadPass123"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code", is(0)))
+                .andExpect(jsonPath("$.msg", is(MessageConstant.PASSWORD_ERROR)));
+    }
+
+    @Test
     void googleOAuthShouldCreateNewMember() throws Exception {
         when(googleOAuthClient.fetchProfile(anyString(), anyString()))
                 .thenReturn(GoogleProfile.builder()

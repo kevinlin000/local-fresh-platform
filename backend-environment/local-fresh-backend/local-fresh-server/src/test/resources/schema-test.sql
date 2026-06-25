@@ -50,6 +50,7 @@ CREATE TABLE member (
     email       VARCHAR(128),
     name        VARCHAR(32),
     phone       VARCHAR(11),
+    password_hash VARCHAR(100),
     sex         VARCHAR(2),
     id_number   VARCHAR(18),
     avatar      VARCHAR(500),
@@ -59,6 +60,7 @@ CREATE TABLE member (
 );
 
 CREATE UNIQUE INDEX uk_member_google_sub ON member (google_sub);
+CREATE UNIQUE INDEX uk_member_email ON member (email);
 
 CREATE TABLE product (
     id           BIGINT AUTO_INCREMENT PRIMARY KEY,

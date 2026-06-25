@@ -33,6 +33,9 @@ public class Member implements Serializable {
     // 手機號碼
     private String phone;
 
+    // BCrypt 密碼雜湊
+    private String passwordHash;
+
     // 性別 0 女 1 男
     private String sex;
 

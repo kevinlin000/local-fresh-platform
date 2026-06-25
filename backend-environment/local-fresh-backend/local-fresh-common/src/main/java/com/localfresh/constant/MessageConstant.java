@@ -22,6 +22,8 @@ public class MessageConstant {
     public static final String ADDRESS_BOOK_IS_NULL = "會員地址為空，不能下單";
     public static final String LOGIN_FAILED = "會員登入失敗";
     public static final String LOGIN_DISABLED = "此登入方式已停用";
+    public static final String EMAIL_ALREADY_REGISTERED = "Email 已被註冊";
+    public static final String PASSWORD_LOGIN_NOT_AVAILABLE = "此帳號尚未設定密碼登入";
     public static final String UPLOAD_FAILED = "檔案上傳失敗";
     public static final String SETMEAL_ENABLE_FAILED = "直送箱內含未上架的商品，無法上架";
     public static final String PASSWORD_EDIT_FAILED = "密碼修改失敗";

@@ -2,6 +2,8 @@ package com.localfresh.controller.user;
 
 import com.localfresh.dto.GoogleOAuthLoginDTO;
 import com.localfresh.dto.MemberLoginDTO;
+import com.localfresh.dto.MemberPasswordLoginDTO;
+import com.localfresh.dto.MemberRegisterDTO;
 import com.localfresh.result.Result;
 import com.localfresh.service.MemberService;
 import com.localfresh.vo.MemberLoginVO;
@@ -36,6 +38,20 @@ public class MemberController {
         log.info("會員登入：{}", userLoginDTO.getCode());
         return Result.success(memberService.mockLogin(userLoginDTO));
 
+    }
+
+    @PostMapping("/register")
+    @Operation(summary = "會員註冊")
+    public Result<MemberLoginVO> register(@Valid @RequestBody MemberRegisterDTO memberRegisterDTO) {
+        log.info("會員註冊：{}", memberRegisterDTO.getEmail());
+        return Result.success(memberService.register(memberRegisterDTO));
+    }
+
+    @PostMapping("/password-login")
+    @Operation(summary = "Email 密碼登入")
+    public Result<MemberLoginVO> passwordLogin(@Valid @RequestBody MemberPasswordLoginDTO memberPasswordLoginDTO) {
+        log.info("會員密碼登入：{}", memberPasswordLoginDTO.getEmail());
+        return Result.success(memberService.passwordLogin(memberPasswordLoginDTO));
     }
 
     @PostMapping("/oauth/google")
