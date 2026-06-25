@@ -2,27 +2,21 @@ package com.localfresh.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.localfresh.exception.ForbiddenOperationException;
+import com.localfresh.integration.support.MockInfrastructureIntegrationTest;
 import com.localfresh.service.GroupBuyService;
 import com.localfresh.test.support.LoginResult;
 import com.localfresh.utils.JsonUtil;
 import com.localfresh.vo.GroupBuyParticipantVO;
 import com.localfresh.vo.GroupBuyVO;
-import com.localfresh.websocket.WebSocketServer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -36,30 +30,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
 @Transactional
-class GroupBuyControllerTest {
+class GroupBuyControllerTest extends MockInfrastructureIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockitoBean
     private GroupBuyService groupBuyService;
-
-    @MockitoBean(name = "redisTemplate")
-    @SuppressWarnings("rawtypes")
-    private RedisTemplate redisTemplate;
-
-    @MockitoBean
-    private RedisConnectionFactory redisConnectionFactory;
-
-    @MockitoBean
-    private ServerEndpointExporter serverEndpointExporter;
-
-    @MockitoBean
-    private WebSocketServer webSocketServer;
 
     private String token;
     private GroupBuyVO groupBuyVO;

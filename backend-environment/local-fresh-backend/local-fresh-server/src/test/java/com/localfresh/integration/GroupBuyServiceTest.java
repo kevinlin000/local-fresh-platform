@@ -12,6 +12,7 @@ import com.localfresh.entity.Orders;
 import com.localfresh.entity.Product;
 import com.localfresh.entity.ProductInventoryLog;
 import com.localfresh.entity.ShippingAddress;
+import com.localfresh.integration.support.MockRedissonInfrastructureIntegrationTest;
 import com.localfresh.mapper.GroupBuyMapper;
 import com.localfresh.mapper.GroupBuyParticipantMapper;
 import com.localfresh.mapper.MemberMapper;
@@ -22,22 +23,13 @@ import com.localfresh.mapper.ProductMapper;
 import com.localfresh.mapper.ShippingAddressMapper;
 import com.localfresh.service.GroupBuyService;
 import com.localfresh.vo.GroupBuyVO;
-import com.localfresh.websocket.WebSocketServer;
 import org.junit.jupiter.api.Assertions;
-import org.redisson.api.RedissonClient;
 import org.redisson.api.RLock;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -55,11 +47,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
 @Transactional
-class GroupBuyServiceTest {
+class GroupBuyServiceTest extends MockRedissonInfrastructureIntegrationTest {
 
     @Autowired
     private GroupBuyService groupBuyService;
@@ -87,22 +76,6 @@ class GroupBuyServiceTest {
 
     @Autowired
     private OrderDetailMapper orderDetailMapper;
-
-    @MockitoBean(name = "redisTemplate")
-    @SuppressWarnings("rawtypes")
-    private RedisTemplate redisTemplate;
-
-    @MockitoBean
-    private RedisConnectionFactory redisConnectionFactory;
-
-    @MockitoBean
-    private RedissonClient redissonClient;
-
-    @MockitoBean
-    private ServerEndpointExporter serverEndpointExporter;
-
-    @MockitoBean
-    private WebSocketServer webSocketServer;
 
     private Long memberId;
     private Long productId;
