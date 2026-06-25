@@ -16,5 +16,6 @@ public class MemberPasswordLoginDTO implements Serializable {
     private String email;
 
     @NotBlank(message = "密碼不能為空")
+    @Size(min = 8, max = 64, message = "密碼長度需為 8 到 64 個字")
     private String password;
 }
