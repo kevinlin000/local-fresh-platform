@@ -56,19 +56,19 @@
               <h2>營運資訊</h2>
               <span>配送區域：台北市、新北市示範區</span>
               <span>客服時間：週一至週日 09:00-21:00</span>
-              <span>付款方式：展示支付、綠界測試環境</span>
+              <span>付款方式：線上結帳、訂單狀態可查</span>
             </section>
           </nav>
 
           <div class="footer-service-note" aria-label="服務承諾">
             <span>冷藏配送</span>
             <span>每日 14:00 前截單</span>
-            <span>付款與訂單狀態全程留痕</span>
+            <span>付款狀態同步更新</span>
           </div>
 
           <div class="footer-bottom">
             <span>© 2026 菜籃日 Local Fresh Platform</span>
-            <span>展示環境，訂單與付款資料僅供作品驗證。</span>
+            <span>在地小農生鮮配送服務</span>
           </div>
         </div>
       </footer>

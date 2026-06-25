@@ -8,6 +8,10 @@ import {
 import {
   googleOAuthLogin as googleOAuthLoginRequest,
   mockLogin as mockLoginRequest,
+  passwordLogin as passwordLoginRequest,
+  register as registerRequest,
+  type MemberPasswordLoginRequest,
+  type MemberRegisterRequest,
   type MemberLoginPayload
 } from '@/services/member'
 
@@ -49,6 +53,18 @@ export const useMemberStore = defineStore('member', () => {
     return payload
   }
 
+  async function passwordLogin(credentials: MemberPasswordLoginRequest) {
+    const payload = await passwordLoginRequest(credentials)
+    setMember(payload)
+    return payload
+  }
+
+  async function register(input: MemberRegisterRequest) {
+    const payload = await registerRequest(input)
+    setMember(payload)
+    return payload
+  }
+
   async function googleOAuthLogin(code: string, redirectUri: string) {
     const payload = await googleOAuthLoginRequest(code, redirectUri)
     setMember(payload)
@@ -62,6 +78,8 @@ export const useMemberStore = defineStore('member', () => {
     setMember,
     clearMember,
     mockLogin,
+    passwordLogin,
+    register,
     googleOAuthLogin
   }
 })

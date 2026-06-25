@@ -7,9 +7,31 @@ export interface MemberLoginPayload {
   token: string
 }
 
+export interface MemberPasswordLoginRequest {
+  email: string
+  password: string
+}
+
+export interface MemberRegisterRequest extends MemberPasswordLoginRequest {
+  name: string
+  phone?: string
+}
+
 export function mockLogin(code: string) {
   return unwrap<MemberLoginPayload>(
     http.post('/user/member/login', { code })
+  )
+}
+
+export function passwordLogin(payload: MemberPasswordLoginRequest) {
+  return unwrap<MemberLoginPayload>(
+    http.post('/user/member/password-login', payload)
+  )
+}
+
+export function register(payload: MemberRegisterRequest) {
+  return unwrap<MemberLoginPayload>(
+    http.post('/user/member/register', payload)
   )
 }
 
