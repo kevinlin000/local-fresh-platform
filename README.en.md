@@ -528,13 +528,15 @@ npm run smoke:browser
 
 For the current completeness assessment and next-priority plan, see
 [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md). The EC2 backend is
-synced to commit `8d7a0d5eeefe`; public `/actuator/info` and
-`/payment/callback` readiness pass, and the runtime has been switched to
-`PAYMENT_PROVIDER=ecpay` through the SSM switch script. Playwright has verified
-the CloudFront storefront redirect into ECPay stage checkout, OTP payment
-completion, ReturnURL HTTP 200, paid order state, and `CALLBACK_SUCCEEDED`
-payment evidence. The remaining payment gap is live Grafana/Alertmanager wiring
-and long-running external-query evidence.
+synced to application release commit `4ef82ed7cc76`; public `/actuator/info` and
+`/payment/callback` readiness pass, and the runtime remains switched to
+`PAYMENT_PROVIDER=ecpay` through the SSM-managed systemd drop-in. Playwright has
+verified the CloudFront storefront redirect into ECPay stage checkout, OTP
+payment completion, ReturnURL HTTP 200, paid order state, and
+`CALLBACK_SUCCEEDED` payment evidence. Provider-query reconciliation, the
+pending-candidate gauge, and the Grafana dashboard artifact are in place; the
+remaining payment gap is live Grafana/Alertmanager wiring and long-running
+external-query evidence.
 
 ## License
 

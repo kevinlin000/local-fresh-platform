@@ -548,7 +548,7 @@ npm run smoke:browser
 
 ### 進行中
 
-- **ECPay sandbox checkout 證據**: EC2 backend 已同步到 commit `8d7a0d5eeefe`，public `/actuator/info` 與 `/payment/callback` preflight 已通過，runtime 維持 `PAYMENT_PROVIDER=ecpay`。Playwright 已從 CloudFront 會員端建立待付款訂單、導向綠界 stage checkout，並完成 OTP 付款成功回流；Nginx 收到 ECPay `POST /payment/callback` HTTP `200`，訂單 `2068979325367758848` 轉為 `status=2`、`pay_status=1`，`payment_event` 寫入 `ECPAY / CALLBACK_SUCCEEDED / SUCCEEDED`。
+- **ECPay sandbox checkout 證據**: EC2 backend 已同步到 application release commit `4ef82ed7cc76`，public `/actuator/info` 與 `/payment/callback` preflight 已通過，runtime 維持 `PAYMENT_PROVIDER=ecpay`。Playwright 已從 CloudFront 會員端建立待付款訂單、導向綠界 stage checkout，並完成 OTP 付款成功回流；Nginx 收到 ECPay `POST /payment/callback` HTTP `200`，訂單 `2068979325367758848` 轉為 `status=2`、`pay_status=1`，`payment_event` 寫入 `ECPAY / CALLBACK_SUCCEEDED / SUCCEEDED`。目前已補 provider-query reconciliation job、pending candidate gauge 與 Grafana dashboard artifact；後續主要剩 live Grafana/Alertmanager 接線與長時間排程運行證據。
 - **Browser UI smoke**:在 dependency-free local precheck 之外，新增 Playwright Chromium smoke，覆蓋會員登入/home/orders 與管理端登入/dashboard/orders/products。
 
 ### 規劃中

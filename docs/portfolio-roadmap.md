@@ -101,7 +101,7 @@
 理由：
 
 - 付款事件、callback parser、前端 POST form、observability 與 public callback preflight 已具備。
-- EC2 backend 已同步到 commit `8d7a0d5eeefe`，`/actuator/info` 與 `/payment/callback` public preflight 已通過。
+- EC2 backend 已同步到 application release commit `4ef82ed7cc76`，`/actuator/info` 與 `/payment/callback` public preflight 已通過。
 - 已新增 `scripts/switch-ecpay-sandbox-ssm.sh`，並用 SSM 寫入獨立 systemd payment drop-in，確認 effective `PAYMENT_PROVIDER=ecpay`。
 - 這仍不等於正式金流上線；stage checkout、OTP 成功付款、ReturnURL HTTP 200、訂單轉已付款、`CALLBACK_SUCCEEDED`、重複 callback 測試、待對帳候選查詢、provider-query reconciliation job、pending candidate gauge 與 Grafana dashboard JSON 已通，還缺 live Grafana/Alertmanager 接線與外部查詢排程的長時間運行證據。
 
@@ -113,6 +113,7 @@
 - 2026-06-21 已透過 SSM 切到 `PAYMENT_PROVIDER=ecpay`，HashKey/HashIV 只在 status 輸出中遮罩顯示。
 - 2026-06-22 已用 Playwright 從 CloudFront 會員端建立訂單 `2068949685467095040`，導向 ECPay stage checkout，並確認 `payment_event` 寫入 `ECPAY / REQUEST_CREATED / PENDING`。
 - 2026-06-22 已完成訂單 `2068979325367758848` 的 ECPay stage OTP 付款，ReturnURL 經 Nginx 回到 Spring Boot HTTP `200`，訂單變成 `status=2`、`pay_status=1`，`payment_event` 寫入 `ECPAY / CALLBACK_SUCCEEDED / SUCCEEDED`。
+- 2026-06-25 已將 EC2 backend 更新到 application release commit `4ef82ed7cc76`，保留 ECPay sandbox provider drop-in，並重新通過 public readiness：health、Nginx、`/actuator/info` commit、`/payment/callback` invalid-signature `0|FAIL` 與 CloudFront storefront。
 
 剛完成的本地切面是 **UI smoke precheck + browser smoke + member/admin commerce polish**：
 

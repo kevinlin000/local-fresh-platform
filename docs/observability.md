@@ -31,7 +31,7 @@ MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED=true
     "application": "local-fresh-server",
     "profiles": ["prod"],
     "commit": "42c12ce",
-    "branch": "hardening-and-upgrade",
+    "branch": "main",
     "paymentCallbackPath": "/payment/callback"
   }
 }
@@ -41,7 +41,7 @@ Set these environment variables on EC2 when starting the Spring Boot process:
 
 ```bash
 SOURCE_COMMIT=<deployed git commit>
-SOURCE_BRANCH=hardening-and-upgrade
+SOURCE_BRANCH=main
 ```
 
 The checked-in `deploy/ec2/local-fresh-server.env.example` template includes

@@ -30,7 +30,7 @@
       "title": "Runbook",
       "tooltip": "Local Fresh observability runbook",
       "type": "link",
-      "url": "https://github.com/kevinlin000/local-fresh-platform/blob/hardening-and-upgrade/docs/observability.md"
+      "url": "https://github.com/kevinlin000/local-fresh-platform/blob/main/docs/observability.md"
     }
   ],
   "panels": [

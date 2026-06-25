@@ -23,11 +23,8 @@ Direct deployment requires one working EC2 command channel:
 - AWS Systems Manager Session Manager with the required instance profile and
   IAM permissions.
 
-The local `local-fresh-cli` AWS profile can discover the EC2 instance and can
-send an EC2 Instance Connect public key, but it currently cannot complete the
-deploy from this workstation because SSH to TCP `22` times out and the profile
-does not have permission to inspect or update the security group. Fix one of
-the access paths above before running the copy/restart steps below.
+The current demo instance supports AWS Systems Manager. SSH does not need to be
+opened for routine demo backend refreshes.
 
 ## Package A Release
 
@@ -76,10 +73,23 @@ Set these variables on the Spring Boot process:
 
 ```bash
 SOURCE_COMMIT=<deployed git commit>
-SOURCE_BRANCH=hardening-and-upgrade
+SOURCE_BRANCH=main
 ```
 
 They are intentionally non-secret and are exposed through `/actuator/info`.
+
+The current EC2 runtime stores these values in:
+
+```text
+/etc/systemd/system/local-fresh-backend.service.d/release.conf
+```
+
+The active demo release as of 2026-06-25 is:
+
+```text
+SOURCE_COMMIT=4ef82ed7cc76
+SOURCE_BRANCH=main
+```
 
 ## Runtime Templates
 
@@ -90,13 +100,76 @@ The repository includes non-secret EC2 runtime templates under `deploy/ec2/`:
 - `local-fresh-server.service`: systemd service for `/opt/local-fresh/current.jar`.
 - `nginx-localfresh-demo.conf`: HTTPS reverse proxy to `127.0.0.1:8080`.
 
-Copy these templates to EC2, replace placeholders outside git, then validate:
+These templates document the intended normalized layout. The current demo EC2
+service still uses the earlier layout:
+
+```text
+service: local-fresh-backend.service
+working directory: /home/ubuntu/local-fresh
+jar path: /home/ubuntu/local-fresh/sky-server-1.0-SNAPSHOT.jar
+release archive path: /home/ubuntu/local-fresh/releases/<commit>/local-fresh-server.jar
+application config: /home/ubuntu/local-fresh/application-prod.yml
+payment drop-in: /etc/systemd/system/local-fresh-backend.service.d/payment-provider.conf
+release drop-in: /etc/systemd/system/local-fresh-backend.service.d/release.conf
+```
+
+If you normalize the runtime later, update the service and this runbook in the
+same change. Until then, deploy to the existing path above.
+
+Validate service configuration after any runtime-template change:
 
 ```bash
 sudo nginx -t
 sudo systemctl daemon-reload
-sudo systemctl restart local-fresh-server
-sudo systemctl status local-fresh-server --no-pager
+sudo systemctl restart local-fresh-backend.service
+sudo systemctl status local-fresh-backend.service --no-pager
+```
+
+## Deploy Through SSM + S3
+
+Use this path when SSH is intentionally closed.
+
+1. Upload the verified jar and metadata to a private S3 path or a controlled
+   release prefix:
+
+   ```bash
+   aws s3 cp output/backend-release/<commit>/local-fresh-server-<commit>.jar \
+     s3://<release-bucket>/backend-release/<commit>/local-fresh-server-<commit>.jar
+   aws s3 cp output/backend-release/<commit>/release-manifest.txt \
+     s3://<release-bucket>/backend-release/<commit>/release-manifest.txt
+   aws s3 cp output/backend-release/<commit>/SHA256SUMS \
+     s3://<release-bucket>/backend-release/<commit>/SHA256SUMS
+   ```
+
+2. Generate a short-lived presigned URL for the jar:
+
+   ```bash
+   aws s3 presign \
+     s3://<release-bucket>/backend-release/<commit>/local-fresh-server-<commit>.jar \
+     --expires-in 3600
+   ```
+
+3. Send an SSM `AWS-RunShellScript` command that:
+
+   - downloads the jar with `curl -fL --retry 3`.
+   - verifies the SHA256 from `release-manifest.txt`.
+   - installs the jar to `/home/ubuntu/local-fresh/releases/<commit>/`.
+   - backs up `/home/ubuntu/local-fresh/sky-server-1.0-SNAPSHOT.jar`.
+   - replaces `/home/ubuntu/local-fresh/sky-server-1.0-SNAPSHOT.jar`.
+   - writes `release.conf` with `SOURCE_COMMIT` and `SOURCE_BRANCH`.
+   - restarts `local-fresh-backend.service`.
+   - checks local `/actuator/health` and `/actuator/info`.
+
+4. Run the public readiness check:
+
+   ```bash
+   EXPECTED_DEPLOY_COMMIT=<commit> scripts/check-ecpay-sandbox-readiness.sh
+   scripts/switch-ecpay-sandbox-ssm.sh status
+   ```
+
+The 2026-06-25 `portfolio-v1.0.0` refresh used this path to deploy
+`4ef82ed7cc76` while preserving the existing ECPay sandbox payment-provider
+drop-in.
 ```
 
 ## Verify The Deployment
@@ -132,9 +205,12 @@ scripts/switch-ecpay-sandbox-ssm.sh status
 
 ## Rollback
 
-Keep the previous jar under `/opt/local-fresh/releases/<previous-commit>/`.
-Rollback should restore the `current.jar` symlink, set `SOURCE_COMMIT` back to
-the previous commit, restart the service, and rerun the same preflight.
+Keep the previous jar backup under `/home/ubuntu/local-fresh/` and release jars
+under `/home/ubuntu/local-fresh/releases/<previous-commit>/`. Rollback should
+copy the previous jar back to
+`/home/ubuntu/local-fresh/sky-server-1.0-SNAPSHOT.jar`, set `SOURCE_COMMIT`
+back to the previous commit in `release.conf`, restart
+`local-fresh-backend.service`, and rerun the same preflight.
 
 To rollback only the payment provider while keeping the deployed jar and
 deployment identity intact:
