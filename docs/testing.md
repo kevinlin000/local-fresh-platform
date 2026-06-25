@@ -12,6 +12,25 @@ backend portfolio project.
 | Spring integration tests | Validate HTTP/interceptor/mapper behavior against H2 in MySQL mode. | IDOR order/address regression tests, product/cart API tests, audit-log API tests, group-buy controller tests |
 | Redis integration tests | Validate Redisson lock behavior against real Redis through Testcontainers. | `GroupBuyRedisIntegrationTest`, `GroupBuyExpirationServiceTest` |
 
+## Spring Test Contexts
+
+The backend integration tests are grouped by the external boundary they need to
+replace. This keeps ordinary `mvn verify` runs fast while preserving real
+integration coverage for the places where mocks would hide the main risk.
+
+| Test support class | Replaces | Used when |
+|---|---|---|
+| `MockWebSocketMvcIntegrationTest` | `ServerEndpointExporter` only | MockMvc API tests that use H2/MyBatis but do not need Redis, Redisson, or provider-specific infrastructure. Examples: member auth, product/cart, inventory/order, audit-log, workspace, and payment-event API tests. |
+| `MockInfrastructureIntegrationTest` | WebSocket endpoint registration, Redis connection factory, and `redisTemplate` | MockMvc tests that exercise HTTP/interceptor/mapper behavior but should not require a real Redis server. Examples: IDOR, ThreadLocal cleanup, and sales top-10 regression tests. |
+| `MockRedissonInfrastructureIntegrationTest` | Everything in `MockInfrastructureIntegrationTest` plus `RedissonClient` | Service/controller tests that need to stub Redisson lock behavior directly, such as group-buy service tests that force lock acquisition paths. |
+| `RedisContainerTestBase` | Nothing; it wires a real Redis container through dynamic properties | Tests where the Redisson lock itself is the subject under test. These are tagged `redis` and excluded from the default Maven verify run unless requested explicitly. |
+
+The rule is: mock infrastructure only when it is not the behavior under test.
+For payment callbacks, order state transitions, inventory restore, IDOR guards,
+and OAuth account merging, mocks isolate external dependencies so the test can
+assert application behavior. For distributed group-buy locking, Testcontainers
+is used because a pure mock would skip the concurrency risk.
+
 ## Default Backend Test Command
 
 The default backend quality gate is:
@@ -44,6 +63,11 @@ The generated HTML report is written to:
 ```text
 backend-environment/local-fresh-backend/local-fresh-server/target/site/jacoco/index.html
 ```
+
+As of the latest local verification, `mvn verify` for `local-fresh-server`
+passes `181` tests with `0` failures and `5` intentionally skipped legacy /
+manual tests. The Redis-tagged Testcontainers suite remains opt-in because it
+requires Docker and covers a narrower concurrency boundary.
 
 In GitHub Actions, the backend job uploads two artifacts:
 
@@ -122,8 +146,6 @@ The current coverage emphasis is the order lifecycle:
 ## Redis / Testcontainers Command
 
 Run the Redis-tagged concurrency tests when Docker is available:
-
-## Redis / Testcontainers Command
 
 ```bash
 cd backend-environment/local-fresh-backend
