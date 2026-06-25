@@ -1,19 +1,15 @@
 package com.localfresh.integration;
 
 import com.localfresh.constant.JwtClaimsConstant;
+import com.localfresh.integration.support.MockWebSocketMvcIntegrationTest;
 import com.localfresh.properties.JwtProperties;
 import com.localfresh.utils.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,11 +18,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
 @Transactional
-class AdminOperationLogApiTest {
+class AdminOperationLogApiTest extends MockWebSocketMvcIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -36,9 +29,6 @@ class AdminOperationLogApiTest {
 
     @Autowired
     private JwtProperties jwtProperties;
-
-    @MockitoBean
-    private ServerEndpointExporter serverEndpointExporter;
 
     @BeforeEach
     void setUp() {
