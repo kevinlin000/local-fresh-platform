@@ -546,10 +546,10 @@ npm run smoke:browser
 
 本專案目前已完成核心業務閉環,接下來規劃的迭代方向圍繞「展示工程深度」與「貼近真實生產系統」兩個目標進行。完整評估矩陣請參考 [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md)。
 
-### 進行中
+### 目前重點
 
-- **ECPay sandbox checkout 證據**: EC2 backend 已同步到 application release commit `4ef82ed7cc76`，public `/actuator/info` 與 `/payment/callback` preflight 已通過，runtime 維持 `PAYMENT_PROVIDER=ecpay`。Playwright 已從 CloudFront 會員端建立待付款訂單、導向綠界 stage checkout，並完成 OTP 付款成功回流；Nginx 收到 ECPay `POST /payment/callback` HTTP `200`，訂單 `2068979325367758848` 轉為 `status=2`、`pay_status=1`，`payment_event` 寫入 `ECPAY / CALLBACK_SUCCEEDED / SUCCEEDED`。目前已補 provider-query reconciliation job、pending candidate gauge 與 Grafana dashboard artifact；後續主要剩 live Grafana/Alertmanager 接線與長時間排程運行證據。
-- **Browser UI smoke**:在 dependency-free local precheck 之外，新增 Playwright Chromium smoke，覆蓋會員登入/home/orders 與管理端登入/dashboard/orders/products。
+- **Live observability 證據**:ECPay sandbox checkout、OTP 成功回流與 `CALLBACK_SUCCEEDED` 已完成；目前剩下的是把既有 Prometheus endpoint、payment/reconciliation metrics 與 Grafana dashboard artifact 接到 live Grafana/Alertmanager 或等價的長時間運行證據。
+- **Browser UI smoke / 截圖證據**:在 dependency-free local precheck 之外，已新增 Playwright Chromium smoke，覆蓋會員登入/home/orders 與管理端登入/dashboard/orders/products；後續可補 screenshot checklist 或輕量視覺差異檢查。
 
 ### 規劃中
 
@@ -564,6 +564,7 @@ npm run smoke:browser
 - 最小業務可觀測性:Actuator metrics 暴露付款 callback、reconciliation backlog、訂單取消防重與揪團狀態轉換,並保留環境變數覆蓋 exposure 範圍與 Grafana dashboard artifact
 - 本機 UI smoke precheck:不新增測試框架,以 Node script 檢查 backend health、前端 dev server、會員/管理端登入與核心資料 API
 - 真瀏覽器 UI smoke:以 Playwright Chromium 檢查會員端與管理端關鍵頁面可登入、可載入、可互動
+- ECPay sandbox checkout 證據:EC2 backend 已同步到 application release commit `4ef82ed7cc76`，public readiness 通過，並以 Playwright 完成 CloudFront 會員端導向綠界 stage checkout、OTP 付款成功、ReturnURL HTTP `200`、訂單轉已付款與 `payment_event` 寫入 `ECPAY / CALLBACK_SUCCEEDED / SUCCEEDED`
 - 庫存異動防重:取消訂單時若已取消或已有 `ORDER_CANCEL_RESTORE` 庫存回補紀錄,service 會跳過重複退款、訂單更新與庫存回補；庫存流水另有 nullable `idempotency_key` unique constraint 作為 DB 最後防線
 - 管理端操作 Audit Log:訂單確認、婉拒、取消、配送、完成與商品手動庫存調整會寫入 `admin_operation_log`,並提供分頁查詢 API 與後台「操作紀錄」頁,保留操作前後值、原因與操作者
 - EC2 ECPay sandbox runtime switch:透過 SSM 寫入獨立 systemd payment drop-in，已驗證 public readiness、`PAYMENT_PROVIDER=ecpay` effective env、health 與 rollback 腳本入口

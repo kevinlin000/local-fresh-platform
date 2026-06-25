@@ -42,19 +42,14 @@
    - 範圍：先匯入 `docs/grafana/local-fresh-operations-dashboard.json`，覆蓋 payment callback / reconciliation、pending candidate gauge、group-buy transition、cancellation counters；不急著做完整 tracing。
    - 風險：不要把作品部署複雜度拉太高；保留單機 demo 可穩定重現。
 
-2. **庫存異動 idempotency 設計**
-   - 目的：回答「取消、退款、重複 callback、重複還庫存怎麼防？」。
-   - 範圍：先做設計與一兩個 service 測試，不急著加大型 event sourcing。
-   - 風險：過度設計會讓作品偏離基本功展示。
-
-3. **Log / trace correlation**
+2. **Log / trace correlation**
    - 目的：回答「單一付款或訂單異常時，怎麼從 request 找到 callback、service log 與 DB event？」。
    - 範圍：先整理 correlation id / order number / provider trade number 的 log 規則，不急著導入分散式 tracing。
    - 風險：這是加分項，不應該早於 dashboard 證據與核心流程穩定。
 
-4. **UI smoke test 或 screenshot checklist 自動化**
+3. **UI smoke test 或 screenshot checklist 自動化**
    - 目的：降低每次 polish 後靠人工截圖驗證的成本。
-   - 範圍：先做 login/home/orders/admin dashboard 的 smoke，不做完整視覺回歸。
+   - 範圍：現有 local/browser smoke 已可擋基本壞路徑，下一步可補 screenshot checklist 或輕量截圖差異檢查；不做完整視覺回歸。
    - 風險：前端測試框架目前不完整，應避免一次導入太多工具。
 
 ## Defer Until Last
@@ -73,8 +68,9 @@
 
 1. 本機核心流程與測試穩定。
 2. 文件與截圖證據穩定。
-3. ECPay sandbox 或 mock callback 邊界完成。
-4. 再做 AWS 部署更新與 CD 自動化。
+3. ECPay sandbox callback / checkout 邊界完成。
+4. Live observability 證據穩定。
+5. 再做 AWS 部署更新與 CD 自動化。
 
 ## Current Next Step Recommendation
 
@@ -131,11 +127,11 @@
 - 筆記將訂單狀態機、付款 callback、揪團併發、庫存一致性、observability、security boundary、capacity position 分開整理。
 - 每個區塊都列出要怎麼講、對應程式碼/測試、不要吹過頭的地方，避免把作品包裝成 production 100%。
 
-下一個建議切面是 **截圖證據重跑，然後再決定是否進 ECPay/雲端同步**：
+文件與作品證據一致性收尾後，下一個建議切面是 **live observability 或截圖重跑**：
 
 - 若要整理作品證據：用已新增的 local/browser smoke 當前置檢查，重跑 10 張 README 截圖與 demo acceptance，確認真實食物圖片、會員端、管理端畫面都維持最新狀態。
 - 若要繼續衝全端觀感：下一刀可做管理端 dashboard 的更細緻優先級排序，但目前 orders/products 的操作面已足夠支撐完整 demo。
-- 若要往 ECPay sandbox 推進：目前 EC2 已切 sandbox provider 且 stage checkout 已通，下一步是完成 sandbox 卡號付款後確認訂單狀態、`payment_event`、callback metrics 與重複 callback replay。
+- ECPay sandbox stage checkout 與 OTP 成功回流已完成；付款線下一步不是再證明單次付款，而是補 live Grafana/Alertmanager 接線與外部查詢排程的長時間運行證據。
 
 ## How To Use This Roadmap
 
