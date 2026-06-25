@@ -57,7 +57,7 @@ graph TD
 
 用戶端是支援桌面與手機版的生鮮電商網站，負責：
 
-- 會員登入（Google OAuth 與開發模式 mock login）
+- 會員登入（Email / 密碼、Google OAuth 與開發模式 mock login）
 - 單品與直送箱瀏覽
 - 購物車與下單流程
 - 揪團發起、分享、加入與狀態追蹤
@@ -428,6 +428,7 @@ erDiagram
 
 ### 關鍵約束說明
 
+- `member.email` / `member.password_hash`：Email 密碼登入使用，密碼以 BCrypt 雜湊保存
 - `member.google_sub`：Google OAuth 使用者唯一識別
 - `group_buy.group_no`：揪團分享與查詢的唯一對外編號
 - `orders.number`：訂單編號，使用 Snowflake 產生
@@ -555,14 +556,15 @@ erDiagram
 
 ## 關鍵業務流程
 
-### 4.1 會員登入流程（Google OAuth + mock 雙軌）
+### 4.1 會員登入流程（Email 密碼 + Google OAuth + mock）
 
-系統保留兩條登入路徑：
+系統保留三條登入路徑：
 
-- 正式路徑：Google OAuth 2.0 Authorization Code Flow
-- 開發路徑：mock login
+- 會員帳號路徑：Email / 密碼註冊登入，密碼以 BCrypt 雜湊保存
+- 第三方路徑：Google OAuth 2.0 Authorization Code Flow
+- 開發路徑：mock login，由 `mock-login-enabled` 開關控制
 
-兩者都會在後端完成會員查找 / 建立與 JWT 簽發，最後回傳同一個 `MemberLoginVO`。
+三者都會在後端完成會員查找 / 建立與 JWT 簽發，最後回傳同一個 `MemberLoginVO`。
 
 ```mermaid
 sequenceDiagram
@@ -574,7 +576,13 @@ sequenceDiagram
     participant OAuthClient as GoogleOAuthClient
     participant DB as MySQL
 
-    alt Google OAuth 登入
+    alt Email 密碼註冊 / 登入
+        Frontend->>API: POST /user/member/register 或 /password-login
+        API->>Service: register(...) 或 passwordLogin(...)
+        Service->>DB: 檢查 email / 寫入 BCrypt hash / 驗證密碼
+        Service-->>API: MemberLoginVO
+        API-->>Frontend: JWT + member info
+    else Google OAuth 登入
         Frontend->>Browser: 導向 Google 授權頁
         Browser->>Google: 使用者授權
         Google-->>Browser: redirect /oauth/callback?code=...

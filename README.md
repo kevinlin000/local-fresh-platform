@@ -128,7 +128,7 @@
                      └──────────────────┘
 
 外部服務：
-- Google OAuth 2.0：會員登入
+- Google OAuth 2.0：第三方會員登入
 - Google Maps API：配送範圍計算
 - AWS：EC2（Docker MySQL + Redis）+ S3 + CloudFront + DuckDNS
 ```
@@ -226,7 +226,7 @@ flowchart LR
 - 商品與直送箱瀏覽：依分類查看蔬果、肉品、海鮮等商品，以及主題直送箱。
 - 購物車與下單流程：支援加入購物車、數量調整、地址選擇、備註填寫與歷史訂單查詢。
 - 揪團湊免運：會員可建立揪團、分享連結邀請他人加入，3 人成團後轉為正式訂單。
-- 雙軌登入機制：前端支援 Google OAuth 2.0，開發環境保留 mock login 方便測試與 demo。
+- 會員登入機制：支援 Email / 密碼註冊登入、Google OAuth 2.0，開發環境保留 mock login 方便測試與 demo。
 - 訂單狀態流轉：涵蓋待付款、待確認、已確認、配送中、已完成、已取消，以及揪團中的預訂單狀態；退款以 `pay_status=REFUND` 搭配已取消訂單表示。
 - 店鋪與營運管理：管理端可維護商品、分類、訂單與營業狀態。
 - 快取與排程協作：以 Redis 快取熱門查詢、以排程處理過期揪團與退款模擬流程。
@@ -322,9 +322,9 @@ Redis key 過期事件看起來很直覺，但在真實系統裡，若採用這�
 
 管理端是後端系統的重要驗證入口，只做會員端會讓整個系統看起來像單一路徑展示。因此管理端採用 Vue 3 + Vite + TypeScript + Pinia + Element Plus，保留核心營運範圍，不追求複雜 UI，但把登入、列表、表單、訂單操作、營運報表與 API proxy 串接補齊。這樣能直接呈現後台營運面，而不是只看到前台購物流程。
 
-### Q6. 為什麼 repo 內同時保留 mock login 與 Google OAuth？
+### Q6. 為什麼 repo 內同時保留 Email 登入、Google OAuth 與 mock login？
 
-開發與 demo 階段若完全依賴 Google OAuth，會讓本地測試高度綁定第三方憑證與人工授權流程，降低開發效率；但如果只做 mock login，又會讓整個登入設計顯得過於簡化。這個專案採雙軌策略：正式流程走 Google OAuth 2.0，開發環境則透過 `mock-login-enabled` 開關保留 mock login，前端也只在 dev 模式顯示快捷登入區塊。這樣既保留真實世界的登入設計，也兼顧開發效率。
+Email / 密碼是最基本的會員帳號入口，密碼以 BCrypt 雜湊後存入 `member.password_hash`，登入成功後簽發會員 JWT。Google OAuth 2.0 保留第三方登入流程，後端負責 code exchange、`id_token` 驗證與帳號綁定。mock login 只透過 `mock-login-enabled` 作為開發與可重複測試入口，前端也只在 dev 模式顯示快捷登入區塊。
 
 ## 系統需求
 
@@ -569,7 +569,7 @@ npm run smoke:browser
 - EC2 ECPay sandbox runtime switch:透過 SSM 寫入獨立 systemd payment drop-in，已驗證 public readiness、`PAYMENT_PROVIDER=ecpay` effective env、health 與 rollback 腳本入口
 - 雙端產品級 UI polish:會員端採買流程、商品詳情、購物車、訂單頁與管理端 dashboard / products / orders 已完成新版截圖與 README 同步
 - 揪團發起 / 加入 / 取消 / 過期失敗回滾完整流程
-- Google OAuth 2.0 Authorization Code Flow + JWT 雙軌登入(mock login dev 開關)
+- Email / 密碼註冊登入、Google OAuth 2.0 Authorization Code Flow、JWT 與 mock login dev 開關
 - 完整 AWS 部署:EC2 (Nginx + Spring Boot + Docker MySQL/Redis) + S3 + CloudFront + DuckDNS + Let's Encrypt
 - Spring Boot 3.5 升級 + Flyway migration 檔案版本化(V1~V11)
 - 管理端 Vue 3 + Vite + TypeScript + Pinia + Element Plus 升級

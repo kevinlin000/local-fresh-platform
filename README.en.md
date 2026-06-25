@@ -13,7 +13,7 @@ User storefront
 
 [https://d3hqnux25iirgl.cloudfront.net](https://d3hqnux25iirgl.cloudfront.net)
 
-> The user-facing storefront is publicly accessible. Try the dev-mode mock login for instant access, or sign in with a real Google account to experience the full OAuth flow.
+> The user-facing storefront is publicly accessible. Members can register or sign in with email/password, use Google OAuth, or use the dev-mode mock login for repeatable demo flows.
 
 Admin console
 
@@ -128,7 +128,7 @@ Online grocery commerce in Taiwan often runs into two practical problems: small 
                      └──────────────────┘
 
 External services:
-- Google OAuth 2.0 for member login
+- Email/password member auth and Google OAuth 2.0
 - Google Maps API for delivery range checks
 - AWS: EC2 (Dockerized MySQL + Redis), S3, CloudFront, DuckDNS
 ```
@@ -222,7 +222,7 @@ flowchart LR
 - Product and gift box browsing: Browse seasonal groceries by category, including individual items and curated delivery boxes.
 - Cart and checkout flow: Add items to cart, adjust quantities, manage delivery addresses, leave notes, and review order history.
 - Group-buy free shipping campaigns: Create a campaign, share a link, and convert pre-orders into confirmed orders once 3 members join.
-- Dual login model: Google OAuth 2.0 for realistic login behavior, plus mock login in development for testing and demos.
+- Member account model: email/password registration and login, Google OAuth 2.0, plus mock login in development for testing and demos.
 - Order lifecycle management: Covers ordinary order states as well as the dedicated pre-order state used during group-buy campaigns.
 - Store and operations management: Admin-side support for products, categories, orders, and store open/close status.
 - Cache and scheduled job coordination: Redis-backed cache plus scheduled group-buy expiry handling and refund simulation.
@@ -295,9 +295,9 @@ Mocks are appropriate for isolating business logic, but not for validating distr
 
 The admin console is an important verification surface for a backend portfolio. Without it, the repository would only demonstrate the consumer purchase path. It has therefore been migrated to Vue 3 + Vite + TypeScript + Pinia + Element Plus, covering login, list pages, forms, order operations, dashboards, and API proxy integration without expanding the project beyond its fundamentals-focused scope.
 
-### Q6. Why keep both mock login and Google OAuth in the same repository?
+### Q6. Why keep email login, Google OAuth, and mock login in the same repository?
 
-Pure OAuth-only development would make local testing depend heavily on live credentials and interactive authorization. Pure mock login would be fast, but too artificial for a serious product-facing flow. The project therefore uses a dual-track strategy: Google OAuth for realistic authentication, and mock login gated by environment flags for fast development and repeatable demos. This keeps development efficient without compromising the production-facing design.
+Email/password auth is the baseline member account path. Passwords are stored as BCrypt hashes in `member.password_hash`, and successful logins receive the same member JWT used by the rest of the storefront. Google OAuth remains available for third-party sign-in, with code exchange and `id_token` verification handled by the backend. Mock login is gated by environment flags and kept for fast local testing and repeatable demo flows.
 
 ## System Requirements
 

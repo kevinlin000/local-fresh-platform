@@ -87,7 +87,7 @@ RedisTemplate 用在快取與一般 KV，RedissonClient 用在分散式鎖。這
 
 ### Q: 這是不是課程專案改的？
 
-可以誠實回答：原始基底來自課程專案，但我做了大量重構與重新定位，包括改成在地小農生鮮平台、移除舊平台名詞、部署從原課程環境改到 AWS、地圖改 Google Maps、登入改 Google OAuth + mock login、增加揪團模型、Redis 分散式鎖、Flyway migration、測試與壓測證據，以及 Vue 3 管理端。
+可以誠實回答：原始基底來自課程專案，但我做了大量重構與重新定位，包括改成在地小農生鮮平台、移除舊平台名詞、部署從原課程環境改到 AWS、地圖改 Google Maps、會員登入改成 Email 密碼 + Google OAuth + dev mock login、增加揪團模型、Redis 分散式鎖、Flyway migration、測試與壓測證據，以及 Vue 3 管理端。
 
 ### Q: 你最想讓我看哪段程式？
 

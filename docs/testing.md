@@ -231,7 +231,7 @@ API_BASE_URL=http://127.0.0.1:18080 npm run smoke:backend
 
 The full local smoke script intentionally has no third-party dependency. It
 verifies that the backend identity and health endpoints are correct, both Vue
-app shells are served, member mock login works, admin login works,
+app shells are served, member auth paths work, admin login works,
 product/order APIs return data, and admin dashboard / order APIs are reachable.
 It is not a visual-regression test; it catches broken local services,
 proxy/auth regressions, wrong-backend port conflicts, and empty demo data before
