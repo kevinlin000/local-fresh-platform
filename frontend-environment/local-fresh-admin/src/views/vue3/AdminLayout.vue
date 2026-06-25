@@ -29,7 +29,7 @@
           <p>訂單、商品、庫存與直送箱營運管理</p>
         </div>
         <div class="topbar-actions">
-          <span class="environment-pill">展示環境</span>
+          <span class="environment-pill">營運模式</span>
           <el-button type="primary" plain @click="handleLogout">登出</el-button>
         </div>
       </header>

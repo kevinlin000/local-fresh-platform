@@ -99,9 +99,9 @@
         <el-table-column label="對帳參考" min-width="220">
           <template #default="{ row }">
             <div class="reference-cell">
-              <strong>{{ row.providerReference || '-' }}</strong>
+              <strong>{{ displayProviderReference(row.providerReference) }}</strong>
               <span v-if="row.providerTradeNo">交易編號 {{ row.providerTradeNo }}</span>
-              <small v-if="row.idempotencyKey">{{ row.idempotencyKey }}</small>
+              <small v-if="row.idempotencyKey">{{ displayIdempotencyKey(row.idempotencyKey) }}</small>
             </div>
           </template>
         </el-table-column>
@@ -133,7 +133,7 @@ import { readPage, useLoading, usePage } from './composables'
 const route = useRoute()
 
 const providerOptions = [
-  { label: '展示通道', value: 'DEMO' },
+  { label: '內建通道', value: 'DEMO' },
   { label: '綠界 ECPay', value: 'ECPAY' },
   { label: '未知通道', value: 'UNKNOWN' }
 ]
@@ -201,7 +201,7 @@ const paymentPriority = computed(() => {
   if (ignored > 0) {
     return {
       label: `${ignored} 筆冪等忽略事件`,
-      caption: '多數為重複回呼或已處理事件，保留留痕即可。',
+      caption: '多數為重複回呼或已處理事件，保留事件紀錄即可。',
       tone: 'neutral'
     }
   }
@@ -286,6 +286,22 @@ function providerLabel(provider?: string) {
   return providerOptions.find((item) => item.value === provider)?.label || provider || '-'
 }
 
+function displayProviderReference(reference?: string) {
+  if (!reference) {
+    return '-'
+  }
+  return reference.replace('demo-paid:', 'internal-paid:')
+}
+
+function displayIdempotencyKey(value?: string) {
+  if (!value) {
+    return ''
+  }
+  return value
+    .replace(/^DEMO:/, 'INTERNAL:')
+    .replaceAll(':demo-paid:', ':internal-paid:')
+}
+
 function eventTagType(eventType: string) {
   if (eventType === 'CALLBACK_SUCCEEDED') {
     return 'success'
@@ -342,7 +358,7 @@ function reconciliationHint(row: any) {
     return '等待金流回呼或逾時對帳'
   }
   if (row.eventType === 'CALLBACK_DUPLICATE' || row.result === 'IGNORED') {
-    return '重複回呼已留痕'
+    return '重複回呼已記錄'
   }
   if (row.eventType === 'CALLBACK_SUCCEEDED' || row.result === 'SUCCEEDED') {
     return '訂單付款狀態可核對'
