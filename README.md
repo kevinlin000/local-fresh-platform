@@ -83,9 +83,9 @@
 
 ![訂單管理](docs/screenshots/09-admin-orders.png)
 
-### 10. 付款事件 — Callback 對帳與冪等追蹤
+### 10. 付款事件 — 回呼對帳與冪等追蹤
 
-付款事件頁以拒絕回呼、待處理付款、成功入帳、Provider 與冪等鍵建立對帳工作台，協助追蹤 callback、重複回呼與付款狀態一致性。
+付款事件頁以拒絕回呼、待處理付款、成功入帳、付款通道與冪等鍵建立對帳工作台，協助追蹤金流回呼、重複回呼與付款狀態一致性。
 
 ![付款事件](docs/screenshots/10-admin-payment-events.png)
 
@@ -133,9 +133,13 @@
 - AWS：EC2（Docker MySQL + Redis）+ S3 + CloudFront + DuckDNS
 ```
 
-## 揪團核心資料模型
+## 工程設計證據
 
-如果面試官只看一段資料設計，我認為最值得看的就是揪團主線。這個專案不是把多人湊團硬塞進單一訂單，而是拆成「揪團活動本身」與「每位參與者自己的預訂單」兩層模型。
+README 保留三個最核心的系統設計視角：核心資料模型、訂單/付款狀態流轉、雲端部署拓樸。完整資料表欄位、sequence diagram、索引設計、交易邊界與安全邊界整理在 [docs/architecture.md](docs/architecture.md)。
+
+### 核心資料模型
+
+揪團不是把多人湊團硬塞進單一訂單，而是拆成「揪團活動本身」與「每位參與者自己的預訂單」兩層模型。
 
 ```mermaid
 erDiagram
@@ -158,7 +162,55 @@ erDiagram
 - 成團與失敗只需要做狀態流轉，不必在成團瞬間重建正式訂單
 - `group_buy_participant (group_buy_id, member_id)` 的唯一鍵可以和 Redisson lock 一起防止重複加團
 
-完整架構、ER 圖與設計取捨請參考 [docs/architecture.md](docs/architecture.md)。面試展示路線與答辯重點請參考 [docs/interview-guide.md](docs/interview-guide.md)。
+### 訂單與付款狀態流轉
+
+訂單生命週期集中由 `OrderStatusTransitionPolicy` 管理，付款成功透過 guarded update 推進狀態；付款請求、成功回呼、重複回呼與拒絕回呼都會寫入 `payment_event`，讓金流狀態有可追溯的事件紀錄。
+
+```mermaid
+stateDiagram-v2
+    [*] --> 待付款
+    待付款 --> 待確認: 付款成功 callback
+    待確認 --> 已確認: 管理端確認
+    已確認 --> 配送中: 開始配送
+    配送中 --> 已完成: 完成配送
+
+    待付款 --> 已取消: 會員取消 / 管理端取消
+    待確認 --> 已取消: 會員取消 / 婉拒 / 管理端取消
+    已確認 --> 已取消: 管理端取消
+    配送中 --> 已取消: 管理端取消
+
+    揪團中 --> 待確認: 成團
+    揪團中 --> 已取消: 過期失敗
+
+    state "待付款(1)" as 待付款
+    state "待確認(2)" as 待確認
+    state "已確認(3)" as 已確認
+    state "配送中(4)" as 配送中
+    state "已完成(5)" as 已完成
+    state "已取消(6)" as 已取消
+    state "揪團中(8)" as 揪團中
+```
+
+### AWS 部署拓樸
+
+目前 demo 以 AWS 靜態前端 + EC2 後端部署。前端由 S3 / CloudFront 提供 HTTPS 靜態資源；後端 API 由 EC2 上的 Nginx 反向代理到 Spring Boot；資料層使用 MySQL / Redis，ECPay sandbox provider 可透過 SSM 腳本切換。
+
+```mermaid
+flowchart LR
+    User[Browser] --> CFUser[CloudFront<br/>User Storefront]
+    Admin[Admin Browser] --> CFAdmin[CloudFront<br/>Admin Console]
+    CFUser --> S3User[S3 Static Assets]
+    CFAdmin --> S3Admin[S3 Static Assets]
+
+    User --> ApiDomain[DuckDNS API Domain<br/>HTTPS]
+    Admin --> ApiDomain
+    ApiDomain --> Nginx[Nginx on EC2<br/>Let's Encrypt]
+    Nginx --> Spring[Spring Boot API<br/>systemd service]
+    Spring --> MySQL[(MySQL 8)]
+    Spring --> Redis[(Redis 7)]
+    Spring --> SSM[AWS SSM<br/>runtime payment switch]
+    Spring --> ECPay[ECPay Sandbox]
+```
 
 ### 技術棧
 
@@ -189,7 +241,7 @@ erDiagram
 
 ### 1.1 壓測摘要
 
-以下是目前主 README 直接保留的關鍵數字，目的是讓 reviewer 不進 `docs/` 也能先看到工程證據：
+以下是目前主 README 直接保留的關鍵數字，讓讀者不進 `docs/` 也能先看到工程證據：
 
 | 指標 | 結果 |
 |---|---|
@@ -246,7 +298,7 @@ Actuator 也補上最小業務 metrics，可查付款 callback 結果、付款 r
 
 ### 9. 可部署導向的全流程設計
 
-這個專案雖然是求職作品，但實作方式不是只做出 API 或畫面，而是完整串成「可啟動、可測試、可實際部署」的系統。從 migration 版本化、環境變數管理、dev/test profile 分流、Google OAuth 設定隔離，到前端 Vite proxy 與後端 CORS 協作，都是以實際上線為前提在設計。目前 demo 已部署於 AWS，前端靜態資源、API 服務與 DNS 入口的切分方式，也與實際的 EC2、S3、CloudFront、DuckDNS 架構一致。
+這個專案不是只做出 API 或畫面，而是完整串成「可啟動、可測試、可實際部署」的系統。從 migration 版本化、環境變數管理、dev/test profile 分流、Google OAuth 設定隔離，到前端 Vite proxy 與後端 CORS 協作，都是以實際上線為前提在設計。目前 demo 已部署於 AWS，前端靜態資源、API 服務與 DNS 入口的切分方式，也與實際的 EC2、S3、CloudFront、DuckDNS 架構一致。
 
 ## 設計決策 Q&A
 
@@ -264,11 +316,11 @@ Redis key 過期事件看起來很直覺，但在真實系統裡，若採用這�
 
 ### Q4. 為什麼要用 Testcontainers，而不是全都用 mock？
 
-不是所有功能都需要 Testcontainers，但像揪團併發控制這種問題，如果只 mock 掉 Redis 鎖，本質上就跳過了最重要的風險區域。Testcontainers 的價值在於，它讓測試可以在本地與 CI 以接近真實環境的方式啟動 Redis，驗證 Redisson 的實際鎖行為與多執行緒競爭結果。對比 mock，它執行成本較高，但換來的是更強的可信度；這對面試展示來說是值得的。
+不是所有功能都需要 Testcontainers，但像揪團併發控制這種問題，如果只 mock 掉 Redis 鎖，本質上就跳過了最重要的風險區域。Testcontainers 的價值在於，它讓測試可以在本地與 CI 以接近真實環境的方式啟動 Redis，驗證 Redisson 的實際鎖行為與多執行緒競爭結果。對比 mock，它執行成本較高，但換來的是更強的可信度。
 
 ### Q5. 為什麼管理端也升級到 Vue 3？
 
-管理端是後端作品的重要驗證入口，只做會員端會讓整個系統看起來像單一路徑展示。因此管理端採用 Vue 3 + Vite + TypeScript + Pinia + Element Plus，保留「基本功展示專案」的範圍，不追求複雜 UI，但把登入、列表、表單、訂單操作、營運報表與 API proxy 串接補齊。這樣能讓 reviewer 直接看到後台營運面，而不是只看到前台購物流程。
+管理端是後端系統的重要驗證入口，只做會員端會讓整個系統看起來像單一路徑展示。因此管理端採用 Vue 3 + Vite + TypeScript + Pinia + Element Plus，保留核心營運範圍，不追求複雜 UI，但把登入、列表、表單、訂單操作、營運報表與 API proxy 串接補齊。這樣能直接呈現後台營運面，而不是只看到前台購物流程。
 
 ### Q6. 為什麼 repo 內同時保留 mock login 與 Google OAuth？
 
@@ -458,7 +510,6 @@ pnpm dev
 - [docs/architecture.md](docs/architecture.md)
 - [docs/backend-deploy-runbook.md](docs/backend-deploy-runbook.md)
 - [docs/ecpay-sandbox-runbook.md](docs/ecpay-sandbox-runbook.md)
-- [docs/interview-guide.md](docs/interview-guide.md)
 - [docs/observability.md](docs/observability.md)
 - [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md)
 - [docs/testing.md](docs/testing.md)

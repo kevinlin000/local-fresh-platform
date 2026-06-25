@@ -133,6 +133,81 @@ External services:
 - AWS: EC2 (Dockerized MySQL + Redis), S3, CloudFront, DuckDNS
 ```
 
+## Engineering Evidence
+
+The README keeps three high-signal design views: the core domain model, the order/payment lifecycle, and the deployed AWS topology. Full table fields, sequence diagrams, index notes, transaction boundaries, and security boundaries are documented in [docs/architecture.md](docs/architecture.md).
+
+### Core Data Model
+
+Group-buy campaigns are not modeled as multiple members sharing one order. The model separates the campaign itself from each participant's own pre-order.
+
+```mermaid
+erDiagram
+    MEMBER ||--o{ SHIPPING_ADDRESS : has
+    MEMBER ||--o{ ORDERS : places
+    MEMBER ||--o{ GROUP_BUY : initiates
+    MEMBER ||--o{ GROUP_BUY_PARTICIPANT : joins
+    SHIPPING_ADDRESS ||--o{ ORDERS : selected_for
+    GROUP_BUY ||--o{ GROUP_BUY_PARTICIPANT : contains
+    ORDERS ||--o{ GROUP_BUY_PARTICIPANT : linked_preorder
+```
+
+- `group_buy`: stores the campaign identity, initiator, required count, current count, status, and expiry time.
+- `group_buy_participant`: connects a member to a campaign and links that participation to the member's own pre-order.
+- `orders`: stores `PENDING_GROUP(8)` pre-orders during the campaign window; successful campaigns promote them to `TO_BE_CONFIRMED(2)`, while expired campaigns cancel them.
+
+This keeps delivery address, order amount, and item snapshot separate per participant, while `group_buy_participant (group_buy_id, member_id)` and the Redisson lock prevent duplicate joins.
+
+### Order and Payment State Flow
+
+Order lifecycle rules are centralized in `OrderStatusTransitionPolicy`. Payment success uses guarded updates to advance the order, while payment requests, successful callbacks, duplicate callbacks, and rejected callbacks are recorded in `payment_event`.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Unpaid
+    Unpaid --> PendingConfirm: payment callback succeeded
+    PendingConfirm --> Confirmed: admin confirms
+    Confirmed --> Delivering: start delivery
+    Delivering --> Completed: finish delivery
+
+    Unpaid --> Cancelled: member/admin cancellation
+    PendingConfirm --> Cancelled: member/admin rejection or cancellation
+    Confirmed --> Cancelled: admin cancellation
+    Delivering --> Cancelled: admin cancellation
+
+    GroupPending --> PendingConfirm: campaign completed
+    GroupPending --> Cancelled: campaign expired
+
+    state "Unpaid(1)" as Unpaid
+    state "Pending confirm(2)" as PendingConfirm
+    state "Confirmed(3)" as Confirmed
+    state "Delivering(4)" as Delivering
+    state "Completed(5)" as Completed
+    state "Cancelled(6)" as Cancelled
+    state "Group pending(8)" as GroupPending
+```
+
+### AWS Deployment Topology
+
+The demo uses static frontend hosting plus an EC2 backend. S3 and CloudFront serve the user storefront and admin console over HTTPS; the public API domain reaches Nginx on EC2, which proxies to the Spring Boot service. MySQL and Redis back the domain data, cache, and Redisson locks. The ECPay sandbox provider can be switched through an SSM-backed runtime script.
+
+```mermaid
+flowchart LR
+    User[Browser] --> CFUser[CloudFront<br/>User Storefront]
+    Admin[Admin Browser] --> CFAdmin[CloudFront<br/>Admin Console]
+    CFUser --> S3User[S3 Static Assets]
+    CFAdmin --> S3Admin[S3 Static Assets]
+
+    User --> ApiDomain[DuckDNS API Domain<br/>HTTPS]
+    Admin --> ApiDomain
+    ApiDomain --> Nginx[Nginx on EC2<br/>Let's Encrypt]
+    Nginx --> Spring[Spring Boot API<br/>systemd service]
+    Spring --> MySQL[(MySQL 8)]
+    Spring --> Redis[(Redis 7)]
+    Spring --> SSM[AWS SSM<br/>runtime payment switch]
+    Spring --> ECPay[ECPay Sandbox]
+```
+
 ### Tech Stack
 
 | Layer | Technologies |
@@ -170,7 +245,7 @@ The backend now includes focused tests for `OrderServiceImpl`, `OrderPaymentServ
 
 Payment processing also writes a provider-neutral `payment_event` trail for `REQUEST_CREATED`, `CALLBACK_SUCCEEDED`, `CALLBACK_DUPLICATE`, and `CALLBACK_REJECTED`. Admins can query that trail through `GET /admin/paymentEvents/page` by order number, provider, event type, result, provider trade number, idempotency key, and time range. A minimal reconciliation endpoint, `GET /admin/paymentEvents/pendingRequests`, lists payment requests that do not yet have a succeeded or rejected callback. The backend now includes an ECPay query-result parser plus a provider-query reconciliation service and disabled-by-default scheduled job, enabled with `PAYMENT_RECONCILIATION_ENABLED=true`; tests cover succeeded, still-pending, rejected, unsupported-provider, unknown-status, query-error, and capped batch-limit paths. The EC2 demo runtime can switch to the ECPay sandbox provider through SSM, and Playwright has verified ECPay stage checkout, OTP payment, ReturnURL HTTP 200, the order moving to paid, and `payment_event` recording `CALLBACK_SUCCEEDED`. The remaining payment work is production-grade monitoring and long-running external-query evidence.
 
-The admin console also includes a Payment Events page, so demo reviewers can inspect payment requests, successful callbacks, duplicate callbacks, and rejected callbacks without calling the API manually.
+The admin console also includes a Payment Events page, so payment requests, successful callbacks, duplicate callbacks, and rejected callbacks can be inspected without calling the API manually.
 
 The backend also exposes a minimal business-metrics slice through Actuator. It tracks payment callback outcomes, payment reconciliation outcomes, the latest pending reconciliation candidate count, duplicate/applied order cancellations, and group-buy state transitions. The backend now exposes `/actuator/prometheus` in scrape format and includes an importable [Local Fresh Operations Grafana dashboard](docs/grafana/local-fresh-operations-dashboard.json), while the full Grafana/Alertmanager runtime is still intentionally deferred; see [docs/observability.md](docs/observability.md) for local query examples, scrape configuration, dashboard notes, alert thresholds, and current boundaries.
 
@@ -409,7 +484,6 @@ See also:
 - [docs/observability.md](docs/observability.md)
 - [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md)
 - [docs/testing.md](docs/testing.md)
-- [docs/interview-guide.md](docs/interview-guide.md)
 - [frontend-environment/local-fresh-user/README.md](frontend-environment/local-fresh-user/README.md)
 - `docs/architecture.md` (system architecture and sequence diagrams)
 
@@ -435,7 +509,7 @@ Before refreshing local screenshots or giving a live demo, run:
 scripts/check-ui-smoke-local.mjs
 ```
 
-For repository hygiene and portfolio evidence checks, run:
+For repository hygiene and evidence checks, run:
 
 ```bash
 node scripts/check-repo-hygiene.mjs
@@ -453,15 +527,14 @@ npm run smoke:browser
 ```
 
 For the current completeness assessment and next-priority plan, see
-[docs/portfolio-roadmap.md](docs/portfolio-roadmap.md). The project is already
-interview-ready for its core Java backend story. The EC2 backend is now synced
-to commit `8d7a0d5eeefe`, public `/actuator/info` and `/payment/callback`
-readiness pass, and the runtime has been switched to `PAYMENT_PROVIDER=ecpay`
-through the SSM switch script. Playwright has verified the CloudFront storefront
-redirect into ECPay stage checkout, OTP payment completion, ReturnURL HTTP 200,
-paid order state, and `CALLBACK_SUCCEEDED` payment evidence; the remaining
-payment gap is live Grafana/Alertmanager wiring and long-running external-query
-evidence.
+[docs/portfolio-roadmap.md](docs/portfolio-roadmap.md). The EC2 backend is
+synced to commit `8d7a0d5eeefe`; public `/actuator/info` and
+`/payment/callback` readiness pass, and the runtime has been switched to
+`PAYMENT_PROVIDER=ecpay` through the SSM switch script. Playwright has verified
+the CloudFront storefront redirect into ECPay stage checkout, OTP payment
+completion, ReturnURL HTTP 200, paid order state, and `CALLBACK_SUCCEEDED`
+payment evidence. The remaining payment gap is live Grafana/Alertmanager wiring
+and long-running external-query evidence.
 
 ## License
 
