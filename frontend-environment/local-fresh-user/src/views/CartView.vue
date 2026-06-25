@@ -92,7 +92,7 @@
         <div class="checkout-assurance" aria-label="結帳提醒">
           <div>
             <strong>付款方式</strong>
-            <span>依環境使用 demo gateway 或 ECPay sandbox</span>
+            <span>線上付款後可在訂單紀錄查看狀態</span>
           </div>
           <div>
             <strong>配送確認</strong>
