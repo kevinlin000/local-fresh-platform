@@ -884,19 +884,37 @@ stateDiagram-v2
 
 ### 測試分層
 
-測試策略分成三層：
+測試策略分成三層，目標不是追求任意 coverage 數字，而是把交易、身份、
+庫存、付款與揪團併發這些高風險邊界變成可重跑的證據。
 
-1. **回歸測試**
-   - 驗證先前修復過的問題不再復發
-2. **流程驗證**
-   - 驗證主要 API 流程、登入流程、購物車流程、揪團流程
-3. **真實整合測試**
-   - 驗證 Redis 分散式鎖與多執行緒併發
+1. **單元測試**
+   - 不啟動 Spring context，驗證純業務規則與 service 分支。
+   - 例如訂單狀態轉移、付款 callback 命令處理、庫存還原防重、metrics
+     counter 更新。
+2. **Spring + H2 整合測試**
+   - 使用 `@SpringBootTest`、MockMvc、MyBatis mapper 與 H2 MySQL mode，
+     驗證 HTTP/interceptor/mapper/service 之間的真實串接。
+   - 外部邊界只在不是測試主體時 mock，例如 WebSocket endpoint
+     registration、Redis infrastructure、Google OAuth client、payment
+     gateway。
+3. **Redis / Testcontainers 整合測試**
+   - 使用真 Redis container 驗證 Redisson lock、多執行緒競爭與揪團併發
+     行為。
+   - 這類測試執行成本較高，因此以 `redis` tag opt-in，不放進預設
+     `mvn verify` 路徑。
+
+目前 `local-fresh-server` 的預設 `mvn verify` 本機驗證為 `181` tests、
+`0` failures、`5` skipped，並會產生 JaCoCo HTML report。Redis 標籤測試
+需要 Docker，透過 `-DexcludedGroups= -Dgroups=redis` 額外執行。
 
 ### 主要測試類別與覆蓋範圍
 
 | 測試類別 | 覆蓋範圍 |
 |---|---|
+| `OrderStatusTransitionPolicyTest` | 訂單狀態轉移合法來源與目標狀態 |
+| `OrderPaymentServiceImplTest` | 付款請求、callback、重複 callback、concurrent callback race |
+| `OrderCancellationServiceImplTest` | 取消、退款 metadata、庫存還原與重複取消防線 |
+| `ProductInventoryOrderTest` | 一般訂單與直送箱扣庫存 / 還庫存、inventory log idempotency key |
 | `IssueS2IdorOrderTest` | 訂單越權存取（IDOR）防護 |
 | `IssueS3SalesTop10Test` | 報表與統計查詢邏輯 |
 | `IssueS4ThreadLocalTest` | ThreadLocal 清理與請求隔離 |
@@ -906,10 +924,27 @@ stateDiagram-v2
 | `GroupBuyControllerTest` | 揪團 API 回應與欄位完整性 |
 | `GroupBuyRedisIntegrationTest` | Redisson 真實鎖 + 100-thread 併發驗證 |
 | `GroupBuyExpirationServiceTest` | 過期失敗、取消預訂單、退款 log、鎖競爭 |
-| `MemberOAuthLoginTest` | Google OAuth 登入、綁定、mock login 開關 |
+| `MemberOAuthLoginTest` | Email / 密碼、Google OAuth 登入、綁定、mock login 開關 |
 | `ProductCartApiTest` | 商品詳情 API 與購物車數量減量 |
+| `PaymentEventApiTest` | 付款事件查詢、待對帳候選、admin JWT interceptor |
+| `AdminOperationLogApiTest` | 操作紀錄查詢、過濾、新到舊排序 |
 
-### 何時用 H2 + MockBean
+完整測試命令、JaCoCo report 路徑、Redis opt-in 指令與 browser smoke 說明，
+集中在 [testing.md](testing.md) 維護。
+
+### Spring 測試 Context 分組
+
+Spring integration tests 依照「需要替換的外部邊界」分組，避免每個測試類別
+手動重複宣告 infrastructure mock，也讓 Spring context cache 更穩定。
+
+| 測試基底 | 替換內容 | 使用情境 |
+|---|---|---|
+| `MockWebSocketMvcIntegrationTest` | `ServerEndpointExporter` | 一般 MockMvc API 測試，需要 H2/MyBatis，但不需要 Redis 或 Redisson。 |
+| `MockInfrastructureIntegrationTest` | WebSocket endpoint、Redis connection factory、`redisTemplate` | IDOR、ThreadLocal、報表等 HTTP/interceptor/mapper 回歸測試。 |
+| `MockRedissonInfrastructureIntegrationTest` | 上述內容再加 `RedissonClient` | 需要直接 stub Redisson lock 行為的揪團 service/controller 測試。 |
+| `RedisContainerTestBase` | 不 mock Redis；以動態 property 注入真 Redis container | Redisson lock 本身是測試主體的併發測試。 |
+
+### 何時用 H2 + MockitoBean
 
 當測試目標是：
 
@@ -918,8 +953,10 @@ stateDiagram-v2
 - 驗證 VO / DTO 映射
 - 驗證某個流程在成功與失敗條件下的行為
 
-這類測試以 H2、`@SpringBootTest`、`@AutoConfigureMockMvc` 為主，必要時用 `@MockBean` 把外部依賴（例如 Google OAuth client）隔離掉。
-這讓測試維持快速、聚焦且容易除錯。
+這類測試以 H2、`@SpringBootTest`、`@AutoConfigureMockMvc` 為主，必要時用
+`@MockitoBean` 把外部依賴隔離掉，例如 Google OAuth client、payment
+gateway、cache service、WebSocket endpoint exporter 或 Redis infrastructure。
+原則是：當 infrastructure 不是測試主體時才 mock，讓測試聚焦在應用程式行為。
 
 ### 何時用 Testcontainers
 
