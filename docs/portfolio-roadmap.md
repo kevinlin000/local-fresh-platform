@@ -1,14 +1,14 @@
 # Portfolio Completion Roadmap
 
-這份文件用來追蹤 `菜籃日 Cailan Day` 作為 Java 後端求職作品的完整度。
+這份文件用來追蹤 `菜籃日 Cailan Day` 的工程完整度與後續投入順序。
 
-評估標準不是「production SaaS 100%」，而是「面試時能否清楚展示需求、架構、交易流程、測試證據、部署邊界與後續判斷」。如果把標準拉到真正營收系統，還會需要正式金流合約、資安稽核、監控告警、備援、客服流程與資料治理；那些不應該全部塞進這個作品。
+評估標準不是「production SaaS 100%」，而是需求、架構、交易流程、測試證據、部署邊界與後續判斷是否清楚可驗證。如果把標準拉到真正營收系統，還會需要正式金流合約、資安稽核、監控告警、備援、客服流程與資料治理；那些不應該全部塞進這個專案。
 
 ## Current Assessment
 
 | 面向 | 目前狀態 | 評估 |
 |---|---|---|
-| 產品定位 | 已從課程外賣專案換成台灣在地生鮮平台，README、截圖、面試稿已對齊。 | 作品層級完整 |
+| 產品定位 | 已從課程外賣專案換成台灣在地生鮮平台，README、截圖與工程證據已對齊。 | 作品層級完整 |
 | 會員端流程 | 商品瀏覽、購物車、下單、付款、訂單查詢、揪團頁已可展示，並使用真實食物圖片。 | 作品層級完整 |
 | 管理端流程 | Dashboard、商品、訂單、付款事件、操作紀錄已能支撐營運 demo。 | 作品層級完整 |
 | 訂單生命週期 | 狀態轉移集中在 `OrderStatusTransitionPolicy`，付款、取消、婉拒、配送、完成都有 service 測試。 | 強 |
@@ -16,9 +16,9 @@
 | 揪團併發 | Redisson lock、transaction boundary、唯一鍵、Testcontainers Redis、JMeter 證據已具備。 | 強 |
 | 庫存一致性 | 一般訂單、取消還庫存、商品管理邊界與重複取消防線已有測試。 | 強 |
 | 測試證據 | 後端 service/integration/Redis 測試、JaCoCo、前端 build、手動 Playwright 截圖證據已整理。 | 強 |
-| 系統設計答辯 | 已整理自用後端深挖筆記，涵蓋 correctness、idempotency、concurrency、payment、inventory、observability 與 residual risk。 | 強 |
-| UI/UX | 已完成產品級 polish；不像最初的小 demo，但仍不是設計系統等級產品。 | 足夠面試 |
-| 部署 | 已有 AWS EC2 + Nginx + Docker MySQL/Redis + S3 + CloudFront + DuckDNS 作品級部署敘事。 | 足夠面試 |
+| 系統設計證據 | 已整理後端深挖筆記，涵蓋 correctness、idempotency、concurrency、payment、inventory、observability 與 residual risk。 | 強 |
+| UI/UX | 已完成產品級 polish；不像最初的小 demo，但仍不是設計系統等級產品。 | 展示層級足夠 |
+| 部署 | 已有 AWS EC2 + Nginx + Docker MySQL/Redis + S3 + CloudFront + DuckDNS 展示級部署敘事。 | 展示級部署完整 |
 | 可觀測性 | 已有 Actuator health/info/metrics/prometheus 與少量業務 metrics，涵蓋付款 callback、付款 reconciliation、latest pending reconciliation candidates、取消防重與揪團狀態轉換；已整理 Prometheus scrape 範例、Grafana dashboard JSON、告警症狀與 first checks，尚未部署 live Grafana/Alertmanager 與 trace。 | 作品層級足夠 |
 | 自動化交付 | 有 GitHub Actions checks；backend 現在可透過 `/actuator/info` 暴露部署 commit/branch；CI 會上傳 backend release package artifact，內含 jar、release metadata、SHA256 checksums、deploy commands、systemd/Nginx/env 範本；尚未做 image build / ECR / EC2 自動部署。 | 後期再做 |
 
@@ -30,7 +30,7 @@
 
 - 揪團模型與 Redisson lock 流程。
 - 訂單狀態機與付款 callback 邊界。
-- README 截圖證據與 interview guide。
+- README 截圖證據與工程深挖筆記。
 - 現有 Vue 會員端/管理端資訊架構。
 
 如果修改這些區域，必須先有明確問題或測試缺口。
@@ -67,7 +67,7 @@
 
 - 雲端部署會放大任何 seed data、環境變數、callback URL、CORS、HTTPS、migration 問題。
 - 現在更有價值的是保證本機與作品證據可重跑。
-- 面試官通常先看程式碼、測試、流程與 README，再問部署細節。
+- 專案審查通常先看程式碼、測試、流程與 README，再進一步檢查部署細節。
 
 建議順序：
 
@@ -83,7 +83,7 @@
 理由：
 
 - 付款 callback、訂單狀態機與取消還庫存防重已經補強。
-- 面試官若繼續追 production thinking，下一個自然問題是「你怎麼知道系統現在健康？怎麼看付款 callback、揪團與訂單狀態流轉是否異常？」。
+- 若繼續追 production thinking，下一個自然問題是「你怎麼知道系統現在健康？怎麼看付款 callback、揪團與訂單狀態流轉是否異常？」。
 - 這能補上營運可見度，又不需要立刻進入完整雲端 CD 或多服務架構。
 
 已完成做法：
@@ -126,14 +126,14 @@
 
 剛完成的文件切面是 **backend deep-dive prep notes**：
 
-- 新增 [docs/backend-deep-dive-prep.md](backend-deep-dive-prep.md)，作為 Kevin 面試前自用的後端深挖筆記。
+- 新增 [docs/backend-deep-dive-prep.md](backend-deep-dive-prep.md)，作為 Kevin 自用的後端深挖筆記。
 - 筆記將訂單狀態機、付款 callback、揪團併發、庫存一致性、observability、security boundary、capacity position 分開整理。
 - 每個區塊都列出要怎麼講、對應程式碼/測試、不要吹過頭的地方，避免把作品包裝成 production 100%。
 
 下一個建議切面是 **截圖證據重跑，然後再決定是否進 ECPay/雲端同步**：
 
 - 若要整理作品證據：用已新增的 local/browser smoke 當前置檢查，重跑 10 張 README 截圖與 demo acceptance，確認真實食物圖片、會員端、管理端畫面都維持最新狀態。
-- 若要繼續衝全端觀感：下一刀可做管理端 dashboard 的更細緻優先級排序，但目前 orders/products 的操作面已足夠支撐面試 demo。
+- 若要繼續衝全端觀感：下一刀可做管理端 dashboard 的更細緻優先級排序，但目前 orders/products 的操作面已足夠支撐完整 demo。
 - 若要往 ECPay sandbox 推進：目前 EC2 已切 sandbox provider 且 stage checkout 已通，下一步是完成 sandbox 卡號付款後確認訂單狀態、`payment_event`、callback metrics 與重複 callback replay。
 
 ## How To Use This Roadmap

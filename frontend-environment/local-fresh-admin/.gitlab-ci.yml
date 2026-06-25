@@ -39,7 +39,3 @@ deploy-staging:dep:
   - echo "=====start deploy======"
   - sudo cp -rf ./dist/  /usr/share/nginx/html/reggie
   - echo "=====end deploy!!!!!!======"
-
-
-
-
