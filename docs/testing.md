@@ -237,6 +237,17 @@ It is not a visual-regression test; it catches broken local services,
 proxy/auth regressions, wrong-backend port conflicts, and empty demo data before
 manual browser acceptance.
 
+After the smoke checks pass, refresh the committed README screenshots with:
+
+```bash
+USER_BASE_URL=http://127.0.0.1:5176 \
+ADMIN_BASE_URL=http://127.0.0.1:5177 \
+npm run screenshots:readme
+```
+
+This captures the 10 README images in `docs/screenshots/`: six member
+storefront surfaces and four admin-console surfaces.
+
 The browser smoke test adds a real Chromium pass over the most important local
 UI routes:
 

@@ -5,7 +5,8 @@
   "scripts": {
     "smoke:backend": "node scripts/check-local-backend-identity.mjs",
     "smoke:local": "node scripts/check-ui-smoke-local.mjs",
-    "smoke:browser": "playwright test scripts/ui-smoke-browser.spec.mjs"
+    "smoke:browser": "playwright test scripts/ui-smoke-browser.spec.mjs",
+    "screenshots:readme": "node scripts/refresh-readme-screenshots.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.61.0"

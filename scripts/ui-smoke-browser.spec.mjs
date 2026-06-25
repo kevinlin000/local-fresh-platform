@@ -10,9 +10,9 @@ const config = {
 test.describe('local browser smoke', () => {
   test('member can log in and reach storefront and orders', async ({ page }) => {
     await page.goto(`${config.userBaseUrl}/login`)
-    await expect(page.getByRole('heading', { name: '會員登入' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: '登入菜籃日' })).toBeVisible()
 
-    await page.getByRole('button', { name: '試用會員 A' }).click()
+    await page.getByRole('button', { name: '會員 A' }).click()
     await expect(page).toHaveURL(`${config.userBaseUrl}/`)
     await expect(page.getByText('今日市場')).toBeVisible()
     await expect(page.getByRole('heading', { name: '全部商品' })).toBeVisible()
@@ -40,7 +40,7 @@ test.describe('local browser smoke', () => {
     await expect(page.getByText('待確認').first()).toBeVisible()
 
     await page.goto(`${config.adminBaseUrl}/products`)
-    await expect(page.getByPlaceholder('搜尋商品名稱')).toBeVisible()
+    await expect(page.getByRole('textbox', { name: '搜尋商品名稱' })).toBeVisible()
     await expect(page.getByRole('button', { name: '新增商品' })).toBeVisible()
 
     await page.goto(`${config.adminBaseUrl}/payment-events`)
