@@ -2,24 +2,17 @@ package com.localfresh.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.localfresh.entity.Orders;
-import com.localfresh.test.support.LoginResult;
+import com.localfresh.integration.support.MockInfrastructureIntegrationTest;
 import com.localfresh.mapper.OrderMapper;
+import com.localfresh.test.support.LoginResult;
 import com.localfresh.utils.JsonUtil;
-import com.localfresh.websocket.WebSocketServer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -29,30 +22,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
 @Transactional
-class IssueS4ThreadLocalTest {
+class IssueS4ThreadLocalTest extends MockInfrastructureIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private OrderMapper orderMapper;
-
-    @MockitoBean(name = "redisTemplate")
-    @SuppressWarnings("rawtypes")
-    private RedisTemplate redisTemplate;
-
-    @MockitoBean
-    private RedisConnectionFactory redisConnectionFactory;
-
-    @MockitoBean
-    private ServerEndpointExporter serverEndpointExporter;
-
-    @MockitoBean
-    private WebSocketServer webSocketServer;
 
     private String tokenA;
     private String tokenB;

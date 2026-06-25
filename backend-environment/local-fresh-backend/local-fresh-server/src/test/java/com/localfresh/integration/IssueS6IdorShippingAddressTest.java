@@ -2,25 +2,17 @@ package com.localfresh.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.localfresh.entity.ShippingAddress;
+import com.localfresh.integration.support.MockRedissonInfrastructureIntegrationTest;
 import com.localfresh.mapper.ShippingAddressMapper;
 import com.localfresh.test.support.LoginResult;
 import com.localfresh.utils.JsonUtil;
-import com.localfresh.websocket.WebSocketServer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -31,33 +23,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
 @Transactional
-class IssueS6IdorShippingAddressTest {
+class IssueS6IdorShippingAddressTest extends MockRedissonInfrastructureIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private ShippingAddressMapper shippingAddressMapper;
-
-    @MockitoBean(name = "redisTemplate")
-    @SuppressWarnings("rawtypes")
-    private RedisTemplate redisTemplate;
-
-    @MockitoBean
-    private RedisConnectionFactory redisConnectionFactory;
-
-    @MockitoBean
-    private ServerEndpointExporter serverEndpointExporter;
-
-    @MockitoBean
-    private WebSocketServer webSocketServer;
-
-    @MockitoBean
-    private RedissonClient redissonClient;
 
     private String tokenB;
     private Long userAId;
