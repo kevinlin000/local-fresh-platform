@@ -6,7 +6,9 @@
     "smoke:backend": "node scripts/check-local-backend-identity.mjs",
     "smoke:local": "node scripts/check-ui-smoke-local.mjs",
     "smoke:browser": "playwright test scripts/ui-smoke-browser.spec.mjs",
-    "screenshots:readme": "node scripts/refresh-readme-screenshots.mjs"
+    "screenshots:readme": "node scripts/refresh-readme-screenshots.mjs",
+    "observability:up": "docker compose -f deploy/observability/docker-compose.yml up -d",
+    "observability:down": "docker compose -f deploy/observability/docker-compose.yml down"
   },
   "devDependencies": {
     "@playwright/test": "1.61.0"

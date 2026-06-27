@@ -38,7 +38,7 @@ Verified on the deployed EC2 runtime:
 Not yet implemented:
 
 - Duplicate real-provider callback replay evidence
-- Live Grafana/Alertmanager wiring and long-running external-query evidence
+- Monitoring screenshots and long-running external-query evidence
 
 ## Current Preflight Status
 
@@ -57,9 +57,9 @@ The previous deployed `404` blocker is resolved, and Playwright has verified
 that the deployed storefront reaches ECPay stage checkout and completes sandbox
 card OTP payment back through ReturnURL. The backend also has duplicate
 callback coverage, pending reconciliation candidates, a provider-query
-reconciliation job, a pending-candidate gauge, and a Grafana dashboard artifact.
-The remaining payment gaps are live Grafana/Alertmanager wiring and
-long-running external-query evidence.
+reconciliation job, a pending-candidate gauge, Grafana dashboard provisioning,
+and local Prometheus alert rules. The remaining payment gaps are monitoring
+screenshots and long-running external-query evidence.
 
 ## Local Contract Evidence
 

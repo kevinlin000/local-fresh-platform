@@ -1,6 +1,6 @@
 # Observability
 
-This project keeps observability intentionally small: Spring Boot Actuator plus a few business counters that explain the most important portfolio workflows. The backend now exposes a Prometheus scrape endpoint and includes an importable Grafana dashboard artifact, but it does not run a bundled Prometheus server, live Grafana instance, or alert manager yet.
+This project keeps observability intentionally small: Spring Boot Actuator plus a few business counters that explain the most important portfolio workflows. The backend exposes a Prometheus scrape endpoint, includes an importable Grafana dashboard artifact, and now ships a local Prometheus / Grafana / Alertmanager stack for demo evidence. It is still not a full production SRE platform.
 
 ## Actuator Endpoints
 
@@ -97,6 +97,83 @@ scrape_configs:
       - targets: ["localfresh-demo.duckdns.org"]
 ```
 
+## Local Prometheus / Grafana / Alertmanager
+
+The repository includes a local observability stack under:
+
+```text
+deploy/observability/
+```
+
+It is optional and does not replace the normal backend/frontend dev flow.
+Start the Spring Boot backend on `localhost:8080` first, then run:
+
+```bash
+npm run observability:up
+```
+
+That script runs
+`docker compose -f deploy/observability/docker-compose.yml up -d`. Stop the
+stack with `npm run observability:down`.
+
+Open:
+
+| Tool | URL | Purpose |
+|---|---|---|
+| Prometheus | `http://localhost:9091` | Scrape target health, raw PromQL, alert rule status |
+| Grafana | `http://localhost:3002` | Dashboard view; login `admin` / `localfresh` |
+| Alertmanager | `http://localhost:9093` | Local alert state and grouping |
+
+The default Prometheus target is `host.docker.internal:8080`, which works for
+Docker Desktop on macOS and the included Linux `host-gateway` mapping. If the
+backend runs elsewhere, edit
+`deploy/observability/prometheus/prometheus.yml`.
+
+Prometheus loads:
+
+- `deploy/observability/prometheus/prometheus.yml`
+- `deploy/observability/prometheus/rules/local-fresh-alerts.yml`
+
+Grafana provisions:
+
+- datasource: `Prometheus` -> `http://prometheus:9090`
+- dashboard folder: `Local Fresh`
+- dashboard file: `docs/grafana/local-fresh-operations-dashboard.json`
+
+For a demo screenshot, verify these three things:
+
+1. Prometheus `Status -> Targets` shows `local-fresh-backend` as `UP`.
+2. Grafana shows the `Local Fresh Operations` dashboard with a selected
+   Prometheus datasource.
+3. Prometheus `Alerts` lists the `LocalFreshPayment...` alert rules.
+
+Local validation on 2026-06-25:
+
+- `docker compose -f deploy/observability/docker-compose.yml config`: passed.
+- Prometheus readiness at `http://localhost:9091/-/ready`: passed.
+- Alertmanager readiness at `http://localhost:9093/-/ready`: passed.
+- Grafana health at `http://localhost:3002/api/health`: passed.
+- Grafana search with `admin` / `localfresh`: `Local Fresh Operations`
+  dashboard provisioned.
+- Prometheus rules API: all `LocalFreshPayment...` alert rules loaded with
+  `health="ok"`.
+
+If Prometheus shows `local-fresh-backend` as `DOWN`, first confirm port `8080`
+is actually this project's backend:
+
+```bash
+lsof -nP -iTCP:8080 -sTCP:LISTEN
+curl -i http://localhost:8080/actuator/health
+curl -i http://localhost:8080/actuator/prometheus
+```
+
+During local validation on 2026-06-27, port `8080` was occupied by a different
+project (`restaurant-admin-backend`), so Prometheus correctly reported the
+target as `DOWN` with HTTP `403`. If you intentionally run Local Fresh on a
+different port, edit `deploy/observability/prometheus/prometheus.yml`; if the
+correct backend is running but still returns `403`, check the actuator exposure
+and security settings for `/actuator/prometheus`.
+
 ## Grafana Dashboard Artifact
 
 The repository includes an importable Grafana dashboard:
@@ -129,9 +206,11 @@ Import steps:
 
 ## Alert Thresholds
 
-These are portfolio-grade alert rules rather than a deployed alert manager
-setup. They define the symptoms to watch when a Prometheus/Grafana stack is
-wired later.
+These rules are checked into
+`deploy/observability/prometheus/rules/local-fresh-alerts.yml` and wired to the
+local Alertmanager container. They define the symptoms to watch when the same
+Prometheus/Grafana setup is moved from local evidence to a longer-running
+environment.
 
 | Severity | Symptom | Suggested threshold | First check |
 |---|---|---|---|
@@ -158,8 +237,9 @@ Runbook notes:
 
 This is enough to show production thinking in an interview: the system can answer whether payment callbacks are being accepted, rejected, duplicated, whether reconciliation is applying provider results or getting stuck, how many pending payment requests the latest reconciliation scan found, whether cancellation idempotency guards are being hit, and whether group-buy transitions are moving as expected.
 
-The scrape endpoint and dashboard artifact are available, but a running Grafana
-instance, Alertmanager wiring, dashboard screenshots, and distributed tracing
-are intentionally deferred until the core demo and cloud environment are
+The scrape endpoint, dashboard artifact, local Grafana provisioning, Prometheus
+alert rules, and local Alertmanager wiring are available. Dashboard screenshots,
+long-running cloud monitoring evidence, notification receivers, and distributed
+tracing are intentionally deferred until the core demo and cloud environment are
 stable. The alert symptoms and first checks above are the contract for that
 later monitoring stack.

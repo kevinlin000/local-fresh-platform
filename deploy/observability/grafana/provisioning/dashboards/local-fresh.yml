@@ -1,0 +1,12 @@
+apiVersion: 1
+
+providers:
+  - name: Local Fresh
+    orgId: 1
+    folder: Local Fresh
+    type: file
+    disableDeletion: false
+    allowUiUpdates: true
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards/local-fresh

@@ -1,0 +1,57 @@
+groups:
+  - name: local-fresh-payment
+    rules:
+      - alert: LocalFreshPaymentCallbackRejected
+        expr: sum(increase(localfresh_payment_callback_total{result="rejected"}[5m])) >= 3
+        for: 0m
+        labels:
+          severity: page
+          workflow: payment
+        annotations:
+          summary: Payment callbacks are being rejected repeatedly.
+          description: Check callback signature settings, PAYMENT_PROVIDER, ReturnURL, and recent Nginx /payment/callback logs.
+          runbook_url: https://github.com/kevinlin000/local-fresh-platform/blob/main/docs/observability.md
+
+      - alert: LocalFreshPaymentReconciliationQueryError
+        expr: sum(increase(localfresh_payment_reconciliation_total{result="query_error"}[10m])) > 0
+        for: 0m
+        labels:
+          severity: ticket
+          workflow: payment-reconciliation
+        annotations:
+          summary: Payment reconciliation provider queries are failing.
+          description: Check ECPay query URL/env, provider availability, and backend logs for Payment reconciliation query failed.
+          runbook_url: https://github.com/kevinlin000/local-fresh-platform/blob/main/docs/observability.md
+
+      - alert: LocalFreshPaymentReconciliationBacklogHigh
+        expr: max(localfresh_payment_reconciliation_pending_candidates{provider="ecpay"}) > 5
+        for: 30m
+        labels:
+          severity: ticket
+          workflow: payment-reconciliation
+        annotations:
+          summary: Pending payment reconciliation backlog remains high.
+          description: Open /admin/paymentEvents/pendingRequests and compare with recent ECPay checkout attempts.
+          runbook_url: https://github.com/kevinlin000/local-fresh-platform/blob/main/docs/observability.md
+
+      - alert: LocalFreshPaymentProviderPendingSpike
+        expr: sum(increase(localfresh_payment_reconciliation_total{result="pending"}[30m])) > 5
+        for: 0m
+        labels:
+          severity: ticket
+          workflow: payment-reconciliation
+        annotations:
+          summary: Provider keeps reporting pending payments.
+          description: Check whether provider settlement is delayed or callbacks are failing to reach /payment/callback.
+          runbook_url: https://github.com/kevinlin000/local-fresh-platform/blob/main/docs/observability.md
+
+      - alert: LocalFreshPaymentDuplicateCallbackSpike
+        expr: sum(increase(localfresh_payment_callback_total{result="ignored"}[15m])) > 10
+        for: 0m
+        labels:
+          severity: ticket
+          workflow: payment
+        annotations:
+          summary: Duplicate payment callbacks increased.
+          description: Confirm provider retries and verify idempotency behavior is still writing CALLBACK_DUPLICATE.
+          runbook_url: https://github.com/kevinlin000/local-fresh-platform/blob/main/docs/observability.md
