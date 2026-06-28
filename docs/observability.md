@@ -87,6 +87,29 @@ curl http://localhost:18080/actuator/metrics/localfresh.group_buy.transition.tot
 curl http://localhost:18080/actuator/prometheus
 ```
 
+For a repeatable local evidence run, use the scripted business-flow check:
+
+```bash
+npm run observability:backend
+npm run observability:up
+API_BASE_URL=http://127.0.0.1:18080 npm run smoke:backend
+API_BASE_URL=http://127.0.0.1:18080 npm run observability:business-evidence
+```
+
+The evidence script verifies the backend identity and Prometheus target, then
+uses seeded demo accounts to exercise three live business paths:
+
+- A signed duplicate demo payment callback, verified by
+  `localfresh_payment_callback_total{provider="demo",result="ignored"}`.
+- An admin order cancellation, verified by
+  `localfresh_order_cancellation_total{result="applied"}`.
+- A seeded group-buy completion, verified by
+  `localfresh_group_buy_transition_total{result="completed"}`.
+
+This script is intentionally local and stateful. It should be used as demo
+evidence, not as a CI test, because it consumes seeded orders and group-buy
+state in the local database.
+
 A minimal external Prometheus scrape job can target the deployed backend like
 this:
 
@@ -179,6 +202,15 @@ Local validation on 2026-06-28:
 - Screenshot evidence:
   [docs/screenshots/11-observability-prometheus-target.png](screenshots/11-observability-prometheus-target.png)
 
+Local business-event validation on 2026-06-28:
+
+- `API_BASE_URL=http://127.0.0.1:18080 npm run smoke:backend`: passed.
+- `API_BASE_URL=http://127.0.0.1:18080 npm run observability:business-evidence`:
+  passed with 11 checks and 0 warnings.
+- Payment duplicate callback metric increased from `0` to `1`.
+- Order cancellation metric increased from `0` to `1`.
+- Group-buy completion metric increased from `0` to `1`.
+
 If Prometheus shows `local-fresh-backend` as `DOWN`, first confirm port `18080`
 is actually this project's backend:
 
@@ -262,9 +294,9 @@ Runbook notes:
 This is enough to show production thinking in an interview: the system can answer whether payment callbacks are being accepted, rejected, duplicated, whether reconciliation is applying provider results or getting stuck, how many pending payment requests the latest reconciliation scan found, whether cancellation idempotency guards are being hit, and whether group-buy transitions are moving as expected.
 
 The scrape endpoint, dashboard artifact, local Grafana provisioning, Prometheus
-alert rules, local Alertmanager wiring, and local Prometheus target `UP`
-screenshot are available. Business-event dashboard data, long-running cloud
-monitoring evidence, notification receivers, and distributed tracing are
+alert rules, local Alertmanager wiring, local Prometheus target `UP` screenshot,
+and scripted local business-event metric evidence are available. Long-running
+cloud monitoring evidence, notification receivers, and distributed tracing are
 intentionally deferred until the core demo and cloud environment are stable. The
 alert symptoms and first checks above are the contract for that later monitoring
 stack.

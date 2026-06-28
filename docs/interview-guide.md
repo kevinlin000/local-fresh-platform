@@ -57,7 +57,7 @@
 
 ### 付款事件紀錄
 
-付款流程新增 `payment_event`，將建立付款請求、成功 callback、重複 callback 與非法 callback 都寫成事件，並提供 `GET /admin/paymentEvents/page` 與管理端「付款事件」頁查詢。另有 `GET /admin/paymentEvents/pendingRequests` 可列出已建立付款請求但還沒有成功或拒絕 callback 的待對帳候選。這讓 demo gateway 不只是「假付款」，而是先具備真實金流會需要的 provider callback 入口、demo HMAC 驗證、ECPay CheckMacValue parser、會員端 POST form 導轉、reference、provider trade no、idempotency key、amount、raw payload、處理結果與查詢入口。面試時可以說：目前 EC2 已可透過 SSM 切到 ECPay sandbox provider，public callback preflight 已通過，也已用 Playwright 從 CloudFront 會員端導向綠界 stage checkout，完成 OTP 付款成功、ReturnURL HTTP 200、訂單轉已付款與 `CALLBACK_SUCCEEDED` 落庫；後端也已補 ECPay 查詢結果 parser、provider-query reconciliation job、reconciliation 結果 counter、pending candidate gauge、Grafana dashboard provisioning、本機 Prometheus alert rules 與 Prometheus target `UP` 截圖，排程預設關閉，下一步是外部查詢排程長時間運行與業務事件 dashboard 數據。
+付款流程新增 `payment_event`，將建立付款請求、成功 callback、重複 callback 與非法 callback 都寫成事件，並提供 `GET /admin/paymentEvents/page` 與管理端「付款事件」頁查詢。另有 `GET /admin/paymentEvents/pendingRequests` 可列出已建立付款請求但還沒有成功或拒絕 callback 的待對帳候選。這讓 demo gateway 不只是「假付款」，而是先具備真實金流會需要的 provider callback 入口、demo HMAC 驗證、ECPay CheckMacValue parser、會員端 POST form 導轉、reference、provider trade no、idempotency key、amount、raw payload、處理結果與查詢入口。面試時可以說：目前 EC2 已可透過 SSM 切到 ECPay sandbox provider，public callback preflight 已通過，也已用 Playwright 從 CloudFront 會員端導向綠界 stage checkout，完成 OTP 付款成功、ReturnURL HTTP 200、訂單轉已付款與 `CALLBACK_SUCCEEDED` 落庫；後端也已補 ECPay 查詢結果 parser、provider-query reconciliation job、reconciliation 結果 counter、pending candidate gauge、Grafana dashboard provisioning、本機 Prometheus alert rules、Prometheus target `UP` 截圖與本機業務事件 metric live increase 驗證，排程預設關閉，下一步是外部查詢排程長時間運行與雲端監控留痕。
 
 ### 管理端操作 Audit Log
 
@@ -111,7 +111,7 @@ RedisTemplate 用在快取與一般 KV，RedissonClient 用在分散式鎖。這
 - 管理端操作 audit log 延伸成更完整的營運追蹤報表。
 - 只有在明確瓶頸出現後，再討論服務拆分。
 
-更完整的後續優先順序與完整度評估可以看 `docs/portfolio-roadmap.md`。面試時不要說這是 production 100% 系統；比較好的說法是：核心交易、揪團併發、庫存防重、測試證據、最小業務 metrics、作品級部署、ECPay sandbox provider switch、stage checkout、OTP 成功回流、待對帳候選查詢、provider-query reconciliation job、待對帳候選 gauge、Grafana dashboard provisioning、本機 Prometheus alert rules 與 Prometheus target `UP` 證據已完成；下一步是補長時間排程證據、業務事件 dashboard 數據、自動化部署和更完整的監控平台。
+更完整的後續優先順序與完整度評估可以看 `docs/portfolio-roadmap.md`。面試時不要說這是 production 100% 系統；比較好的說法是：核心交易、揪團併發、庫存防重、測試證據、最小業務 metrics、作品級部署、ECPay sandbox provider switch、stage checkout、OTP 成功回流、待對帳候選查詢、provider-query reconciliation job、待對帳候選 gauge、Grafana dashboard provisioning、本機 Prometheus alert rules、Prometheus target `UP` 與本機業務事件 metric 證據已完成；下一步是補長時間排程證據、雲端監控留痕、自動化部署和更完整的監控平台。
 
 ## 可以主動承認的限制
 

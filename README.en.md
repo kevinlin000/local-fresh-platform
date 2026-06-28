@@ -247,7 +247,7 @@ Payment processing also writes a provider-neutral `payment_event` trail for `REQ
 
 The admin console also includes a Payment Events page, so payment requests, successful callbacks, duplicate callbacks, and rejected callbacks can be inspected without calling the API manually.
 
-The backend also exposes a minimal business-metrics slice through Actuator. It tracks payment callback outcomes, payment reconciliation outcomes, the latest pending reconciliation candidate count, duplicate/applied order cancellations, and group-buy state transitions. The backend now exposes `/actuator/prometheus` in scrape format, includes an importable [Local Fresh Operations Grafana dashboard](docs/grafana/local-fresh-operations-dashboard.json), and ships a local Prometheus / Grafana / Alertmanager compose stack with alert rules; see [docs/observability.md](docs/observability.md) for local query examples, scrape configuration, dashboard notes, alert thresholds, and current boundaries.
+The backend also exposes a minimal business-metrics slice through Actuator. It tracks payment callback outcomes, payment reconciliation outcomes, the latest pending reconciliation candidate count, duplicate/applied order cancellations, and group-buy state transitions. The backend now exposes `/actuator/prometheus` in scrape format, includes an importable [Local Fresh Operations Grafana dashboard](docs/grafana/local-fresh-operations-dashboard.json), and ships a local Prometheus / Grafana / Alertmanager compose stack with alert rules plus a repeatable `npm run observability:business-evidence` business-event check; see [docs/observability.md](docs/observability.md) for local query examples, scrape configuration, dashboard notes, alert thresholds, and current boundaries.
 
 ### 4. Admin operation audit log
 
@@ -468,7 +468,7 @@ The deployment topology is:
 
 ## Known Limitations
 
-- Local demos can still use the demo gateway by default. The EC2 demo runtime can now be switched to the ECPay sandbox provider through SSM, with public callback readiness verified; Playwright has also verified deployed storefront redirect into ECPay stage checkout, OTP payment completion, ReturnURL HTTP 200, paid order state, and `CALLBACK_SUCCEEDED` payment evidence. Duplicate callback coverage, pending reconciliation candidates, a provider-query reconciliation job, the pending-candidate gauge, Grafana dashboard provisioning, local Prometheus alert rules, and a local Prometheus target `UP` screenshot are now in place; the remaining payment gap is long-running external-query evidence and business-event dashboard evidence.
+- Local demos can still use the demo gateway by default. The EC2 demo runtime can now be switched to the ECPay sandbox provider through SSM, with public callback readiness verified; Playwright has also verified deployed storefront redirect into ECPay stage checkout, OTP payment completion, ReturnURL HTTP 200, paid order state, and `CALLBACK_SUCCEEDED` payment evidence. Duplicate callback coverage, pending reconciliation candidates, a provider-query reconciliation job, the pending-candidate gauge, Grafana dashboard provisioning, local Prometheus alert rules, a local Prometheus target `UP` screenshot, and repeatable local business-event metric evidence are now in place; the remaining payment gap is long-running external-query evidence and cloud monitoring evidence.
 - The admin console now has a polished operations-console baseline, but it does not yet include automated visual regression coverage.
 - The user frontend now covers desktop and mobile responsive basics, but does not yet include cross-browser visual regression testing.
 - Legacy databases need a one-time Flyway baseline; fresh databases can apply migrations directly.
@@ -535,9 +535,9 @@ verified the CloudFront storefront redirect into ECPay stage checkout, OTP
 payment completion, ReturnURL HTTP 200, paid order state, and
 `CALLBACK_SUCCEEDED` payment evidence. Provider-query reconciliation, the
 pending-candidate gauge, Grafana dashboard provisioning, local Prometheus
-alert rules, and a local Prometheus target `UP` screenshot are in place; the
-remaining payment gap is long-running external-query evidence and business-event
-dashboard evidence.
+alert rules, a local Prometheus target `UP` screenshot, and repeatable local
+business-event metric evidence are in place; the remaining payment gap is
+long-running external-query evidence and cloud monitoring evidence.
 
 ## License
 

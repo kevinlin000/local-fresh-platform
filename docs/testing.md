@@ -46,6 +46,24 @@ portfolio evidence. `local-fresh-server` configures Maven Surefire with
 are explicitly requested. This keeps ordinary local review and GitHub Actions
 runs deterministic.
 
+## Local Acceptance Evidence
+
+Some evidence depends on real local services and seeded demo data, so it is not
+part of the default CI gate. Run it when refreshing portfolio proof or before a
+live demo:
+
+```bash
+npm run observability:backend
+npm run observability:up
+API_BASE_URL=http://127.0.0.1:18080 npm run smoke:backend
+API_BASE_URL=http://127.0.0.1:18080 npm run observability:business-evidence
+```
+
+`observability:business-evidence` exercises a signed duplicate demo payment
+callback, admin order cancellation, and seeded group-buy completion, then
+verifies the corresponding Prometheus counters increased. On 2026-06-28 it
+passed with 11 checks and 0 warnings against the local backend on `18080`.
+
 ## Backend Coverage Report
 
 `local-fresh-server` also configures JaCoCo for local evidence generation. The

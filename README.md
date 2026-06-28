@@ -274,7 +274,7 @@ flowchart LR
 
 管理端也新增「付款事件」頁，可直接查 demo 訂單的付款請求、成功回呼、重複回呼與拒絕回呼，作為未來金流對帳與客服查單的前台證據。
 
-Actuator 也補上最小業務 metrics，可查付款 callback 結果、付款 reconciliation 結果、最新待對帳候選數、訂單取消防重命中與揪團狀態轉換，用來回答「系統跑起來後怎麼看異常」。後端已提供 `/actuator/prometheus` scrape-format endpoint，並附一份可匯入 Grafana 的 [Local Fresh Operations dashboard](docs/grafana/local-fresh-operations-dashboard.json)；目前也提供本機 Prometheus / Grafana / Alertmanager compose 與告警規則，查詢方式、scrape 範例、dashboard 說明與告警門檻見 [docs/observability.md](docs/observability.md)。
+Actuator 也補上最小業務 metrics，可查付款 callback 結果、付款 reconciliation 結果、最新待對帳候選數、訂單取消防重命中與揪團狀態轉換，用來回答「系統跑起來後怎麼看異常」。後端已提供 `/actuator/prometheus` scrape-format endpoint，並附一份可匯入 Grafana 的 [Local Fresh Operations dashboard](docs/grafana/local-fresh-operations-dashboard.json)；目前也提供本機 Prometheus / Grafana / Alertmanager compose、告警規則與可重跑的 `npm run observability:business-evidence` 業務事件驗證，查詢方式、scrape 範例、dashboard 說明與告警門檻見 [docs/observability.md](docs/observability.md)。
 
 ### 4. 管理端操作 Audit Log
 
@@ -548,13 +548,13 @@ npm run smoke:browser
 
 ### 目前重點
 
-- **Live observability 證據**:ECPay sandbox checkout、OTP 成功回流與 `CALLBACK_SUCCEEDED` 已完成；目前已有本機 Prometheus / Grafana / Alertmanager compose、payment/reconciliation metrics、dashboard provisioning、alert rules 與 Prometheus target `UP` 截圖，剩下的是外部查詢排程長時間運行與業務事件 dashboard 數據。
+- **Live observability 證據**:ECPay sandbox checkout、OTP 成功回流與 `CALLBACK_SUCCEEDED` 已完成；目前已有本機 Prometheus / Grafana / Alertmanager compose、payment/reconciliation metrics、dashboard provisioning、alert rules、Prometheus target `UP` 截圖與可重跑的業務事件 metric 驗證。剩下的是外部查詢排程長時間運行、雲端監控留痕與更完整的 dashboard 截圖證據。
 - **Browser UI smoke / 截圖證據**:在 dependency-free local precheck 之外，已新增 Playwright Chromium smoke，覆蓋會員登入/home/orders 與管理端登入/dashboard/orders/products；後續可補 screenshot checklist 或輕量視覺差異檢查。
 
 ### 規劃中
 
-- **綠界 ECPay reconciliation**:已補重複 callback 測試、付款事件待對帳候選、ECPay 查詢結果 parser、reconciliation job、pending candidate gauge、Grafana dashboard JSON 與本機 Prometheus alert rules；下一步補實機長時間排程運行證據。
-- **可觀測性三件套**:Spring Boot Actuator + Prometheus scrape endpoint + Grafana dashboard provisioning + Alertmanager local wiring，自訂業務 metric 涵蓋 payment callback、reconciliation backlog、取消防重與揪團狀態轉換；本機 scrape target 已有 `UP` 證據，下一步再補結構化 log 與 Trace ID。
+- **綠界 ECPay reconciliation**:已補重複 callback 測試、付款事件待對帳候選、ECPay 查詢結果 parser、reconciliation job、pending candidate gauge、Grafana dashboard JSON、本機 Prometheus alert rules 與業務事件 metric 驗證；下一步補實機長時間排程運行證據。
+- **可觀測性三件套**:Spring Boot Actuator + Prometheus scrape endpoint + Grafana dashboard provisioning + Alertmanager local wiring，自訂業務 metric 涵蓋 payment callback、reconciliation backlog、取消防重與揪團狀態轉換；本機 scrape target 與業務事件 metric 已有可重跑證據，下一步再補結構化 log 與 Trace ID。
 - **CD 自動化**:在現有 GitHub Actions 測試/build 基礎上,加入 Docker image build、推送 ECR,並觸發 EC2 滾動部署。
 
 ### 已完成里程碑
