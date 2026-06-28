@@ -666,7 +666,6 @@ export default class extends Vue {
   // 查看詳情
   async goDetail(id: any, status: number, row: any, event) {
     event.stopPropagation()
-    // console.log(111, index, row)
     this.diaForm = []
     this.dialogVisible = true
     this.dialogOrderStatus = status

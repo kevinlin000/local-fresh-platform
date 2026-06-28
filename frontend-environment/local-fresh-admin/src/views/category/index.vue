@@ -265,7 +265,6 @@ export default class extends Vue {
         }
       })
       .catch(err => {
-        console.log(err, 'err')
         this.$message.error('請求發生錯誤：' + err.message)
       })
   }
@@ -299,7 +298,6 @@ export default class extends Vue {
 
   // 關閉彈窗
   private handleClose(st: string) {
-    console.log(this.$refs.classData, 'this.$refs.classData')
     this.classData.dialogVisible = false
     // 對該表單項重置為初始值，並移除校驗結果
     this.$refs.classData.resetFields()

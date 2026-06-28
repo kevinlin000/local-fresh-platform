@@ -85,7 +85,7 @@ localfresh:
     share-base-url: ${GROUP_BUY_SHARE_BASE_URL:${sky.group-buy.share-base-url}}
   payment:
     provider: ${PAYMENT_PROVIDER:demo}
-    callback-secret: ${PAYMENT_CALLBACK_SECRET:local-fresh-demo-callback-secret}
+    callback-secret: ${PAYMENT_CALLBACK_SECRET}
     ecpay:
       merchant-id: ${ECPAY_MERCHANT_ID:}
       hash-key: ${ECPAY_HASH_KEY:}

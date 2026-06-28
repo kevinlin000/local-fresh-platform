@@ -134,7 +134,6 @@ export default class extends Vue {
       nameList: top10Data.nameList.split(',').reverse(),
       numberList: top10Data.numberList.split(',').reverse(),
     }
-    console.log(this.top10Data)
   }
   // 取得目前选中的tab時间
   getTitleNum(data) {

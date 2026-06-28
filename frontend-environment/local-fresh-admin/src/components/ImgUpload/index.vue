@@ -56,8 +56,7 @@ export default class extends Vue {
     this.imageUrl = val || ''
   }
 
-  handleError(err, file, fileList) {
-    console.log(err, file, fileList, 'handleError')
+  handleError() {
     this.$message({
       message: '圖片上傳失敗',
       type: 'error'

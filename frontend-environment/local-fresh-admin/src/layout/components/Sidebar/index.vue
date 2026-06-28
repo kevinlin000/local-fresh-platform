@@ -104,14 +104,11 @@ export default class extends Vue {
     let routes = JSON.parse(
       JSON.stringify([...(this.$router as any).options.routes])
     )
-    console.log('-=-=routes=-=-=', routes)
-    console.log('-=-=routes=-=-=', this.roles[0])
     let menuList = []
     let menu = routes.find(item => item.path === '/')
     if (menu) {
       menuList = menu.children
     }
-    console.log('-=-=routes=-wwww=-=', routes)
     return menuList
   }
 

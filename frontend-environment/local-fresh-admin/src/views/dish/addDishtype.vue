@@ -380,7 +380,6 @@ export default class extends Vue {
 
   private submitForm(formName: any, st: any) {
     ;(this.$refs[formName] as any).validate((valid: any) => {
-      console.log(valid, 'valid')
       if (valid) {
         if (!this.ruleForm.image) return this.$message.error('商品圖片不能為空')
         let params: any = { ...this.ruleForm }

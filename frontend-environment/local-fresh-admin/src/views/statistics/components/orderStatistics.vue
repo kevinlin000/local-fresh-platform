@@ -60,7 +60,6 @@ export default class extends Vue {
     // const baseAccomplishNum = this.orderdata.list.map((item) => {
     //   return (item as any).accomplishNum
     // })
-    console.log(this.orderdata)
     var option: any
     option = {
       // legend: {

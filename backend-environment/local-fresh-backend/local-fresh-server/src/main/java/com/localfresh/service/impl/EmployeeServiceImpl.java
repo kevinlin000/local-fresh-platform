@@ -17,9 +17,11 @@ import com.localfresh.result.PageResult;
 import com.localfresh.service.EmployeeService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Service
@@ -27,6 +29,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Autowired
     private EmployeeMapper employeeMapper;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     /**
      * 员工登入
@@ -47,10 +52,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new AccountNotFoundException(MessageConstant.ACCOUNT_NOT_FOUND);
         }
 
-        // 密碼比對
-        // 對前端傳來的密碼進行 MD5 加密，然後和資料庫中儲存的密碼比對
-        password = DigestUtils.md5DigestAsHex(password.getBytes());
-        if (!password.equals(employee.getPassword())) {
+        if (!passwordMatches(password, employee)) {
             // 密碼錯誤
             throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR);
         }
@@ -74,7 +76,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         BeanUtils.copyProperties(employeeDTO, employee);
 
         employee.setStatus(StatusConstant.ENABLE);
-        employee.setPassword(DigestUtils.md5DigestAsHex(PasswordConstant.DEFAULT_PASSWORD.getBytes()));
+        employee.setPassword(passwordEncoder.encode(PasswordConstant.DEFAULT_PASSWORD));
 
         employeeMapper.insert(employee);
 
@@ -131,6 +133,39 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = new Employee();
         BeanUtils.copyProperties(employeeDTO, employee);
 
+        employeeMapper.update(employee);
+    }
+
+    private boolean passwordMatches(String rawPassword, Employee employee) {
+        String storedPassword = employee.getPassword();
+        if (storedPassword == null || storedPassword.isBlank()) {
+            return false;
+        }
+        if (isBcryptHash(storedPassword) && passwordEncoder.matches(rawPassword, storedPassword)) {
+            return true;
+        }
+        if (legacyMd5Matches(rawPassword, storedPassword)) {
+            upgradePasswordHash(employee.getId(), rawPassword);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean legacyMd5Matches(String rawPassword, String storedPassword) {
+        return DigestUtils.md5DigestAsHex(rawPassword.getBytes(StandardCharsets.UTF_8)).equals(storedPassword);
+    }
+
+    private boolean isBcryptHash(String storedPassword) {
+        return storedPassword.startsWith("$2a$")
+                || storedPassword.startsWith("$2b$")
+                || storedPassword.startsWith("$2y$");
+    }
+
+    private void upgradePasswordHash(Long employeeId, String rawPassword) {
+        Employee employee = Employee.builder()
+                .id(employeeId)
+                .password(passwordEncoder.encode(rawPassword))
+                .build();
         employeeMapper.update(employee);
     }
 }

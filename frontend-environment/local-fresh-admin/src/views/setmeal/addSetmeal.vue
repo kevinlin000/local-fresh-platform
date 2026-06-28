@@ -441,7 +441,6 @@ export default class extends Vue {
             })
         }
       } else {
-        // console.log('error submit!!')
         return false
       }
     })

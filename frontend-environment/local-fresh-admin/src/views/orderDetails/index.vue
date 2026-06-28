@@ -608,7 +608,6 @@ export default class extends Vue {
     if (this.$route.query.status) {
       this.defaultActivity = this.$route.query.status
     }
-    // console.log(this.$route.query, 'this.$route')
   }
 
   initFun(orderStatus) {
@@ -624,7 +623,6 @@ export default class extends Vue {
     this.valueTime = []
     this.dialogOrderStatus = 0
     this.$router.push('/order')
-    console.log(activeIndex, '接收到了子元件的index')
   }
 
   // 取得待處理、待配送、配送中數量
@@ -707,7 +705,6 @@ export default class extends Vue {
 
   // 查看詳情
   async goDetail(id: any, status: number, row?: any) {
-    // console.log(111, index, row)
     this.diaForm = []
     this.dialogVisible = true
     this.dialogOrderStatus = status

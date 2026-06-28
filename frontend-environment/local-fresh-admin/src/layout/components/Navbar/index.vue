@@ -148,7 +148,6 @@ export default class extends Vue {
   }
   mounted() {
     document.addEventListener('click', this.handleClose)
-    //console.log(this.$store.state.app.statusNumber)
     // const msg = {
     //   data: {
     //     type: 2,
@@ -172,7 +171,6 @@ export default class extends Vue {
     const that = this as any
     let clientId = Math.random().toString(36).substr(2)
     let socketUrl = process.env.VUE_APP_SOCKET_URL + clientId
-    console.log(socketUrl, 'socketUrl')
     if (typeof WebSocket == 'undefined') {
       that.$notify({
         title: '提示',
@@ -188,16 +186,13 @@ export default class extends Vue {
         return
       }
       // 監聽 socket 開啟
-      this.websocket.onopen = function () {
-        console.log('瀏覽器 WebSocket 已開啟')
-      }
+      this.websocket.onopen = function () {}
       // 監聽 socket 訊息接收
       this.websocket.onmessage = function (msg) {
         // 轉換為 JSON 物件
         that.$refs.audioVo.currentTime = 0
         that.$refs.audioVo2.currentTime = 0
 
-        console.log(msg, JSON.parse(msg.data), 'msg')
         // const h = this.$createElement
         const jsonMsg = JSON.parse(msg.data)
         if (jsonMsg.type === 1) {
@@ -212,9 +207,7 @@ export default class extends Vue {
           onClick: () => {
             that.$router
               .push(`/order?orderId=${jsonMsg.orderId}`)
-              .catch((err) => {
-                console.log(err)
-              })
+              .catch(() => {})
             setTimeout(() => {
               location.reload()
             }, 100)
@@ -232,9 +225,7 @@ export default class extends Vue {
         console.warn('WebSocket 連線異常，已略過即時警示功能', error)
       }
       // 監聽 socket 關閉
-      this.websocket.onclose = function () {
-        console.log('WebSocket 已關閉')
-      }
+      this.websocket.onclose = function () {}
     }
   }
 
