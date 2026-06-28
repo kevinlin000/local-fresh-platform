@@ -50,10 +50,10 @@
 |---|---|---|---|---|---|
 | 訂單生命週期 | 非法狀態轉移、付款和履約狀態混在一起。 | 用 `OrderStatusTransitionPolicy` 集中合法轉移，付款狀態用 `pay_status` 與 payment event 補充，不把取消、退款、配送混成單一欄位。 | `OrderStatusTransitionPolicy`、`OrderServiceImpl`、`OrderFulfillmentServiceImpl`、`OrderCancellationServiceImpl`、`OrderPaymentServiceImpl` | `OrderStatusTransitionPolicyTest`、`OrderServiceImplTest`、`OrderFulfillmentServiceImplTest`、`OrderCancellationServiceImplTest`、`OrderPaymentServiceImplTest` | 目前是 service-level 狀態機；若未來有多服務或非 Java worker 寫 DB，關鍵轉移要升級成 DB conditional update / outbox / 更完整事件模型。 |
 | 付款 callback 冪等 | provider 重複 callback、延遲 callback、失敗交易、偽造 payload 或不存在訂單。 | `PaymentGateway` 抽象 provider，callback boundary 先驗證 payload，再由 `OrderPaymentServiceImpl` 做 guarded update、寫 `payment_event`、記 metrics。 | `PaymentCallbackController`、`OrderPaymentServiceImpl`、`PaymentGateway`、`DemoPaymentGateway`、`EcpayPaymentGateway`、`PaymentEventMapper` | `PaymentCallbackControllerTest`、`PaymentCallbackControllerEcpayContractTest`、`OrderPaymentServiceImplTest`、`DemoPaymentGatewayTest`、`EcpayPaymentGatewayTest`、`PaymentEventApiTest`、`docs/screenshots/10-admin-payment-events.png` | 已有 sandbox 成功回流與重複 callback 測試；正式 production 還需要 callback rejected / duplicate 告警與更長時間運行證據。 |
-| 付款待對帳 | 已建立付款請求，但 provider 沒有送 terminal callback。 | `payment_event` 保留 request / callback evidence，admin 可查 pending requests；provider-query reconciliation job 可查外部狀態並套用成功、失敗、未知與錯誤路徑，並更新 latest pending candidate gauge。 | `PaymentReconciliationServiceImpl`、`PaymentReconciliationTask`、`EcpayPaymentGateway.queryPaymentStatus`、`PaymentEventController` | `PaymentReconciliationServiceImplTest`、`EcpayPaymentGatewayTest`、`BusinessMetricsServiceImplTest`、`docs/testing.md`、`docs/grafana/local-fresh-operations-dashboard.json` | 排程預設關閉；目前重點是功能、測試、metrics、dashboard provisioning 與 alert rules，下一步才是監控截圖與長時間排程觀察。 |
+| 付款待對帳 | 已建立付款請求，但 provider 沒有送 terminal callback。 | `payment_event` 保留 request / callback evidence，admin 可查 pending requests；provider-query reconciliation job 可查外部狀態並套用成功、失敗、未知與錯誤路徑，並更新 latest pending candidate gauge。 | `PaymentReconciliationServiceImpl`、`PaymentReconciliationTask`、`EcpayPaymentGateway.queryPaymentStatus`、`PaymentEventController` | `PaymentReconciliationServiceImplTest`、`EcpayPaymentGatewayTest`、`BusinessMetricsServiceImplTest`、`docs/testing.md`、`docs/grafana/local-fresh-operations-dashboard.json` | 排程預設關閉；目前重點是功能、測試、metrics、dashboard provisioning、alert rules 與 Prometheus target `UP` 證據，下一步才是長時間排程觀察與業務事件 dashboard 數據。 |
 | 揪團併發 | 同一團多人同時加入造成超賣、重複加入或 `current_count` 與 participant rows 不一致。 | Redisson lock 以 `groupNo` 做細粒度鎖，transaction 內完成檢查、建立預訂單、寫 participant、更新人數與成團判斷；DB unique key 當最後防線。 | `GroupBuyServiceImpl.joinGroupBuy`、`GroupBuyParticipantMapper`、`GroupBuyTask` | `GroupBuyRedisIntegrationTest`、`GroupBuyServiceTest`、`GroupBuyExpirationServiceTest`、`docs/perf/README.md` | 目前是單一熱團 100-user correctness + load evidence；還不是完整容量模型，下一步要補多團矩陣、lock wait time、slow query。 |
 | 庫存與取消防重 | 下單扣庫存、取消還庫存、重試取消或直送箱組成商品回補可能不一致。 | 下單用 conditional decrease 防負庫存；取消用 order status precheck、`ORDER_CANCEL_RESTORE` log 與 `product_inventory_log.idempotency_key` unique key 防重。 | `InventoryServiceImpl`、`OrderSubmissionServiceImpl`、`OrderCancellationServiceImpl`、`ProductServiceImpl`、`ProductInventoryLogMapper` | `ProductInventoryOrderTest`、`OrderCancellationServiceImplTest`、`ProductServiceImplTest`、`WorkspaceLowStockTest` | 目前不是 event sourcing；若未來有 async retry 或多服務寫庫存，應把庫存異動統一成 command/event 並補 outbox。 |
-| 可觀測性與 audit | 出事後只看 log，不容易知道 payment、取消、揪團或管理操作發生什麼。 | Actuator health / info / metrics 作為基本觀測；business counters/gauge 記高風險流程；`payment_event`、`product_inventory_log`、`admin_operation_log` 留可查證據；Grafana dashboard JSON 與 Prometheus alert rules 對應主要營運問題。 | `BusinessMetricsServiceImpl`、`PaymentEventServiceImpl`、`AdminOperationLogServiceImpl`、`DeploymentInfoContributor` | `BusinessMetricsServiceImplTest`、`PaymentEventApiTest`、`AdminOperationLogServiceImplTest`、`AdminOperationLogApiTest`、`PrometheusEndpointTest`、`docs/observability.md`、`docs/grafana/local-fresh-operations-dashboard.json` | 還不是完整 SRE stack；下一步是監控截圖、structured JSON log 與 trace id。 |
+| 可觀測性與 audit | 出事後只看 log，不容易知道 payment、取消、揪團或管理操作發生什麼。 | Actuator health / info / metrics 作為基本觀測；business counters/gauge 記高風險流程；`payment_event`、`product_inventory_log`、`admin_operation_log` 留可查證據；Grafana dashboard JSON 與 Prometheus alert rules 對應主要營運問題。 | `BusinessMetricsServiceImpl`、`PaymentEventServiceImpl`、`AdminOperationLogServiceImpl`、`DeploymentInfoContributor` | `BusinessMetricsServiceImplTest`、`PaymentEventApiTest`、`AdminOperationLogServiceImplTest`、`AdminOperationLogApiTest`、`PrometheusEndpointTest`、`docs/observability.md`、`docs/grafana/local-fresh-operations-dashboard.json`、`docs/screenshots/11-observability-prometheus-target.png` | 還不是完整 SRE stack；下一步是業務事件 dashboard 數據、structured JSON log 與 trace id。 |
 | Security boundaries | IDOR、ThreadLocal 污染、OAuth token 誤用、mock login 被誤開。 | member/admin JWT context 分離；ThreadLocal cleanup 有測試；跨會員訂單與地址存取有 IDOR 測試；Google OAuth 採 authorization code flow；mock login 有環境開關。 | JWT interceptors、`BaseContext`、`GoogleOAuthClientImpl`、member/admin controllers | `IssueS2IdorOrderTest`、`IssueS6IdorShippingAddressTest`、`IssueS4ThreadLocalTest`、`MemberOAuthLoginTest`、`GoogleOAuthClientImplTest` | 仍需 production CORS allowlist、Swagger 關閉策略、rate limiting、admin RBAC、secret rotation、IAM least privilege。 |
 
 ## 1. 訂單生命週期
@@ -130,7 +130,7 @@
 
 目前已完成真瀏覽器 ECPay sandbox stage checkout 與 OTP 付款成功回流。你可以說：
 
-> provider abstraction、callback endpoint、demo HMAC、ECPay CheckMacValue、payment_event、provider-switch readiness、public callback preflight、EC2 SSM sandbox provider switch、Playwright stage checkout、OTP 付款成功、ReturnURL HTTP 200、訂單轉已付款、`CALLBACK_SUCCEEDED`、ECPay duplicate callback 單元測試、pending-request reconciliation 查詢、ECPay 查詢結果 parser、provider-query reconciliation job、pending candidate gauge、Grafana dashboard provisioning 與本機 Prometheus alert rules 都已完成；但還需要補監控截圖與外部查詢排程的長時間運行證據。
+> provider abstraction、callback endpoint、demo HMAC、ECPay CheckMacValue、payment_event、provider-switch readiness、public callback preflight、EC2 SSM sandbox provider switch、Playwright stage checkout、OTP 付款成功、ReturnURL HTTP 200、訂單轉已付款、`CALLBACK_SUCCEEDED`、ECPay duplicate callback 單元測試、pending-request reconciliation 查詢、ECPay 查詢結果 parser、provider-query reconciliation job、pending candidate gauge、Grafana dashboard provisioning、本機 Prometheus alert rules 與 Prometheus target `UP` 證據都已完成；但還需要補外部查詢排程的長時間運行證據與業務事件 dashboard 數據。
 
 下一步：
 
@@ -273,7 +273,7 @@ Actuator counters 只是起點，不是完整 SRE stack。
 
 下一步：
 
-- Prometheus/Grafana/Alertmanager 截圖。
+- 業務事件 dashboard 數據。
 - 長時間排程觀察證據。
 - structured JSON log + trace id。
 
@@ -318,7 +318,7 @@ Actuator counters 只是起點，不是完整 SRE stack。
 
 | 優先級 | 行動 | 原因 |
 |---|---|---|
-| P0 | 補 Prometheus/Grafana/Alertmanager 截圖與長時間運行證據。 | 把已完成的 OTP 成功回流、reconciliation job、counter、gauge、dashboard JSON 與 alert rules 推進到可展示的金流證據。 |
+| P0 | 補業務事件 dashboard 數據與長時間運行證據。 | 把已完成的 OTP 成功回流、reconciliation job、counter、gauge、dashboard JSON、alert rules 與 Prometheus target `UP` 證據推進到可展示的營運證據。 |
 | P0 | 重跑 README screenshots。 | 作品第一印象要跟最新 UI 一致。 |
 | P1 | Structured JSON log + trace id。 | 補 production operations story。 |
 | P1 | Group-buy benchmark matrix。 | 從單一 100-user case 升級成容量分析。 |

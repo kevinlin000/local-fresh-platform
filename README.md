@@ -270,7 +270,7 @@ flowchart LR
 
 目前已補上 `OrderServiceImpl`、`OrderPaymentServiceImpl`、`DemoPaymentGateway`、`EcpayPaymentGateway`、`OrderCancellationServiceImpl`、`OrderFulfillmentServiceImpl` 與 `OrderStatusTransitionPolicy` 的核心測試，涵蓋付款請求與付款成功回呼分離、已取消 / 揪團中訂單不可付款、demo HMAC callback 驗證、ECPay CheckMacValue 驗證與 callback mapping、付款事件紀錄、重複付款 callback、concurrent callback race、已完成訂單不可取消、會員不可操作他人訂單、未付款拒單不退款、直送箱取消時還原組成商品庫存等案例。`local-fresh-server` 已接入 JaCoCo，可用 `mvn -pl local-fresh-server -am verify` 產生 HTML 報告，完整測試策略見 [docs/testing.md](docs/testing.md)。
 
-付款流程另外新增 `payment_event` 事件表，紀錄 `REQUEST_CREATED`、`CALLBACK_SUCCEEDED`、`CALLBACK_DUPLICATE` 與 `CALLBACK_REJECTED`，並提供 `GET /admin/paymentEvents/page` 依訂單編號、provider、事件類型、結果、金流交易編號、冪等鍵與時間範圍查詢。管理端另有 `GET /admin/paymentEvents/pendingRequests`，可列出已建立付款請求但尚未收到成功或拒絕 callback 的待對帳候選。後端已補 ECPay 查詢結果 parser 與 provider-query reconciliation service / job，排程預設關閉，可透過 `PAYMENT_RECONCILIATION_ENABLED=true` 啟用；測試覆蓋成功、仍待處理、拒絕、provider 不支援查詢、未知狀態、查詢錯誤、批次上限與 pending candidate gauge 更新。EC2 demo runtime 已可透過 SSM 切到 ECPay sandbox provider，Playwright 已完成綠界 stage checkout、OTP 付款、ReturnURL HTTP 200、訂單轉已付款與 `payment_event` 寫入 `CALLBACK_SUCCEEDED` 驗證；後續主要剩監控截圖與外部查詢排程的長時間運行證據。
+付款流程另外新增 `payment_event` 事件表，紀錄 `REQUEST_CREATED`、`CALLBACK_SUCCEEDED`、`CALLBACK_DUPLICATE` 與 `CALLBACK_REJECTED`，並提供 `GET /admin/paymentEvents/page` 依訂單編號、provider、事件類型、結果、金流交易編號、冪等鍵與時間範圍查詢。管理端另有 `GET /admin/paymentEvents/pendingRequests`，可列出已建立付款請求但尚未收到成功或拒絕 callback 的待對帳候選。後端已補 ECPay 查詢結果 parser 與 provider-query reconciliation service / job，排程預設關閉，可透過 `PAYMENT_RECONCILIATION_ENABLED=true` 啟用；測試覆蓋成功、仍待處理、拒絕、provider 不支援查詢、未知狀態、查詢錯誤、批次上限與 pending candidate gauge 更新。EC2 demo runtime 已可透過 SSM 切到 ECPay sandbox provider，Playwright 已完成綠界 stage checkout、OTP 付款、ReturnURL HTTP 200、訂單轉已付款與 `payment_event` 寫入 `CALLBACK_SUCCEEDED` 驗證；本機 Prometheus target `UP` 截圖也已補齊，後續主要剩外部查詢排程的長時間運行證據與業務事件 dashboard 有資料的截圖證據。
 
 管理端也新增「付款事件」頁，可直接查 demo 訂單的付款請求、成功回呼、重複回呼與拒絕回呼，作為未來金流對帳與客服查單的前台證據。
 
@@ -496,7 +496,7 @@ pnpm dev
 
 ## 已知限制
 
-- 本機支付流程仍可使用 demo gateway；EC2 demo 已可透過 SSM 切到 ECPay sandbox provider，且已用 Playwright 驗證會員端導向綠界 ECPay stage checkout、OTP 付款成功、ReturnURL HTTP 200、訂單轉已付款與 `payment_event` 的 `CALLBACK_SUCCEEDED`；後端已補重複 callback 測試、待對帳候選查詢與 provider-query reconciliation job，尚未完成的是正式告警與外部查詢排程的長時間運行證據
+- 本機支付流程仍可使用 demo gateway；EC2 demo 已可透過 SSM 切到 ECPay sandbox provider，且已用 Playwright 驗證會員端導向綠界 ECPay stage checkout、OTP 付款成功、ReturnURL HTTP 200、訂單轉已付款與 `payment_event` 的 `CALLBACK_SUCCEEDED`；後端已補重複 callback 測試、待對帳候選查詢、provider-query reconciliation job 與本機 Prometheus target `UP` 證據，尚未完成的是外部查詢排程的長時間運行、業務事件 dashboard 數據與正式告警演練
 - 管理端已完成核心營運台與表格頁 polish，但尚未加入完整 E2E 視覺回歸
 - 用戶端已完成桌面與手機版 RWD 基礎體驗，尚未加入跨瀏覽器視覺回歸測試
 - 舊資料庫第一次導入 Flyway 時需要 baseline；全新資料庫可直接套用 migration
@@ -548,20 +548,20 @@ npm run smoke:browser
 
 ### 目前重點
 
-- **Live observability 證據**:ECPay sandbox checkout、OTP 成功回流與 `CALLBACK_SUCCEEDED` 已完成；目前已有本機 Prometheus / Grafana / Alertmanager compose、payment/reconciliation metrics、dashboard provisioning 與 alert rules，剩下的是實機長時間運行與截圖證據。
+- **Live observability 證據**:ECPay sandbox checkout、OTP 成功回流與 `CALLBACK_SUCCEEDED` 已完成；目前已有本機 Prometheus / Grafana / Alertmanager compose、payment/reconciliation metrics、dashboard provisioning、alert rules 與 Prometheus target `UP` 截圖，剩下的是外部查詢排程長時間運行與業務事件 dashboard 數據。
 - **Browser UI smoke / 截圖證據**:在 dependency-free local precheck 之外，已新增 Playwright Chromium smoke，覆蓋會員登入/home/orders 與管理端登入/dashboard/orders/products；後續可補 screenshot checklist 或輕量視覺差異檢查。
 
 ### 規劃中
 
 - **綠界 ECPay reconciliation**:已補重複 callback 測試、付款事件待對帳候選、ECPay 查詢結果 parser、reconciliation job、pending candidate gauge、Grafana dashboard JSON 與本機 Prometheus alert rules；下一步補實機長時間排程運行證據。
-- **可觀測性三件套**:Spring Boot Actuator + Prometheus scrape endpoint + Grafana dashboard provisioning + Alertmanager local wiring，自訂業務 metric 涵蓋 payment callback、reconciliation backlog、取消防重與揪團狀態轉換；下一步再補結構化 log 與 Trace ID。
+- **可觀測性三件套**:Spring Boot Actuator + Prometheus scrape endpoint + Grafana dashboard provisioning + Alertmanager local wiring，自訂業務 metric 涵蓋 payment callback、reconciliation backlog、取消防重與揪團狀態轉換；本機 scrape target 已有 `UP` 證據，下一步再補結構化 log 與 Trace ID。
 - **CD 自動化**:在現有 GitHub Actions 測試/build 基礎上,加入 Docker image build、推送 ECR,並觸發 EC2 滾動部署。
 
 ### 已完成里程碑
 
 - 揪團分散式鎖壓測證據:100 concurrent join JMeter 壓測,`joinGroupBuy` error rate `0.00%`, P95 `2847.65 ms`, DB 最終 `current_count=101 / participant=100`
 - 訂單生命週期測試證據:`OrderStatusTransitionPolicy` 集中管理狀態轉移,核心 Order service 測試涵蓋付款、取消、婉拒、配送、完成與還庫存,並可用 JaCoCo 產生本地覆蓋率報告
-- 最小業務可觀測性:Actuator metrics 暴露付款 callback、reconciliation backlog、訂單取消防重與揪團狀態轉換,並保留環境變數覆蓋 exposure 範圍、Grafana dashboard artifact、本機 Prometheus / Grafana / Alertmanager compose 與 alert rules
+- 最小業務可觀測性:Actuator metrics 暴露付款 callback、reconciliation backlog、訂單取消防重與揪團狀態轉換,並保留環境變數覆蓋 exposure 範圍、Grafana dashboard artifact、本機 Prometheus / Grafana / Alertmanager compose、alert rules 與 Prometheus target `UP` 截圖證據
 - 本機 UI smoke precheck:不新增測試框架,以 Node script 檢查 backend health、前端 dev server、會員/管理端登入與核心資料 API
 - 真瀏覽器 UI smoke:以 Playwright Chromium 檢查會員端與管理端關鍵頁面可登入、可載入、可互動
 - ECPay sandbox checkout 證據:EC2 backend 已同步到 application release commit `4ef82ed7cc76`，public readiness 通過，並以 Playwright 完成 CloudFront 會員端導向綠界 stage checkout、OTP 付款成功、ReturnURL HTTP `200`、訂單轉已付款與 `payment_event` 寫入 `ECPAY / CALLBACK_SUCCEEDED / SUCCEEDED`

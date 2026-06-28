@@ -7,6 +7,7 @@
     "smoke:local": "node scripts/check-ui-smoke-local.mjs",
     "smoke:browser": "playwright test scripts/ui-smoke-browser.spec.mjs",
     "screenshots:readme": "node scripts/refresh-readme-screenshots.mjs",
+    "observability:backend": "cd backend-environment/local-fresh-backend && set -a && . ./.env && set +a && mvn -f local-fresh-server/pom.xml spring-boot:run -Dspring-boot.run.arguments=--server.port=18080",
     "observability:up": "docker compose -f deploy/observability/docker-compose.yml up -d",
     "observability:down": "docker compose -f deploy/observability/docker-compose.yml down"
   },

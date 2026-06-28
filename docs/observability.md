@@ -74,15 +74,17 @@ Tag values are normalized to lowercase, trim whitespace, replace `-` with `_`, a
 
 ## Local Checks
 
-Start the backend, exercise a payment or cancellation flow, then inspect the counters:
+Start the backend, exercise a payment or cancellation flow, then inspect the counters.
+The local observability profile uses `18080` to avoid colliding with other Java
+projects on `8080`:
 
 ```bash
-curl http://localhost:8080/actuator/metrics/localfresh.payment.callback.total
-curl http://localhost:8080/actuator/metrics/localfresh.payment.reconciliation.total
-curl http://localhost:8080/actuator/metrics/localfresh.payment.reconciliation.pending.candidates
-curl http://localhost:8080/actuator/metrics/localfresh.order.cancellation.total
-curl http://localhost:8080/actuator/metrics/localfresh.group_buy.transition.total
-curl http://localhost:8080/actuator/prometheus
+curl http://localhost:18080/actuator/metrics/localfresh.payment.callback.total
+curl http://localhost:18080/actuator/metrics/localfresh.payment.reconciliation.total
+curl http://localhost:18080/actuator/metrics/localfresh.payment.reconciliation.pending.candidates
+curl http://localhost:18080/actuator/metrics/localfresh.order.cancellation.total
+curl http://localhost:18080/actuator/metrics/localfresh.group_buy.transition.total
+curl http://localhost:18080/actuator/prometheus
 ```
 
 A minimal external Prometheus scrape job can target the deployed backend like
@@ -106,7 +108,14 @@ deploy/observability/
 ```
 
 It is optional and does not replace the normal backend/frontend dev flow.
-Start the Spring Boot backend on `localhost:8080` first, then run:
+For local observability evidence, run the Spring Boot backend on `18080` so it
+does not collide with other Java projects commonly using `8080`:
+
+```bash
+npm run observability:backend
+```
+
+Then start the observability stack:
 
 ```bash
 npm run observability:up
@@ -124,7 +133,7 @@ Open:
 | Grafana | `http://localhost:3002` | Dashboard view; login `admin` / `localfresh` |
 | Alertmanager | `http://localhost:9093` | Local alert state and grouping |
 
-The default Prometheus target is `host.docker.internal:8080`, which works for
+The default Prometheus target is `host.docker.internal:18080`, which works for
 Docker Desktop on macOS and the included Linux `host-gateway` mapping. If the
 backend runs elsewhere, edit
 `deploy/observability/prometheus/prometheus.yml`.
@@ -158,18 +167,31 @@ Local validation on 2026-06-25:
 - Prometheus rules API: all `LocalFreshPayment...` alert rules loaded with
   `health="ok"`.
 
-If Prometheus shows `local-fresh-backend` as `DOWN`, first confirm port `8080`
+Local validation on 2026-06-28:
+
+- Local Fresh backend identity on `http://127.0.0.1:18080`: `local-fresh-server`.
+- Local Fresh backend health on `http://127.0.0.1:18080/actuator/health`: `UP`.
+- Prometheus target API: `local-fresh-backend` scraped
+  `host.docker.internal:18080` with `health="up"`.
+- Prometheus query: `up{job="local-fresh-backend"}` returned `1`.
+- Grafana dashboard API loaded `Backend Scrape Target` and
+  `Application Ready Time`.
+- Screenshot evidence:
+  [docs/screenshots/11-observability-prometheus-target.png](screenshots/11-observability-prometheus-target.png)
+
+If Prometheus shows `local-fresh-backend` as `DOWN`, first confirm port `18080`
 is actually this project's backend:
 
 ```bash
-lsof -nP -iTCP:8080 -sTCP:LISTEN
-curl -i http://localhost:8080/actuator/health
-curl -i http://localhost:8080/actuator/prometheus
+lsof -nP -iTCP:18080 -sTCP:LISTEN
+curl -i http://localhost:18080/actuator/health
+curl -i http://localhost:18080/actuator/prometheus
 ```
 
 During local validation on 2026-06-27, port `8080` was occupied by a different
 project (`restaurant-admin-backend`), so Prometheus correctly reported the
-target as `DOWN` with HTTP `403`. If you intentionally run Local Fresh on a
+target as `DOWN` with HTTP `403`. The checked-in observability target now uses
+`18080` to avoid that collision. If you intentionally run Local Fresh on a
 different port, edit `deploy/observability/prometheus/prometheus.yml`; if the
 correct backend is running but still returns `403`, check the actuator exposure
 and security settings for `/actuator/prometheus`.
@@ -188,6 +210,8 @@ directly to the business-risk questions above:
 
 | Panel | Question it answers |
 |---|---|
+| Backend Scrape Target | Is Prometheus currently scraping the Local Fresh backend? |
+| Application Ready Time | Is Spring Boot readiness being scraped from the backend? |
 | Payment Callback Outcomes | Are callbacks succeeding, rejected, or being ignored as duplicates? |
 | Latest Reconciliation Backlog | How many pending payment requests did the latest reconciliation scan find? |
 | Reconciliation Query Errors | Is the provider query path failing right now? |
@@ -223,11 +247,11 @@ environment.
 Runbook notes:
 
 - Query current callback counters:
-  `curl http://localhost:8080/actuator/metrics/localfresh.payment.callback.total`
+  `curl http://localhost:18080/actuator/metrics/localfresh.payment.callback.total`
 - Query reconciliation counters:
-  `curl http://localhost:8080/actuator/metrics/localfresh.payment.reconciliation.total`
+  `curl http://localhost:18080/actuator/metrics/localfresh.payment.reconciliation.total`
 - Query latest pending reconciliation candidate count:
-  `curl http://localhost:8080/actuator/metrics/localfresh.payment.reconciliation.pending.candidates`
+  `curl http://localhost:18080/actuator/metrics/localfresh.payment.reconciliation.pending.candidates`
 - Query pending work queue:
   `GET /admin/paymentEvents/pendingRequests?page=1&pageSize=20&provider=ECPAY`
 - Keep `PAYMENT_RECONCILIATION_ENABLED=false` for ordinary demos unless you
@@ -238,8 +262,9 @@ Runbook notes:
 This is enough to show production thinking in an interview: the system can answer whether payment callbacks are being accepted, rejected, duplicated, whether reconciliation is applying provider results or getting stuck, how many pending payment requests the latest reconciliation scan found, whether cancellation idempotency guards are being hit, and whether group-buy transitions are moving as expected.
 
 The scrape endpoint, dashboard artifact, local Grafana provisioning, Prometheus
-alert rules, and local Alertmanager wiring are available. Dashboard screenshots,
-long-running cloud monitoring evidence, notification receivers, and distributed
-tracing are intentionally deferred until the core demo and cloud environment are
-stable. The alert symptoms and first checks above are the contract for that
-later monitoring stack.
+alert rules, local Alertmanager wiring, and local Prometheus target `UP`
+screenshot are available. Business-event dashboard data, long-running cloud
+monitoring evidence, notification receivers, and distributed tracing are
+intentionally deferred until the core demo and cloud environment are stable. The
+alert symptoms and first checks above are the contract for that later monitoring
+stack.

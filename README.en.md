@@ -468,7 +468,7 @@ The deployment topology is:
 
 ## Known Limitations
 
-- Local demos can still use the demo gateway by default. The EC2 demo runtime can now be switched to the ECPay sandbox provider through SSM, with public callback readiness verified; Playwright has also verified deployed storefront redirect into ECPay stage checkout, OTP payment completion, ReturnURL HTTP 200, paid order state, and `CALLBACK_SUCCEEDED` payment evidence. Duplicate callback coverage, pending reconciliation candidates, a provider-query reconciliation job, the pending-candidate gauge, Grafana dashboard provisioning, and local Prometheus alert rules are now in place; the remaining payment gap is long-running external-query and monitoring screenshot evidence.
+- Local demos can still use the demo gateway by default. The EC2 demo runtime can now be switched to the ECPay sandbox provider through SSM, with public callback readiness verified; Playwright has also verified deployed storefront redirect into ECPay stage checkout, OTP payment completion, ReturnURL HTTP 200, paid order state, and `CALLBACK_SUCCEEDED` payment evidence. Duplicate callback coverage, pending reconciliation candidates, a provider-query reconciliation job, the pending-candidate gauge, Grafana dashboard provisioning, local Prometheus alert rules, and a local Prometheus target `UP` screenshot are now in place; the remaining payment gap is long-running external-query evidence and business-event dashboard evidence.
 - The admin console now has a polished operations-console baseline, but it does not yet include automated visual regression coverage.
 - The user frontend now covers desktop and mobile responsive basics, but does not yet include cross-browser visual regression testing.
 - Legacy databases need a one-time Flyway baseline; fresh databases can apply migrations directly.
@@ -534,9 +534,10 @@ synced to application release commit `4ef82ed7cc76`; public `/actuator/info` and
 verified the CloudFront storefront redirect into ECPay stage checkout, OTP
 payment completion, ReturnURL HTTP 200, paid order state, and
 `CALLBACK_SUCCEEDED` payment evidence. Provider-query reconciliation, the
-pending-candidate gauge, Grafana dashboard provisioning, and local Prometheus
-alert rules are in place; the remaining payment gap is long-running
-external-query and monitoring screenshot evidence.
+pending-candidate gauge, Grafana dashboard provisioning, local Prometheus
+alert rules, and a local Prometheus target `UP` screenshot are in place; the
+remaining payment gap is long-running external-query evidence and business-event
+dashboard evidence.
 
 ## License
 
