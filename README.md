@@ -248,7 +248,7 @@ flowchart LR
 - 揪團湊免運：會員可建立揪團、分享連結邀請他人加入，3 人成團後轉為正式訂單。
 - 會員登入機制：支援 Email / 密碼註冊登入、Google OAuth 2.0，開發環境保留 mock login 方便測試與 demo。
 - 訂單狀態流轉：涵蓋待付款、待確認、已確認、配送中、已完成、已取消，以及揪團中的預訂單狀態；退款以 `pay_status=REFUND` 搭配已取消訂單表示。
-- 店鋪與營運管理：管理端可維護商品、分類、訂單與營業狀態。
+- 店鋪與營運管理：管理端可維護商品、分類、訂單、營業狀態、付款事件、操作紀錄與營運 Dashboard；公開 demo 提供唯讀後台角色，避免展示帳號改動資料。
 - 快取與排程協作：以 Redis 快取熱門查詢、以排程處理過期揪團與退款模擬流程。
 
 ## 技術亮點
@@ -290,33 +290,41 @@ flowchart LR
 
 目前已補上 `OrderServiceImpl`、`OrderPaymentServiceImpl`、`DemoPaymentGateway`、`EcpayPaymentGateway`、`OrderCancellationServiceImpl`、`OrderFulfillmentServiceImpl` 與 `OrderStatusTransitionPolicy` 的核心測試，涵蓋付款請求與付款成功回呼分離、已取消 / 揪團中訂單不可付款、demo HMAC callback 驗證、ECPay CheckMacValue 驗證與 callback mapping、付款事件紀錄、重複付款 callback、concurrent callback race、已完成訂單不可取消、會員不可操作他人訂單、未付款拒單不退款、直送箱取消時還原組成商品庫存等案例。`local-fresh-server` 已接入 JaCoCo，可用 `mvn -pl local-fresh-server -am verify` 產生 HTML 報告，完整測試策略見 [docs/testing.md](docs/testing.md)。
 
-付款流程另外新增 `payment_event` 事件表，紀錄 `REQUEST_CREATED`、`CALLBACK_SUCCEEDED`、`CALLBACK_DUPLICATE` 與 `CALLBACK_REJECTED`，並提供 `GET /admin/paymentEvents/page` 依訂單編號、provider、事件類型、結果、金流交易編號、冪等鍵與時間範圍查詢。管理端另有 `GET /admin/paymentEvents/pendingRequests`，可列出已建立付款請求但尚未收到成功或拒絕 callback 的待對帳候選。後端已補 ECPay 查詢結果 parser 與 provider-query reconciliation service / job，排程預設關閉，可透過 `PAYMENT_RECONCILIATION_ENABLED=true` 啟用；測試覆蓋成功、仍待處理、拒絕、provider 不支援查詢、未知狀態、查詢錯誤、批次上限與 pending candidate gauge 更新。EC2 demo runtime 已可透過 SSM 切到 ECPay sandbox provider，Playwright 已完成綠界 stage checkout、OTP 付款、ReturnURL HTTP 200、訂單轉已付款與 `payment_event` 寫入 `CALLBACK_SUCCEEDED` 驗證；本機 Prometheus target `UP` 截圖也已補齊，後續主要剩外部查詢排程的長時間運行證據與業務事件 dashboard 有資料的截圖證據。
+### 4. 付款事件、ECPay sandbox 與對帳邊界
+
+付款流程另外新增 `payment_event` 事件表，紀錄 `REQUEST_CREATED`、`CALLBACK_SUCCEEDED`、`CALLBACK_DUPLICATE` 與 `CALLBACK_REJECTED`，並提供 `GET /admin/paymentEvents/page` 依訂單編號、provider、事件類型、結果、金流交易編號、冪等鍵與時間範圍查詢。管理端另有 `GET /admin/paymentEvents/pendingRequests`，可列出已建立付款請求但尚未收到成功或拒絕 callback 的待對帳候選。後端已補 ECPay 查詢結果 parser 與 provider-query reconciliation service / job，排程預設關閉，可透過 `PAYMENT_RECONCILIATION_ENABLED=true` 啟用；測試覆蓋成功、仍待處理、拒絕、provider 不支援查詢、未知狀態、查詢錯誤、批次上限與 pending candidate gauge 更新。EC2 demo runtime 已可透過 SSM 切到 ECPay sandbox provider，Playwright 已完成綠界 stage checkout、OTP 付款、ReturnURL HTTP 200、訂單轉已付款與 `payment_event` 寫入 `CALLBACK_SUCCEEDED` 驗證；本機 Prometheus target `UP` 與業務事件 metric live increase 證據也已補齊，後續主要剩外部查詢排程的長時間運行證據與雲端監控留痕。
 
 管理端也新增「付款事件」頁，可直接查 demo 訂單的付款請求、成功回呼、重複回呼與拒絕回呼，作為未來金流對帳與客服查單的前台證據。
 
+### 5. 可觀測性與可重跑業務事件證據
+
 Actuator 也補上最小業務 metrics，可查付款 callback 結果、付款 reconciliation 結果、最新待對帳候選數、訂單取消防重命中與揪團狀態轉換，用來回答「系統跑起來後怎麼看異常」。後端已提供 `/actuator/prometheus` scrape-format endpoint，並附一份可匯入 Grafana 的 [Local Fresh Operations dashboard](docs/grafana/local-fresh-operations-dashboard.json)；目前也提供本機 Prometheus / Grafana / Alertmanager compose、告警規則與可重跑的 `npm run observability:business-evidence` 業務事件驗證，查詢方式、scrape 範例、dashboard 說明與告警門檻見 [docs/observability.md](docs/observability.md)。
 
-### 4. 管理端操作 Audit Log
+這支 evidence script 會實際跑三個業務路徑：重複付款 callback、後台取消訂單、seeded 揪團完成，再從 Prometheus 驗證 `payment_callback ignored`、`order_cancellation applied`、`group_buy completed` 三個 counter 確實增加。這讓 observability 不是只有 dashboard JSON，而是有可重跑的業務行為證據。
 
-管理端的訂單確認、婉拒、取消、配送、完成，以及商品手動庫存調整，現在會寫入 `admin_operation_log`。這張表記錄 `action`、目標類型與 id、操作前後值、原因、操作者與操作時間，用來回答「誰在什麼時候對哪個業務物件做了什麼變更」。管理端也提供 `GET /admin/operationLogs/page` 分頁查詢，可依 action、target、operator 與時間範圍篩選；後台「操作紀錄」頁可直接查閱這些紀錄，`AdminOperationLogApiTest` 也會從 HTTP 層驗證分頁、篩選與 newest-first 排序。這和 `product_inventory_log` 的庫存流水分工不同：庫存流水專注商品數量變化，Audit Log 則專注後台操作責任與追蹤。
+### 6. 管理端唯讀角色與操作 Audit Log
 
-### 5. Testcontainers 驗證 Redis 鎖而非用 mock 帶過
+公開管理端 demo 使用 `demo_viewer` 唯讀角色，後端會阻擋新增、修改、刪除、確認訂單、取消訂單、配送、完成、商品上下架與庫存調整等寫入操作，避免面試展示帳號破壞資料。管理端員工列表也會遮蔽密碼欄位，避免 API 回傳敏感資訊。
+
+管理端的訂單確認、婉拒、取消、配送、完成，以及商品手動庫存調整，會寫入 `admin_operation_log`。這張表記錄 `action`、目標類型與 id、操作前後值、原因、操作者與操作時間，用來回答「誰在什麼時候對哪個業務物件做了什麼變更」。管理端也提供 `GET /admin/operationLogs/page` 分頁查詢，可依 action、target、operator 與時間範圍篩選；後台「操作紀錄」頁可直接查閱這些紀錄，`AdminOperationLogApiTest` 也會從 HTTP 層驗證分頁、篩選與 newest-first 排序。這和 `product_inventory_log` 的庫存流水分工不同：庫存流水專注商品數量變化，Audit Log 則專注後台操作責任與追蹤。
+
+### 7. Testcontainers 驗證 Redis 鎖而非用 mock 帶過
 
 揪團併發控制若只用 `MockBean RedissonClient` 驗證流程，說服力不足，因為真正的風險發生在多執行緒與真實 Redis 鎖行為。這個專案的整合測試採用 Testcontainers 啟動 Redis container，並以 `@DynamicPropertySource` 把 host / port 動態注入測試環境，讓 `GroupBuyRedisIntegrationTest` 真正對 Redisson 做 100-thread 並發驗證。這樣的取捨比 pure mock 更重，但能換來更可信的測試結論；對展示「我知道哪裡該用真實整合測試」這件事，比單純追求測試執行速度更有價值。
 
-### 6. JWT 驗證與 ThreadLocal 請求隔離
+### 8. JWT 驗證與 ThreadLocal 請求隔離
 
 前後端 API 使用 JWT 作為會員與管理端身份驗證，並透過攔截器在請求進入時解析 token，將當前使用者資訊放入 ThreadLocal，供後續 service / mapper 取得。這種作法的優點是 controller 不需要反覆傳遞 memberId，邏輯較乾淨；但同時也要求在請求結束時明確清理 ThreadLocal，否則在 servlet thread pool 重用情境下，容易出現跨請求資料污染。專案中已針對這個風險補上回歸測試，確保登入上下文不會殘留到下一個請求。
 
-### 7. Google OAuth 2.0 採授權碼流程而非 Implicit Flow
+### 9. Google OAuth 2.0 採授權碼流程而非 Implicit Flow
 
 第三方登入中的 Google OAuth 採 Authorization Code Flow，而不是已逐漸被淘汰的 Implicit Flow。前端只負責導向 Google 授權頁並接收 callback code，真正與 Google token endpoint 溝通、驗證 `id_token`、檢查 `aud / exp` 等工作放在後端進行，降低憑證暴露風險。服務層另外抽出 `GoogleOAuthClient` 作為外部依賴封裝，使測試可以直接 mock `GoogleProfile`，專注驗證 account merge、JWT 簽發與 mock login 開關，而不是把測試耦合到 Google SDK 細節。
 
-### 8. Redisson 與 Spring Data Redis 職責分離
+### 10. Redisson 與 Spring Data Redis 職責分離
 
 專案中 Redis 有兩種用途：一種是一般 KV / cache，例如商品列表、店鋪營業狀態；另一種是揪團需要的分散式鎖。如果所有 Redis 存取都混用同一套 client，實務上容易出現相容性與責任界線不清的問題。這個專案最後採取的策略是：`RedissonClient` 專責分散式鎖與協調，`RedisTemplate` 則使用 Spring Boot 3 預設的 Lettuce 路徑處理快取與一般資料存取。這個分離避免了 `Tuple` 類別相容性問題，也讓後續維護者更容易理解「哪種場景該用哪種 Redis API」。
 
-### 9. 可部署導向的全流程設計
+### 11. 可部署導向的全流程設計
 
 這個專案不是只做出 API 或畫面，而是完整串成「可啟動、可測試、可實際部署」的系統。從 migration 版本化、環境變數管理、dev/test profile 分流、Google OAuth 設定隔離，到前端 Vite proxy 與後端 CORS 協作，都是以實際上線為前提在設計。目前 demo 已部署於 AWS，前端靜態資源、API 服務與 DNS 入口的切分方式，也與實際的 EC2、S3、CloudFront、DuckDNS 架構一致。
 
@@ -345,6 +353,18 @@ Redis key 過期事件看起來很直覺，但在真實系統裡，若採用這�
 ### Q6. 為什麼 repo 內同時保留 Email 登入、Google OAuth 與 mock login？
 
 Email / 密碼是最基本的會員帳號入口，密碼以 BCrypt 雜湊後存入 `member.password_hash`，登入成功後簽發會員 JWT。Google OAuth 2.0 保留第三方登入流程，後端負責 code exchange、`id_token` 驗證與帳號綁定。mock login 只透過 `mock-login-enabled` 作為開發與可重複測試入口，前端也只在 dev 模式顯示快捷登入區塊。
+
+### Q7. 為什麼管理端 demo 用唯讀展示帳號？
+
+管理端是面試展示最有價值的入口，但如果公開完整管理員帳密，任何人都能修改商品、取消訂單或破壞 demo data。這個專案因此新增 `READ_ONLY` 管理端角色，讓面試官可以直接看 Dashboard、訂單、商品、付款事件與操作紀錄，但所有寫入操作都由後端擋下。完整管理員帳號只在受控展示時提供，兼顧可看性與資料安全。
+
+### Q8. 為什麼付款要另外做 `payment_event`，而不是只更新訂單狀態？
+
+真實金流 callback 會遇到重送、延遲、失敗、偽造 payload、provider trade no 對不起來等問題。如果只更新 `orders.pay_status`，事後很難知道 provider 送過什麼、系統接受或拒絕了什麼。`payment_event` 把付款請求、成功 callback、重複 callback 與拒絕 callback 都記錄下來，並保留 provider、交易編號、冪等鍵、金額與處理結果，讓管理端可以查詢，也讓測試能驗證 idempotency 與 reconciliation 邊界。
+
+### Q9. 為什麼 observability 只做到 Actuator + Prometheus + Grafana，而不是完整雲端監控？
+
+這是 portfolio 專案，不是要展示完整 SRE 平台。最重要的是能回答幾個業務問題：付款 callback 是否被拒絕或重複、待對帳付款是否卡住、取消訂單是否命中防重、揪團是否成功或失敗。Actuator + Prometheus counters/gauge + Grafana dashboard 已足夠支撐這些問題，並用 `npm run observability:business-evidence` 真的跑業務路徑驗證 metric 增加。雲端長時間監控和告警接收器是下一層加分，不是目前 demo 的必要條件。
 
 ## 系統需求
 
@@ -516,7 +536,7 @@ pnpm dev
 
 ## 已知限制
 
-- 本機支付流程仍可使用 demo gateway；EC2 demo 已可透過 SSM 切到 ECPay sandbox provider，且已用 Playwright 驗證會員端導向綠界 ECPay stage checkout、OTP 付款成功、ReturnURL HTTP 200、訂單轉已付款與 `payment_event` 的 `CALLBACK_SUCCEEDED`；後端已補重複 callback 測試、待對帳候選查詢、provider-query reconciliation job 與本機 Prometheus target `UP` 證據，尚未完成的是外部查詢排程的長時間運行、業務事件 dashboard 數據與正式告警演練
+- 本機支付流程仍可使用 demo gateway；EC2 demo 已可透過 SSM 切到 ECPay sandbox provider，且已用 Playwright 驗證會員端導向綠界 ECPay stage checkout、OTP 付款成功、ReturnURL HTTP 200、訂單轉已付款與 `payment_event` 的 `CALLBACK_SUCCEEDED`；後端已補重複 callback 測試、待對帳候選查詢、provider-query reconciliation job、本機 Prometheus target `UP` 與業務事件 metric live increase 證據，尚未完成的是外部查詢排程的長時間運行、雲端監控留痕、trace/log correlation 與正式告警演練
 - 管理端已完成核心營運台與表格頁 polish，但尚未加入完整 E2E 視覺回歸
 - 用戶端已完成桌面與手機版 RWD 基礎體驗，尚未加入跨瀏覽器視覺回歸測試
 - 舊資料庫第一次導入 Flyway 時需要 baseline；全新資料庫可直接套用 migration
@@ -569,13 +589,13 @@ npm run smoke:browser
 
 ### 目前重點
 
-- **Live observability 證據**:ECPay sandbox checkout、OTP 成功回流與 `CALLBACK_SUCCEEDED` 已完成；目前已有本機 Prometheus / Grafana / Alertmanager compose、payment/reconciliation metrics、dashboard provisioning、alert rules、Prometheus target `UP` 截圖與可重跑的業務事件 metric 驗證。剩下的是外部查詢排程長時間運行、雲端監控留痕與更完整的 dashboard 截圖證據。
+- **Live observability 證據**:ECPay sandbox checkout、OTP 成功回流與 `CALLBACK_SUCCEEDED` 已完成；目前已有本機 Prometheus / Grafana / Alertmanager compose、payment/reconciliation metrics、dashboard provisioning、alert rules、Prometheus target `UP` 截圖與可重跑的業務事件 metric 驗證。剩下的是外部查詢排程長時間運行、雲端監控留痕、trace/log correlation 與正式告警接收器。
 - **Browser UI smoke / 截圖證據**:在 dependency-free local precheck 之外，已新增 Playwright Chromium smoke，覆蓋會員登入/home/orders 與管理端登入/dashboard/orders/products；後續可補 screenshot checklist 或輕量視覺差異檢查。
 
 ### 規劃中
 
 - **綠界 ECPay reconciliation**:已補重複 callback 測試、付款事件待對帳候選、ECPay 查詢結果 parser、reconciliation job、pending candidate gauge、Grafana dashboard JSON、本機 Prometheus alert rules 與業務事件 metric 驗證；下一步補實機長時間排程運行證據。
-- **可觀測性三件套**:Spring Boot Actuator + Prometheus scrape endpoint + Grafana dashboard provisioning + Alertmanager local wiring，自訂業務 metric 涵蓋 payment callback、reconciliation backlog、取消防重與揪團狀態轉換；本機 scrape target 與業務事件 metric 已有可重跑證據，下一步再補結構化 log 與 Trace ID。
+- **可觀測性三件套**:Spring Boot Actuator + Prometheus scrape endpoint + Grafana dashboard provisioning + Alertmanager local wiring，自訂業務 metric 涵蓋 payment callback、reconciliation backlog、取消防重與揪團狀態轉換；本機 scrape target 與業務事件 metric 已有可重跑證據，下一步再補結構化 log、Trace ID 與雲端監控留痕。
 - **CD 自動化**:在現有 GitHub Actions 測試/build 基礎上,加入 Docker image build、推送 ECR,並觸發 EC2 滾動部署。
 
 ### 已完成里程碑
@@ -585,7 +605,7 @@ npm run smoke:browser
 - 最小業務可觀測性:Actuator metrics 暴露付款 callback、reconciliation backlog、訂單取消防重與揪團狀態轉換,並保留環境變數覆蓋 exposure 範圍、Grafana dashboard artifact、本機 Prometheus / Grafana / Alertmanager compose、alert rules 與 Prometheus target `UP` 截圖證據
 - 本機 UI smoke precheck:不新增測試框架,以 Node script 檢查 backend health、前端 dev server、會員/管理端登入與核心資料 API
 - 真瀏覽器 UI smoke:以 Playwright Chromium 檢查會員端與管理端關鍵頁面可登入、可載入、可互動
-- ECPay sandbox checkout 證據:EC2 backend 已同步到 application release commit `4ef82ed7cc76`，public readiness 通過，並以 Playwright 完成 CloudFront 會員端導向綠界 stage checkout、OTP 付款成功、ReturnURL HTTP `200`、訂單轉已付款與 `payment_event` 寫入 `ECPAY / CALLBACK_SUCCEEDED / SUCCEEDED`
+- ECPay sandbox checkout 證據:EC2 backend `/actuator/info` 目前回報 application release commit `f93f6c41a373`，public readiness 通過，並以 Playwright 完成 CloudFront 會員端導向綠界 stage checkout、OTP 付款成功、ReturnURL HTTP `200`、訂單轉已付款與 `payment_event` 寫入 `ECPAY / CALLBACK_SUCCEEDED / SUCCEEDED`
 - 庫存異動防重:取消訂單時若已取消或已有 `ORDER_CANCEL_RESTORE` 庫存回補紀錄,service 會跳過重複退款、訂單更新與庫存回補；庫存流水另有 nullable `idempotency_key` unique constraint 作為 DB 最後防線
 - 管理端操作 Audit Log:訂單確認、婉拒、取消、配送、完成與商品手動庫存調整會寫入 `admin_operation_log`,並提供分頁查詢 API 與後台「操作紀錄」頁,保留操作前後值、原因與操作者
 - EC2 ECPay sandbox runtime switch:透過 SSM 寫入獨立 systemd payment drop-in，已驗證 public readiness、`PAYMENT_PROVIDER=ecpay` effective env、health 與 rollback 腳本入口
@@ -593,7 +613,7 @@ npm run smoke:browser
 - 揪團發起 / 加入 / 取消 / 過期失敗回滾完整流程
 - Email / 密碼註冊登入、Google OAuth 2.0 Authorization Code Flow、JWT 與 mock login dev 開關
 - 完整 AWS 部署:EC2 (Nginx + Spring Boot + Docker MySQL/Redis) + S3 + CloudFront + DuckDNS + Let's Encrypt
-- Spring Boot 3.5 升級 + Flyway migration 檔案版本化(V1~V11)
+- Spring Boot 3.5 升級 + Flyway migration 檔案版本化(V1~V24)
 - 管理端 Vue 3 + Vite + TypeScript + Pinia + Element Plus 升級
 - Testcontainers Redis 整合測試 + GitHub Actions backend/admin/user frontend checks
 - CI quality gate：GitHub Actions 會跑 repository hygiene、後端 `verify` + JaCoCo artifact、backend release package artifact + SHA256 verifier、管理端 build / audit、會員端 build

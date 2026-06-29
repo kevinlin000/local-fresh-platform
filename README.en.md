@@ -550,8 +550,8 @@ npm run smoke:browser
 ```
 
 For the current completeness assessment and next-priority plan, see
-[docs/portfolio-roadmap.md](docs/portfolio-roadmap.md). The EC2 backend is
-synced to application release commit `4ef82ed7cc76`; public `/actuator/info` and
+[docs/portfolio-roadmap.md](docs/portfolio-roadmap.md). The EC2 backend
+currently reports application release commit `f93f6c41a373`; public `/actuator/info` and
 `/payment/callback` readiness pass, and the runtime remains switched to
 `PAYMENT_PROVIDER=ecpay` through the SSM-managed systemd drop-in. Playwright has
 verified the CloudFront storefront redirect into ECPay stage checkout, OTP
