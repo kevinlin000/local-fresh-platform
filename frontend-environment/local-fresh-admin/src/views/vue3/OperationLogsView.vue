@@ -81,10 +81,12 @@ const actionOptions = [
   { label: '訂單確認', value: 'ORDER_CONFIRM' },
   { label: '訂單婉拒', value: 'ORDER_REJECT' },
   { label: '訂單取消', value: 'ORDER_CANCEL' },
-  { label: '訂單配送', value: 'ORDER_DELIVERY' },
+  { label: '訂單配送', value: 'ORDER_START_DELIVERY' },
   { label: '訂單完成', value: 'ORDER_COMPLETE' },
-  { label: '庫存調整', value: 'INVENTORY_ADJUST' }
+  { label: '庫存調整', value: 'PRODUCT_INVENTORY_ADJUST' }
 ]
+
+const inventoryActions = new Set(['PRODUCT_INVENTORY_ADJUST', 'INVENTORY_ADJUST'])
 
 const targetOptions = [
   { label: '訂單', value: 'ORDER' },
@@ -103,7 +105,7 @@ const query = reactive({
 })
 
 const summaryCards = computed(() => {
-  const inventoryAdjustments = rows.value.filter((item) => item.action === 'INVENTORY_ADJUST').length
+  const inventoryAdjustments = rows.value.filter((item) => inventoryActions.has(item.action)).length
   const orderChanges = rows.value.filter((item) => item.targetType === 'ORDER').length
   const operatorCount = new Set(rows.value.map((item) => item.operatorId).filter(Boolean)).size
 
@@ -161,6 +163,12 @@ function numericParam(value: string) {
 }
 
 function actionLabel(action: string) {
+  if (action === 'INVENTORY_ADJUST') {
+    return '庫存調整'
+  }
+  if (action === 'ORDER_DELIVERY') {
+    return '訂單配送'
+  }
   return actionOptions.find((item) => item.value === action)?.label || action || '-'
 }
 
@@ -169,7 +177,7 @@ function targetLabel(targetType: string) {
 }
 
 function actionTagType(action: string) {
-  if (action === 'INVENTORY_ADJUST') {
+  if (inventoryActions.has(action)) {
     return 'warning'
   }
   if (action === 'ORDER_REJECT' || action === 'ORDER_CANCEL') {

@@ -46,3 +46,4 @@ output/
 # AWS infra one-shot configs (not for repo)
 bucket-policy-admin.json
 cloudfront-config-admin.json
+interview-prep/admin-credentials.local.txt
