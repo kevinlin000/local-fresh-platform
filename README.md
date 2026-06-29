@@ -38,10 +38,10 @@
 
 | 想快速確認 | 建議入口 |
 |---|---|
-| 作品第一印象 | 先看下方 10 張 Demo 流程截圖 |
+| 系統樣貌 | 先看下方 10 張 Demo 流程截圖 |
 | 會員端流程 | 開啟用戶端 demo，走商品瀏覽、購物車、下單與訂單追蹤 |
 | 後台能力 | 使用唯讀展示帳號登入管理端，看 Dashboard、訂單、商品、付款事件與操作紀錄 |
-| 後端設計 | 看「工程設計證據」中的資料模型、訂單 / 付款狀態流轉與 AWS 部署拓樸 |
+| 後端設計 | 看「工程設計」中的資料模型、訂單 / 付款狀態流轉與 AWS 部署拓樸 |
 | 測試與可靠性 | 看「技術亮點」中的併發壓測、Testcontainers、JaCoCo、payment callback 與 observability 證據 |
 | 安全邊界 | 看 [SECURITY.md](SECURITY.md) 與管理端唯讀角色限制 |
 
@@ -111,19 +111,19 @@
 
 ## 專案簡介
 
-台灣生鮮電商常見兩個痛點：第一，運費門檻高，少量購買時消費者容易卻步；第二，平台多半只做商品陳列與配送，缺少能提升轉換率與社群擴散的購物機制。菜籃日的設計目標，就是把「在地小農直送」與「揪團湊免運」結合成一個完整的 B2C 訂購流程。消費者可以瀏覽商品與直送箱、加入購物車、建立配送地址並完成下單；若希望降低運費，也可以發起揪團，透過分享連結邀請其他會員加入，達到 3 人成團後即免運。平台後端同時提供商品、訂單、店鋪狀態與營運管理能力，前後端整體圍繞「基本功扎實、流程完整、可實際部署」作為實作目標。
+台灣生鮮電商常見兩個痛點：少量購買時運費門檻高，以及多數平台停留在商品陳列與配送，缺少能推動共同採買的機制。菜籃日把「在地小農直送」與「3 人揪團免運」放進同一套 B2C 訂購流程。會員可以瀏覽商品與直送箱、加入購物車、管理配送地址、完成下單與追蹤訂單；管理端則負責商品、庫存、訂單履約、付款事件與操作紀錄。
 
-## 作品證據總覽
+## 工程重點
 
-| 評審想確認 | 目前證據 |
+| 範圍 | 實作重點 |
 |---|---|
-| 不是單純 CRUD | 訂單狀態機、付款 callback、揪團併發、庫存還原、後台 audit log 都有 service / integration test |
-| 有真實交易邊界 | `payment_event` 留付款請求、成功、重複、拒絕 callback；ECPay sandbox stage checkout 與 OTP 回流已驗證 |
-| 有併發思考 | Redisson lock + transaction + DB unique key；Testcontainers Redis 測試與 JMeter `100` concurrent join 證據 |
-| 有營運後台 | 管理端 Dashboard、訂單履約、商品/庫存、付款事件、操作紀錄與唯讀展示帳號 |
-| 有部署證據 | AWS EC2 + Nginx + S3 + CloudFront + DuckDNS；`/actuator/info` 暴露目前部署 commit |
-| 有可觀測性 | Actuator + Prometheus + Grafana dashboard artifact + alert rules + 可重跑 business metric evidence |
-| 有驗證流程 | GitHub Actions backend/admin/user checks、JaCoCo artifact、backend release package、local/browser smoke、README screenshots |
+| 交易流程 | 訂單狀態機、付款 callback、取消/退款邊界、庫存還原與後台 audit log |
+| 付款對帳 | `payment_event` 保存付款請求、成功、重複與拒絕 callback；ECPay sandbox checkout / OTP 回流已驗證 |
+| 併發控制 | Redisson lock + transaction + DB unique key；Testcontainers Redis 與 JMeter `100` concurrent join 驗證 |
+| 營運後台 | Dashboard、訂單履約、商品/庫存、付款事件、操作紀錄與唯讀展示帳號 |
+| 部署 | AWS EC2 + Nginx + S3 + CloudFront + DuckDNS；`/actuator/info` 回報部署 commit |
+| 可觀測性 | Actuator + Prometheus + Grafana dashboard artifact + alert rules + 可重跑 business metric evidence |
+| 交付檢查 | GitHub Actions backend/admin/user checks、JaCoCo artifact、backend release package、local/browser smoke、README screenshots |
 
 ## 技術架構
 
@@ -160,9 +160,9 @@
 - ECPay sandbox：付款頁導轉、ReturnURL callback 與 provider query parser
 ```
 
-## 工程設計證據
+## 工程設計
 
-README 保留三個最核心的系統設計視角：核心資料模型、訂單/付款狀態流轉、雲端部署拓樸。完整資料表欄位、sequence diagram、索引設計、交易邊界與安全邊界整理在 [docs/architecture.md](docs/architecture.md)。
+以下保留三個最核心的系統視角：資料模型、訂單/付款狀態流轉、雲端部署拓樸。完整資料表欄位、sequence diagram、索引設計、交易邊界與安全邊界整理在 [docs/architecture.md](docs/architecture.md)。
 
 ### 核心資料模型
 
@@ -269,7 +269,7 @@ flowchart LR
 
 ### 技術亮點總覽
 
-| 亮點 | 真正展示的工程能力 | 可查證位置 |
+| 亮點 | 工程重點 | 可查證位置 |
 |---|---|---|
 | 訂單狀態機 | 把付款、取消、婉拒、配送、完成集中成合法狀態轉移，避免 service 到處散落 if/else | `OrderStatusTransitionPolicy`、[docs/testing.md](docs/testing.md) |
 | 付款事件與冪等 | 面對 callback 重送、偽造、金額不符與 provider query，保留事件紀錄而不是只改訂單狀態 | `payment_event`、管理端付款事件頁、[docs/ecpay-sandbox-runbook.md](docs/ecpay-sandbox-runbook.md) |
@@ -330,7 +330,7 @@ Actuator 也補上最小業務 metrics，可查付款 callback 結果、付款 r
 
 ### 6. 管理端唯讀角色與操作 Audit Log
 
-公開管理端 demo 使用 `demo_viewer` 唯讀角色，後端會阻擋新增、修改、刪除、確認訂單、取消訂單、配送、完成、商品上下架與庫存調整等寫入操作，避免面試展示帳號破壞資料。管理端員工列表也會遮蔽密碼欄位，避免 API 回傳敏感資訊。
+公開管理端 demo 使用 `demo_viewer` 唯讀角色，後端會阻擋新增、修改、刪除、確認訂單、取消訂單、配送、完成、商品上下架與庫存調整等寫入操作，避免公開帳號破壞資料。管理端員工列表也會遮蔽密碼欄位，避免 API 回傳敏感資訊。
 
 管理端的訂單確認、婉拒、取消、配送、完成，以及商品手動庫存調整，會寫入 `admin_operation_log`。這張表記錄 `action`、目標類型與 id、操作前後值、原因、操作者與操作時間，用來回答「誰在什麼時候對哪個業務物件做了什麼變更」。管理端也提供 `GET /admin/operationLogs/page` 分頁查詢，可依 action、target、operator 與時間範圍篩選；後台「操作紀錄」頁可直接查閱這些紀錄，`AdminOperationLogApiTest` 也會從 HTTP 層驗證分頁、篩選與 newest-first 排序。這和 `product_inventory_log` 的庫存流水分工不同：庫存流水專注商品數量變化，Audit Log 則專注後台操作責任與追蹤。
 
@@ -356,7 +356,7 @@ Actuator 也補上最小業務 metrics，可查付款 callback 結果、付款 r
 
 ### 12. 測試與交付證據不是只停在單元測試
 
-這份作品的驗證分成三層：第一層是後端 service / API 測試，覆蓋訂單、付款、取消、庫存、揪團、唯讀權限與操作紀錄；第二層是真實依賴測試，例如 Testcontainers Redis 與 JMeter 併發加入揪團；第三層是交付前檢查，例如 `smoke:backend`、`smoke:browser`、`observability:business-evidence`、`check-repo-hygiene`、README screenshots 與 ECPay sandbox readiness。這讓 README 上的亮點不是口號，而是能用命令、測試報告或部署端點重跑驗證。
+驗證分成三層：第一層是後端 service / API 測試，覆蓋訂單、付款、取消、庫存、揪團、唯讀權限與操作紀錄；第二層是真實依賴測試，例如 Testcontainers Redis 與 JMeter 併發加入揪團；第三層是交付前檢查，例如 `smoke:backend`、`smoke:browser`、`observability:business-evidence`、`check-repo-hygiene`、README screenshots 與 ECPay sandbox readiness。README 中的關鍵說法都能連回命令、測試報告或部署端點。
 
 ## 設計決策 Q&A
 
@@ -378,7 +378,7 @@ Redis key 過期事件看起來很直覺，但在真實系統裡，若採用這�
 
 ### Q5. 為什麼管理端也升級到 Vue 3？
 
-管理端是後端系統的重要驗證入口，只做會員端會讓整個系統看起來像單一路徑展示。因此管理端採用 Vue 3 + Vite + TypeScript + Pinia + Element Plus，保留核心營運範圍，不追求複雜 UI，但把登入、列表、表單、訂單操作、營運報表與 API proxy 串接補齊。這樣能直接呈現後台營運面，而不是只看到前台購物流程。
+管理端是這類系統的主要營運入口。只做會員端會缺少商品維護、訂單履約、付款追蹤與操作紀錄。管理端採用 Vue 3 + Vite + TypeScript + Pinia + Element Plus，保留核心營運範圍，不追求複雜 UI，但把登入、列表、表單、訂單操作、營運報表與 API proxy 串接補齊。
 
 ### Q6. 為什麼 repo 內同時保留 Email 登入、Google OAuth 與 mock login？
 
@@ -386,7 +386,7 @@ Email / 密碼是最基本的會員帳號入口，密碼以 BCrypt 雜湊後存�
 
 ### Q7. 為什麼管理端 demo 用唯讀展示帳號？
 
-管理端是面試展示最有價值的入口，但如果公開完整管理員帳密，任何人都能修改商品、取消訂單或破壞 demo data。這個專案因此新增 `READ_ONLY` 管理端角色，讓面試官可以直接看 Dashboard、訂單、商品、付款事件與操作紀錄，但所有寫入操作都由後端擋下。完整管理員帳號只在受控展示時提供，兼顧可看性與資料安全。
+公開管理端需要可瀏覽，也需要保護 demo data。如果公開完整管理員帳密，任何人都能修改商品、取消訂單或破壞資料。因此系統提供 `READ_ONLY` 管理端角色，可查看 Dashboard、訂單、商品、付款事件與操作紀錄；所有寫入操作都由後端擋下。完整管理員帳號只在受控展示時提供。
 
 ### Q8. 為什麼付款要另外做 `payment_event`，而不是只更新訂單狀態？
 
@@ -394,7 +394,7 @@ Email / 密碼是最基本的會員帳號入口，密碼以 BCrypt 雜湊後存�
 
 ### Q9. 為什麼 observability 只做到 Actuator + Prometheus + Grafana，而不是完整雲端監控？
 
-這是 portfolio 專案，不是要展示完整 SRE 平台。最重要的是能回答幾個業務問題：付款 callback 是否被拒絕或重複、待對帳付款是否卡住、取消訂單是否命中防重、揪團是否成功或失敗。Actuator + Prometheus counters/gauge + Grafana dashboard 已足夠支撐這些問題，並用 `npm run observability:business-evidence` 真的跑業務路徑驗證 metric 增加。雲端長時間監控和告警接收器是下一層加分，不是目前 demo 的必要條件。
+目前的 observability 聚焦在能直接對應營運風險的訊號：付款 callback 是否被拒絕或重複、待對帳付款是否卡住、取消訂單是否命中防重、揪團是否成功或失敗。Actuator + Prometheus counters/gauge + Grafana dashboard 可以支撐這些問題，`npm run observability:business-evidence` 也會跑實際業務路徑並驗證 metric 增加。雲端長時間監控與正式告警演練列為後續工作。
 
 ### Q10. JMeter 壓測是不是早期資料，現在還能放嗎？
 
@@ -402,11 +402,11 @@ Email / 密碼是最基本的會員帳號入口，密碼以 BCrypt 雜湊後存�
 
 ### Q11. 為什麼不拆成微服務？
 
-這個專案目前更適合保持模組化單體。核心複雜度不是服務數量，而是訂單、付款、庫存、揪團與後台操作之間的交易一致性。如果過早拆微服務，會把原本資料庫交易可以處理的問題變成分散式交易、事件補償、重試與 observability 成本。對面試作品來說，先把單體內的模組邊界、狀態機、交易邊界、測試與部署做好，比空泛拆服務更能展示 Java 後端基本功。
+這個專案目前更適合保持模組化單體。核心複雜度不是服務數量，而是訂單、付款、庫存、揪團與後台操作之間的交易一致性。如果過早拆微服務，會把原本資料庫交易可以處理的問題變成分散式交易、事件補償、重試與 observability 成本。以目前規模來看，清楚的模組邊界、狀態機、交易邊界、測試與部署證據，比拆服務更有價值。
 
-### Q12. 目前作品是不是可以收尾錄 demo？
+### Q12. 這個專案目前不追求什麼？
 
-可以。以 Java 後端面試作品來看，目前已經有完整業務閉環、部署網址、管理端唯讀展示、金流 sandbox 證據、併發測試、可觀測性證據與 README 截圖。接下來最有投資報酬率的是錄製 5 到 8 分鐘 demo、準備口頭講稿與熟悉 Q&A，而不是繼續堆大功能。工程上仍可優化的項目是雲端長時間監控、trace/log correlation、CD 自動化與更完整的視覺回歸，但這些屬於加分項，不是阻塞收尾的必要條件。
+目前不追求高可用叢集、完整 SRE 平台、正式金流合約或大型 CD 平台。這些都需要更多基礎設施與營運成本。現階段優先順序是把單體服務內的交易流程、狀態轉移、付款 callback、庫存防重、揪團併發、部署與可觀測性邊界做清楚。後續若要往 production-grade 方向推進，優先補雲端長時間監控、trace/log correlation、CD 自動化與視覺回歸。
 
 ## 系統需求
 
@@ -500,7 +500,7 @@ docker compose up -d
 
 後端已接入 Flyway，啟動時會自動執行 `local-fresh-server/src/main/resources/db/migration/` 內的版本化 migration。全新資料庫可直接啟動；若使用的是舊有非空 schema 且尚未有 `flyway_schema_history`，第一次啟動請加上 `FLYWAY_BASELINE_ON_MIGRATE=true` 完成 baseline，之後再關閉此設定。
 
-本地 MySQL 容器只負責提供空資料庫，schema 與 seed data 都由 Spring Boot 啟動時的 Flyway 統一管理。`V10__demo_journey_seed.sql` 會建立作品展示用資料：試用會員 `user_a / user_b / user_c`、配送地址、購物車、一般訂單與揪團案例。這三個 code 對應用戶端登入頁的「試用會員 A/B/C」，可直接走完商品瀏覽、購物車、下單、訂單狀態與揪團頁面。
+本地 MySQL 容器只負責提供空資料庫，schema 與 seed data 都由 Spring Boot 啟動時的 Flyway 統一管理。`V10__demo_journey_seed.sql` 會建立 demo journey 資料：試用會員 `user_a / user_b / user_c`、配送地址、購物車、一般訂單與揪團案例。這三個 code 對應用戶端登入頁的「試用會員 A/B/C」，可直接走完商品瀏覽、購物車、下單、訂單狀態與揪團頁面。
 
 若本機 `3306` 已被 MySQL 佔用，可只啟動 Redis，並讓後端連到既有 MySQL：
 
@@ -578,11 +578,11 @@ pnpm dev
 
 ## 已知限制
 
-| 範圍 | 目前狀態 | 不阻塞 demo 的原因 |
+| 範圍 | 目前狀態 | 後續方向 |
 |---|---|---|
 | 付款 | 本機可用 demo gateway；EC2 demo 可透過 SSM 切到 ECPay sandbox，已驗證 stage checkout、OTP 成功、ReturnURL `200`、訂單轉已付款與 `CALLBACK_SUCCEEDED` 落庫 | 已能展示 provider callback、CheckMacValue、付款事件、待對帳候選與 reconciliation 邊界；外部查詢排程長時間運行屬下一層證據 |
 | Observability | 已有 Actuator、Prometheus endpoint、Grafana dashboard artifact、alert rules 與 business metric live increase script | 能回答核心業務異常怎麼看；雲端長時間留痕、正式告警演練、trace/log correlation 屬加分項 |
-| UI 測試 | 會員端與管理端已完成主要截圖、RWD 基礎體驗與 Playwright smoke | 已足夠錄 demo；完整跨瀏覽器視覺回歸可後續補 |
+| UI 測試 | 會員端與管理端已完成主要截圖、RWD 基礎體驗與 Playwright smoke | 可覆蓋主要瀏覽與登入路徑；完整跨瀏覽器視覺回歸可後續補 |
 | 資料庫導入 | 全新資料庫可直接套用 Flyway migration；舊非空 schema 第一次導入需 baseline | 這是 migration 導入策略，不影響全新環境與 demo 部署 |
 
 更多細節請參考：
@@ -592,8 +592,6 @@ pnpm dev
 
 - [docs/known-issues.md](docs/known-issues.md)
 - [docs/architecture.md](docs/architecture.md)
-- [docs/backend-deep-dive-prep.md](docs/backend-deep-dive-prep.md)
-- [docs/interview-guide.md](docs/interview-guide.md)
 - [docs/backend-deploy-runbook.md](docs/backend-deploy-runbook.md)
 - [docs/ecpay-sandbox-runbook.md](docs/ecpay-sandbox-runbook.md)
 - [docs/observability.md](docs/observability.md)
@@ -631,7 +629,7 @@ npm run smoke:browser
 
 ## 目前狀態與後續方向
 
-本專案目前已達到「可以收尾錄 demo」的狀態：核心業務閉環、部署網址、README 截圖、管理端唯讀展示、ECPay sandbox 證據、observability business evidence 與 CI / smoke 驗證都已完成。完整評估矩陣與後續加分項請參考 [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md)。
+本專案已完成公開 demo 需要的核心閉環：會員端採買、揪團、訂單查詢、管理端營運、唯讀展示帳號、ECPay sandbox 證據、observability business evidence、README 截圖與 CI / smoke 驗證。完整後續規劃見 [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md)。
 
 ### 已完成里程碑
 
@@ -653,7 +651,7 @@ npm run smoke:browser
 - Testcontainers Redis 整合測試 + GitHub Actions backend/admin/user frontend checks
 - CI quality gate：GitHub Actions 會跑 repository hygiene、後端 `verify` + JaCoCo artifact、backend release package artifact + SHA256 verifier、管理端 build / audit、會員端 build
 
-### 後續加分項
+### 後續方向
 
 - 雲端長時間 observability 留痕：保留 Prometheus / Grafana 或 CloudWatch 的連續運行截圖與告警演練紀錄
 - Trace ID / 結構化 log：讓付款 callback、訂單取消、reconciliation job 的 request flow 更容易跨 log 追蹤

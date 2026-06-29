@@ -42,7 +42,7 @@ Admin console
 | First impression | Start with the 10 demo-flow screenshots below |
 | Storefront flow | Open the user demo and walk through browsing, cart, checkout, and order tracking |
 | Admin capability | Log in with the read-only admin account and inspect dashboard, orders, products, payment events, and operation logs |
-| Backend design | Read the domain model, order/payment state flow, and AWS deployment topology under Engineering Evidence |
+| Backend design | Read the domain model, order/payment state flow, and AWS deployment topology under Engineering Design |
 | Reliability evidence | Review concurrency testing, Testcontainers, JaCoCo, payment callback handling, and observability evidence |
 | Security boundary | Read [SECURITY.md](SECURITY.md) and verify read-only admin restrictions |
 
@@ -112,19 +112,19 @@ The payment event page turns rejected callbacks, pending payment requests, succe
 
 ## Overview
 
-Online grocery commerce in Taiwan often runs into two practical problems: small orders are heavily penalized by shipping fees, and most platforms stop at catalog plus checkout without offering a mechanism that encourages collaborative purchasing. Local Fresh Platform addresses both issues by combining local farm-to-table delivery with group-buy incentives. Users can browse individual products and curated gift boxes, add items to cart, manage delivery addresses, and place orders through a conventional checkout flow. If they want to reduce shipping costs, they can launch a group-buy campaign, share a link with others, and unlock free shipping once the required member count is reached. The platform also includes administrative capabilities for product operations, order handling, and store status management. The project is intentionally built as a production-oriented full-stack portfolio piece, with an emphasis on strong engineering fundamentals, coherent domain modeling, and deployment readiness.
+Online grocery commerce in Taiwan often runs into two practical problems: small orders are penalized by shipping fees, and many platforms stop at catalog plus checkout without supporting collaborative purchasing. Local Fresh Platform combines local farm-to-table delivery with a 3-person group-buy free-shipping flow. Members can browse individual products and curated delivery boxes, add items to cart, manage delivery addresses, place orders, and track fulfillment. The admin console covers product operations, stock, order handling, payment events, and operation logs.
 
-## Portfolio Evidence Overview
+## Engineering Scope
 
-| Reviewer question | Current evidence |
+| Area | Current implementation |
 |---|---|
-| Is this more than CRUD? | Order state policy, payment callbacks, group-buy concurrency, inventory restore, and admin audit logs all have service or integration coverage |
-| Are real transaction boundaries modeled? | `payment_event` records payment requests, success, duplicate, and rejected callbacks; ECPay sandbox checkout and OTP return have been verified |
-| Is concurrency handled deliberately? | Redisson lock + transaction + database unique key, backed by Testcontainers Redis and JMeter `100` concurrent join evidence |
-| Is there an operations surface? | Admin dashboard, fulfillment, products/inventory, payment events, operation logs, and a read-only demo account |
-| Is deployment real? | AWS EC2 + Nginx + S3 + CloudFront + DuckDNS; `/actuator/info` exposes the deployed commit |
-| Is observability repeatable? | Actuator + Prometheus + Grafana dashboard artifact + alert rules + repeatable business metric evidence |
-| Is delivery verified? | GitHub Actions, JaCoCo artifact, backend release package, local/browser smoke, README screenshots |
+| Transaction flow | Order state policy, payment callbacks, cancellation/refund boundaries, inventory restoration, and admin audit log |
+| Payment reconciliation | `payment_event` records payment requests, successful callbacks, duplicate callbacks, and rejected callbacks; ECPay sandbox checkout / OTP return has been verified |
+| Concurrency | Redisson lock + transaction + database unique key, backed by Testcontainers Redis and JMeter `100` concurrent join evidence |
+| Operations console | Dashboard, fulfillment, products/inventory, payment events, operation logs, and a read-only demo account |
+| Deployment | AWS EC2 + Nginx + S3 + CloudFront + DuckDNS; `/actuator/info` reports deployed commit metadata |
+| Observability | Actuator + Prometheus + Grafana dashboard artifact + alert rules + repeatable business metric evidence |
+| Delivery checks | GitHub Actions backend/admin/user checks, JaCoCo artifact, backend release package, local/browser smoke, README screenshots |
 
 ## Architecture
 
@@ -162,9 +162,9 @@ External services:
 - ECPay sandbox for payment redirect, ReturnURL callback, and provider query parsing
 ```
 
-## Engineering Evidence
+## Engineering Design
 
-The README keeps three high-signal design views: the core domain model, the order/payment lifecycle, and the deployed AWS topology. Full table fields, sequence diagrams, index notes, transaction boundaries, and security boundaries are documented in [docs/architecture.md](docs/architecture.md).
+This section keeps three high-signal design views: core domain model, order/payment lifecycle, and deployed AWS topology. Full table fields, sequence diagrams, index notes, transaction boundaries, and security boundaries are documented in [docs/architecture.md](docs/architecture.md).
 
 ### Core Data Model
 
@@ -267,7 +267,7 @@ flowchart LR
 
 ### Technical Highlights Overview
 
-| Highlight | Engineering signal | Evidence |
+| Highlight | Engineering focus | Evidence |
 |---|---|---|
 | Order state machine | Centralizes payment, cancellation, rejection, delivery, and completion transitions instead of scattering rules across services | `OrderStatusTransitionPolicy`, [docs/testing.md](docs/testing.md) |
 | Payment events and idempotency | Handles duplicate, forged, mismatched, and provider-query payment paths through an auditable event trail | `payment_event`, admin payment events page, [docs/ecpay-sandbox-runbook.md](docs/ecpay-sandbox-runbook.md) |
@@ -319,7 +319,7 @@ Redis plays two distinct roles in this system: distributed coordination for grou
 
 ### 9. Built with deployment readiness in mind
 
-Although this is a portfolio project, it is structured with deployment realism in mind rather than as a collection of disconnected demos. Database migrations are versioned, environment-specific configuration is separated cleanly, OAuth credentials are kept out of source control, and frontend/backend integration is designed around realistic local-to-cloud transitions. The deployment topology described below is the actual production setup serving the demo URL.
+The project is structured with deployment realism in mind rather than as a collection of disconnected demos. Database migrations are versioned, environment-specific configuration is separated cleanly, OAuth credentials are kept out of source control, and frontend/backend integration is designed around realistic local-to-cloud transitions. The deployment topology described below is the actual setup serving the demo URL.
 
 ### 10. Testing and delivery evidence beyond unit tests
 
@@ -333,7 +333,7 @@ Two hours is a pragmatic balance between security and usability. A shorter lifet
 
 ### Q2. Why use Redisson instead of implementing a lock with `SETNX` manually?
 
-A hand-rolled `SETNX` lock is possible, but getting all the details right—ownership checks, safe release, expiration handling, reentrancy, and failure semantics—adds complexity that does not meaningfully improve this project. Redisson already solves those infrastructure concerns, which allows the implementation to focus on the domain problem: join validation, campaign completion, and transactional consistency. For a portfolio project centered on engineering judgment, using a mature library is the more defensible choice.
+A hand-rolled `SETNX` lock is possible, but getting ownership checks, safe release, expiration handling, reentrancy, and failure semantics right adds complexity that does not improve the domain model. Redisson already solves those infrastructure concerns, so the implementation can focus on join validation, campaign completion, and transactional consistency.
 
 ### Q3. Why process expired group-buys with a scheduler instead of Redis TTL events?
 
@@ -345,7 +345,7 @@ Mocks are appropriate for isolating business logic, but not for validating distr
 
 ### Q5. Why migrate the admin app to Vue 3 as well?
 
-The admin console is an important verification surface for a backend portfolio. Without it, the repository would only demonstrate the consumer purchase path. It has therefore been migrated to Vue 3 + Vite + TypeScript + Pinia + Element Plus, covering login, list pages, forms, order operations, dashboards, and API proxy integration without expanding the project beyond its fundamentals-focused scope.
+The admin console is the main operations surface for this type of system. Without it, the project would miss product maintenance, order fulfillment, payment tracking, and operation logs. It uses Vue 3 + Vite + TypeScript + Pinia + Element Plus to cover login, list pages, forms, order operations, dashboards, and API proxy integration without expanding the UI beyond the core workflow.
 
 ### Q6. Why keep email login, Google OAuth, and mock login in the same repository?
 
@@ -353,7 +353,7 @@ Email/password auth is the baseline member account path. Passwords are stored as
 
 ### Q7. Why does the admin demo use a read-only account?
 
-The admin console is one of the highest-value demo surfaces, but publishing full admin credentials would allow anyone to modify products, cancel orders, or damage demo data. The project therefore includes a `READ_ONLY` admin role: interviewers can inspect dashboards, orders, products, payment events, and operation logs, while all write operations are blocked by the backend.
+Public admin access needs to be inspectable without allowing data damage. Publishing full admin credentials would allow anyone to modify products, cancel orders, or break demo data. The project therefore includes a `READ_ONLY` admin role: users can inspect dashboards, orders, products, payment events, and operation logs, while all write operations are blocked by the backend.
 
 ### Q8. Why use `payment_event` instead of only updating order status?
 
@@ -361,7 +361,7 @@ Real payment callbacks can be duplicated, delayed, forged, or inconsistent with 
 
 ### Q9. Why keep observability to Actuator + Prometheus + Grafana?
 
-This is a portfolio project, not a full SRE platform. The important business questions are whether payment callbacks are rejected or duplicated, whether reconciliation candidates are stuck, whether cancellation idempotency is being hit, and whether group-buy transitions happen. Actuator, Prometheus metrics, Grafana artifacts, alert rules, and `npm run observability:business-evidence` cover that level. Cloud long-running monitoring and alert receiver drills are follow-up polish, not demo blockers.
+The current observability scope focuses on signals that map directly to operational risk: rejected or duplicate payment callbacks, stuck reconciliation candidates, cancellation idempotency hits, and group-buy transitions. Actuator, Prometheus metrics, Grafana artifacts, alert rules, and `npm run observability:business-evidence` cover that level. Cloud long-running monitoring and alert drills are tracked as follow-up work.
 
 ### Q10. Is the JMeter result old evidence, and should it still be included?
 
@@ -369,11 +369,11 @@ Yes, but it should be framed correctly. The JMeter result is not a production ca
 
 ### Q11. Why not split the backend into microservices?
 
-The current system is better as a modular monolith. The complexity worth demonstrating is transaction consistency across orders, payment, stock, group-buy, and admin operations. Splitting too early would turn local transaction boundaries into distributed transactions, compensation, retries, and observability overhead. For this Java backend portfolio, clean modules, state machines, transaction boundaries, tests, and deployment evidence are more valuable.
+The current system is better as a modular monolith. The main complexity is transaction consistency across orders, payment, stock, group-buy, and admin operations. Splitting too early would turn local transaction boundaries into distributed transactions, compensation, retries, and observability overhead. Clean modules, state machines, transaction boundaries, tests, and deployment evidence are more valuable at this size.
 
-### Q12. Is the project ready for a demo recording?
+### Q12. What is intentionally out of scope right now?
 
-Yes. The project now has a complete business flow, deployed URLs, read-only admin demo, ECPay sandbox evidence, concurrency tests, observability evidence, CI/smoke checks, and README screenshots. The next highest-return work is recording a 5 to 8 minute demo and practicing the interview Q&A. Cloud monitoring history, trace/log correlation, CD automation, and visual regression are useful follow-ups, but they do not block portfolio closure.
+The project does not currently aim for high-availability clusters, a full SRE platform, a production payment contract, or a large CD platform. Those require more infrastructure and operating cost. Current scope keeps the transaction flow, state transitions, payment callbacks, inventory idempotency, group-buy concurrency, deployment boundary, and observability boundary clear. If the system moves toward production-grade operation, next steps are cloud monitoring retention, trace/log correlation, CD automation, and visual regression.
 
 ## System Requirements
 
@@ -544,11 +544,11 @@ The deployment topology is:
 
 ## Known Limitations
 
-| Area | Current state | Why it does not block the demo |
+| Area | Current state | Follow-up |
 |---|---|---|
 | Payment | Local demos can use the demo gateway; EC2 can switch to ECPay sandbox through SSM, and stage checkout, OTP success, ReturnURL `200`, paid order state, and `CALLBACK_SUCCEEDED` persistence are verified | The project can demonstrate provider callbacks, CheckMacValue, payment events, pending candidates, and reconciliation boundaries; long-running external-query evidence is a next layer |
 | Observability | Actuator, Prometheus endpoint, Grafana dashboard artifact, alert rules, and business metric live-increase script are in place | The core business failure questions are answerable; cloud retention, alert drills, and trace/log correlation are follow-up polish |
-| UI testing | Main storefront/admin screenshots, responsive basics, and Playwright smoke are in place | Sufficient for demo recording; full cross-browser visual regression can be added later |
+| UI testing | Main storefront/admin screenshots, responsive basics, and Playwright smoke are in place | Covers key browsing and login paths; full cross-browser visual regression can be added later |
 | Database adoption | Fresh databases can apply Flyway migrations directly; legacy non-empty schemas need a one-time baseline | This is a migration adoption concern, not a blocker for fresh local or deployed demo environments |
 
 See also:
@@ -558,8 +558,6 @@ See also:
 
 - [docs/known-issues.md](docs/known-issues.md)
 - [docs/architecture.md](docs/architecture.md)
-- [docs/backend-deep-dive-prep.md](docs/backend-deep-dive-prep.md)
-- [docs/interview-guide.md](docs/interview-guide.md)
 - [docs/backend-deploy-runbook.md](docs/backend-deploy-runbook.md)
 - [docs/ecpay-sandbox-runbook.md](docs/ecpay-sandbox-runbook.md)
 - [docs/observability.md](docs/observability.md)
@@ -609,7 +607,7 @@ npm run smoke:browser
 
 ## Current Status and Next Steps
 
-This project is ready for demo recording: the core business loop, deployed URLs, README screenshots, read-only admin demo, ECPay sandbox evidence, observability business evidence, and CI/smoke verification are in place. For the full completeness assessment and follow-up matrix, see [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md).
+The public demo covers the core loop: storefront shopping, group buy, order tracking, admin operations, read-only admin access, ECPay sandbox evidence, observability business evidence, README screenshots, and CI/smoke verification. For the full follow-up matrix, see [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md).
 
 Completed evidence:
 
@@ -620,7 +618,7 @@ Completed evidence:
 - ECPay sandbox checkout evidence: public readiness, CloudFront storefront redirect to ECPay stage checkout, OTP success, ReturnURL HTTP `200`, paid order state, and `ECPAY / CALLBACK_SUCCEEDED / SUCCEEDED`
 - Admin read-only role, admin operation audit log, inventory restore idempotency, AWS deployment, Flyway migrations, CI quality gate, and backend release package checks
 
-Follow-up polish:
+Follow-up work:
 
 - Cloud long-running observability evidence through Prometheus/Grafana or CloudWatch retention screenshots and alert drills
 - Trace ID and structured logging across payment callbacks, order cancellation, and reconciliation jobs
