@@ -114,45 +114,52 @@ The payment event page turns rejected callbacks, pending payment requests, succe
 
 Online grocery commerce in Taiwan often runs into two practical problems: small orders are heavily penalized by shipping fees, and most platforms stop at catalog plus checkout without offering a mechanism that encourages collaborative purchasing. Local Fresh Platform addresses both issues by combining local farm-to-table delivery with group-buy incentives. Users can browse individual products and curated gift boxes, add items to cart, manage delivery addresses, and place orders through a conventional checkout flow. If they want to reduce shipping costs, they can launch a group-buy campaign, share a link with others, and unlock free shipping once the required member count is reached. The platform also includes administrative capabilities for product operations, order handling, and store status management. The project is intentionally built as a production-oriented full-stack portfolio piece, with an emphasis on strong engineering fundamentals, coherent domain modeling, and deployment readiness.
 
+## Portfolio Evidence Overview
+
+| Reviewer question | Current evidence |
+|---|---|
+| Is this more than CRUD? | Order state policy, payment callbacks, group-buy concurrency, inventory restore, and admin audit logs all have service or integration coverage |
+| Are real transaction boundaries modeled? | `payment_event` records payment requests, success, duplicate, and rejected callbacks; ECPay sandbox checkout and OTP return have been verified |
+| Is concurrency handled deliberately? | Redisson lock + transaction + database unique key, backed by Testcontainers Redis and JMeter `100` concurrent join evidence |
+| Is there an operations surface? | Admin dashboard, fulfillment, products/inventory, payment events, operation logs, and a read-only demo account |
+| Is deployment real? | AWS EC2 + Nginx + S3 + CloudFront + DuckDNS; `/actuator/info` exposes the deployed commit |
+| Is observability repeatable? | Actuator + Prometheus + Grafana dashboard artifact + alert rules + repeatable business metric evidence |
+| Is delivery verified? | GitHub Actions, JaCoCo artifact, backend release package, local/browser smoke, README screenshots |
+
 ## Architecture
 
 ```text
-┌───────────────────────────────┐
-│        User Web (Vue 3)       │
-│ Browsing / Cart / Orders /    │
-│ Group Buy / Google OAuth      │
-└──────────────┬────────────────┘
-               │ HTTP / JWT
-               ▼
-┌──────────────────────────────────────────────┐
-│         Spring Boot 3.5 Backend API         │
-│ Member / Product / Cart / Order / GroupBuy  │
-│ Google OAuth / Cache / Scheduler / WS       │
-└───────┬──────────────────┬──────────────────┘
-        │                  │
-        ▼                  ▼
-┌───────────────┐   ┌──────────────────┐
-│   MySQL 8     │   │   Redis 7        │
-│ Orders /      │   │ Cache / Store    │
-│ Products /    │   │ Status / Locking │
-│ Members / GB  │   └─────────┬────────┘
-└───────────────┘             │
-                              ▼
-                     ┌──────────────────┐
-                     │   Redisson       │
-                     │ Group Buy Locks  │
-                     └─────────┬────────┘
-                               │
-                               ▼
-                     ┌──────────────────┐
-                     │ Scheduler / WS   │
-                     │ Expiry / Notify  │
-                     └──────────────────┘
+┌──────────────────────┐      ┌──────────────────────┐
+│ User Web (Vue 3)     │      │ Admin Web (Vue 3)    │
+│ Products / Cart /    │      │ Dashboard / Orders / │
+│ Group Buy / Orders   │      │ Products / Payments  │
+└──────────┬───────────┘      └──────────┬───────────┘
+           │ HTTP / JWT                  │ HTTP / Admin JWT
+           └──────────────┬──────────────┘
+                          ▼
+┌──────────────────────────────────────────────────────┐
+│             Spring Boot 3.5 Backend API              │
+│ Member / Product / Cart / Order / GroupBuy / Payment │
+│ Admin Operation / Audit Log / Actuator / Metrics     │
+└───────┬──────────────────┬─────────────────┬────────┘
+        │                  │                 │
+        ▼                  ▼                 ▼
+┌───────────────┐   ┌──────────────────┐   ┌──────────────────┐
+│   MySQL 8     │   │ Redis 7 + Redisson│   │ Payment Provider │
+│ Orders/Payment│   │ Cache / Store    │   │ Demo / ECPay     │
+│ Stock/GB/Audit│   │ Status / GB Lock │   │ Callback / Query │
+└───────────────┘   └──────────────────┘   └──────────────────┘
+        │
+        ▼
+┌──────────────────────────────────────────────────────┐
+│ Prometheus scrape / Grafana dashboard / Alert rules  │
+└──────────────────────────────────────────────────────┘
 
 External services:
-- Email/password member auth and Google OAuth 2.0
+- Google OAuth 2.0 for member sign-in
 - Google Maps API for delivery range checks
-- AWS: EC2 (Dockerized MySQL + Redis), S3, CloudFront, DuckDNS
+- AWS: EC2 (Nginx + Spring Boot + Dockerized MySQL/Redis), S3, CloudFront, DuckDNS
+- ECPay sandbox for payment redirect, ReturnURL callback, and provider query parsing
 ```
 
 ## Engineering Evidence
@@ -234,22 +241,41 @@ flowchart LR
 
 | Layer | Technologies |
 |---|---|
-| Backend | Java 17, Spring Boot 3.5.14, MyBatis, PageHelper, Flyway, JWT, HikariCP, Actuator |
-| Frontend | User Vue 3 + Vite 5, Admin Vue 3 + Vite 8, TypeScript, Pinia, Vue Router 4, Element Plus |
-| Infrastructure | MySQL 8, Redis 7, Redisson, Testcontainers, Docker, GitHub Actions |
-| Third-party Services | Google OAuth 2.0, Google Maps API, AWS EC2 + S3 + CloudFront + DuckDNS |
+| Backend | Java 17, Spring Boot 3.5.14, MyBatis, PageHelper, Flyway, JWT, Spring Security Crypto, HikariCP |
+| Consistency | `OrderStatusTransitionPolicy`, transaction boundaries, conditional stock updates, payment callback guarded updates, idempotency keys |
+| Payment | Demo gateway, ECPay sandbox CheckMacValue, provider callback, provider query parser, `payment_event`, reconciliation job |
+| Observability | Spring Boot Actuator, Micrometer Prometheus registry, Grafana dashboard artifact, Prometheus alert rules |
+| Frontend | User Vue 3 + Vite 5, Admin Vue 3 + Vite 8, TypeScript, Pinia, Vue Router 4, Element Plus, ECharts |
+| Data/cache | MySQL 8, Redis 7, Redisson distributed lock, Flyway seed data |
+| Testing/delivery | JUnit 5, Spring MockMvc, Testcontainers Redis, JaCoCo, Playwright smoke, GitHub Actions, backend release package |
+| Deployment/third-party | AWS EC2 + S3 + CloudFront, Nginx + Let's Encrypt, DuckDNS, Google OAuth 2.0, Google Maps API, ECPay sandbox, AWS SSM |
 
 ## Core Features
 
-- Product and gift box browsing: Browse seasonal groceries by category, including individual items and curated delivery boxes.
-- Cart and checkout flow: Add items to cart, adjust quantities, manage delivery addresses, leave notes, and review order history.
-- Group-buy free shipping campaigns: Create a campaign, share a link, and convert pre-orders into confirmed orders once 3 members join.
-- Member account model: email/password registration and login, Google OAuth 2.0, plus mock login in development for testing and demos.
-- Order lifecycle management: Covers ordinary order states as well as the dedicated pre-order state used during group-buy campaigns.
-- Store and operations management: Admin-side support for products, categories, orders, and store open/close status.
-- Cache and scheduled job coordination: Redis-backed cache plus scheduled group-buy expiry handling and refund simulation.
+| Feature | Current state |
+|---|---|
+| Member accounts | Email/password registration and login, Google OAuth 2.0 authorization code flow, dev mock login switch |
+| Products and delivery boxes | Category browsing, product detail, curated delivery boxes, real food imagery, component products and value copy |
+| Cart and checkout | Quantity control, address selection, notes, packaging fee, stock deduction, order snapshot, order history |
+| Group-buy free shipping | Campaign creation, share-and-join flow, 3-member completion, pre-orders, expiry failure, batch promotion to fulfillment |
+| Payment and reconciliation | Demo payment, ECPay sandbox checkout/callback, payment event query, pending candidates, provider-query reconciliation |
+| Admin operations | Dashboard, order fulfillment, products/inventory, categories, delivery boxes, employees, payment events, operation logs |
+| Security demo boundary | Public `demo_viewer` read-only role can inspect but cannot mutate data; full admin credentials are not published |
+| Observability | health/info/metrics/prometheus, business counters/gauge, Grafana dashboard, alert rules, live metric evidence script |
 
 ## Technical Highlights
+
+### Technical Highlights Overview
+
+| Highlight | Engineering signal | Evidence |
+|---|---|---|
+| Order state machine | Centralizes payment, cancellation, rejection, delivery, and completion transitions instead of scattering rules across services | `OrderStatusTransitionPolicy`, [docs/testing.md](docs/testing.md) |
+| Payment events and idempotency | Handles duplicate, forged, mismatched, and provider-query payment paths through an auditable event trail | `payment_event`, admin payment events page, [docs/ecpay-sandbox-runbook.md](docs/ecpay-sandbox-runbook.md) |
+| Group-buy concurrency | Uses Redisson lock, transactions, unique keys, Testcontainers, and JMeter evidence to prevent oversubscription | `GroupBuyRedisIntegrationTest`, [docs/perf/README.md](docs/perf/README.md) |
+| Inventory restore idempotency | Combines service guards with inventory-log idempotency keys to avoid duplicate stock restoration | `OrderCancellationServiceImpl`, `product_inventory_log` |
+| Read-only admin demo | Public demo users can inspect data while backend authorization blocks admin mutations | `AdminReadOnlyRoleInterceptor`, [SECURITY.md](SECURITY.md) |
+| Observability evidence | Triggers real business paths and verifies Prometheus metric increases, not just dashboard JSON | `npm run observability:business-evidence`, [docs/observability.md](docs/observability.md) |
+| Deployment and delivery | AWS deployment, ECPay sandbox readiness, GitHub Actions, release package SHA256, local/browser smoke | [docs/backend-deploy-runbook.md](docs/backend-deploy-runbook.md), [docs/testing.md](docs/testing.md) |
 
 ### 1. Concurrency control for the group-buy module
 
@@ -257,7 +283,7 @@ The hardest part of the group-buy workflow is preventing oversubscription when m
 
 ### 2. Separating pre-orders from normal order submission
 
-Group-buy orders are modeled as pre-orders instead of reusing the standard checkout path end-to-end. During the campaign window, each participant receives an order with status `PENDING_GROUP`, which avoids prematurely deducting stock, clearing cart state, or triggering the full delivery validation flow. Once the group succeeds, all related orders are promoted in batch to `TO_BE_CONFIRMED`; if the campaign expires, the orders are batch-cancelled and refund actions are logged in a mock payment flow. This keeps the original order module stable while isolating group-buy concerns in a clear and traceable way.
+Group-buy orders are modeled as pre-orders instead of reusing the standard checkout path end-to-end. During the campaign window, each participant receives an order with status `PENDING_GROUP`, which avoids prematurely deducting stock, clearing cart state, or triggering the full delivery validation flow. Once the group succeeds, all related orders are promoted in batch to `TO_BE_CONFIRMED`; if the campaign expires, the orders are batch-cancelled and refund intent / cancellation evidence is recorded. This keeps the original order module stable while isolating group-buy concerns in a clear and traceable way.
 
 ### 3. Order lifecycle rules backed by service-level tests
 
@@ -295,6 +321,10 @@ Redis plays two distinct roles in this system: distributed coordination for grou
 
 Although this is a portfolio project, it is structured with deployment realism in mind rather than as a collection of disconnected demos. Database migrations are versioned, environment-specific configuration is separated cleanly, OAuth credentials are kept out of source control, and frontend/backend integration is designed around realistic local-to-cloud transitions. The deployment topology described below is the actual production setup serving the demo URL.
 
+### 10. Testing and delivery evidence beyond unit tests
+
+The verification story has three layers. Backend service/API tests cover orders, payment, cancellation, inventory, group-buy, read-only authorization, and operation logs. Real-dependency evidence uses Testcontainers Redis plus JMeter group-buy concurrency. Delivery checks cover `smoke:backend`, `smoke:browser`, `observability:business-evidence`, repository hygiene, README screenshots, and ECPay sandbox readiness. The result is a README whose claims can be rerun through commands, reports, or deployed endpoints.
+
 ## Design Decisions Q&A
 
 ### Q1. Why is JWT TTL set to 2 hours?
@@ -320,6 +350,30 @@ The admin console is an important verification surface for a backend portfolio. 
 ### Q6. Why keep email login, Google OAuth, and mock login in the same repository?
 
 Email/password auth is the baseline member account path. Passwords are stored as BCrypt hashes in `member.password_hash`, and successful logins receive the same member JWT used by the rest of the storefront. Google OAuth remains available for third-party sign-in, with code exchange and `id_token` verification handled by the backend. Mock login is gated by environment flags and kept for fast local testing and repeatable demo flows.
+
+### Q7. Why does the admin demo use a read-only account?
+
+The admin console is one of the highest-value demo surfaces, but publishing full admin credentials would allow anyone to modify products, cancel orders, or damage demo data. The project therefore includes a `READ_ONLY` admin role: interviewers can inspect dashboards, orders, products, payment events, and operation logs, while all write operations are blocked by the backend.
+
+### Q8. Why use `payment_event` instead of only updating order status?
+
+Real payment callbacks can be duplicated, delayed, forged, or inconsistent with local order state. If the system only updated `orders.pay_status`, it would be hard to explain what the provider sent and how the backend handled it. `payment_event` preserves request, success, duplicate, and rejected callback evidence with provider metadata, transaction numbers, idempotency keys, amounts, raw payloads, and processing results.
+
+### Q9. Why keep observability to Actuator + Prometheus + Grafana?
+
+This is a portfolio project, not a full SRE platform. The important business questions are whether payment callbacks are rejected or duplicated, whether reconciliation candidates are stuck, whether cancellation idempotency is being hit, and whether group-buy transitions happen. Actuator, Prometheus metrics, Grafana artifacts, alert rules, and `npm run observability:business-evidence` cover that level. Cloud long-running monitoring and alert receiver drills are follow-up polish, not demo blockers.
+
+### Q10. Is the JMeter result old evidence, and should it still be included?
+
+Yes, but it should be framed correctly. The JMeter result is not a production capacity claim. It validates one high-risk correctness scenario: 100 members joining the same group-buy concurrently without oversubscription, duplicate participation, or database inconsistency. If performance became the main story, the next step would be multi-endpoint load testing, soak tests, CPU/database metrics, and bottleneck analysis.
+
+### Q11. Why not split the backend into microservices?
+
+The current system is better as a modular monolith. The complexity worth demonstrating is transaction consistency across orders, payment, stock, group-buy, and admin operations. Splitting too early would turn local transaction boundaries into distributed transactions, compensation, retries, and observability overhead. For this Java backend portfolio, clean modules, state machines, transaction boundaries, tests, and deployment evidence are more valuable.
+
+### Q12. Is the project ready for a demo recording?
+
+Yes. The project now has a complete business flow, deployed URLs, read-only admin demo, ECPay sandbox evidence, concurrency tests, observability evidence, CI/smoke checks, and README screenshots. The next highest-return work is recording a 5 to 8 minute demo and practicing the interview Q&A. Cloud monitoring history, trace/log correlation, CD automation, and visual regression are useful follow-ups, but they do not block portfolio closure.
 
 ## System Requirements
 
@@ -490,10 +544,12 @@ The deployment topology is:
 
 ## Known Limitations
 
-- Local demos can still use the demo gateway by default. The EC2 demo runtime can now be switched to the ECPay sandbox provider through SSM, with public callback readiness verified; Playwright has also verified deployed storefront redirect into ECPay stage checkout, OTP payment completion, ReturnURL HTTP 200, paid order state, and `CALLBACK_SUCCEEDED` payment evidence. Duplicate callback coverage, pending reconciliation candidates, a provider-query reconciliation job, the pending-candidate gauge, Grafana dashboard provisioning, local Prometheus alert rules, a local Prometheus target `UP` screenshot, and repeatable local business-event metric evidence are now in place; the remaining payment gap is long-running external-query evidence and cloud monitoring evidence.
-- The admin console now has a polished operations-console baseline, but it does not yet include automated visual regression coverage.
-- The user frontend now covers desktop and mobile responsive basics, but does not yet include cross-browser visual regression testing.
-- Legacy databases need a one-time Flyway baseline; fresh databases can apply migrations directly.
+| Area | Current state | Why it does not block the demo |
+|---|---|---|
+| Payment | Local demos can use the demo gateway; EC2 can switch to ECPay sandbox through SSM, and stage checkout, OTP success, ReturnURL `200`, paid order state, and `CALLBACK_SUCCEEDED` persistence are verified | The project can demonstrate provider callbacks, CheckMacValue, payment events, pending candidates, and reconciliation boundaries; long-running external-query evidence is a next layer |
+| Observability | Actuator, Prometheus endpoint, Grafana dashboard artifact, alert rules, and business metric live-increase script are in place | The core business failure questions are answerable; cloud retention, alert drills, and trace/log correlation are follow-up polish |
+| UI testing | Main storefront/admin screenshots, responsive basics, and Playwright smoke are in place | Sufficient for demo recording; full cross-browser visual regression can be added later |
+| Database adoption | Fresh databases can apply Flyway migrations directly; legacy non-empty schemas need a one-time baseline | This is a migration adoption concern, not a blocker for fresh local or deployed demo environments |
 
 See also:
 - [docs/known-issues.md](docs/known-issues.md)
@@ -501,6 +557,9 @@ See also:
 ## Related Documents
 
 - [docs/known-issues.md](docs/known-issues.md)
+- [docs/architecture.md](docs/architecture.md)
+- [docs/backend-deep-dive-prep.md](docs/backend-deep-dive-prep.md)
+- [docs/interview-guide.md](docs/interview-guide.md)
 - [docs/backend-deploy-runbook.md](docs/backend-deploy-runbook.md)
 - [docs/ecpay-sandbox-runbook.md](docs/ecpay-sandbox-runbook.md)
 - [docs/observability.md](docs/observability.md)
@@ -508,7 +567,6 @@ See also:
 - [SECURITY.md](SECURITY.md)
 - [docs/testing.md](docs/testing.md)
 - [frontend-environment/local-fresh-user/README.md](frontend-environment/local-fresh-user/README.md)
-- `docs/architecture.md` (system architecture and sequence diagrams)
 
 Before or while switching the deployed API to ECPay sandbox, run:
 
@@ -549,18 +607,25 @@ ADMIN_BASE_URL=http://127.0.0.1:5177 \
 npm run smoke:browser
 ```
 
-For the current completeness assessment and next-priority plan, see
-[docs/portfolio-roadmap.md](docs/portfolio-roadmap.md). The EC2 backend
-currently reports application release commit `f93f6c41a373`; public `/actuator/info` and
-`/payment/callback` readiness pass, and the runtime remains switched to
-`PAYMENT_PROVIDER=ecpay` through the SSM-managed systemd drop-in. Playwright has
-verified the CloudFront storefront redirect into ECPay stage checkout, OTP
-payment completion, ReturnURL HTTP 200, paid order state, and
-`CALLBACK_SUCCEEDED` payment evidence. Provider-query reconciliation, the
-pending-candidate gauge, Grafana dashboard provisioning, local Prometheus
-alert rules, a local Prometheus target `UP` screenshot, and repeatable local
-business-event metric evidence are in place; the remaining payment gap is
-long-running external-query evidence and cloud monitoring evidence.
+## Current Status and Next Steps
+
+This project is ready for demo recording: the core business loop, deployed URLs, README screenshots, read-only admin demo, ECPay sandbox evidence, observability business evidence, and CI/smoke verification are in place. For the full completeness assessment and follow-up matrix, see [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md).
+
+Completed evidence:
+
+- Group-buy distributed lock evidence: 100 concurrent JMeter joins, `0.00%` error rate, P95 `2847.65 ms`, final DB state `current_count=101 / participant=100`
+- Order lifecycle tests: centralized `OrderStatusTransitionPolicy`, service tests for payment, cancellation, rejection, delivery, completion, and inventory restoration, plus JaCoCo report generation
+- Minimal business observability: payment callback, reconciliation backlog, cancellation idempotency, and group-buy transition metrics, plus Grafana dashboard, local Prometheus/Grafana/Alertmanager compose, alert rules, and business metric evidence
+- UI smoke: Node precheck and Playwright Chromium smoke for storefront/admin login and core pages
+- ECPay sandbox checkout evidence: public readiness, CloudFront storefront redirect to ECPay stage checkout, OTP success, ReturnURL HTTP `200`, paid order state, and `ECPAY / CALLBACK_SUCCEEDED / SUCCEEDED`
+- Admin read-only role, admin operation audit log, inventory restore idempotency, AWS deployment, Flyway migrations, CI quality gate, and backend release package checks
+
+Follow-up polish:
+
+- Cloud long-running observability evidence through Prometheus/Grafana or CloudWatch retention screenshots and alert drills
+- Trace ID and structured logging across payment callbacks, order cancellation, and reconciliation jobs
+- CD automation with Docker image build, ECR push, and EC2 rolling deployment
+- Lightweight visual regression for the README screenshot pages
 
 ## License
 

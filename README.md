@@ -113,44 +113,51 @@
 
 台灣生鮮電商常見兩個痛點：第一，運費門檻高，少量購買時消費者容易卻步；第二，平台多半只做商品陳列與配送，缺少能提升轉換率與社群擴散的購物機制。菜籃日的設計目標，就是把「在地小農直送」與「揪團湊免運」結合成一個完整的 B2C 訂購流程。消費者可以瀏覽商品與直送箱、加入購物車、建立配送地址並完成下單；若希望降低運費，也可以發起揪團，透過分享連結邀請其他會員加入，達到 3 人成團後即免運。平台後端同時提供商品、訂單、店鋪狀態與營運管理能力，前後端整體圍繞「基本功扎實、流程完整、可實際部署」作為實作目標。
 
+## 作品證據總覽
+
+| 評審想確認 | 目前證據 |
+|---|---|
+| 不是單純 CRUD | 訂單狀態機、付款 callback、揪團併發、庫存還原、後台 audit log 都有 service / integration test |
+| 有真實交易邊界 | `payment_event` 留付款請求、成功、重複、拒絕 callback；ECPay sandbox stage checkout 與 OTP 回流已驗證 |
+| 有併發思考 | Redisson lock + transaction + DB unique key；Testcontainers Redis 測試與 JMeter `100` concurrent join 證據 |
+| 有營運後台 | 管理端 Dashboard、訂單履約、商品/庫存、付款事件、操作紀錄與唯讀展示帳號 |
+| 有部署證據 | AWS EC2 + Nginx + S3 + CloudFront + DuckDNS；`/actuator/info` 暴露目前部署 commit |
+| 有可觀測性 | Actuator + Prometheus + Grafana dashboard artifact + alert rules + 可重跑 business metric evidence |
+| 有驗證流程 | GitHub Actions backend/admin/user checks、JaCoCo artifact、backend release package、local/browser smoke、README screenshots |
+
 ## 技術架構
 
 ```text
-┌───────────────────────────────┐
-│        User Web (Vue 3)       │
-│  商品瀏覽 / 購物車 / 揪團 / OAuth │
-└──────────────┬────────────────┘
-               │ HTTP / JWT
-               ▼
-┌──────────────────────────────────────────────┐
-│         Spring Boot 3.5 Backend API         │
-│  Member / Product / Cart / Order / GroupBuy │
-│  Google OAuth / JWT / Cache / Scheduler     │
-└───────┬──────────────────┬──────────────────┘
-        │                  │
-        ▼                  ▼
-┌───────────────┐   ┌──────────────────┐
-│   MySQL 8     │   │   Redis 7        │
-│ 訂單 / 商品 /   │   │ 快取 / 店鋪狀態 /  │
-│ 揪團 / 會員資料 │   │ 分散式鎖協作       │
-└───────────────┘   └─────────┬────────┘
-                              │
-                              ▼
-                     ┌──────────────────┐
-                     │   Redisson       │
-                     │ Group Buy Lock   │
-                     └─────────┬────────┘
-                               │
-                               ▼
-                     ┌──────────────────┐
-                     │ 定時任務 / WS 通知 │
-                     │ 過期失敗 / 成團通知 │
-                     └──────────────────┘
+┌──────────────────────┐      ┌──────────────────────┐
+│ User Web (Vue 3)     │      │ Admin Web (Vue 3)    │
+│ 商品 / 購物車 / 揪團 / 訂單 │      │ Dashboard / 履約 / 對帳 │
+└──────────┬───────────┘      └──────────┬───────────┘
+           │ HTTP / JWT                  │ HTTP / Admin JWT
+           └──────────────┬──────────────┘
+                          ▼
+┌──────────────────────────────────────────────────────┐
+│             Spring Boot 3.5 Backend API              │
+│ Member / Product / Cart / Order / GroupBuy / Payment │
+│ Admin Operation / Audit Log / Actuator / Metrics     │
+└───────┬──────────────────┬─────────────────┬────────┘
+        │                  │                 │
+        ▼                  ▼                 ▼
+┌───────────────┐   ┌──────────────────┐   ┌──────────────────┐
+│   MySQL 8     │   │ Redis 7 + Redisson│   │ Payment Provider │
+│ 訂單/付款/庫存/ │   │ 快取 / 店鋪狀態 /  │   │ Demo / ECPay     │
+│ 揪團/audit log │   │ 揪團分散式鎖       │   │ Callback / Query │
+└───────────────┘   └──────────────────┘   └──────────────────┘
+        │
+        ▼
+┌──────────────────────────────────────────────────────┐
+│ Prometheus scrape / Grafana dashboard / Alert rules  │
+└──────────────────────────────────────────────────────┘
 
 外部服務：
 - Google OAuth 2.0：第三方會員登入
 - Google Maps API：配送範圍計算
-- AWS：EC2（Docker MySQL + Redis）+ S3 + CloudFront + DuckDNS
+- AWS：EC2（Nginx + Spring Boot + Docker MySQL/Redis）+ S3 + CloudFront + DuckDNS
+- ECPay sandbox：付款頁導轉、ReturnURL callback 與 provider query parser
 ```
 
 ## 工程設計證據
@@ -234,24 +241,43 @@ flowchart LR
 
 ### 技術棧
 
-| 區域 | 技術 |
+| 區域 | 技術與用途 |
 |---|---|
-| 後端 | Java 17、Spring Boot 3.5.14、MyBatis、PageHelper、Flyway、JWT、HikariCP、Actuator |
-| 前端 | 用戶端 Vue 3 + Vite 5、管理端 Vue 3 + Vite 8、TypeScript、Pinia、Vue Router 4、Element Plus |
-| 基礎設施 | MySQL 8、Redis 7、Redisson、Testcontainers、Docker、GitHub Actions |
-| 第三方服務 | Google OAuth 2.0、Google Maps API、AWS EC2 + S3 + CloudFront + DuckDNS |
+| 後端 | Java 17、Spring Boot 3.5.14、MyBatis、PageHelper、Flyway、JWT、Spring Security Crypto、HikariCP |
+| 交易與一致性 | `OrderStatusTransitionPolicy`、transaction boundary、conditional stock update、payment callback guarded update、idempotency key |
+| 付款 | Demo gateway、ECPay sandbox CheckMacValue、provider callback、provider query parser、`payment_event`、reconciliation job |
+| 可觀測性 | Spring Boot Actuator、Micrometer Prometheus registry、Grafana dashboard artifact、Prometheus alert rules |
+| 前端 | 用戶端 Vue 3 + Vite 5、管理端 Vue 3 + Vite 8、TypeScript、Pinia、Vue Router 4、Element Plus、ECharts |
+| 資料與快取 | MySQL 8、Redis 7、Redisson distributed lock、Flyway seed data |
+| 測試與交付 | JUnit 5、Spring MockMvc、Testcontainers Redis、JaCoCo、Playwright smoke、GitHub Actions、backend release package |
+| 部署與第三方 | AWS EC2 + S3 + CloudFront、Nginx + Let's Encrypt、DuckDNS、Google OAuth 2.0、Google Maps API、ECPay sandbox、AWS SSM |
 
 ## 核心功能
 
-- 商品與直送箱瀏覽：依分類查看蔬果、肉品、海鮮等商品，以及主題直送箱。
-- 購物車與下單流程：支援加入購物車、數量調整、地址選擇、備註填寫與歷史訂單查詢。
-- 揪團湊免運：會員可建立揪團、分享連結邀請他人加入，3 人成團後轉為正式訂單。
-- 會員登入機制：支援 Email / 密碼註冊登入、Google OAuth 2.0，開發環境保留 mock login 方便測試與 demo。
-- 訂單狀態流轉：涵蓋待付款、待確認、已確認、配送中、已完成、已取消，以及揪團中的預訂單狀態；退款以 `pay_status=REFUND` 搭配已取消訂單表示。
-- 店鋪與營運管理：管理端可維護商品、分類、訂單、營業狀態、付款事件、操作紀錄與營運 Dashboard；公開 demo 提供唯讀後台角色，避免展示帳號改動資料。
-- 快取與排程協作：以 Redis 快取熱門查詢、以排程處理過期揪團與退款模擬流程。
+| 功能 | 現況 |
+|---|---|
+| 會員帳號 | Email / 密碼註冊登入、Google OAuth 2.0 authorization code flow、dev mock login 開關 |
+| 商品與直送箱 | 分類瀏覽、商品詳情、主題直送箱、真實食物圖、直送箱組成商品與價值文案 |
+| 購物車與下單 | 數量調整、地址選擇、備註、包裝費、庫存扣減、訂單快照、歷史訂單 |
+| 揪團湊免運 | 建團、分享加入、3 人成團、預訂單、過期失敗、成團批次轉正式履約 |
+| 付款與對帳 | demo payment、ECPay sandbox checkout / callback、付款事件查詢、待對帳候選、provider-query reconciliation |
+| 管理端營運 | Dashboard、訂單履約、商品/庫存、分類、直送箱、員工、付款事件、操作紀錄 |
+| 安全展示 | 管理端 `demo_viewer` 唯讀角色可查不可改；完整管理員帳號不公開 |
+| 可觀測性 | health/info/metrics/prometheus、business counters/gauge、Grafana dashboard、alert rules、live metric evidence script |
 
 ## 技術亮點
+
+### 技術亮點總覽
+
+| 亮點 | 真正展示的工程能力 | 可查證位置 |
+|---|---|---|
+| 訂單狀態機 | 把付款、取消、婉拒、配送、完成集中成合法狀態轉移，避免 service 到處散落 if/else | `OrderStatusTransitionPolicy`、[docs/testing.md](docs/testing.md) |
+| 付款事件與冪等 | 面對 callback 重送、偽造、金額不符與 provider query，保留事件紀錄而不是只改訂單狀態 | `payment_event`、管理端付款事件頁、[docs/ecpay-sandbox-runbook.md](docs/ecpay-sandbox-runbook.md) |
+| 揪團併發 | 用 Redisson lock、transaction、唯一鍵與 Testcontainers/JMeter 證據驗證 100 人同時加入不超賣 | `GroupBuyRedisIntegrationTest`、[docs/perf/README.md](docs/perf/README.md) |
+| 庫存與取消防重 | 取消訂單時用 service guard + inventory log idempotency key，避免重複回補庫存 | `OrderCancellationServiceImpl`、`product_inventory_log` |
+| 後台安全展示 | 公開 `demo_viewer` 只能查資料，後端攔截所有管理端寫入，避免 demo data 被破壞 | `AdminReadOnlyRoleInterceptor`、[SECURITY.md](SECURITY.md) |
+| 可觀測性 | 不只放 dashboard，而是用腳本實際觸發業務路徑，再驗證 Prometheus metric 增加 | `npm run observability:business-evidence`、[docs/observability.md](docs/observability.md) |
+| 部署與交付 | AWS 上線、ECPay sandbox readiness、GitHub Actions、release package SHA256、local/browser smoke | [docs/backend-deploy-runbook.md](docs/backend-deploy-runbook.md)、[docs/testing.md](docs/testing.md) |
 
 ### 1. 揪團模組的併發控制
 
@@ -282,7 +308,7 @@ flowchart LR
 
 ### 2. 預訂單與正式訂單分離的揪團建模
 
-揪團期間的訂單並不是一般下單流程，而是先建立 `PENDING_GROUP` 狀態的預訂單。這樣做的好處是可以避免在尚未成團前就扣庫存、清購物車或進行完整配送檢查，讓一般下單與揪團下單的業務邊界保持清楚。成團時，系統再批次把所有 participant 對應訂單轉成 `TO_BE_CONFIRMED`；若過期失敗，則統一轉成 `CANCELLED` 並記錄 mock 退款 log。這種設計讓原有 `order` 模組邏輯大致維持穩定，只在狀態流轉層擴充揪團語意。
+揪團期間的訂單並不是一般下單流程，而是先建立 `PENDING_GROUP` 狀態的預訂單。這樣做的好處是可以避免在尚未成團前就扣庫存、清購物車或進行完整配送檢查，讓一般下單與揪團下單的業務邊界保持清楚。成團時，系統再批次把所有 participant 對應訂單轉成 `TO_BE_CONFIRMED`；若過期失敗，則統一轉成 `CANCELLED` 並留下退款意圖 / 取消紀錄。這種設計讓原有 `order` 模組邏輯大致維持穩定，只在狀態流轉層擴充揪團語意。
 
 ### 3. 訂單生命週期規則與 Service 測試證據
 
@@ -328,6 +354,10 @@ Actuator 也補上最小業務 metrics，可查付款 callback 結果、付款 r
 
 這個專案不是只做出 API 或畫面，而是完整串成「可啟動、可測試、可實際部署」的系統。從 migration 版本化、環境變數管理、dev/test profile 分流、Google OAuth 設定隔離，到前端 Vite proxy 與後端 CORS 協作，都是以實際上線為前提在設計。目前 demo 已部署於 AWS，前端靜態資源、API 服務與 DNS 入口的切分方式，也與實際的 EC2、S3、CloudFront、DuckDNS 架構一致。
 
+### 12. 測試與交付證據不是只停在單元測試
+
+這份作品的驗證分成三層：第一層是後端 service / API 測試，覆蓋訂單、付款、取消、庫存、揪團、唯讀權限與操作紀錄；第二層是真實依賴測試，例如 Testcontainers Redis 與 JMeter 併發加入揪團；第三層是交付前檢查，例如 `smoke:backend`、`smoke:browser`、`observability:business-evidence`、`check-repo-hygiene`、README screenshots 與 ECPay sandbox readiness。這讓 README 上的亮點不是口號，而是能用命令、測試報告或部署端點重跑驗證。
+
 ## 設計決策 Q&A
 
 ### Q1. 為什麼 JWT TTL 設為 2 小時？
@@ -365,6 +395,18 @@ Email / 密碼是最基本的會員帳號入口，密碼以 BCrypt 雜湊後存�
 ### Q9. 為什麼 observability 只做到 Actuator + Prometheus + Grafana，而不是完整雲端監控？
 
 這是 portfolio 專案，不是要展示完整 SRE 平台。最重要的是能回答幾個業務問題：付款 callback 是否被拒絕或重複、待對帳付款是否卡住、取消訂單是否命中防重、揪團是否成功或失敗。Actuator + Prometheus counters/gauge + Grafana dashboard 已足夠支撐這些問題，並用 `npm run observability:business-evidence` 真的跑業務路徑驗證 metric 增加。雲端長時間監控和告警接收器是下一層加分，不是目前 demo 的必要條件。
+
+### Q10. JMeter 壓測是不是早期資料，現在還能放嗎？
+
+可以放，但要講清楚它的定位。這份 JMeter 證據不是在宣稱「系統已具備正式大流量容量」，而是在驗證一個特定高風險業務點：100 位會員同時加入同一個揪團時，Redisson lock、transaction 與 DB unique key 能維持資料一致。README 因此保留 P95 / P99 / error rate 與最終 DB 狀態，並把它放在「併發正確性證據」，不是放在「生產效能保證」。如果未來要主打性能，下一步才是補多 API 場景、長時間 soak test、CPU / DB 指標與瓶頸分析。
+
+### Q11. 為什麼不拆成微服務？
+
+這個專案目前更適合保持模組化單體。核心複雜度不是服務數量，而是訂單、付款、庫存、揪團與後台操作之間的交易一致性。如果過早拆微服務，會把原本資料庫交易可以處理的問題變成分散式交易、事件補償、重試與 observability 成本。對面試作品來說，先把單體內的模組邊界、狀態機、交易邊界、測試與部署做好，比空泛拆服務更能展示 Java 後端基本功。
+
+### Q12. 目前作品是不是可以收尾錄 demo？
+
+可以。以 Java 後端面試作品來看，目前已經有完整業務閉環、部署網址、管理端唯讀展示、金流 sandbox 證據、併發測試、可觀測性證據與 README 截圖。接下來最有投資報酬率的是錄製 5 到 8 分鐘 demo、準備口頭講稿與熟悉 Q&A，而不是繼續堆大功能。工程上仍可優化的項目是雲端長時間監控、trace/log correlation、CD 自動化與更完整的視覺回歸，但這些屬於加分項，不是阻塞收尾的必要條件。
 
 ## 系統需求
 
@@ -536,10 +578,12 @@ pnpm dev
 
 ## 已知限制
 
-- 本機支付流程仍可使用 demo gateway；EC2 demo 已可透過 SSM 切到 ECPay sandbox provider，且已用 Playwright 驗證會員端導向綠界 ECPay stage checkout、OTP 付款成功、ReturnURL HTTP 200、訂單轉已付款與 `payment_event` 的 `CALLBACK_SUCCEEDED`；後端已補重複 callback 測試、待對帳候選查詢、provider-query reconciliation job、本機 Prometheus target `UP` 與業務事件 metric live increase 證據，尚未完成的是外部查詢排程的長時間運行、雲端監控留痕、trace/log correlation 與正式告警演練
-- 管理端已完成核心營運台與表格頁 polish，但尚未加入完整 E2E 視覺回歸
-- 用戶端已完成桌面與手機版 RWD 基礎體驗，尚未加入跨瀏覽器視覺回歸測試
-- 舊資料庫第一次導入 Flyway 時需要 baseline；全新資料庫可直接套用 migration
+| 範圍 | 目前狀態 | 不阻塞 demo 的原因 |
+|---|---|---|
+| 付款 | 本機可用 demo gateway；EC2 demo 可透過 SSM 切到 ECPay sandbox，已驗證 stage checkout、OTP 成功、ReturnURL `200`、訂單轉已付款與 `CALLBACK_SUCCEEDED` 落庫 | 已能展示 provider callback、CheckMacValue、付款事件、待對帳候選與 reconciliation 邊界；外部查詢排程長時間運行屬下一層證據 |
+| Observability | 已有 Actuator、Prometheus endpoint、Grafana dashboard artifact、alert rules 與 business metric live increase script | 能回答核心業務異常怎麼看；雲端長時間留痕、正式告警演練、trace/log correlation 屬加分項 |
+| UI 測試 | 會員端與管理端已完成主要截圖、RWD 基礎體驗與 Playwright smoke | 已足夠錄 demo；完整跨瀏覽器視覺回歸可後續補 |
+| 資料庫導入 | 全新資料庫可直接套用 Flyway migration；舊非空 schema 第一次導入需 baseline | 這是 migration 導入策略，不影響全新環境與 demo 部署 |
 
 更多細節請參考：
 - [docs/known-issues.md](docs/known-issues.md)
@@ -548,6 +592,8 @@ pnpm dev
 
 - [docs/known-issues.md](docs/known-issues.md)
 - [docs/architecture.md](docs/architecture.md)
+- [docs/backend-deep-dive-prep.md](docs/backend-deep-dive-prep.md)
+- [docs/interview-guide.md](docs/interview-guide.md)
 - [docs/backend-deploy-runbook.md](docs/backend-deploy-runbook.md)
 - [docs/ecpay-sandbox-runbook.md](docs/ecpay-sandbox-runbook.md)
 - [docs/observability.md](docs/observability.md)
@@ -583,20 +629,9 @@ ADMIN_BASE_URL=http://127.0.0.1:5177 \
 npm run smoke:browser
 ```
 
-## Roadmap
+## 目前狀態與後續方向
 
-本專案目前已完成核心業務閉環,接下來規劃的迭代方向圍繞「展示工程深度」與「貼近真實生產系統」兩個目標進行。完整評估矩陣請參考 [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md)。
-
-### 目前重點
-
-- **Live observability 證據**:ECPay sandbox checkout、OTP 成功回流與 `CALLBACK_SUCCEEDED` 已完成；目前已有本機 Prometheus / Grafana / Alertmanager compose、payment/reconciliation metrics、dashboard provisioning、alert rules、Prometheus target `UP` 截圖與可重跑的業務事件 metric 驗證。剩下的是外部查詢排程長時間運行、雲端監控留痕、trace/log correlation 與正式告警接收器。
-- **Browser UI smoke / 截圖證據**:在 dependency-free local precheck 之外，已新增 Playwright Chromium smoke，覆蓋會員登入/home/orders 與管理端登入/dashboard/orders/products；後續可補 screenshot checklist 或輕量視覺差異檢查。
-
-### 規劃中
-
-- **綠界 ECPay reconciliation**:已補重複 callback 測試、付款事件待對帳候選、ECPay 查詢結果 parser、reconciliation job、pending candidate gauge、Grafana dashboard JSON、本機 Prometheus alert rules 與業務事件 metric 驗證；下一步補實機長時間排程運行證據。
-- **可觀測性三件套**:Spring Boot Actuator + Prometheus scrape endpoint + Grafana dashboard provisioning + Alertmanager local wiring，自訂業務 metric 涵蓋 payment callback、reconciliation backlog、取消防重與揪團狀態轉換；本機 scrape target 與業務事件 metric 已有可重跑證據，下一步再補結構化 log、Trace ID 與雲端監控留痕。
-- **CD 自動化**:在現有 GitHub Actions 測試/build 基礎上,加入 Docker image build、推送 ECR,並觸發 EC2 滾動部署。
+本專案目前已達到「可以收尾錄 demo」的狀態：核心業務閉環、部署網址、README 截圖、管理端唯讀展示、ECPay sandbox 證據、observability business evidence 與 CI / smoke 驗證都已完成。完整評估矩陣與後續加分項請參考 [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md)。
 
 ### 已完成里程碑
 
@@ -617,6 +652,13 @@ npm run smoke:browser
 - 管理端 Vue 3 + Vite + TypeScript + Pinia + Element Plus 升級
 - Testcontainers Redis 整合測試 + GitHub Actions backend/admin/user frontend checks
 - CI quality gate：GitHub Actions 會跑 repository hygiene、後端 `verify` + JaCoCo artifact、backend release package artifact + SHA256 verifier、管理端 build / audit、會員端 build
+
+### 後續加分項
+
+- 雲端長時間 observability 留痕：保留 Prometheus / Grafana 或 CloudWatch 的連續運行截圖與告警演練紀錄
+- Trace ID / 結構化 log：讓付款 callback、訂單取消、reconciliation job 的 request flow 更容易跨 log 追蹤
+- CD 自動化：在現有 GitHub Actions 測試/build 基礎上，加入 Docker image build、推送 ECR 與 EC2 滾動部署
+- 輕量視覺回歸：針對 README 主要截圖頁面補固定 viewport screenshot checklist 或 visual diff
 
 ## License
 
