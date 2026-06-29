@@ -29,7 +29,9 @@
           <p>訂單、商品、庫存與直送箱營運管理</p>
         </div>
         <div class="topbar-actions">
-          <span class="environment-pill">營運模式</span>
+          <span class="environment-pill" :class="{ readonly: isReadOnly }">
+            {{ isReadOnly ? '唯讀展示' : '營運模式' }}
+          </span>
           <el-button type="primary" plain @click="handleLogout">登出</el-button>
         </div>
       </header>
@@ -48,6 +50,7 @@ const router = useRouter()
 const userStore = useUserStore()
 
 const currentTitle = computed(() => String(route.meta.title || '管理後台'))
+const isReadOnly = computed(() => userStore.role === 'VIEWER')
 
 async function handleLogout() {
   await userStore.logout()
@@ -88,5 +91,11 @@ small {
   color: var(--admin-muted);
   font-size: 12px;
   font-weight: 800;
+}
+
+.environment-pill.readonly {
+  border-color: rgba(167, 109, 34, 0.34);
+  background: #fff7e8;
+  color: var(--admin-gold);
 }
 </style>

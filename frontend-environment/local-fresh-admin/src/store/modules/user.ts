@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { login as loginApi, userLogout } from '@/api/employee'
-import { getToken, removeToken, setToken } from '@/utils/cookies'
+import { getToken, getUserInfo, removeToken, removeUserInfo, setToken, setUserInfo } from '@/utils/cookies'
 
 interface LoginPayload {
   username: string
@@ -10,23 +10,36 @@ interface LoginPayload {
 interface UserState {
   token: string
   name: string
+  role: string
 }
+
+const savedUser = (() => {
+  try {
+    return JSON.parse(getUserInfo() || '{}')
+  } catch {
+    return {}
+  }
+})()
 
 export const useUserStore = defineStore('user', {
   state: (): UserState => ({
     token: getToken() || '',
-    name: ''
+    name: savedUser.name || '',
+    role: savedUser.role || 'ADMIN'
   }),
   actions: {
     async login(payload: LoginPayload) {
       const response = await loginApi(payload)
-      const token = response.data?.data?.token
+      const data = response.data?.data
+      const token = data?.token
       if (!token) {
         throw new Error(response.data?.msg || '登入失敗')
       }
       this.token = token
-      this.name = response.data?.data?.name || payload.username
+      this.name = data?.name || payload.username
+      this.role = data?.role || 'ADMIN'
       setToken(token)
+      setUserInfo({ name: this.name, role: this.role })
       return response
     },
     async logout() {
@@ -35,7 +48,9 @@ export const useUserStore = defineStore('user', {
       }
       this.token = ''
       this.name = ''
+      this.role = 'ADMIN'
       removeToken()
+      removeUserInfo()
     }
   }
 })

@@ -33,6 +33,8 @@ public class Employee implements Serializable {
 
     private Integer status;
 
+    private String role;
+
     //@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 

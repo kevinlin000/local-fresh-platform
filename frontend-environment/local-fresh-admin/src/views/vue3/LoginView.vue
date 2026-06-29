@@ -31,9 +31,12 @@
     <section class="login-panel admin-card">
       <p class="eyebrow">Admin Access</p>
       <h2>管理員登入</h2>
-      <p class="panel-copy">展示環境可查看訂單、商品、付款事件與操作紀錄；為避免公開憑證遭濫用，面試展示帳號請洽作者。</p>
+      <p class="panel-copy">展示環境提供唯讀帳號，可查看訂單、商品、付款事件與操作紀錄；完整管理員帳號請洽作者。</p>
       <div class="demo-account" aria-label="展示帳號">
-        <strong>面試展示帳號請洽作者</strong>
+        <span>唯讀帳號</span>
+        <strong>demo_viewer</strong>
+        <span>密碼</span>
+        <strong>viewonly</strong>
       </div>
       <el-form ref="formRef" :model="form" :rules="rules" label-position="top" @submit.prevent>
         <el-form-item label="帳號" prop="username">

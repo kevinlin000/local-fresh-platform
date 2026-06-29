@@ -25,6 +25,7 @@ CREATE TABLE employee (
     sex        VARCHAR(2),
     id_number  VARCHAR(18),
     status     INT          DEFAULT 1,
+    role       VARCHAR(16)  NOT NULL DEFAULT 'ADMIN',
     create_time DATETIME,
     update_time DATETIME,
     create_user BIGINT,

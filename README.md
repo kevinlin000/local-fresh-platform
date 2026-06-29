@@ -21,7 +21,8 @@
 
 > 管理端已升級為 Vue 3 + Vite + Element Plus 管理後台,負責訂單確認、商品上下架、員工 / 分類 / 直送箱管理與營運數據檢視。
 
-- 如需登入體驗,請聯繫專案作者取得測試帳號(避免公開憑證遭濫用)。
+- 唯讀展示帳號:`demo_viewer` / `viewonly`。可查看後台資料,不可新增、修改、刪除或變更訂單 / 商品狀態。
+- 完整管理員帳號請聯繫專案作者取得,避免公開寫入憑證遭濫用。
 - 後端 API 入口:`https://localfresh-demo.duckdns.org`
 - 部署架構:Vue 3 用戶端託管於 AWS S3 + CloudFront(HTTPS),Spring Boot API 部署於 AWS EC2 (Nginx 反向代理 + Let's Encrypt)。
 

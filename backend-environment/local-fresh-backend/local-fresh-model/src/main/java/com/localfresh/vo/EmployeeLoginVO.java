@@ -19,6 +19,8 @@ public class EmployeeLoginVO implements Serializable {
 
     private String name;
 
+    private String role;
+
     private String token;
 
 }

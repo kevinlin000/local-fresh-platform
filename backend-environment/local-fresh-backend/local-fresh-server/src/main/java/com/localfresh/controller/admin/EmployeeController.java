@@ -1,5 +1,6 @@
 package com.localfresh.controller.admin;
 
+import com.localfresh.constant.EmployeeRoleConstant;
 import com.localfresh.constant.JwtClaimsConstant;
 import com.localfresh.dto.EmployeeDTO;
 import com.localfresh.dto.EmployeeLoginDTO;
@@ -51,6 +52,8 @@ public class EmployeeController {
         //登入成功后，產生jwt令牌
         Map<String, Object> claims = new HashMap<>();
         claims.put(JwtClaimsConstant.EMP_ID, employee.getId());
+        String role = employee.getRole() == null ? EmployeeRoleConstant.ADMIN : employee.getRole();
+        claims.put(JwtClaimsConstant.ROLE, role);
         String token = JwtUtil.createJWT(
                 jwtProperties.getAdminSecretKey(),
                 jwtProperties.getAdminTtl(),
@@ -60,6 +63,7 @@ public class EmployeeController {
                 .id(employee.getId())
                 .userName(employee.getUsername())
                 .name(employee.getName())
+                .role(role)
                 .token(token)
                 .build();
 

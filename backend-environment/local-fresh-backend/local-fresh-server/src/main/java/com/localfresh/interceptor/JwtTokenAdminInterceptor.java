@@ -1,6 +1,7 @@
 package com.localfresh.interceptor;
 
 import com.localfresh.constant.JwtClaimsConstant;
+import com.localfresh.constant.EmployeeRoleConstant;
 import com.localfresh.context.BaseContext;
 import com.localfresh.properties.JwtProperties;
 import com.localfresh.utils.JwtUtil;
@@ -49,8 +50,13 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
             log.info("JWT 驗證");
             Claims claims = JwtUtil.parseJWT(jwtProperties.getAdminSecretKey(), token);
             Long empId = Long.valueOf(claims.get(JwtClaimsConstant.EMP_ID).toString());
+            String role = claims.get(JwtClaimsConstant.ROLE, String.class);
+            if (role == null || role.isBlank()) {
+                role = EmployeeRoleConstant.ADMIN;
+            }
             log.info("目前員工 id：{}", empId);
             BaseContext.setCurrentId(empId);
+            BaseContext.setCurrentRole(role);
             // 3、通過驗證，放行
             return true;
         } catch (Exception ex) {
@@ -64,5 +70,6 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
                                 Object handler, @Nullable Exception ex) {
         BaseContext.removeCurrentId();
+        BaseContext.removeCurrentRole();
     }
 }

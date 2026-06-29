@@ -1,5 +1,6 @@
 package com.localfresh.config;
 
+import com.localfresh.interceptor.AdminReadOnlyRoleInterceptor;
 import com.localfresh.interceptor.JwtTokenAdminInterceptor;
 import com.localfresh.interceptor.JwtTokenUserInterceptor;
 import com.localfresh.json.JacksonObjectMapper;
@@ -32,6 +33,9 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
     private JwtTokenAdminInterceptor jwtTokenAdminInterceptor;
 
     @Autowired
+    private AdminReadOnlyRoleInterceptor adminReadOnlyRoleInterceptor;
+
+    @Autowired
     private JwtTokenUserInterceptor jwtTokenUserInterceptor;
 
     @Value("${localfresh.cors.allowed-origin-patterns:http://localhost:*,http://127.0.0.1:*}")
@@ -52,6 +56,9 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
                 .addPathPatterns("/admin/**")
                 .excludePathPatterns("/admin/employee/login");
 
+        registry.addInterceptor(adminReadOnlyRoleInterceptor)
+                .addPathPatterns("/admin/**")
+                .excludePathPatterns("/admin/employee/login");
 
         registry.addInterceptor(jwtTokenUserInterceptor)
                 .addPathPatterns("/user/**")
