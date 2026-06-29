@@ -31,19 +31,16 @@
     <section class="login-panel admin-card">
       <p class="eyebrow">Admin Access</p>
       <h2>管理員登入</h2>
-      <p class="panel-copy">展示環境已預填管理端帳號，可直接進入後台查看訂單、商品、付款事件與操作紀錄。</p>
+      <p class="panel-copy">展示環境可查看訂單、商品、付款事件與操作紀錄；為避免公開憑證遭濫用，面試展示帳號請洽作者。</p>
       <div class="demo-account" aria-label="展示帳號">
-        <span>展示帳號</span>
-        <strong>admin</strong>
-        <span>密碼</span>
-        <strong>123456</strong>
+        <strong>面試展示帳號請洽作者</strong>
       </div>
       <el-form ref="formRef" :model="form" :rules="rules" label-position="top" @submit.prevent>
         <el-form-item label="帳號" prop="username">
-          <el-input v-model="form.username" autocomplete="username" />
+          <el-input v-model="form.username" autocomplete="username" placeholder="請輸入管理員帳號" />
         </el-form-item>
         <el-form-item label="密碼" prop="password">
-          <el-input v-model="form.password" type="password" autocomplete="current-password" show-password />
+          <el-input v-model="form.password" type="password" autocomplete="current-password" placeholder="請輸入密碼" show-password />
         </el-form-item>
         <el-button type="primary" size="large" :loading="loading" @click="submit">登入後台</el-button>
       </el-form>
@@ -67,8 +64,8 @@ const loading = ref(false)
 const heroBackground = `linear-gradient(180deg, rgba(20, 31, 24, 0.16), rgba(20, 31, 24, 0.68)), url(${loginImage})`
 
 const form = reactive({
-  username: 'admin',
-  password: '123456'
+  username: '',
+  password: ''
 })
 
 const rules: FormRules = {
