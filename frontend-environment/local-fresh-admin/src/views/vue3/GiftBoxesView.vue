@@ -63,7 +63,10 @@
         <el-form-item label="箱內商品">
           <div class="relation-list">
             <div v-for="item in selectedProducts" :key="item.productId" class="relation-row">
-              <span>{{ item.name }}</span>
+              <div class="relation-product">
+                <strong>{{ item.name || '未命名商品' }}</strong>
+                <span>單價 NT$ {{ Number(item.price || 0).toLocaleString('zh-TW') }}</span>
+              </div>
               <el-input-number v-model="item.copies" :min="1" :max="99" />
               <el-button link type="danger" @click="removeProduct(item.productId)">移除</el-button>
             </div>
@@ -167,6 +170,10 @@ const selectableProducts = computed(() => {
   return products.value.filter((item) => !selectedIds.has(item.id))
 })
 
+function resolveProduct(productId: number) {
+  return products.value.find((item) => Number(item.id) === Number(productId))
+}
+
 function resetForm() {
   Object.assign(form, {
     id: undefined,
@@ -203,8 +210,8 @@ async function openEdit(row: any) {
   })
   selectedProducts.value = (data.giftBoxProducts || []).map((item: any) => ({
     productId: item.productId,
-    name: item.name,
-    price: Number(item.price),
+    name: item.name || resolveProduct(item.productId)?.productName || `商品 #${item.productId}`,
+    price: Number(item.price ?? resolveProduct(item.productId)?.price ?? 0),
     copies: item.copies || 1
   }))
   dialogVisible.value = true

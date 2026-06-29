@@ -66,7 +66,7 @@ public interface GiftBoxMapper {
      * @param giftBoxId
      * @return
      */
-    @Select("select gbp.name, gbp.copies, p.image, p.description " +
+    @Select("select gbp.product_id as productId, coalesce(nullif(gbp.name, ''), p.product_name) as name, p.price, gbp.copies, p.image, p.description " +
             "from gift_box_product gbp left join product p on gbp.product_id = p.id " +
             "where gbp.gift_box_id = #{giftBoxId}")
     List<ProductItemVO> getDishItemBySetmealId(Long giftBoxId);

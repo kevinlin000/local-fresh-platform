@@ -126,7 +126,7 @@ class OrderSubmissionServiceImplTest {
         OrderSubmitVO orderSubmitVO = orderSubmissionService.submitOrder(dto);
 
         assertEquals(900L, orderSubmitVO.getId());
-        assertEquals(new BigDecimal("120.00"), orderSubmitVO.getOrderAmount());
+        assertEquals(new BigDecimal("250.00"), orderSubmitVO.getOrderAmount());
         assertNotNull(orderSubmitVO.getOrderNumber());
         verify(inventoryService).reserveProduct(5L, 2, "ORDER_RESERVE", 900L, "MEMBER", 100L);
         verify(cartMapper).deleteByUserId(100L);
@@ -136,6 +136,8 @@ class OrderSubmissionServiceImplTest {
         assertEquals(Orders.UN_PAID, insertedOrder.getPayStatus());
         assertEquals("台北市大安區信義路一段1號", insertedOrder.getAddress());
         assertEquals(100L, insertedOrder.getUserId());
+        assertEquals(10, insertedOrder.getPackAmount());
+        assertEquals(new BigDecimal("250.00"), insertedOrder.getAmount());
 
         List<OrderDetail> details = captureOrderDetails();
         assertEquals(1, details.size());
@@ -160,11 +162,38 @@ class OrderSubmissionServiceImplTest {
                 GiftBoxProduct.builder().productId(12L).copies(1).build()));
         assignOrderId(901L);
 
-        orderSubmissionService.submitOrder(dto);
+        OrderSubmitVO orderSubmitVO = orderSubmissionService.submitOrder(dto);
 
+        assertEquals(new BigDecimal("1800.00"), orderSubmitVO.getOrderAmount());
         verify(inventoryService).reserveProduct(11L, 6, "ORDER_RESERVE", 901L, "MEMBER", 100L);
         verify(inventoryService).reserveProduct(12L, 3, "ORDER_RESERVE", 901L, "MEMBER", 100L);
         verify(cartMapper).deleteByUserId(100L);
+
+        Orders insertedOrder = captureInsertedOrder();
+        assertEquals(0, insertedOrder.getPackAmount());
+        assertEquals(new BigDecimal("1800.00"), insertedOrder.getAmount());
+    }
+
+    @Test
+    void submitProductOrderShouldWaivePackagingFeeWhenSubtotalReachesThreshold() {
+        BaseContext.setCurrentId(100L);
+        OrdersSubmitDTO dto = submitDTO();
+        Cart cart = Cart.builder()
+                .productId(5L)
+                .name("家庭備菜組")
+                .number(1)
+                .amount(new BigDecimal("699.00"))
+                .build();
+        when(shippingAddressMapper.getById(10L)).thenReturn(shippingAddress(100L));
+        when(cartMapper.list(any(Cart.class))).thenReturn(List.of(cart));
+        assignOrderId(903L);
+
+        OrderSubmitVO orderSubmitVO = orderSubmissionService.submitOrder(dto);
+
+        assertEquals(new BigDecimal("699.00"), orderSubmitVO.getOrderAmount());
+        Orders insertedOrder = captureInsertedOrder();
+        assertEquals(0, insertedOrder.getPackAmount());
+        assertEquals(new BigDecimal("699.00"), insertedOrder.getAmount());
     }
 
     @Test

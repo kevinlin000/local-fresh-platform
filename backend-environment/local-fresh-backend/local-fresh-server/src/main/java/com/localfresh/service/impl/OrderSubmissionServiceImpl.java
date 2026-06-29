@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,6 +42,8 @@ public class OrderSubmissionServiceImpl implements OrderSubmissionService {
     private static final String INVENTORY_REASON_ORDER_RESERVE = "ORDER_RESERVE";
     private static final String INVENTORY_OPERATOR_MEMBER = "MEMBER";
     private static final int MAX_DELIVERY_DISTANCE_METERS = 5000;
+    private static final int PACKAGING_FEE_AMOUNT = 10;
+    private static final BigDecimal PACKAGING_FEE_WAIVER_THRESHOLD = new BigDecimal("699.00");
 
     @Autowired
     private OrderMapper orderMapper;
@@ -91,7 +94,9 @@ public class OrderSubmissionServiceImpl implements OrderSubmissionService {
 
         Orders orders = new Orders();
         BeanUtils.copyProperties(ordersSubmitDTO, orders, "packAmount", "tablewareNumber");
-        orders.setPackAmount(defaultToZero(ordersSubmitDTO.getPackAmount()));
+        int packAmount = calculatePackAmount(shoppingCartList);
+        orders.setPackAmount(packAmount);
+        orders.setAmount(calculateOrderAmount(shoppingCartList, packAmount));
         orders.setTablewareNumber(defaultToZero(ordersSubmitDTO.getTablewareNumber()));
         orders.setOrderTime(LocalDateTime.now());
         orders.setPayStatus(Orders.UN_PAID);
@@ -115,6 +120,27 @@ public class OrderSubmissionServiceImpl implements OrderSubmissionService {
                 .build();
     }
 
+    private BigDecimal calculateOrderAmount(List<Cart> shoppingCartList, int packAmount) {
+        BigDecimal subtotal = shoppingCartList.stream()
+                .map(cart -> defaultToZero(cart.getAmount())
+                        .multiply(BigDecimal.valueOf(defaultToZero(cart.getNumber()))))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return subtotal.add(BigDecimal.valueOf(packAmount));
+    }
+
+    private int calculatePackAmount(List<Cart> shoppingCartList) {
+        boolean hasRegularProduct = shoppingCartList.stream().anyMatch(cart -> cart.getGiftBoxId() == null);
+        if (!hasRegularProduct) {
+            return 0;
+        }
+
+        BigDecimal subtotal = shoppingCartList.stream()
+                .map(cart -> defaultToZero(cart.getAmount())
+                        .multiply(BigDecimal.valueOf(defaultToZero(cart.getNumber()))))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return subtotal.compareTo(PACKAGING_FEE_WAIVER_THRESHOLD) >= 0 ? 0 : PACKAGING_FEE_AMOUNT;
+    }
+
     private List<OrderDetail> buildOrderDetails(List<Cart> shoppingCartList, Long orderId) {
         List<OrderDetail> orderDetailList = new ArrayList<>();
         for (Cart cart : shoppingCartList) {
@@ -128,6 +154,10 @@ public class OrderSubmissionServiceImpl implements OrderSubmissionService {
 
     private int defaultToZero(Integer value) {
         return value == null ? 0 : value;
+    }
+
+    private BigDecimal defaultToZero(BigDecimal value) {
+        return value == null ? BigDecimal.ZERO : value;
     }
 
     private void reserveProductStock(List<Cart> shoppingCartList, Long orderId, Long userId) {

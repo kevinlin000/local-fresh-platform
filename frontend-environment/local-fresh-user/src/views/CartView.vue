@@ -77,16 +77,19 @@
           <strong>NT$ {{ formatPrice(subtotal) }}</strong>
         </div>
         <div class="summary-row">
-          <span>打包費</span>
-          <strong>NT$ 0</strong>
+          <span>包材整理費</span>
+          <strong :class="{ 'fee-waived': packagingFee === 0 }">
+            {{ packagingFeeLabel }}
+          </strong>
         </div>
+        <p class="summary-note">{{ packagingFeeNote }}</p>
         <div class="summary-row muted">
           <span>配送安排</span>
           <strong>門市確認</strong>
         </div>
         <div class="summary-total">
           <span>應付總額</span>
-          <strong>NT$ {{ formatPrice(subtotal) }}</strong>
+          <strong>NT$ {{ formatPrice(orderTotal) }}</strong>
         </div>
 
         <div class="checkout-assurance" aria-label="結帳提醒">
@@ -163,8 +166,8 @@
               <div class="address-card-body">
                 <div class="address-card-header">
                   <div class="address-topline">
-                    <strong>{{ address.consignee }}</strong>
-                    <span>{{ address.phone }}</span>
+                    <strong>{{ displayConsignee(address) }}</strong>
+                    <span>{{ displayPhone(address) }}</span>
                   </div>
                   <div class="address-card-action">
                     <span v-if="address.isDefault === 1" class="default-tag">預設地址</span>
@@ -179,7 +182,13 @@
                     </el-button>
                   </div>
                 </div>
-                <p class="address-detail">{{ formatAddress(address) }}</p>
+                <p class="address-detail" :class="{ muted: !formatAddress(address) }">
+                  {{ displayAddress(address) }}
+                </p>
+                <p v-if="address.label" class="address-label">{{ address.label }}</p>
+                <p v-if="addressNeedsDetails(address)" class="address-warning">
+                  這筆地址資料不完整，請到「管理地址」補齊收件人、電話與詳細地址。
+                </p>
               </div>
             </label>
           </el-radio-group>
@@ -299,6 +308,31 @@ const subtotal = computed(() =>
   cartItems.value.reduce((sum, item) => sum + Number(item.amount) * item.number, 0)
 )
 
+const hasRegularProducts = computed(() => cartItems.value.some((item) => !item.giftBoxId))
+
+const packagingFee = computed(() => {
+  if (!hasRegularProducts.value || subtotal.value >= 699) {
+    return 0
+  }
+  return 10
+})
+
+const orderTotal = computed(() => subtotal.value + packagingFee.value)
+
+const packagingFeeLabel = computed(() => (
+  packagingFee.value > 0 ? `NT$ ${formatPrice(packagingFee.value)}` : '本次免收'
+))
+
+const packagingFeeNote = computed(() => {
+  if (!hasRegularProducts.value) {
+    return '直送箱已含箱裝整理，不另外收包材費。'
+  }
+  if (packagingFee.value === 0) {
+    return '單品包材整理費 NT$ 10，商品滿 NT$ 699 本次免收。'
+  }
+  return '含單品冷藏袋與分裝耗材；商品滿 NT$ 699 免收。'
+})
+
 const totalItems = computed(() =>
   cartItems.value.reduce((sum, item) => sum + item.number, 0)
 )
@@ -342,6 +376,22 @@ function buildCartPayload(item: CartItem) {
 
 function formatAddress(address: ShippingAddress) {
   return [address.cityName, address.districtName, address.detail].filter(Boolean).join('')
+}
+
+function displayConsignee(address: ShippingAddress) {
+  return address.consignee || '未填收件人'
+}
+
+function displayPhone(address: ShippingAddress) {
+  return address.phone || '未填手機'
+}
+
+function displayAddress(address: ShippingAddress) {
+  return formatAddress(address) || '尚未填寫完整配送地址'
+}
+
+function addressNeedsDetails(address: ShippingAddress) {
+  return !address.consignee || !address.phone || !formatAddress(address)
 }
 
 function resetAddressForm() {
@@ -505,8 +555,8 @@ async function submitCurrentOrder() {
       deliveryStatus: 1,
       tablewareNumber: 0,
       tablewareStatus: 0,
-      packAmount: 0,
-      amount: subtotal.value
+      packAmount: packagingFee.value,
+      amount: orderTotal.value
     })
     checkoutVisible.value = false
     await loadCart()
@@ -774,6 +824,17 @@ h3 {
   color: #405047;
 }
 
+.fee-waived {
+  color: var(--farm-primary-deep);
+}
+
+.summary-note {
+  margin: 6px 0 0;
+  color: var(--farm-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .summary-total {
   margin: 22px 0 18px;
   padding-top: 18px;
@@ -870,6 +931,10 @@ h3 {
   gap: 12px;
 }
 
+.address-card-body {
+  min-width: 0;
+}
+
 .address-card-action {
   flex-shrink: 0;
 }
@@ -882,9 +947,29 @@ h3 {
 
 .address-detail {
   margin: 10px 0 0;
-  color: var(--farm-muted);
+  color: #405047;
   line-height: 1.6;
   word-break: break-word;
+}
+
+.address-detail.muted {
+  color: var(--farm-muted);
+}
+
+.address-label,
+.address-warning {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.address-label {
+  color: var(--farm-primary-deep);
+  font-weight: 760;
+}
+
+.address-warning {
+  color: #9a5d19;
 }
 
 .default-tag {

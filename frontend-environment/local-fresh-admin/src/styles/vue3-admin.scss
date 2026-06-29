@@ -155,13 +155,33 @@ a {
 
 .relation-row {
   display: grid;
-  grid-template-columns: 1fr 120px 64px;
+  grid-template-columns: minmax(180px, 1fr) 128px 52px;
   gap: 10px;
   align-items: center;
   padding: 10px 12px;
   border: 1px solid var(--admin-line);
   border-radius: 8px;
   background: #fffdf7;
+}
+
+.relation-product {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.relation-product strong {
+  overflow: hidden;
+  color: var(--admin-ink);
+  font-size: 14px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.relation-product span {
+  color: var(--admin-muted);
+  font-size: 12px;
 }
 
 .helper-text {

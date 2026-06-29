@@ -43,7 +43,9 @@ export interface GiftBox {
 }
 
 export interface ProductItem {
+  productId?: number
   name: string
+  price?: number
   copies: number
   image: string | null
   description: string | null

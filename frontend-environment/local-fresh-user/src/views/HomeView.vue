@@ -205,16 +205,20 @@
                   <h3>{{ giftBox.boxName }}</h3>
                 </div>
                 <p class="description">{{ giftBox.description || '精選主題箱，一次帶走多樣食材。' }}</p>
+                <div class="giftbox-value" aria-label="直送箱優惠">
+                  <span>{{ giftBoxValueCopy(giftBox) }}</span>
+                  <strong v-if="giftBoxSavings(giftBox) > 0">約省 NT$ {{ formatPrice(giftBoxSavings(giftBox)) }}</strong>
+                </div>
                 <div class="giftbox-items">
                   <span class="giftbox-items-label">內含商品</span>
                   <el-skeleton v-if="giftBox.loading" :rows="2" animated />
                   <template v-else>
                     <span
                       v-for="item in giftBox.items.slice(0, 4)"
-                      :key="`${giftBox.id}-${item.name}`"
+                      :key="`${giftBox.id}-${item.productId || item.name}`"
                       class="giftbox-chip"
                     >
-                      {{ item.name }} x{{ item.copies }}
+                      {{ displayGiftBoxItemName(item) }} x{{ item.copies }}
                     </span>
                     <span v-if="!giftBox.items.length" class="giftbox-chip muted">內容整理中</span>
                   </template>
@@ -407,6 +411,49 @@ function productUsageHint(product: Product) {
     return '料理增香'
   }
   return '家庭備菜'
+}
+
+function giftBoxItemCount(giftBox: GiftBoxCard) {
+  return giftBox.items.reduce((sum, item) => sum + Number(item.copies || 0), 0)
+}
+
+function productPriceByName(name: string) {
+  return productItems.value.find((product) => product.productName === name)?.price
+}
+
+function productById(productId?: number) {
+  return productItems.value.find((product) => Number(product.id) === Number(productId))
+}
+
+function displayGiftBoxItemName(item: ProductItem) {
+  return item.name || productById(item.productId)?.productName || '未命名商品'
+}
+
+function giftBoxItemPrice(item: ProductItem) {
+  return item.price || productById(item.productId)?.price || productPriceByName(item.name) || 0
+}
+
+function giftBoxMarketTotal(giftBox: GiftBoxCard) {
+  return giftBox.items.reduce((sum, item) => {
+    const price = giftBoxItemPrice(item)
+    return price ? sum + Number(price) * Number(item.copies || 1) : sum
+  }, 0)
+}
+
+function giftBoxSavings(giftBox: GiftBoxCard) {
+  return Math.max(0, giftBoxMarketTotal(giftBox) - Number(giftBox.price || 0))
+}
+
+function giftBoxValueCopy(giftBox: GiftBoxCard) {
+  const count = giftBoxItemCount(giftBox)
+  if (!count) {
+    return '內容整理中，適合一次補齊家庭備菜'
+  }
+  const marketTotal = giftBoxMarketTotal(giftBox)
+  if (marketTotal > 0 && giftBoxSavings(giftBox) > 0) {
+    return `${count} 件食材，單買約 NT$ ${formatPrice(marketTotal)}`
+  }
+  return `${count} 件食材，一箱補齊免逐項挑選`
 }
 
 function recommendedRank(product: Product) {
@@ -1138,6 +1185,25 @@ onBeforeUnmount(() => {
   margin-top: 14px;
 }
 
+.giftbox-value {
+  display: grid;
+  gap: 5px;
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px solid rgba(47, 111, 78, 0.12);
+  border-radius: 8px;
+  background: #f7faf5;
+  color: #405047;
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 1.45;
+}
+
+.giftbox-value strong {
+  color: var(--farm-primary-deep);
+  font-size: 13px;
+}
+
 .giftbox-items-label {
   width: 100%;
   color: var(--farm-muted);
@@ -1148,12 +1214,15 @@ onBeforeUnmount(() => {
 }
 
 .giftbox-chip {
+  max-width: 100%;
   padding: 5px 8px;
-  border-radius: 999px;
+  border-radius: 7px;
   background: var(--farm-primary-soft);
   color: var(--farm-primary-deep);
   font-size: 12px;
   font-weight: 700;
+  line-height: 1.35;
+  white-space: normal;
 }
 
 .giftbox-chip.muted {

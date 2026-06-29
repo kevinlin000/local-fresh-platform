@@ -13,8 +13,14 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class ProductItemVO implements Serializable {
 
+    // 商品 id
+    private Long productId;
+
     // 商品名稱
     private String name;
+
+    // 商品單價
+    private java.math.BigDecimal price;
 
     // 份數
     private Integer copies;
