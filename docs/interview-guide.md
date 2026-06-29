@@ -111,7 +111,7 @@ RedisTemplate 用在快取與一般 KV，RedissonClient 用在分散式鎖。這
 - 管理端操作 audit log 延伸成更完整的營運追蹤報表。
 - 只有在明確瓶頸出現後，再討論服務拆分。
 
-更完整的後續優先順序與完整度評估可以看 `docs/portfolio-roadmap.md`。面試時不要說這是 production 100% 系統；比較好的說法是：核心交易、揪團併發、庫存防重、測試證據、最小業務 metrics、作品級部署、ECPay sandbox provider switch、stage checkout、OTP 成功回流、待對帳候選查詢、provider-query reconciliation job、待對帳候選 gauge、Grafana dashboard provisioning、本機 Prometheus alert rules、Prometheus target `UP` 與本機業務事件 metric 證據已完成；下一步是補長時間排程證據、雲端監控留痕、自動化部署和更完整的監控平台。
+更完整的後續優先順序與完整度評估可以看 `docs/portfolio-roadmap.md`。面試時不要說這是 production 100% 系統；比較好的說法是：核心交易、揪團併發、庫存防重、測試證據、最小業務 metrics、作品級部署、ECPay sandbox provider switch、stage checkout、OTP 成功回流、待對帳候選查詢、provider-query reconciliation job、待對帳候選 gauge、Grafana dashboard provisioning、本機 Prometheus alert rules、Prometheus target `UP` 與本機業務事件 metric live increase 證據已完成；下一步是補長時間排程證據、雲端監控留痕、自動化部署和更完整的監控平台。
 
 ## 可以主動承認的限制
 

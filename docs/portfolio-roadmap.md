@@ -74,65 +74,23 @@
 
 ## Current Next Step Recommendation
 
-剛完成的本地切面是 **可重跑的業務事件 observability 證據**。
+目前作品已具備完整 demo 閉環：會員端採買、揪團、訂單、管理端營運、付款事件、唯讀展示帳號、ECPay sandbox 證據、README 截圖、local/browser smoke、Prometheus target `UP` 與可重跑的 business-event metric evidence。
 
-理由：
+下一步建議：**開始錄 demo 與面試演練**。工程面再往下做，優先順序才是長時間 observability 證據、trace/log correlation、CD 自動化。
 
-- 付款 callback、訂單狀態機與取消還庫存防重已經補強。
-- 若繼續追 production thinking，下一個自然問題是「你怎麼知道系統現在健康？怎麼看付款 callback、揪團與訂單狀態流轉是否異常？」。
-- 這能補上營運可見度，又不需要立刻進入完整雲端 CD 或多服務架構。
+目前可安全收尾的理由：
 
-已完成做法：
+- README 截圖已重跑並對齊最新 UI。
+- EC2 backend `/actuator/info` 目前回報 `f93f6c41a373`，public readiness 通過。
+- 公開管理端使用 `demo_viewer` 唯讀角色，不會破壞展示資料。
+- 後端深度已能回答狀態機、callback 冪等、揪團併發、庫存防重、audit log、observability 與部署邊界。
 
-- Actuator exposure 納入 `health,info,metrics,prometheus`，並可用 `MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE` 覆蓋。
-- Prometheus registry 已接入，`/actuator/prometheus` 可輸出 scrape-format metrics，可用 `MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED` 控制。
-- 補少量業務 metrics：付款 callback 成功/拒絕/重複、付款 reconciliation 結果、latest pending reconciliation candidates、訂單取消防重命中、揪團成功/失敗/取消。
-- 新增 `docs/observability.md` 說明本機查詢方式與目前邊界。
-- 已新增本機 Prometheus / Grafana / Alertmanager compose、Grafana datasource/dashboard provisioning、Prometheus alert rules 與 target `UP` 截圖；先把應用層 metrics、pending candidate gauge、scrape contract、dashboard 與告警症狀定義清楚。
-- 新增 `npm run observability:business-evidence`，用本機 seeded data 觸發重複付款 callback、後台取消訂單與揪團完成，並從 Prometheus 驗證 `payment_callback ignored`、`order_cancellation applied`、`group_buy completed` 三個 counter 都有 live increase。
+後續只建議做加分項，不建議再大改主流程：
 
-剛完成的本地切面是取消訂單防重：若訂單已取消，或該訂單已存在 `ORDER_CANCEL_RESTORE` 庫存回補紀錄，取消流程會直接跳過；真正寫入庫存流水時，`product_inventory_log.idempotency_key` 也有 unique constraint 作為 DB 最後防線，避免重複退款與重複還庫存。
-
-剛完成的雲端切面是 **ECPay sandbox OTP 成功回流，不急著正式上線**。
-
-理由：
-
-- 付款事件、callback parser、前端 POST form、observability 與 public callback preflight 已具備。
-- EC2 backend 已同步到 application release commit `4ef82ed7cc76`，`/actuator/info` 與 `/payment/callback` public preflight 已通過。
-- 已新增 `scripts/switch-ecpay-sandbox-ssm.sh`，並用 SSM 寫入獨立 systemd payment drop-in，確認 effective `PAYMENT_PROVIDER=ecpay`。
-- 這仍不等於正式金流上線；stage checkout、OTP 成功付款、ReturnURL HTTP 200、訂單轉已付款、`CALLBACK_SUCCEEDED`、重複 callback 測試、待對帳候選查詢、provider-query reconciliation job、pending candidate gauge、Grafana dashboard JSON、本機 alert rules、Prometheus target `UP` 與本機業務事件 metric 證據已通，還缺外部查詢排程的長時間運行證據與雲端監控留痕。
-
-目前結論：
-
-- 本機 provider-switch readiness 已用 `PaymentGatewayProviderSelectionTest` 固定住。
-- 本機 ECPay callback contract 已用 `PaymentCallbackControllerEcpayContractTest` 固定住：有效簽章進 service，無效簽章回 `0|FAIL`。
-- 2026-06-21 公開 preflight 已通過 health、Nginx、`/actuator/info`、`/payment/callback` invalid-signature `0|FAIL` 與 CloudFront storefront。
-- 2026-06-21 已透過 SSM 切到 `PAYMENT_PROVIDER=ecpay`，HashKey/HashIV 只在 status 輸出中遮罩顯示。
-- 2026-06-22 已用 Playwright 從 CloudFront 會員端建立訂單 `2068949685467095040`，導向 ECPay stage checkout，並確認 `payment_event` 寫入 `ECPAY / REQUEST_CREATED / PENDING`。
-- 2026-06-22 已完成訂單 `2068979325367758848` 的 ECPay stage OTP 付款，ReturnURL 經 Nginx 回到 Spring Boot HTTP `200`，訂單變成 `status=2`、`pay_status=1`，`payment_event` 寫入 `ECPAY / CALLBACK_SUCCEEDED / SUCCEEDED`。
-- 2026-06-25 已將 EC2 backend 更新到 application release commit `4ef82ed7cc76`，保留 ECPay sandbox provider drop-in，並重新通過 public readiness：health、Nginx、`/actuator/info` commit、`/payment/callback` invalid-signature `0|FAIL` 與 CloudFront storefront。
-
-剛完成的本地切面是 **UI smoke precheck + browser smoke + member/admin commerce polish**：
-
-- 新增 `scripts/check-ui-smoke-local.mjs`，不引入 Playwright 或其他 npm 依賴。
-- 檢查 backend health、會員端/管理端 Vue app shell、會員 mock login、管理端 login、商品列表、會員訂單、管理端 business data 與訂單查詢。
-- 這不是視覺回歸；它用來在手動截圖或 live demo 前快速發現服務沒開、proxy/auth 壞掉、demo data 空掉。
-- 另新增 Playwright Chromium smoke，覆蓋會員端 mock login、home、orders，以及管理端 login、dashboard、orders、products。
-- 會員端首頁商品卡已從展示型卡片升級為 commerce card：直接加入購物車、查看詳情、配送訊號、用途提示與揪團免運訊號；商品詳情也補上配送、保存、揪團信任資訊。
-- 管理端訂單頁已從 CRUD table 升級為履約工作台：待確認、已確認、配送中可作為隊列入口，列表列出履約判斷與下一步動作。
-- 管理端商品頁已從商品清單升級為商品健檢工作台：上架、低庫存、需補資料、下架都可作為操作入口，列表列出庫存水位、門檻與圖文完整度。
-
-剛完成的文件切面是 **backend deep-dive prep notes**：
-
-- 新增 [docs/backend-deep-dive-prep.md](backend-deep-dive-prep.md)，作為 Kevin 自用的後端深挖筆記。
-- 筆記將訂單狀態機、付款 callback、揪團併發、庫存一致性、observability、security boundary、capacity position 分開整理。
-- 每個區塊都列出要怎麼講、對應程式碼/測試、不要吹過頭的地方，避免把作品包裝成 production 100%。
-
-文件與作品證據一致性收尾後，下一個建議切面是 **README 截圖重跑或長時間 observability 證據**：
-
-- 若要整理作品證據：用已新增的 local/browser smoke 當前置檢查，重跑 10 張 README 截圖與 demo acceptance，確認真實食物圖片、會員端、管理端畫面都維持最新狀態。
-- 若要繼續衝全端觀感：下一刀可做管理端 dashboard 的更細緻優先級排序，但目前 orders/products 的操作面已足夠支撐完整 demo。
-- ECPay sandbox stage checkout、OTP 成功回流、本機 Prometheus target `UP` 與本機 business-event metric 驗證已完成；付款線下一步不是再證明單次付款，而是補外部查詢排程的長時間運行證據，或重跑 README 截圖把目前 UI 狀態固定成作品證據。
+- 長時間 provider-query reconciliation 運行證據。
+- 雲端監控留痕與告警接收器。
+- structured JSON log / Trace ID。
+- Docker image build + ECR + EC2 rollout。
 
 ## How To Use This Roadmap
 

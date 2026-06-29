@@ -5,12 +5,12 @@
 `local-fresh-user` 是「菜籃日」的會員端前端，定位是生鮮購物網站。
 核心流程包含：
 
-- 會員登入（Google OAuth + dev 假登入）
+- 會員登入（Email / 密碼、Google OAuth、dev 假登入）
 - 商品 / 直送箱瀏覽
 - 購物車與下單
 - 揪團湊免運（3 人成團）
 
-本階段重點是把後端 API 串成完整 B2C 流程，同時提供可用的桌面與手機版購物體驗。
+目前會員端已串起完整 B2C demo 流程，並提供可用的桌面與手機版購物體驗。
 
 ## 技術棧
 
@@ -94,7 +94,7 @@ http://127.0.0.1:5173/oauth/callback
 - 前端不顯示假登入按鈕與手動輸入區塊
 - 後端若設定 `localfresh.auth.mock-login-enabled=false`
   - `/user/member/login` 會直接拒絕
-- 正式環境應只保留 Google OAuth 流程
+- 正式環境保留 Email / 密碼與 Google OAuth；dev 假登入只作為本地測試入口
 
 ## 後端 Dev 注意事項
 
@@ -130,7 +130,7 @@ docker run -d --name redis-dev -p 6379:6379 redis:7.2-alpine
 
 ## 已知限制
 
-- 支付仍為 mock，沒有串接真實金流
+- 本地開發預設可使用 demo payment gateway；部署環境已具備 ECPay sandbox checkout / callback 驗證路徑
 - 沒有會員中心、收藏、評論
 - Google OAuth 的完整人工授權流程需依賴本地合法 `client_id / client_secret`
 - 揪團頁採輪詢更新，不做 WebSocket 前端推播

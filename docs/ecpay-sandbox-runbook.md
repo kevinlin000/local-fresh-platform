@@ -18,7 +18,7 @@ Already implemented:
 
 Verified on the deployed EC2 runtime:
 
-- `/actuator/info` publicly exposes deployed application release commit `4ef82ed7cc76`.
+- `/actuator/info` publicly exposes deployed application release commit `f93f6c41a373`.
 - `scripts/check-ecpay-sandbox-readiness.sh` passes health, Nginx, actuator
   info, callback invalid-signature response `0|FAIL`, and storefront reachability.
 - `scripts/switch-ecpay-sandbox-ssm.sh status` shows effective
@@ -38,16 +38,17 @@ Verified on the deployed EC2 runtime:
 Not yet implemented:
 
 - Duplicate real-provider callback replay evidence
-- Monitoring screenshots and long-running external-query evidence
+- Long-running external-query evidence
+- Cloud monitoring, alert receiver, and trace/log correlation evidence
 
 ## Current Preflight Status
 
-As of 2026-06-25 15:30 +0800, the public preflight and success-flow result is:
+As of 2026-06-29, the public preflight result is:
 
 - `https://localfresh-demo.duckdns.org/actuator/health`: passed
 - Public API `Server` header: Nginx detected
 - `https://localfresh-demo.duckdns.org/actuator/info`: passed, commit
-  `4ef82ed7cc76`, branch `main`
+  `f93f6c41a373`, branch `main`
 - `POST https://localfresh-demo.duckdns.org/payment/callback`: passed with
   HTTP `200` and body `0|FAIL` for an intentionally invalid ECPay payload
 - Real ECPay ReturnURL callback: HTTP `200`
@@ -58,8 +59,9 @@ that the deployed storefront reaches ECPay stage checkout and completes sandbox
 card OTP payment back through ReturnURL. The backend also has duplicate
 callback coverage, pending reconciliation candidates, a provider-query
 reconciliation job, a pending-candidate gauge, Grafana dashboard provisioning,
-and local Prometheus alert rules. The remaining payment gaps are monitoring
-screenshots and long-running external-query evidence.
+local Prometheus alert rules, and business-event metric evidence. The remaining
+payment gaps are long-running external-query evidence plus cloud monitoring /
+alerting evidence.
 
 ## Local Contract Evidence
 
@@ -108,7 +110,7 @@ ECPAY_QUERY_URL=https://payment-stage.ecpay.com.tw/Cashier/QueryTradeInfo/V5
 ECPAY_RETURN_URL=https://localfresh-demo.duckdns.org/payment/callback
 ECPAY_ORDER_RESULT_URL=https://d3hqnux25iirgl.cloudfront.net/orders
 PAYMENT_RECONCILIATION_ENABLED=false
-SOURCE_COMMIT=<deployed git commit, for example 4ef82ed7cc76>
+SOURCE_COMMIT=<deployed git commit, for example f93f6c41a373>
 SOURCE_BRANCH=main
 ```
 
@@ -185,7 +187,7 @@ identity drop-in untouched.
    To require a specific backend commit:
 
    ```bash
-   EXPECTED_DEPLOY_COMMIT=4ef82ed7cc76 scripts/check-ecpay-sandbox-readiness.sh
+   EXPECTED_DEPLOY_COMMIT=f93f6c41a373 scripts/check-ecpay-sandbox-readiness.sh
    ```
 
    The callback check must return HTTP `200` with `0|FAIL` for an intentionally invalid signature. If it returns `404`, stop here and deploy the backend version containing `/payment/callback` before changing `PAYMENT_PROVIDER`.

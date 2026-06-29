@@ -84,10 +84,10 @@ The current EC2 runtime stores these values in:
 /etc/systemd/system/local-fresh-backend.service.d/release.conf
 ```
 
-The active demo release as of 2026-06-25 is:
+The active demo release as of 2026-06-29 is:
 
 ```text
-SOURCE_COMMIT=4ef82ed7cc76
+SOURCE_COMMIT=f93f6c41a373
 SOURCE_BRANCH=main
 ```
 
@@ -112,6 +112,9 @@ application config: /home/ubuntu/local-fresh/application-prod.yml
 payment drop-in: /etc/systemd/system/local-fresh-backend.service.d/payment-provider.conf
 release drop-in: /etc/systemd/system/local-fresh-backend.service.d/release.conf
 ```
+
+The `sky-server-1.0-SNAPSHOT.jar` filename is a legacy EC2 service path retained
+for the current demo runtime. It does not represent the current product name.
 
 If you normalize the runtime later, update the service and this runbook in the
 same change. Until then, deploy to the existing path above.
@@ -167,9 +170,8 @@ Use this path when SSH is intentionally closed.
    scripts/switch-ecpay-sandbox-ssm.sh status
    ```
 
-The 2026-06-25 `portfolio-v1.0.0` refresh used this path to deploy
-`4ef82ed7cc76` while preserving the existing ECPay sandbox payment-provider
-drop-in.
+The latest demo-data refresh used this path to deploy `f93f6c41a373` while
+preserving the existing ECPay sandbox payment-provider drop-in.
 ```
 
 ## Verify The Deployment

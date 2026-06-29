@@ -780,7 +780,7 @@ sequenceDiagram
     Admin->>DB: query payment_event by order/provider
 ```
 
-目前這條路徑已具備 demo provider HMAC、ECPay CheckMacValue parsing / verification 測試、公開 EC2 callback preflight、Playwright ECPay sandbox OTP 成功回流證據、待對帳候選查詢、provider-query reconciliation job、pending candidate gauge、Grafana dashboard provisioning 與本機 Prometheus alert rules；尚未完成的是監控截圖與外部查詢排程的長時間運行證據。
+目前這條路徑已具備 demo provider HMAC、ECPay CheckMacValue parsing / verification 測試、公開 EC2 callback preflight、Playwright ECPay sandbox OTP 成功回流證據、待對帳候選查詢、provider-query reconciliation job、pending candidate gauge、Grafana dashboard provisioning、本機 Prometheus alert rules、Prometheus target `UP` 截圖與 business-event metric live increase 證據；尚未完成的是外部查詢排程的長時間運行證據與雲端監控留痕。
 
 ---
 

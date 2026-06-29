@@ -5,7 +5,7 @@
 ### 環境
 
 - 後端：先於 `backend-environment/local-fresh-backend` 執行 `mvn install -DskipTests`，再執行 `mvn -pl local-fresh-server spring-boot:run -Dspring-boot.run.profiles=dev`
-- MySQL：本機 `mysqld`，資料已套用 `V5__taiwan_localization.sql` 與 `V6__add_product_images.sql`
+- MySQL：本機 `mysqld`，資料已套用目前 Flyway migrations
 - Redis：`docker compose up -d redis`
 - JMeter：`/usr/local/bin/jmeter`
 
@@ -27,7 +27,7 @@ jmeter -n \
   -t groupbuy-join-load-test.jmx \
   -JGROUP_NO=loadtest_1778755924 \
   -JPRODUCT_ID=1 \
-  -JCSV_FILE=/Users/kevinlintingwei/local-fresh-platform/docs/perf/loadtest-users.csv \
+  -JCSV_FILE=loadtest-users.csv \
   -l results.jtl \
   -e -o html-report
 ```
@@ -80,9 +80,9 @@ jmeter -n \
 
 ### 產物
 
-- JMeter 計畫：[groupbuy-join-load-test.jmx](/Users/kevinlintingwei/local-fresh-platform/docs/perf/groupbuy-join-load-test.jmx)
-- 使用者對應表：[loadtest-users.csv](/Users/kevinlintingwei/local-fresh-platform/docs/perf/loadtest-users.csv)
-- 原始結果：[results.jtl](/Users/kevinlintingwei/local-fresh-platform/docs/perf/results.jtl)
+- JMeter 計畫：[groupbuy-join-load-test.jmx](groupbuy-join-load-test.jmx)
+- 使用者對應表：[loadtest-users.csv](loadtest-users.csv)
+- 原始結果：[results.jtl](results.jtl)
 - HTML Dashboard：可透過上述 JMeter 指令重新產生至 `docs/perf/html-report/`；該目錄屬產物，不提交版本庫。
 
 ### 結論
