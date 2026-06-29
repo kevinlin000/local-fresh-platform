@@ -1,0 +1,10 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Cailan Day brand mark</title>
+  <desc id="desc">A green basket mark for the Cailan Day grocery platform.</desc>
+  <rect x="8" y="8" width="112" height="112" rx="24" fill="#143C2D"/>
+  <path d="M38 53c0-15 11-27 26-27s26 12 26 27" stroke="#DDF3E7" stroke-width="8" stroke-linecap="round"/>
+  <path d="M32 51h64l-8 45H40L32 51Z" fill="#F3F8F1"/>
+  <path d="M44 63h40M42 76h44M40 89h48" stroke="#143C2D" stroke-width="6" stroke-linecap="round" opacity=".9"/>
+  <path d="M58 45c-3-11 3-22 15-25 4 12-2 22-15 25Z" fill="#69BF45"/>
+  <path d="M72 46c2-10 12-17 24-15-1 12-11 18-24 15Z" fill="#9BD66F"/>
+</svg>

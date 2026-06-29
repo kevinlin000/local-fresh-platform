@@ -1,11 +1,19 @@
-# 菜籃日 Cailán Day
+<p align="center">
+  <img src="docs/assets/brand-mark.svg" alt="菜籃日 Cailán Day logo" width="92" />
+</p>
 
-> 結合在地小農生鮮直送與揪團湊免運的 B2C 電商平台
+<h1 align="center">菜籃日 Cailán Day</h1>
 
-![Java 17](https://img.shields.io/badge/Java-17-3A7D44?style=flat-square)
-![Spring Boot 3.5](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?style=flat-square)
-![Vue 3](https://img.shields.io/badge/Vue-3-42B883?style=flat-square)
-![License MIT](https://img.shields.io/badge/License-MIT-4E9F3D?style=flat-square)
+<p align="center">結合在地小農生鮮直送與揪團湊免運的 B2C 電商平台</p>
+
+<p align="center">
+  <a href="https://github.com/kevinlin000/local-fresh-platform/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/kevinlin000/local-fresh-platform/actions/workflows/ci.yml/badge.svg?branch=main" /></a>
+  <img alt="Java 17" src="https://img.shields.io/badge/Java-17-3A7D44?style=flat-square" />
+  <img alt="Spring Boot 3.5" src="https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?style=flat-square" />
+  <img alt="Vue 3" src="https://img.shields.io/badge/Vue-3-42B883?style=flat-square" />
+  <a href="LICENSE"><img alt="License MIT" src="https://img.shields.io/badge/License-MIT-4E9F3D?style=flat-square" /></a>
+  <a href="SECURITY.md"><img alt="Security Policy" src="https://img.shields.io/badge/Security-Policy-2E6F40?style=flat-square" /></a>
+</p>
 
 **Demo URL**
 
@@ -25,6 +33,17 @@
 - 完整管理員帳號請聯繫專案作者取得,避免公開寫入憑證遭濫用。
 - 後端 API 入口:`https://localfresh-demo.duckdns.org`
 - 部署架構:Vue 3 用戶端託管於 AWS S3 + CloudFront(HTTPS),Spring Boot API 部署於 AWS EC2 (Nginx 反向代理 + Let's Encrypt)。
+
+## 30 秒 Review Path
+
+| 想快速確認 | 建議入口 |
+|---|---|
+| 作品第一印象 | 先看下方 10 張 Demo 流程截圖 |
+| 會員端流程 | 開啟用戶端 demo，走商品瀏覽、購物車、下單與訂單追蹤 |
+| 後台能力 | 使用唯讀展示帳號登入管理端，看 Dashboard、訂單、商品、付款事件與操作紀錄 |
+| 後端設計 | 看「工程設計證據」中的資料模型、訂單 / 付款狀態流轉與 AWS 部署拓樸 |
+| 測試與可靠性 | 看「技術亮點」中的併發壓測、Testcontainers、JaCoCo、payment callback 與 observability 證據 |
+| 安全邊界 | 看 [SECURITY.md](SECURITY.md) 與管理端唯讀角色限制 |
 
 ## Demo 流程截圖
 
@@ -513,6 +532,7 @@ pnpm dev
 - [docs/ecpay-sandbox-runbook.md](docs/ecpay-sandbox-runbook.md)
 - [docs/observability.md](docs/observability.md)
 - [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md)
+- [SECURITY.md](SECURITY.md)
 - [docs/testing.md](docs/testing.md)
 - [frontend-environment/local-fresh-user/README.md](frontend-environment/local-fresh-user/README.md)
 

@@ -1,11 +1,19 @@
-# Local Fresh Platform
+<p align="center">
+  <img src="docs/assets/brand-mark.svg" alt="Cailan Day logo" width="92" />
+</p>
 
-> A B2C grocery platform combining local farm-to-table delivery with group-buy promotions
+<h1 align="center">Local Fresh Platform</h1>
 
-![Java 17](https://img.shields.io/badge/Java-17-3A7D44?style=flat-square)
-![Spring Boot 3.5](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?style=flat-square)
-![Vue 3](https://img.shields.io/badge/Vue-3-42B883?style=flat-square)
-![License MIT](https://img.shields.io/badge/License-MIT-4E9F3D?style=flat-square)
+<p align="center">A B2C grocery platform combining local farm-to-table delivery with group-buy promotions</p>
+
+<p align="center">
+  <a href="https://github.com/kevinlin000/local-fresh-platform/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/kevinlin000/local-fresh-platform/actions/workflows/ci.yml/badge.svg?branch=main" /></a>
+  <img alt="Java 17" src="https://img.shields.io/badge/Java-17-3A7D44?style=flat-square" />
+  <img alt="Spring Boot 3.5" src="https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?style=flat-square" />
+  <img alt="Vue 3" src="https://img.shields.io/badge/Vue-3-42B883?style=flat-square" />
+  <a href="LICENSE"><img alt="License MIT" src="https://img.shields.io/badge/License-MIT-4E9F3D?style=flat-square" /></a>
+  <a href="SECURITY.md"><img alt="Security Policy" src="https://img.shields.io/badge/Security-Policy-2E6F40?style=flat-square" /></a>
+</p>
 
 **Demo URL**
 
@@ -21,8 +29,22 @@ Admin console
 
 > The admin console is a Vue 3 + Vite + Element Plus operations surface for order handling, product operations, inventory checks, categories, delivery boxes, employees, and operational metrics.
 
+- Read-only admin account: `demo_viewer` / `viewonly`. It can inspect demo data but cannot create, update, delete, or change order/product status.
+- Full admin credentials are available from the project author for interviews and are not published to avoid write-access abuse.
+
 > Backend API endpoint: `https://localfresh-demo.duckdns.org`
 > Deployment topology: Vue 3 storefront hosted on AWS S3 + CloudFront (HTTPS), Spring Boot API on AWS EC2 (Nginx reverse proxy with Let's Encrypt TLS).
+
+## 30-Second Review Path
+
+| What to check | Entry point |
+|---|---|
+| First impression | Start with the 10 demo-flow screenshots below |
+| Storefront flow | Open the user demo and walk through browsing, cart, checkout, and order tracking |
+| Admin capability | Log in with the read-only admin account and inspect dashboard, orders, products, payment events, and operation logs |
+| Backend design | Read the domain model, order/payment state flow, and AWS deployment topology under Engineering Evidence |
+| Reliability evidence | Review concurrency testing, Testcontainers, JaCoCo, payment callback handling, and observability evidence |
+| Security boundary | Read [SECURITY.md](SECURITY.md) and verify read-only admin restrictions |
 
 ## Demo Screenshots
 
@@ -483,6 +505,7 @@ See also:
 - [docs/ecpay-sandbox-runbook.md](docs/ecpay-sandbox-runbook.md)
 - [docs/observability.md](docs/observability.md)
 - [docs/portfolio-roadmap.md](docs/portfolio-roadmap.md)
+- [SECURITY.md](SECURITY.md)
 - [docs/testing.md](docs/testing.md)
 - [frontend-environment/local-fresh-user/README.md](frontend-environment/local-fresh-user/README.md)
 - `docs/architecture.md` (system architecture and sequence diagrams)
