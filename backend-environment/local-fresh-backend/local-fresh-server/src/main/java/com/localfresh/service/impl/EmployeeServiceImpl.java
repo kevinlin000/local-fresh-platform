@@ -98,6 +98,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         long total = page.getTotal();
         List<Employee> records = page.getResult();
+        records.forEach(employee -> employee.setPassword("****"));
         return new PageResult(total, records);
     }
     /**

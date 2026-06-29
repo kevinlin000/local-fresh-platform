@@ -63,7 +63,8 @@ class AdminReadOnlyRoleApiTest extends MockWebSocketMvcIntegrationTest {
                         .param("pageSize", "10")
                         .header("token", token(EmployeeRoleConstant.VIEWER)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(1));
+                .andExpect(jsonPath("$.code").value(1))
+                .andExpect(jsonPath("$.data.records[0].password").value("****"));
     }
 
     @Test
