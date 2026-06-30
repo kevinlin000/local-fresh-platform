@@ -11,7 +11,7 @@
   <img alt="Java 17" src="https://img.shields.io/badge/Java-17-3A7D44?style=flat-square" />
   <img alt="Spring Boot 3.5" src="https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?style=flat-square" />
   <img alt="Vue 3" src="https://img.shields.io/badge/Vue-3-42B883?style=flat-square" />
-  <a href="LICENSE"><img alt="License MIT" src="https://img.shields.io/badge/License-MIT-4E9F3D?style=flat-square" /></a>
+  <a href="LICENSE"><img alt="Source Available - Portfolio Review Only" src="https://img.shields.io/badge/Source%20Available-Portfolio%20Review%20Only-4E9F3D?style=flat-square" /></a>
   <a href="SECURITY.md"><img alt="Security Policy" src="https://img.shields.io/badge/Security-Policy-2E6F40?style=flat-square" /></a>
 </p>
 
@@ -660,4 +660,10 @@ npm run smoke:browser
 
 ## License
 
-This project is licensed under the MIT License. You may use, modify, and distribute this project with proper attribution. See the repository license section or future `LICENSE` file updates for details.
+This project is not open-source.
+
+Source code is available for portfolio and technical review only.
+
+No permission is granted to copy, modify, distribute, sublicense, sell, reuse, or incorporate this project, in whole or in substantial part, into another project without prior written permission.
+
+Third-party dependencies and preserved upstream notices remain under their respective licenses.
