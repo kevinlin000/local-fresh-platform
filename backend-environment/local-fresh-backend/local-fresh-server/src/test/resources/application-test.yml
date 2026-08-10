@@ -41,7 +41,7 @@ logging:
     root: warn
     com.localfresh.handler: off
     com.localfresh.mapper: warn
-    com.localfresh.service: warn
+    com.localfresh.service: info
     com.localfresh.controller: warn
     com.localfresh.interceptor: warn
     com.localfresh.config: warn
