@@ -15,24 +15,16 @@
   <a href="SECURITY.md"><img alt="Security Policy" src="https://img.shields.io/badge/Security-Policy-2E6F40?style=flat-square" /></a>
 </p>
 
-**Demo URL**
+**線上 Demo**：曾部署在 AWS，目前為控制成本已下線。
+介面與完整流程見下方 [Demo 流程截圖](#demo-流程截圖)。
 
-用戶端 demo
+部署當時的架構：Vue 3 用戶端託管於 AWS S3 + CloudFront（HTTPS），
+Spring Boot API 部署於 AWS EC2（Nginx 反向代理 + Let's Encrypt），
+用戶端與管理端各自獨立發佈。
 
-[https://d3hqnux25iirgl.cloudfront.net](https://d3hqnux25iirgl.cloudfront.net)
-
-> 用戶端 demo 開放使用，可註冊或使用 Email / 密碼登入，也可透過 Google OAuth 或開發模式快捷登入體驗完整會員流程。
-
-管理端 demo
-
-[https://d3czahyk4cnvb9.cloudfront.net](https://d3czahyk4cnvb9.cloudfront.net)
-
-> 管理端已升級為 Vue 3 + Vite + Element Plus 管理後台,負責訂單確認、商品上下架、員工 / 分類 / 直送箱管理與營運數據檢視。
-
-- 唯讀展示帳號:`demo_viewer` / `viewonly`。可查看後台資料,不可新增、修改、刪除或變更訂單 / 商品狀態。
-- 完整管理員帳號請聯繫專案作者取得,避免公開寫入憑證遭濫用。
-- 後端 API 入口:`https://localfresh-demo.duckdns.org`
-- 部署架構:Vue 3 用戶端託管於 AWS S3 + CloudFront(HTTPS),Spring Boot API 部署於 AWS EC2 (Nginx 反向代理 + Let's Encrypt)。
+> 線上時的行為：用戶端可註冊或用 Email / 密碼登入，也支援 Google OAuth。
+> 管理端是 Vue 3 + Vite + Element Plus 後台，負責訂單確認、商品上下架、
+> 員工 / 分類 / 直送箱管理與營運數據檢視，另開唯讀展示帳號供瀏覽。
 
 ## 30 秒 Review Path
 

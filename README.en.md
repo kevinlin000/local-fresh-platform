@@ -15,25 +15,17 @@
   <a href="SECURITY.md"><img alt="Security Policy" src="https://img.shields.io/badge/Security-Policy-2E6F40?style=flat-square" /></a>
 </p>
 
-**Demo URL**
+**Live demo**: it ran on AWS and is now taken down to control cost.
+See the [demo screenshots](#demo-screenshots) below for the UI and the full flow.
 
-User storefront
+Deployment topology while it ran: Vue 3 storefront on AWS S3 + CloudFront (HTTPS),
+Spring Boot API on AWS EC2 (Nginx reverse proxy with Let's Encrypt TLS),
+storefront and admin console shipped as separate builds.
 
-[https://d3hqnux25iirgl.cloudfront.net](https://d3hqnux25iirgl.cloudfront.net)
-
-> The user-facing storefront is publicly accessible. Members can register or sign in with email/password, use Google OAuth, or use the dev-mode mock login for repeatable demo flows.
-
-Admin console
-
-[https://d3czahyk4cnvb9.cloudfront.net](https://d3czahyk4cnvb9.cloudfront.net)
-
-> The admin console is a Vue 3 + Vite + Element Plus operations surface for order handling, product operations, inventory checks, categories, delivery boxes, employees, and operational metrics.
-
-- Read-only admin account: `demo_viewer` / `viewonly`. It can inspect demo data but cannot create, update, delete, or change order/product status.
-- Full admin credentials are available from the project author for interviews and are not published to avoid write-access abuse.
-
-> Backend API endpoint: `https://localfresh-demo.duckdns.org`
-> Deployment topology: Vue 3 storefront hosted on AWS S3 + CloudFront (HTTPS), Spring Boot API on AWS EC2 (Nginx reverse proxy with Let's Encrypt TLS).
+> While it was live: members could register or sign in with email/password or Google OAuth.
+> The admin console was a Vue 3 + Vite + Element Plus operations surface for order handling,
+> product operations, inventory, categories, delivery boxes, employees and operational metrics,
+> with a read-only account for browsing.
 
 ## 30-Second Review Path
 
